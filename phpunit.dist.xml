@@ -8,7 +8,7 @@
          failOnNotice="true"
          failOnWarning="true"
          bootstrap="tests/bootstrap.php"
-         cacheDirectory=".phpunit.cache"
+         cacheDirectory="var/cache/phpunit.cache"
 >
     <php>
         <ini name="display_errors" value="1" />
@@ -18,8 +18,11 @@
     </php>
 
     <testsuites>
-        <testsuite name="Project Test Suite">
-            <directory>tests</directory>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
         </testsuite>
     </testsuites>
 
@@ -40,5 +43,6 @@
     </source>
 
     <extensions>
+        <bootstrap class="Zenstruck\Foundry\PHPUnit\FoundryExtension" />
     </extensions>
 </phpunit>

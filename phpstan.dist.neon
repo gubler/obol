@@ -1,0 +1,157 @@
+includes:
+    - vendor/spaze/phpstan-disallowed-calls/disallowed-dangerous-calls.neon
+    - vendor/spaze/phpstan-disallowed-calls/disallowed-execution-calls.neon
+    - vendor/spaze/phpstan-disallowed-calls/disallowed-insecure-calls.neon
+    - vendor/spaze/phpstan-disallowed-calls/disallowed-loose-calls.neon
+    - vendor/symplify/phpstan-rules/config/code-complexity-rules.neon
+    - vendor/symplify/phpstan-rules/config/naming-rules.neon
+parameters:
+    level: 9
+    paths:
+        - bin/
+        - config/
+        - public/
+        - src/
+        - tests/
+        - migrations/
+        - rector.php
+    symfony:
+        containerXmlPath: var/cache/dev/App_KernelDevDebugContainer.xml
+    doctrine:
+        objectManagerLoader: tests/object-manager.php
+    excludePaths:
+        analyse:
+            - config/bundles.php
+            - config/secrets/*
+            - src/Command/AppTest*
+            - src/Command/Test*
+            - public/build/*
+            - public/bundles/*
+            - public/docs/*
+    type_coverage:
+        return: 100
+        param: 100
+        property: 100
+        declare: 100
+        constant: 100
+#    ignoreErrors:
+#        -
+#            identifier: symplify.classNameRespectsParentSuffix
+#            path: src/Twig/Components/*
+#        -
+#            identifier: doctrine.noGetRepositoryOutsideService
+#            path: tests/Integration/Repository/*
+#        -
+#            identifier: symplify.noJustPropertyAssign
+#            path: src/Domain/Command/Testing/Fixtures/*
+#        -
+#            identifier: symplify.explicitAbstractPrefixName
+#            path: tests/*
+    disallowedFunctionCalls:
+        -
+            function: 'dump()'
+            message: 'use logger instead'
+        -
+            function: 'dd()'
+            message: 'use logger instead'
+    disallowedMethodCalls:
+        -
+            method: 'Symfony\Component\VarDumper\VarDumper::dump()'
+            message: 'use logger instead'
+        -
+            method: 'Symfony\Component\VarDumper\VarDumper::dd()'
+            message: 'use logger instead'
+    disallowedStaticCalls:
+        -
+            method: 'Symfony\Component\VarDumper\VarDumper::dump()'
+            message: 'use logger instead'
+        -
+            method: 'Symfony\Component\VarDumper\VarDumper::dd()'
+            message: 'use logger instead'
+rules:
+    # Doctrine Rules
+#    - Symplify\PHPStanRules\Rules\Doctrine\NoGetRepositoryOutsideServiceRule
+#    - Symplify\PHPStanRules\Rules\Doctrine\NoParentRepositoryRule
+#    - Symplify\PHPStanRules\Rules\Doctrine\NoRepositoryCallInDataFixtureRule
+#    - Symplify\PHPStanRules\Rules\Doctrine\NoGetRepositoryOnServiceRepositoryEntityRule
+    # Doctrine Test Fixtures
+#    - Symplify\PHPStanRules\Rules\Doctrine\RequireQueryBuilderOnRepositoryRule
+    # Symplify Static Rules
+    - Symplify\PHPStanRules\Rules\ForbiddenExtendOfNonAbstractClassRule
+    - Symplify\PHPStanRules\Rules\NoGlobalConstRule
+    - Symplify\PHPStanRules\Rules\Domain\RequireExceptionNamespaceRule
+    - Symplify\PHPStanRules\Rules\RequireAttributeNameRule
+    - Symplify\PHPStanRules\Rules\Enum\RequireUniqueEnumConstantRule
+    - Symplify\PHPStanRules\Rules\PreventParentMethodVisibilityOverrideRule
+    - Symplify\PHPStanRules\Rules\ForbiddenMultipleClassLikeInOneFileRule
+    - Symplify\PHPStanRules\Rules\NoReferenceRule
+    - Symplify\PHPStanRules\Rules\ForbiddenStaticClassConstFetchRule
+    - Symplify\PHPStanRules\Rules\Complexity\ForbiddenArrayMethodCallRule
+    # Symfony Rules
+    - Symplify\PHPStanRules\Rules\Symfony\NoAbstractControllerConstructorRule
+    - Symplify\PHPStanRules\Rules\Symfony\NoRequiredOutsideClassRule
+    - Symplify\PHPStanRules\Rules\Symfony\SingleArgEventDispatchRule
+    - Symplify\PHPStanRules\Rules\Symfony\NoListenerWithoutContractRule
+    - Symplify\PHPStanRules\Rules\Symfony\NoStringInGetSubscribedEventsRule
+    - Symplify\PHPStanRules\Rules\Symfony\FormTypeClassNameRule
+    # Symfony Routing
+    - Symplify\PHPStanRules\Rules\Symfony\NoRoutingPrefixRule
+    - Symplify\PHPStanRules\Rules\Symfony\NoClassLevelRouteRule
+    - Symplify\PHPStanRules\Rules\Symfony\NoRouteTrailingSlashPathRule
+    - Symplify\PHPStanRules\Rules\Symfony\RequireRouteNameToGenerateControllerRouteRule
+    # Symfony Dependency Injection
+    - Symplify\PHPStanRules\Rules\Symfony\NoGetInControllerRule
+    - Symplify\PHPStanRules\Rules\Symfony\NoGetInCommandRule
+    - Symplify\PHPStanRules\Rules\Symfony\NoGetDoctrineInControllerRule
+    - Symplify\PHPStanRules\Rules\Symfony\NoFindTaggedServiceIdsCallRule
+    # Symfony Magic Required Inject
+    - Symplify\PHPStanRules\Rules\Symfony\SingleRequiredMethodRule
+    - Symplify\PHPStanRules\Rules\Symfony\RequiredOnlyInAbstractRule
+    - Symplify\PHPStanRules\Rules\Symfony\NoConstructorAndRequiredTogetherRule
+services:
+    -
+        class: Symplify\PHPStanRules\Rules\ForbiddenNodeRule
+        tags: [phpstan.rules.rule]
+        arguments:
+            forbiddenNodes:
+                - PhpParser\Node\Expr\Empty_
+                - PhpParser\Node\Expr\ErrorSuppress
+                - PhpParser\Node\Scalar\Encapsed
+                - PhpParser\Node\Scalar\EncapsedStringPart
+                # use pre* nodes instead: += vs. =+ etc.
+                - PhpParser\Node\Expr\PostInc
+                - PhpParser\Node\Expr\PostDec
+    -
+        class: Symplify\PHPStanRules\Rules\PreferredClassRule
+        tags: [phpstan.rules.rule]
+        arguments:
+            oldToPreferredClasses:
+                # prevents typos
+                PHPStan\Node\ClassMethod: 'PhpParser\Node\Stmt\ClassMethod'
+                'PhpCsFixer\Finder': 'Symfony\Component\Finder\Finder'
+
+    -
+        class: Symplify\PHPStanRules\Rules\ForbiddenFuncCallRule
+        tags: [phpstan.rules.rule]
+        arguments:
+            forbiddenFunctions:
+                - 'd'
+                - 'dd'
+                - 'dump'
+                - 'var_dump'
+                - 'extract'
+                - 'curl_*'
+                - 'compact'
+                - 'method_exists'
+                - 'property_exists'
+                - 'spl_autoload_register'
+                - 'spl_autoload_unregister'
+                - array_walk
+    -
+        class: Symplify\PHPStanRules\Rules\SeeAnnotationToTestRule
+        tags: [phpstan.rules.rule]
+        arguments:
+            requiredSeeTypes:
+                - PHPStan\Rules\Rule
+                - PHP_CodeSniffer\Sniffs\Sniff
+                - PHP_CodeSniffer\Fixer

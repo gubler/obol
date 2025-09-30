@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
+use App\Enum\PaymentType;
 use App\Enum\SubscriptionEventType;
 use App\Repository\SubscriptionRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -53,9 +53,7 @@ class Subscription
         #[ORM\Column]
         public private(set) int $paymentPeriodCount,
         #[ORM\Column]
-        public private(set) float $cost,
-        #[ORM\Column(enumType: Currency::class)]
-        public private(set) Currency $currency,
+        public private(set) int $cost,
         #[ORM\Column(type: Types::TEXT)]
         public private(set) string $description = '',
         #[ORM\Column(type: Types::TEXT)]
@@ -71,13 +69,15 @@ class Subscription
 
     public function recordPayment(
         \DateTimeImmutable $paidDate,
-        bool $assumed,
+        PaymentType $paymentType,
+        ?int $amount = null,
     ): void {
         $this->lastPaidDate = $paidDate;
         $this->payments->add(
             new Payment(
                 subscription: $this,
-                assumed: $assumed,
+                type: $paymentType,
+                amount: $amount ?? $this->cost,
                 createdAt: $paidDate,
             )
         );
@@ -92,61 +92,25 @@ class Subscription
         string $logo,
         PaymentPeriod $paymentPeriod,
         int $paymentPeriodCount,
-        float $cost,
-        Currency $currency,
+        int $cost,
     ): void {
-        $costChangeContext = [];
-        $updateContext = [];
+        $updateFields = [
+            'category' => ['new' => $category, 'format' => fn ($c) => $c->name],
+            'name' => ['new' => $name, 'format' => null],
+            'lastPaidDate' => ['new' => $lastPaidDate, 'format' => fn ($d) => $d->format('Y-m-d')],
+            'description' => ['new' => $description, 'format' => null],
+            'link' => ['new' => $link, 'format' => null],
+            'logo' => ['new' => $logo, 'format' => null],
+        ];
 
-        if ($this->category !== $category) {
-            $updateContext['category']['old'] = $this->category->name;
-            $updateContext['category']['new'] = $category->name;
-        }
+        $costFields = [
+            'paymentPeriod' => ['new' => $paymentPeriod, 'format' => fn ($p) => $p->value],
+            'paymentPeriodCount' => ['new' => $paymentPeriodCount, 'format' => null],
+            'cost' => ['new' => $cost, 'format' => null],
+        ];
 
-        if ($this->name !== $name) {
-            $updateContext['name']['old'] = $this->name;
-            $updateContext['name']['new'] = $name;
-        }
-
-        if ($this->lastPaidDate !== $lastPaidDate) {
-            $updateContext['lastPaidDate']['old'] = $this->lastPaidDate->format('Y-m-d');
-            $updateContext['lastPaidDate']['new'] = $lastPaidDate->format('Y-m-d');
-        }
-
-        if ($this->description !== $description) {
-            $updateContext['description']['old'] = $this->description;
-            $updateContext['description']['new'] = $description;
-        }
-
-        if ($this->link !== $link) {
-            $updateContext['link']['old'] = $this->link;
-            $updateContext['link']['new'] = $link;
-        }
-
-        if ($this->logo !== $logo) {
-            $updateContext['logo']['old'] = $this->logo;
-            $updateContext['logo']['new'] = $logo;
-        }
-
-        if ($this->paymentPeriod !== $paymentPeriod) {
-            $costChangeContext['paymentPeriod']['old'] = $this->paymentPeriod->value;
-            $costChangeContext['paymentPeriod']['new'] = $paymentPeriod->value;
-        }
-
-        if ($this->paymentPeriodCount !== $paymentPeriodCount) {
-            $costChangeContext['paymentPeriodCount']['old'] = $this->paymentPeriodCount;
-            $costChangeContext['paymentPeriodCount']['new'] = $paymentPeriodCount;
-        }
-
-        if ($this->cost !== $cost) {
-            $costChangeContext['cost']['old'] = $this->cost;
-            $costChangeContext['cost']['new'] = $cost;
-        }
-
-        if ($this->currency !== $currency) {
-            $costChangeContext['currency']['old'] = $this->currency->value;
-            $costChangeContext['currency']['new'] = $currency->value;
-        }
+        $updateContext = $this->buildChangeContext($updateFields);
+        $costChangeContext = $this->buildChangeContext($costFields);
 
         if ([] !== $updateContext) {
             $event = new SubscriptionEvent(
@@ -165,6 +129,16 @@ class Subscription
             );
             $this->subscriptionEvents->add($event);
         }
+
+        $this->category = $category;
+        $this->name = $name;
+        $this->lastPaidDate = $lastPaidDate;
+        $this->description = $description;
+        $this->link = $link;
+        $this->logo = $logo;
+        $this->paymentPeriod = $paymentPeriod;
+        $this->paymentPeriodCount = $paymentPeriodCount;
+        $this->cost = $cost;
     }
 
     public function archive(): void
@@ -189,5 +163,27 @@ class Subscription
                 context: [],
             )
         );
+    }
+
+    private function buildChangeContext(array $fieldMap): array
+    {
+        $context = [];
+        foreach ($fieldMap as $field => $formatter) {
+            $oldValue = $this->{$field};
+            $newValue = $formatter['new'];
+
+            if ($oldValue !== $newValue) {
+                $context[$field] = [
+                    'old' => \is_callable($formatter['format'])
+                        ? $formatter['format']($oldValue)
+                        : $oldValue,
+                    'new' => \is_callable($formatter['format'])
+                        ? $formatter['format']($newValue)
+                        : $newValue,
+                ];
+            }
+        }
+
+        return $context;
     }
 }

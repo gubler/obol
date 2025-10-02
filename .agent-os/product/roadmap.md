@@ -13,7 +13,7 @@ The following foundation work has been implemented:
   - Entities should only be able to be created/updated into a valid state
     - create their own ID
     - required fields passed in constructor
-    - update methods that maintain a valid state 
+    - update methods that maintain a valid state
 
 - [x] **Event Sourcing Architecture** - Complete change tracking
   - All subscription changes create audit events
@@ -36,10 +36,27 @@ The following foundation work has been implemented:
   - Docker support (compose.yaml)
   - Mise task runner configuration
 
+- [x] **Foundry Factories** - Test data creation with Zenstruck Foundry
+  - Category, Payment, Subscription, and SubscriptionEvent factories
+  - State methods for common scenarios (archived, with recent payment, etc.)
+  - Factory tests ensuring valid entity creation
+
+- [x] **Unit Tests for Domain Entities** - Comprehensive test coverage
+  - Category entity tests with state validation
+  - Payment entity tests with state validation
+  - SubscriptionEvent entity tests with context validation
+  - Subscription entity tests with business logic coverage
+  - All entities use beberlei assertions for runtime validation
+
+- [x] **Data Fixtures** - Realistic development fixtures with AppFixtures
+  - 8 categories with descriptive names
+  - 10 subscriptions with variety (different payment periods, costs, archived states)
+  - Realistic payment history for subscriptions
+  - Subscription events reflecting update history
+
 ## Phase 0: Existing Code cleanup (Current Development)
 
-- [ ] **Data Fixtures** - Test data setup with Zenstruck Foundry
-- [ ] Tests for existing code
+Currently no outstanding Phase 0 tasks.
 
 ## Phase 1: CRUD Operations
 

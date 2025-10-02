@@ -33,12 +33,21 @@ final class SubscriptionEventFactory extends PersistentProxyObjectFactory{
      */
     protected function defaults(): array|callable
     {
-        return [
-            'context' => [],
-            'createdAt' => \DateTimeImmutable::createFromMutable(self::faker()->dateTime()),
-            'subscription' => SubscriptionFactory::new(),
-            'type' => self::faker()->randomElement(SubscriptionEventType::cases()),
-        ];
+        return function () {
+            $type = self::faker()->randomElement(SubscriptionEventType::cases());
+            $context = match ($type) {
+                SubscriptionEventType::Update => ['name' => ['old' => 'Old Name', 'new' => 'New Name']],
+                SubscriptionEventType::CostChange => ['cost' => ['old' => 1000, 'new' => 1500]],
+                SubscriptionEventType::Archive, SubscriptionEventType::Unarchive => [],
+            };
+
+            return [
+                'context' => $context,
+                'createdAt' => \DateTimeImmutable::createFromMutable(self::faker()->dateTime()),
+                'subscription' => SubscriptionFactory::new(),
+                'type' => $type,
+            ];
+        };
     }
 
     /**
@@ -53,21 +62,33 @@ final class SubscriptionEventFactory extends PersistentProxyObjectFactory{
 
     public function update(): static
     {
-        return $this->with(['type' => SubscriptionEventType::Update]);
+        return $this->with([
+            'type' => SubscriptionEventType::Update,
+            'context' => ['name' => ['old' => 'Old Name', 'new' => 'New Name']],
+        ]);
     }
 
     public function costChange(): static
     {
-        return $this->with(['type' => SubscriptionEventType::CostChange]);
+        return $this->with([
+            'type' => SubscriptionEventType::CostChange,
+            'context' => ['cost' => ['old' => 1000, 'new' => 1500]],
+        ]);
     }
 
     public function archive(): static
     {
-        return $this->with(['type' => SubscriptionEventType::Archive]);
+        return $this->with([
+            'type' => SubscriptionEventType::Archive,
+            'context' => [],
+        ]);
     }
 
     public function unarchive(): static
     {
-        return $this->with(['type' => SubscriptionEventType::Unarchive]);
+        return $this->with([
+            'type' => SubscriptionEventType::Unarchive,
+            'context' => [],
+        ]);
     }
 }

@@ -8,6 +8,7 @@ use App\Enum\PaymentPeriod;
 use App\Enum\PaymentType;
 use App\Enum\SubscriptionEventType;
 use App\Repository\SubscriptionRepository;
+use Assert\Assertion;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -40,31 +41,64 @@ class Subscription
     #[ORM\OneToMany(targetEntity: SubscriptionEvent::class, mappedBy: 'subscription', cascade: ['persist', 'remove'], orphanRemoval: true)]
     public private(set) Collection $subscriptionEvents;
 
+    #[ORM\ManyToOne(inversedBy: 'subscriptions')]
+    #[ORM\JoinColumn(nullable: false)]
+    public private(set) Category $category;
+
+    #[ORM\Column(length: 255)]
+    public private(set) string $name;
+
+    #[ORM\Column]
+    public private(set) \DateTimeImmutable $lastPaidDate;
+
+    #[ORM\Column(enumType: PaymentPeriod::class)]
+    public private(set) PaymentPeriod $paymentPeriod;
+
+    #[ORM\Column]
+    public private(set) int $paymentPeriodCount;
+
+    #[ORM\Column]
+    public private(set) int $cost;
+
+    #[ORM\Column(type: Types::TEXT)]
+    public private(set) string $description;
+
+    #[ORM\Column(type: Types::TEXT)]
+    public private(set) string $link;
+
+    #[ORM\Column(length: 255)]
+    public private(set) string $logo;
+
     public function __construct(
-        #[ORM\ManyToOne(inversedBy: 'subscriptions')]
-        #[ORM\JoinColumn(nullable: false)]
-        public private(set) Category $category,
-        #[ORM\Column(length: 255)]
-        public private(set) string $name,
-        #[ORM\Column]
-        public private(set) \DateTimeImmutable $lastPaidDate,
-        #[ORM\Column(enumType: PaymentPeriod::class)]
-        public private(set) PaymentPeriod $paymentPeriod,
-        #[ORM\Column]
-        public private(set) int $paymentPeriodCount,
-        #[ORM\Column]
-        public private(set) int $cost,
-        #[ORM\Column(type: Types::TEXT)]
-        public private(set) string $description = '',
-        #[ORM\Column(type: Types::TEXT)]
-        public private(set) string $link = '',
-        #[ORM\Column(length: 255)]
-        public private(set) string $logo = '',
+        Category $category,
+        string $name,
+        \DateTimeImmutable $lastPaidDate,
+        PaymentPeriod $paymentPeriod,
+        int $paymentPeriodCount,
+        int $cost,
+        string $description = '',
+        string $link = '',
+        string $logo = '',
     ) {
+        $name = trim(string: $name);
+        Assertion::notEq(value1: $name, value2: '', message: 'Subscription name cannot be empty');
+        Assertion::greaterThan(value: $cost, limit: 0, message: 'Subscription cost must be greater than zero');
+        Assertion::greaterThan(value: $paymentPeriodCount, limit: 0, message: 'Payment period count must be greater than zero');
+
         $this->id = new Ulid();
         $this->createdAt = new \DateTimeImmutable();
         $this->payments = new ArrayCollection();
         $this->subscriptionEvents = new ArrayCollection();
+
+        $this->category = $category;
+        $this->name = $name;
+        $this->lastPaidDate = $lastPaidDate;
+        $this->paymentPeriod = $paymentPeriod;
+        $this->paymentPeriodCount = $paymentPeriodCount;
+        $this->cost = $cost;
+        $this->description = $description;
+        $this->link = $link;
+        $this->logo = $logo;
     }
 
     public function recordPayment(

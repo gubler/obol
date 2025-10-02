@@ -1,0 +1,43 @@
+name: "Tests"
+
+on:
+    pull_request:
+    push:
+        branches:
+            - main
+
+env:
+    fail-fast: true
+
+permissions:
+    contents: read
+
+jobs:
+    test:
+        name: 'PHPUnit Tests'
+        runs-on: 'ubuntu-latest'
+        continue-on-error: false
+
+        steps:
+            - name: "Checkout code"
+              uses: actions/checkout@v5
+
+            - name: "Install PHP with extensions"
+              uses: shivammathur/setup-php@v2
+              with:
+                  coverage: "none"
+                  extensions: "intl, mbstring, pdo_sqlite, zip"
+                  php-version: 8.4
+                  tools: composer:v2
+
+            - name: "Install dependencies"
+              run: composer install --ansi --no-interaction --no-progress
+
+            - name: "Build and compile assets"
+              run: |
+                  php bin/console importmap:install
+                  php bin/console asset-map:compile
+                  php bin/console tailwind:build
+
+            - name: "Run tests"
+              run: vendor/bin/phpunit

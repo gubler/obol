@@ -107,6 +107,8 @@
 ### Version Control
 - **Git** - Source control
   - **Conventional Commits** for commit message format
+- **Gitea** - Source Code Testing
+  - `tea` CLI app for interacting with Gitea
 
 ## Infrastructure
 

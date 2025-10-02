@@ -6,7 +6,7 @@ run = [
 [tasks.test]
 description = "Tests via Pest"
 run = [
-    "php vendor/bin/pest"
+    "php vendor/bin/phpunit"
 ]
 [tasks.cs]
 description = "Code Style via PHP CS Fixer"

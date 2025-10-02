@@ -30,10 +30,9 @@ final class SubscriptionEventFactory extends PersistentProxyObjectFactory{
 
         /**
      * @see https://symfony.com/bundles/ZenstruckFoundryBundle/current/index.html#model-factories
-     *
-     * @todo add your default values here
      */
-    protected function defaults(): array|callable    {
+    protected function defaults(): array|callable
+    {
         return [
             'context' => [],
             'createdAt' => \DateTimeImmutable::createFromMutable(self::faker()->dateTime()),
@@ -42,7 +41,7 @@ final class SubscriptionEventFactory extends PersistentProxyObjectFactory{
         ];
     }
 
-        /**
+    /**
      * @see https://symfony.com/bundles/ZenstruckFoundryBundle/current/index.html#initialization
      */
     protected function initialize(): static
@@ -50,5 +49,25 @@ final class SubscriptionEventFactory extends PersistentProxyObjectFactory{
         return $this
             // ->afterInstantiate(function(SubscriptionEvent $subscriptionEvent): void {})
         ;
+    }
+
+    public function update(): static
+    {
+        return $this->with(['type' => SubscriptionEventType::Update]);
+    }
+
+    public function costChange(): static
+    {
+        return $this->with(['type' => SubscriptionEventType::CostChange]);
+    }
+
+    public function archive(): static
+    {
+        return $this->with(['type' => SubscriptionEventType::Archive]);
+    }
+
+    public function unarchive(): static
+    {
+        return $this->with(['type' => SubscriptionEventType::Unarchive]);
     }
 }

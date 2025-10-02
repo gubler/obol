@@ -30,19 +30,18 @@ final class PaymentFactory extends PersistentProxyObjectFactory{
 
         /**
      * @see https://symfony.com/bundles/ZenstruckFoundryBundle/current/index.html#model-factories
-     *
-     * @todo add your default values here
      */
-    protected function defaults(): array|callable    {
+    protected function defaults(): array|callable
+    {
         return [
-            'amount' => self::faker()->randomNumber(),
+            'amount' => self::faker()->numberBetween(500, 5000),
             'createdAt' => \DateTimeImmutable::createFromMutable(self::faker()->dateTime()),
             'subscription' => SubscriptionFactory::new(),
             'type' => self::faker()->randomElement(PaymentType::cases()),
         ];
     }
 
-        /**
+    /**
      * @see https://symfony.com/bundles/ZenstruckFoundryBundle/current/index.html#initialization
      */
     protected function initialize(): static
@@ -50,5 +49,15 @@ final class PaymentFactory extends PersistentProxyObjectFactory{
         return $this
             // ->afterInstantiate(function(Payment $payment): void {})
         ;
+    }
+
+    public function regular(): static
+    {
+        return $this->with(['type' => PaymentType::Verified]);
+    }
+
+    public function generated(): static
+    {
+        return $this->with(['type' => PaymentType::Generated]);
     }
 }

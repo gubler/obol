@@ -31,13 +31,13 @@ class Subscription
     /**
      * @var Collection<int, Payment>
      */
-    #[ORM\OneToMany(targetEntity: Payment::class, mappedBy: 'subscription', orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Payment::class, mappedBy: 'subscription', cascade: ['persist', 'remove'], orphanRemoval: true)]
     public private(set) Collection $payments;
 
     /**
      * @var Collection<int, SubscriptionEvent>
      */
-    #[ORM\OneToMany(targetEntity: SubscriptionEvent::class, mappedBy: 'subscription', orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: SubscriptionEvent::class, mappedBy: 'subscription', cascade: ['persist', 'remove'], orphanRemoval: true)]
     public private(set) Collection $subscriptionEvents;
 
     public function __construct(

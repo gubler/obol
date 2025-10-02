@@ -2,16 +2,16 @@
 
 ## Tasks
 
-- [ ] 1. Enhance Foundry Factories with Defaults and State Methods
-  - [ ] 1.1 Write tests for CategoryFactory defaults and state methods
-  - [ ] 1.2 Implement CategoryFactory with sensible defaults (name generation)
-  - [ ] 1.3 Write tests for PaymentFactory defaults and state methods
-  - [ ] 1.4 Implement PaymentFactory with defaults and state methods (->regular(), ->priceChange())
-  - [ ] 1.5 Write tests for SubscriptionEventFactory defaults and state methods
-  - [ ] 1.6 Implement SubscriptionEventFactory with defaults and state methods (->update(), ->costChange(), ->archive(), ->unarchive())
-  - [ ] 1.7 Write tests for SubscriptionFactory defaults and state methods
-  - [ ] 1.8 Implement SubscriptionFactory with defaults and state methods (->archived(), ->withRecentPayment(), ->expensiveSubscription())
-  - [ ] 1.9 Verify all factory tests pass
+- [x] 1. Enhance Foundry Factories with Defaults and State Methods
+  - [x] 1.1 Write tests for CategoryFactory defaults and state methods
+  - [x] 1.2 Implement CategoryFactory with sensible defaults (name generation)
+  - [x] 1.3 Write tests for PaymentFactory defaults and state methods
+  - [x] 1.4 Implement PaymentFactory with defaults and state methods (->regular(), ->generated())
+  - [x] 1.5 Write tests for SubscriptionEventFactory defaults and state methods
+  - [x] 1.6 Implement SubscriptionEventFactory with defaults and state methods (->update(), ->costChange(), ->archive(), ->unarchive())
+  - [x] 1.7 Write tests for SubscriptionFactory defaults and state methods
+  - [x] 1.8 Implement SubscriptionFactory with defaults and state methods (->archived(), ->withRecentPayment(), ->expensiveSubscription())
+  - [x] 1.9 Verify all factory tests pass
 
 - [ ] 2. Unit Tests and State Validation for Category Entity
   - [ ] 2.1 Write tests for Category creation with valid state

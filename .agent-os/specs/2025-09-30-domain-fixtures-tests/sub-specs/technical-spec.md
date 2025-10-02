@@ -16,7 +16,7 @@ This is the technical specification for the spec detailed in @.agent-os/specs/20
 - **State Methods**: Each factory should include fluent state modifiers:
   - `SubscriptionFactory`: `->archived()`, `->withRecentPayment()`, `->expensiveSubscription()`
   - `SubscriptionEventFactory`: `->update()`, `->costChange()`, `->archive()`, `->unarchive()`
-  - `PaymentFactory`: `->regular()`, `->priceChange()`
+  - `PaymentFactory`: `->regular()`, `->generated()`
 - **Relationships**: Factories should handle related entities automatically (e.g., Subscription needs Category)
 
 ### Unit Test Structure

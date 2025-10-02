@@ -30,8 +30,7 @@
   - Named arguments
 
 ### Testing
-- **Pest PHP 4.0** - Testing framework with expressive syntax
-- **PHPUnit 12.3+** - Underlying test runner
+- **PHPUnit 12.3+** - Test automation tool
 - **Zenstruck Foundry 2.6+** - Fixture factories
 
 **CRITICAL DEVELOPMENT PRACTICE:**
@@ -108,6 +107,8 @@
 ### Version Control
 - **Git** - Source control
   - **Conventional Commits** for commit message format
+- **Gitea** - Source Code Testing
+  - `tea` CLI app for interacting with Gitea
 
 ## Infrastructure
 

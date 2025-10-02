@@ -4,56 +4,63 @@ namespace App\Factory;
 
 use App\Entity\Subscription;
 use App\Enum\PaymentPeriod;
-use App\Repository\SubscriptionRepository;
-use Doctrine\ORM\EntityRepository;
 use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
-use Zenstruck\Foundry\Persistence\Proxy;
-use Zenstruck\Foundry\Persistence\ProxyRepositoryDecorator;
 
 /**
  * @extends PersistentProxyObjectFactory<Subscription>
  */
-final class SubscriptionFactory extends PersistentProxyObjectFactory{
-    /**
-     * @see https://symfony.com/bundles/ZenstruckFoundryBundle/current/index.html#factories-as-services
-     *
-     * @todo inject services if required
-     */
-    public function __construct()
-    {
-    }
-
+final class SubscriptionFactory extends PersistentProxyObjectFactory
+{
     public static function class(): string
     {
         return Subscription::class;
     }
 
-        /**
-     * @see https://symfony.com/bundles/ZenstruckFoundryBundle/current/index.html#model-factories
-     *
-     * @todo add your default values here
-     */
-    protected function defaults(): array|callable    {
+    protected function defaults(): array|callable
+    {
         return [
             'category' => CategoryFactory::new(),
-            'cost' => self::faker()->randomNumber(),
-            'description' => self::faker()->text(),
-            'lastPaidDate' => \DateTimeImmutable::createFromMutable(self::faker()->dateTime()),
-            'link' => self::faker()->text(),
-            'logo' => self::faker()->text(255),
-            'name' => self::faker()->text(255),
+            'cost' => self::faker()->numberBetween(500, 3000),
+            'description' => self::faker()->sentence(),
+            'lastPaidDate' => \DateTimeImmutable::createFromMutable(self::faker()->dateTimeBetween('-60 days', 'now')),
+            'link' => self::faker()->url(),
+            'logo' => '',
+            'name' => self::faker()->words(2, true),
             'paymentPeriod' => self::faker()->randomElement(PaymentPeriod::cases()),
-            'paymentPeriodCount' => self::faker()->randomNumber(),
+            'paymentPeriodCount' => 1,
         ];
     }
 
-        /**
+    /**
      * @see https://symfony.com/bundles/ZenstruckFoundryBundle/current/index.html#initialization
      */
     protected function initialize(): static
     {
-        return $this
-            // ->afterInstantiate(function(Subscription $subscription): void {})
-        ;
+        return $this;
+        // ->afterInstantiate(function(Subscription $subscription): void {})
+    }
+
+    public function archived(): self
+    {
+        return $this->afterInstantiate(function (Subscription $subscription): void {
+            $subscription->archive();
+        });
+    }
+
+    public function withRecentPayment(): self
+    {
+        return $this->afterInstantiate(function (Subscription $subscription): void {
+            PaymentFactory::createOne([
+                'subscription' => $subscription,
+                'createdAt' => new \DateTimeImmutable('-5 days'),
+            ]);
+        });
+    }
+
+    public function expensiveSubscription(): self
+    {
+        return $this->with([
+            'cost' => self::faker()->numberBetween(5000, 15000),
+        ]);
     }
 }

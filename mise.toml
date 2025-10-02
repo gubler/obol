@@ -13,6 +13,11 @@ description = "Code Style via PHP CS Fixer"
 run = [
     "php vendor/bin/php-cs-fixer fix"
 ]
+[tasks."cs:twig"]
+description = "Twig Code Style"
+run = [
+    "php vendor/bin/twig-cs-fixer fix"
+]
 [tasks.rector]
 description = "Refactoring via Rector"
 run = [

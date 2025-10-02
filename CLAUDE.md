@@ -21,37 +21,37 @@ php -S localhost:8000 -t public
 
 ### Testing
 ```bash
-# Run all tests via Pest
-php vendor/bin/pest
+# Prefer running tests via mise
+mise run test
+
+# If needing direct PHPUnit access
+php vendor/bin/phpunit
 
 # Run specific test suite
-php vendor/bin/pest --testsuite=Unit
-php vendor/bin/pest --testsuite=Feature
+mise run test --testsuite=Unit
+mise run test --testsuite=Feature
 
 # Run single test file
-php vendor/bin/pest tests/Unit/SomeTest.php
+mise run test tests/Unit/SomeTest.php
 ```
 
 ### Code Quality
 ```bash
 # PHPStan static analysis (level 9)
-php vendor/bin/phpstan --memory-limit=4G analyze
+mise run sa
 
 # Fix code style with PHP CS Fixer
-php vendor/bin/php-cs-fixer fix
+mise run cs
 
 # Run Rector refactoring
-php vendor/bin/rector
+mise run rector
 
 # Fix Twig templates
-php vendor/bin/twig-cs-fixer lint --fix
+mise run cs:twig
 ```
 
 ### Database
 ```bash
-# Create database
-php bin/console doctrine:database:create
-
 # Run migrations
 php bin/console doctrine:migrations:migrate
 
@@ -65,6 +65,7 @@ If `mise` is installed, use these shortcuts:
 mise run sa        # Static analysis
 mise run test      # Run tests
 mise run cs        # Fix code style
+mise run cs:twig   # Fix twig code style
 mise run rector    # Run Rector
 ```
 

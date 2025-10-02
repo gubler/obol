@@ -40,11 +40,11 @@
   - [x] 5.6 Write tests for Subscription invalid state scenarios
   - [x] 5.7 Verify all Subscription tests pass and invalid states throw exceptions
 
-- [ ] 6. Development Fixtures with Realistic Test Data
-  - [ ] 6.1 Update AppFixtures to use Foundry factories
-  - [ ] 6.2 Create 5-10 categories with descriptive names
-  - [ ] 6.3 Create 20-30 subscriptions with variety (payment periods, costs, some archived)
-  - [ ] 6.4 Create realistic payments for subscriptions (2-5 each)
-  - [ ] 6.5 Create subscription events reflecting history
-  - [ ] 6.6 Test fixtures load successfully with `php bin/console doctrine:fixtures:load`
-  - [ ] 6.7 Verify all unit tests still pass after fixtures implementation
+- [x] 6. Development Fixtures with Realistic Test Data
+  - [x] 6.1 Update AppFixtures to use Foundry factories
+  - [x] 6.2 Create 5-10 categories with descriptive names
+  - [x] 6.3 Create 20-30 subscriptions with variety (payment periods, costs, some archived)
+  - [x] 6.4 Create realistic payments for subscriptions (2-5 each)
+  - [x] 6.5 Create subscription events reflecting history
+  - [x] 6.6 Test fixtures load successfully with `php bin/console doctrine:fixtures:load`
+  - [x] 6.7 Verify all unit tests still pass after fixtures implementation

@@ -8,7 +8,9 @@
       "Read(//Users/dev88/.claude/**)",
       "Bash(git commit -m \"$(cat <<''EOF''\nchore: update Claude settings\n\nUpdate local Claude configuration settings.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(fd:*)",
-      "Bash(afplay:*)"
+      "Bash(afplay:*)",
+      "Bash(mkdir:*)",
+      "Bash(mise run sa:*)"
     ],
     "deny": [],
     "ask": []

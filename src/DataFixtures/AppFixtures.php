@@ -8,7 +8,6 @@ declare(strict_types=1);
 namespace App\DataFixtures;
 
 use App\Factory\CategoryFactory;
-use App\Factory\PaymentFactory;
 use App\Factory\SubscriptionFactory;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
@@ -20,7 +19,7 @@ class AppFixtures extends Fixture
         // Create categories
         $entertainment = CategoryFactory::createOne(['name' => 'Entertainment']);
         $productivity = CategoryFactory::createOne(['name' => 'Productivity']);
-        $utilities = CategoryFactory::createOne(['name' => 'Utilities']);
+        CategoryFactory::createOne(['name' => 'Utilities']);
         $news = CategoryFactory::createOne(['name' => 'News & Media']);
         $software = CategoryFactory::createOne(['name' => 'Software Development']);
         $fitness = CategoryFactory::createOne(['name' => 'Health & Fitness']);
@@ -64,7 +63,7 @@ class AppFixtures extends Fixture
         ]);
 
         // Create some archived subscriptions
-        $archivedHulu = SubscriptionFactory::createOne([
+        SubscriptionFactory::createOne([
             'category' => $entertainment,
             'name' => 'Hulu',
             'cost' => 1299,
@@ -72,7 +71,7 @@ class AppFixtures extends Fixture
         ])->archive();
 
         // Create subscriptions with different payment periods
-        $dropbox = SubscriptionFactory::createOne([
+        SubscriptionFactory::createOne([
             'category' => $storage,
             'name' => 'Dropbox Plus',
             'cost' => 11990,
@@ -81,21 +80,21 @@ class AppFixtures extends Fixture
             'description' => 'Cloud storage',
         ]);
 
-        $adobe = SubscriptionFactory::createOne([
+        SubscriptionFactory::createOne([
             'category' => $software,
             'name' => 'Adobe Creative Cloud',
             'cost' => 5499,
             'description' => 'Creative software suite',
         ]);
 
-        $gymMembership = SubscriptionFactory::createOne([
+        SubscriptionFactory::createOne([
             'category' => $fitness,
             'name' => 'Gym Membership',
             'cost' => 4500,
             'description' => 'Monthly gym access',
         ]);
 
-        $udemy = SubscriptionFactory::createOne([
+        SubscriptionFactory::createOne([
             'category' => $education,
             'name' => 'Udemy Pro',
             'cost' => 1999,

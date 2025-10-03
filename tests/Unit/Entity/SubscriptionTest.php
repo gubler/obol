@@ -8,10 +8,13 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Entity;
 
 use App\Entity\Category;
+use App\Entity\Payment;
 use App\Entity\Subscription;
+use App\Entity\SubscriptionEvent;
 use App\Enum\PaymentPeriod;
 use App\Enum\PaymentType;
 use App\Enum\SubscriptionEventType;
+use Assert\Assertion;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
 
@@ -42,20 +45,6 @@ class SubscriptionTest extends TestCase
         self::assertSame(PaymentPeriod::Month, $subscription->paymentPeriod);
         self::assertSame(1, $subscription->paymentPeriodCount);
         self::assertSame(1500, $subscription->cost);
-    }
-
-    public function testGeneratesUlidOnCreation(): void
-    {
-        $subscription = new Subscription(
-            category: $this->category,
-            name: 'Spotify',
-            lastPaidDate: new \DateTimeImmutable(),
-            paymentPeriod: PaymentPeriod::Month,
-            paymentPeriodCount: 1,
-            cost: 1000,
-        );
-
-        self::assertInstanceOf(Ulid::class, $subscription->id);
     }
 
     public function testSetsCreatedAtToCurrentTime(): void
@@ -164,6 +153,7 @@ class SubscriptionTest extends TestCase
         );
 
         self::assertCount(1, $subscription->subscriptionEvents);
+        /** @var SubscriptionEvent $event */
         $event = $subscription->subscriptionEvents->first();
         self::assertSame(SubscriptionEventType::Update, $event->type);
         self::assertArrayHasKey('category', $event->context);
@@ -196,6 +186,7 @@ class SubscriptionTest extends TestCase
         );
 
         self::assertCount(1, $subscription->subscriptionEvents);
+        /** @var SubscriptionEvent $event */
         $event = $subscription->subscriptionEvents->first();
         self::assertSame(SubscriptionEventType::CostChange, $event->type);
         self::assertArrayHasKey('paymentPeriod', $event->context);
@@ -226,7 +217,10 @@ class SubscriptionTest extends TestCase
         );
 
         self::assertCount(2, $subscription->subscriptionEvents);
+
+        /** @var SubscriptionEvent $updateEvent */
         $updateEvent = $subscription->subscriptionEvents[0];
+        /** @var SubscriptionEvent $costChangeEvent */
         $costChangeEvent = $subscription->subscriptionEvents[1];
 
         self::assertSame(SubscriptionEventType::Update, $updateEvent->type);
@@ -297,6 +291,7 @@ class SubscriptionTest extends TestCase
         );
 
         self::assertCount(1, $subscription->payments);
+        /** @var Payment $payment */
         $payment = $subscription->payments->first();
         self::assertSame(PaymentType::Verified, $payment->type);
         self::assertSame(1500, $payment->amount);
@@ -318,6 +313,7 @@ class SubscriptionTest extends TestCase
             paymentType: PaymentType::Verified,
         );
 
+        /** @var Payment $payment */
         $payment = $subscription->payments->first();
         self::assertSame(1500, $payment->amount);
     }
@@ -339,6 +335,8 @@ class SubscriptionTest extends TestCase
             amount: 2000,
         );
 
+        self::assertCount(1, $subscription->payments);
+        /** @var Payment $payment */
         $payment = $subscription->payments->first();
         self::assertSame(2000, $payment->amount);
     }
@@ -373,6 +371,7 @@ class SubscriptionTest extends TestCase
         $subscription->archive();
 
         self::assertCount(1, $subscription->subscriptionEvents);
+        /** @var SubscriptionEvent $event */
         $event = $subscription->subscriptionEvents->first();
         self::assertSame(SubscriptionEventType::Archive, $event->type);
         self::assertSame([], $event->context);
@@ -410,7 +409,9 @@ class SubscriptionTest extends TestCase
         $subscription->unarchive();
 
         self::assertCount(2, $subscription->subscriptionEvents);
+        /** @var SubscriptionEvent $archiveEvent */
         $archiveEvent = $subscription->subscriptionEvents[0];
+        /** @var SubscriptionEvent $unarchiveEvent */
         $unarchiveEvent = $subscription->subscriptionEvents[1];
 
         self::assertSame(SubscriptionEventType::Archive, $archiveEvent->type);

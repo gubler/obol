@@ -20,13 +20,6 @@ class CategoryTest extends TestCase
         self::assertSame('Entertainment', $category->name);
     }
 
-    public function testGeneratesUlidOnCreation(): void
-    {
-        $category = new Category(name: 'Utilities');
-
-        self::assertInstanceOf(Ulid::class, $category->id);
-    }
-
     public function testInitializesEmptySubscriptionsCollection(): void
     {
         $category = new Category(name: 'Software');

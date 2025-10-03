@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Factory;
 
 use App\Entity\Subscription;
@@ -16,7 +18,10 @@ final class SubscriptionFactory extends PersistentProxyObjectFactory
         return Subscription::class;
     }
 
-    protected function defaults(): array|callable
+    /**
+     * @return array<string, mixed>
+     */
+    protected function defaults(): array
     {
         return [
             'category' => CategoryFactory::new(),

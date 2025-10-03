@@ -1,40 +1,31 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Factory;
 
 use App\Entity\SubscriptionEvent;
 use App\Enum\SubscriptionEventType;
-use App\Repository\SubscriptionEventRepository;
-use Doctrine\ORM\EntityRepository;
 use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
-use Zenstruck\Foundry\Persistence\Proxy;
-use Zenstruck\Foundry\Persistence\ProxyRepositoryDecorator;
 
 /**
  * @extends PersistentProxyObjectFactory<SubscriptionEvent>
  */
-final class SubscriptionEventFactory extends PersistentProxyObjectFactory{
-    /**
-     * @see https://symfony.com/bundles/ZenstruckFoundryBundle/current/index.html#factories-as-services
-     *
-     * @todo inject services if required
-     */
-    public function __construct()
-    {
-    }
-
+final class SubscriptionEventFactory extends PersistentProxyObjectFactory
+{
     public static function class(): string
     {
         return SubscriptionEvent::class;
     }
 
-        /**
-     * @see https://symfony.com/bundles/ZenstruckFoundryBundle/current/index.html#model-factories
-     */
-    protected function defaults(): array|callable
+    protected function defaults(): callable
     {
         return function () {
             $type = self::faker()->randomElement(SubscriptionEventType::cases());
+            if (!$type instanceof SubscriptionEventType) {
+                throw new \InvalidArgumentException('Type not an instance of SubscriptionEventType');
+            }
+
             $context = match ($type) {
                 SubscriptionEventType::Update => ['name' => ['old' => 'Old Name', 'new' => 'New Name']],
                 SubscriptionEventType::CostChange => ['cost' => ['old' => 1000, 'new' => 1500]],
@@ -48,16 +39,6 @@ final class SubscriptionEventFactory extends PersistentProxyObjectFactory{
                 'type' => $type,
             ];
         };
-    }
-
-    /**
-     * @see https://symfony.com/bundles/ZenstruckFoundryBundle/current/index.html#initialization
-     */
-    protected function initialize(): static
-    {
-        return $this
-            // ->afterInstantiate(function(SubscriptionEvent $subscriptionEvent): void {})
-        ;
     }
 
     public function update(): static

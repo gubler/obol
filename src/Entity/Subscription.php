@@ -7,6 +7,8 @@ namespace App\Entity;
 use App\Enum\PaymentPeriod;
 use App\Enum\PaymentType;
 use App\Enum\SubscriptionEventType;
+use App\Lib\ChangeContextGenerator\Change;
+use App\Lib\ChangeContextGenerator\ChangeContextGenerator;
 use App\Repository\SubscriptionRepository;
 use Assert\Assertion;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -128,23 +130,27 @@ class Subscription
         int $paymentPeriodCount,
         int $cost,
     ): void {
-        $updateFields = [
-            'category' => ['new' => $category, 'format' => fn ($c) => $c->name],
-            'name' => ['new' => $name, 'format' => null],
-            'lastPaidDate' => ['new' => $lastPaidDate, 'format' => fn ($d) => $d->format('Y-m-d')],
-            'description' => ['new' => $description, 'format' => null],
-            'link' => ['new' => $link, 'format' => null],
-            'logo' => ['new' => $logo, 'format' => null],
-        ];
+        $updateGenerator = new ChangeContextGenerator(
+            changes: [
+                new Change(field: 'category', current: $this->category->name, new: $category->name),
+                new Change(field: 'name', current: $this->name, new: $name),
+                new Change(field: 'lastPaidDate', current: $this->lastPaidDate->format(format: 'c'), new: $lastPaidDate->format(format: 'c')),
+                new Change(field: 'lastPaidDate', current: $this->description, new: $description),
+                new Change(field: 'link', current: $this->link, new: $link),
+                new Change(field: 'logo', current: $this->logo, new: $logo),
+            ]
+        );
 
-        $costFields = [
-            'paymentPeriod' => ['new' => $paymentPeriod, 'format' => fn ($p) => $p->value],
-            'paymentPeriodCount' => ['new' => $paymentPeriodCount, 'format' => null],
-            'cost' => ['new' => $cost, 'format' => null],
-        ];
+        $costChangeGenerator = new ChangeContextGenerator(
+            changes: [
+                new Change(field: 'paymentPeriod', current: $this->paymentPeriod->value, new: $paymentPeriod->value),
+                new Change(field: 'paymentPeriodCost', current: $this->paymentPeriodCount, new: $paymentPeriodCount),
+                new Change(field: 'cost', current: $this->cost, new: $cost),
+            ]
+        );
 
-        $updateContext = $this->buildChangeContext($updateFields);
-        $costChangeContext = $this->buildChangeContext($costFields);
+        $updateContext = $updateGenerator->buildContext();
+        $costChangeContext = $costChangeGenerator->buildContext();
 
         if ([] !== $updateContext) {
             $event = new SubscriptionEvent(
@@ -197,27 +203,5 @@ class Subscription
                 context: [],
             )
         );
-    }
-
-    private function buildChangeContext(array $fieldMap): array
-    {
-        $context = [];
-        foreach ($fieldMap as $field => $formatter) {
-            $oldValue = $this->{$field};
-            $newValue = $formatter['new'];
-
-            if ($oldValue !== $newValue) {
-                $context[$field] = [
-                    'old' => \is_callable($formatter['format'])
-                        ? $formatter['format']($oldValue)
-                        : $oldValue,
-                    'new' => \is_callable($formatter['format'])
-                        ? $formatter['format']($newValue)
-                        : $newValue,
-                ];
-            }
-        }
-
-        return $context;
     }
 }

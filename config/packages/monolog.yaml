@@ -1,27 +1,37 @@
 monolog:
     channels:
-        - deprecation # Deprecations are logged in the dedicated "deprecation" channel when it exists
-
-when@dev:
-    monolog:
-        handlers:
-            main:
-                type: stream
-                path: "%kernel.logs_dir%/%kernel.environment%.log"
-                level: debug
-                channels: ["!event"]
-            # uncomment to get logging in your browser
-            # you may have to allow bigger header sizes in your Web server configuration
-            #firephp:
-            #    type: firephp
-            #    level: info
-            #chromephp:
-            #    type: chromephp
-            #    level: info
-            console:
-                type: console
-                process_psr_3_messages: false
-                channels: ["!event", "!doctrine", "!console"]
+        - app
+        - email
+        - scheduler
+    handlers:
+        symfony:
+            type: rotating_file
+            path: "%kernel.logs_dir%/%kernel.environment%-symfony.log"
+            level: debug
+            channels: [ "!event", "!scheduler", "!email", "!app" ]
+            max_files: 10
+        app:
+            type: rotating_file
+            path: "%kernel.logs_dir%/%kernel.environment%-app.log"
+            level: debug
+            channels: [ "app" ]
+            max_files: 10
+        console:
+            type: console
+            process_psr_3_messages: false
+            channels: [ "!event", "!doctrine", "!console" ]
+        emails:
+            type: rotating_file
+            path: "%kernel.logs_dir%/%kernel.environment%-email.log"
+            channels: [ "email" ]
+            level: debug
+            max_files: 10
+        scheduler:
+            type: rotating_file
+            path: "%kernel.logs_dir%/%kernel.environment%-scheduler.log"
+            channels: [ "scheduler" ]
+            level: debug
+            max_files: 10
 
 when@test:
     monolog:
@@ -30,33 +40,43 @@ when@test:
                 type: fingers_crossed
                 action_level: error
                 handler: nested
-                excluded_http_codes: [404, 405]
-                channels: ["!event"]
+                excluded_http_codes: [ 404, 405 ]
+                channels: [ "!event" ]
             nested:
-                type: stream
+                type: rotating_file
                 path: "%kernel.logs_dir%/%kernel.environment%.log"
                 level: debug
+                max_files: 10
 
-when@prod:
+when@prod: &prod
     monolog:
         handlers:
-            main:
+            symfony:
                 type: fingers_crossed
-                action_level: error
-                handler: nested
-                excluded_http_codes: [404, 405]
-                buffer_size: 50 # How many messages should be saved? Prevent memory leaks
-            nested:
-                type: stream
-                path: php://stderr
-                level: debug
-                formatter: monolog.formatter.json
+                handler: symfony_nested
+                channels: [ "!event", "!scheduler", "!email", "!app" ]
+                excluded_http_codes: [ 404, 405 ]
+            symfony_nested:
+                path: "%kernel.logs_dir%/%kernel.environment%-symfony.log"
+                type: rotating_file
+                max_files: 35
             console:
-                type: console
-                process_psr_3_messages: false
-                channels: ["!event", "!doctrine"]
-            deprecation:
-                type: stream
-                channels: [deprecation]
-                path: php://stderr
-                formatter: monolog.formatter.json
+                channels: [ "!event", "!doctrine" ]
+            app:
+                type: rotating_file
+                path: "%kernel.logs_dir%/%kernel.environment%-app.log"
+                level: info
+                channels: [ "app" ]
+                max_files: 35
+            emails:
+                type: rotating_file
+                path: "%kernel.logs_dir%/%kernel.environment%-email.log"
+                channels: [ "email" ]
+                level: info
+                max_files: 35
+            scheduler:
+                type: rotating_file
+                path: "%kernel.logs_dir%/%kernel.environment%-scheduler.log"
+                channels: [ "scheduler" ]
+                level: info
+                max_files: 35

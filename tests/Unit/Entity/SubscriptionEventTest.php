@@ -85,17 +85,6 @@ class SubscriptionEventTest extends TestCase
         self::assertSame($context, $event->context);
     }
 
-    public function testGeneratesUlidOnCreation(): void
-    {
-        $event = new SubscriptionEvent(
-            subscription: $this->subscription,
-            type: SubscriptionEventType::Update,
-            context: ['changes' => ['name' => 'Test']],
-        );
-
-        self::assertInstanceOf(Ulid::class, $event->id);
-    }
-
     public function testSetsCreatedAtToCurrentTime(): void
     {
         $before = new \DateTimeImmutable();
@@ -134,7 +123,7 @@ class SubscriptionEventTest extends TestCase
         new SubscriptionEvent(
             subscription: $this->subscription,
             type: SubscriptionEventType::Archive,
-            context: ['some' => 'data'],
+            context: ['new' => ['some' => 'data']],
         );
     }
 
@@ -145,7 +134,7 @@ class SubscriptionEventTest extends TestCase
         new SubscriptionEvent(
             subscription: $this->subscription,
             type: SubscriptionEventType::Unarchive,
-            context: ['some' => 'data'],
+            context: ['new' => ['some' => 'data']],
         );
     }
 

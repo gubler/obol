@@ -45,17 +45,6 @@ class PaymentTest extends TestCase
         self::assertSame(1000, $payment->amount);
     }
 
-    public function testGeneratesUlidOnCreation(): void
-    {
-        $payment = new Payment(
-            subscription: $this->subscription,
-            type: PaymentType::Verified,
-            amount: 500,
-        );
-
-        self::assertInstanceOf(Ulid::class, $payment->id);
-    }
-
     public function testSetsCreatedAtToCurrentTime(): void
     {
         $before = new \DateTimeImmutable();

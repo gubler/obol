@@ -1,0 +1,16 @@
+# ABOUTME: Docker ignore file to keep build context small.
+# ABOUTME: Excludes development files, tests, and version control from the Docker image.
+
+.git
+.github
+.claude
+tests/
+var/
+node_modules/
+.env.local
+.env.*.local
+.php-cs-fixer.cache
+phpunit.dist.xml
+phpstan.dist.neon
+rector.php
+.php-cs-fixer.dist.php

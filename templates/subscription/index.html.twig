@@ -34,7 +34,12 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         {% for subscription in subscriptions %}
                             <tr>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ subscription.name }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    {{ subscription.name }}
+                                    {% if subscription.archived %}
+                                        <span class="archived-badge ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Archived</span>
+                                    {% endif %}
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <a href="{{ path('subscription_show', {id: subscription.id}) }}" class="text-blue-600 hover:text-blue-900 mr-3">View</a>
                                     <a href="{{ path('subscription_edit', {id: subscription.id}) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>

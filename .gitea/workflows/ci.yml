@@ -1,4 +1,4 @@
-name: "Lint"
+name: "CI"
 
 on:
     pull_request:
@@ -117,3 +117,73 @@ jobs:
             - name: Run PHPStan
               if: always() && steps.install.outcome == 'success'
               run: vendor/bin/phpstan analyze --no-progress --error-format=github
+
+    test:
+        name: PHPUnit Tests
+        runs-on: ubuntu-latest
+        needs: [php-cs-fixer, twig-cs-fixer, linters]
+        continue-on-error: false
+
+        steps:
+            - name: "Checkout code"
+              uses: actions/checkout@v5
+
+            - name: "Install PHP with extensions"
+              uses: shivammathur/setup-php@v2
+              with:
+                  coverage: "none"
+                  extensions: "intl, mbstring, pdo_sqlite, zip"
+                  php-version: 8.5
+                  tools: composer:v2
+
+            - name: "Cache Composer dependencies"
+              uses: actions/cache@v4
+              with:
+                  path: ~/.composer/cache
+                  key: composer-${{ hashFiles('composer.lock') }}
+                  restore-keys: composer-
+
+            - name: "Install dependencies"
+              run: composer install --ansi --no-interaction --no-progress --prefer-dist
+
+            - name: "Build and compile assets"
+              run: |
+                  php bin/console importmap:install
+                  php bin/console asset-map:compile
+                  php bin/console tailwind:build
+
+            - name: "Run tests"
+              run: vendor/bin/phpunit
+
+    build:
+        name: Build Docker Image
+        runs-on: ubuntu-latest
+        needs: [test]
+        if: gitea.ref == 'refs/heads/main'
+
+        env:
+            REGISTRY: code.dev88.work
+            IMAGE: code.dev88.work/dev88/obol
+
+        steps:
+            - name: "Checkout code"
+              uses: actions/checkout@v5
+
+            - name: "Set short SHA"
+              run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
+            - name: "Login to Gitea Container Registry"
+              uses: docker/login-action@v3
+              with:
+                  registry: ${{ env.REGISTRY }}
+                  username: ${{ gitea.repository_owner }}
+                  password: ${{ secrets.REGISTRY_TOKEN }}
+
+            - name: "Build and push Docker image"
+              uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  push: true
+                  tags: |
+                      ${{ env.IMAGE }}:latest
+                      ${{ env.IMAGE }}:${{ env.SHORT_SHA }}

@@ -40,5 +40,11 @@ jobs:
             - name: "Install dependencies"
               run: composer install --ansi --no-interaction --no-progress --prefer-dist
 
+            - name: "Build and compile assets"
+              run: |
+                  php bin/console importmap:install
+                  php bin/console asset-map:compile
+                  php bin/console tailwind:build
+
             - name: "Run tests"
               run: vendor/bin/phpunit

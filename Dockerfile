@@ -12,7 +12,7 @@ COPY composer.json composer.lock symfony.lock ./
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     libicu-dev \
-    && docker-php-ext-install pdo_pgsql intl opcache \
+    && docker-php-ext-install pdo_pgsql intl \
     && rm -rf /var/lib/apt/lists/*
 
 RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
@@ -32,7 +32,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     libicu-dev \
-    && docker-php-ext-install pdo_pgsql intl opcache \
+    && docker-php-ext-install pdo_pgsql intl \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"

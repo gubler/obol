@@ -30,14 +30,15 @@ jobs:
                   php-version: 8.5
                   tools: composer:v2
 
-            - name: "Install dependencies"
-              run: composer install --ansi --no-interaction --no-progress
+            - name: "Cache Composer dependencies"
+              uses: actions/cache@v4
+              with:
+                  path: ~/.composer/cache
+                  key: composer-${{ hashFiles('composer.lock') }}
+                  restore-keys: composer-
 
-            - name: "Build and compile assets"
-              run: |
-                  php bin/console importmap:install
-                  php bin/console asset-map:compile
-                  php bin/console tailwind:build
+            - name: "Install dependencies"
+              run: composer install --ansi --no-interaction --no-progress --prefer-dist
 
             - name: "Run tests"
               run: vendor/bin/phpunit

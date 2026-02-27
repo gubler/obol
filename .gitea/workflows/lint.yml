@@ -40,6 +40,13 @@ jobs:
                   tools: composer:v2
                   ini-file: development
 
+            - name: "Cache Composer dependencies"
+              uses: actions/cache@v4
+              with:
+                  path: ~/.composer/cache
+                  key: composer-${{ hashFiles('composer.lock') }}
+                  restore-keys: composer-
+
             - name: Install Composer dependencies
               uses: ramsey/composer-install@v3
               with:
@@ -50,7 +57,7 @@ jobs:
               run: vendor/bin/twig-cs-fixer check --ansi -v -r github
 
     linters:
-        name: Linters
+        name: Linters & Static Analysis
         runs-on: ubuntu-latest
 
         steps:
@@ -65,12 +72,19 @@ jobs:
                   php-version: 8.5
                   tools: composer:v2
 
+            - name: "Cache Composer dependencies"
+              uses: actions/cache@v4
+              with:
+                  path: ~/.composer/cache
+                  key: composer-${{ hashFiles('composer.lock') }}
+                  restore-keys: composer-
+
             - name: Lint Composer config
               run: composer validate --no-check-publish --strict
 
             - name: "Install dependencies"
               id: install
-              run: composer install --ansi --no-interaction --no-progress
+              run: composer install --ansi --no-interaction --no-progress --prefer-dist
 
             - name: Lint YAML files
               if: always() && steps.install.outcome == 'success'
@@ -100,22 +114,6 @@ jobs:
               if: always() && steps.install.outcome == 'success'
               run: composer audit
 
-    static-analysis:
-        name: PHPStan
-        runs-on: ubuntu-latest
-
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v5
-
-            - name: Setup PHP
-              uses: shivammathur/setup-php@v2
-              with:
-                  coverage: none
-                  php-version: 8.5
-
-            - name: Install dependencies
-              run: composer install --ansi --no-interaction --no-progress
-
             - name: Run PHPStan
+              if: always() && steps.install.outcome == 'success'
               run: vendor/bin/phpstan analyze --no-progress --error-format=github

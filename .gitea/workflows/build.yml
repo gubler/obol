@@ -1,0 +1,41 @@
+name: "Build & Push Docker Image"
+
+on:
+    push:
+        branches:
+            - main
+
+permissions:
+    contents: read
+
+jobs:
+    build:
+        name: "Build Docker Image"
+        runs-on: ubuntu-latest
+
+        env:
+            REGISTRY: code.dev88.work
+            IMAGE: code.dev88.work/dev88/obol
+
+        steps:
+            - name: "Checkout code"
+              uses: actions/checkout@v5
+
+            - name: "Set short SHA"
+              run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
+            - name: "Login to Gitea Container Registry"
+              uses: docker/login-action@v3
+              with:
+                  registry: ${{ env.REGISTRY }}
+                  username: ${{ gitea.repository_owner }}
+                  password: ${{ secrets.REGISTRY_TOKEN }}
+
+            - name: "Build and push Docker image"
+              uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  push: true
+                  tags: |
+                      ${{ env.IMAGE }}:latest
+                      ${{ env.IMAGE }}:${{ env.SHORT_SHA }}

@@ -43,7 +43,7 @@ class SubscriptionEvent
         array $context,
         \DateTimeImmutable $createdAt = new \DateTimeImmutable(),
     ) {
-        if ($type === SubscriptionEventType::Archive || $type === SubscriptionEventType::Unarchive) {
+        if (SubscriptionEventType::Archive === $type || SubscriptionEventType::Unarchive === $type) {
             Assertion::same(value: $context, value2: [], message: 'Archive and Unarchive events must have empty context');
         } else {
             Assertion::notEq(value1: $context, value2: [], message: 'Update and CostChange events must have non-empty context');

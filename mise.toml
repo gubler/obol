@@ -4,7 +4,7 @@ run = [
     "php vendor/bin/phpstan --memory-limit=4G analyze"
 ]
 [tasks.test]
-description = "Tests via Pest"
+description = "Tests via PHPUnit"
 run = [
     "php vendor/bin/phpunit"
 ]

@@ -22,6 +22,7 @@ parameters:
     excludePaths:
         analyse:
             - config/bundles.php
+            - config/reference.php
             - config/secrets/*
             - src/Command/AppTest*
             - src/Command/Test*

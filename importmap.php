@@ -16,13 +16,31 @@ return [
         'path' => './assets/app.js',
         'entrypoint' => true,
     ],
-    '@hotwired/stimulus' => [
-        'version' => '3.2.2',
-    ],
     '@symfony/stimulus-bundle' => [
         'path' => './vendor/symfony/stimulus-bundle/assets/dist/loader.js',
     ],
+    '@hotwired/stimulus' => [
+        'version' => '3.2.2',
+    ],
     '@hotwired/turbo' => [
-        'version' => '7.3.0',
+        'version' => '8.0.20',
+    ],
+    '@popperjs/core' => [
+        'version' => '2.11.8',
+    ],
+    'mini-svg-data-uri' => [
+        'version' => '1.4.4',
+    ],
+    'tailwindcss/plugin' => [
+        'version' => '4.1.17',
+    ],
+    'tailwindcss/defaultTheme' => [
+        'version' => '4.1.17',
+    ],
+    'tailwindcss/colors' => [
+        'version' => '4.1.17',
+    ],
+    '@tailwindplus/elements' => [
+        'version' => '1.0.18',
     ],
 ];

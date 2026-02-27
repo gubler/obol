@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Message\Command;
 
-use App\Message\Command\DeleteCategoryCommand;
+use App\Message\Command\Category\DeleteCategoryCommand;
 use PHPUnit\Framework\TestCase;
 
 class DeleteCategoryCommandTest extends TestCase

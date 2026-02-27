@@ -12,7 +12,7 @@ class CategoryHasSubscriptionsException extends \DomainException
     public function __construct(string $categoryId)
     {
         parent::__construct(
-            sprintf('Cannot delete category "%s" because it has subscriptions assigned.', $categoryId)
+            \sprintf('Cannot delete category "%s" because it has subscriptions assigned.', $categoryId)
         );
     }
 }

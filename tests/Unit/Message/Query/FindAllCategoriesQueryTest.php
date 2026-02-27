@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Message\Query;
 
-use App\Message\Query\FindAllCategoriesQuery;
+use App\Message\Query\Category\FindAllCategoriesQuery;
 use PHPUnit\Framework\TestCase;
 
 class FindAllCategoriesQueryTest extends TestCase

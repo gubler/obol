@@ -69,6 +69,82 @@ mise run cs:twig   # Fix twig code style
 mise run rector    # Run Rector
 ```
 
+### Gitea Integration
+**IMPORTANT**: This project uses Gitea for issue tracking, NOT GitHub.
+
+```bash
+# List issues
+tea issues list
+
+# View issue details
+tea issues show <issue-number>
+
+# Create new issue
+tea issues create
+
+# Add comment to issue
+tea comment <issue-number> "Comment text..."
+
+# Close issue
+tea issues close <issue-number>
+```
+
+**NEVER use `gh` CLI** - it's for GitHub only. Always use `tea` for Gitea operations.
+
+## Git Workflow for Issues
+
+Follow this workflow when working on issues:
+
+### 1. Create Issue
+Create the issue in Gitea (via `tea issues create` or web UI) with clear description and acceptance criteria.
+
+### 2. Create Branch
+```bash
+git checkout main
+git pull origin main
+git checkout -b issue-##-brief-description
+```
+
+### 3. Work on Branch
+- Write failing tests first (TDD)
+- Implement the solution
+- Commit frequently with conventional commit messages
+- Ensure all tests pass (`mise run test`)
+- Ensure static analysis passes (`mise run sa`)
+- Ensure code style passes (`mise run cs`)
+
+### 4. Push and Create PR
+```bash
+git push -u origin issue-##-brief-description
+tea pulls create --title "Title" --description "Description" --base main
+```
+
+### 5. Review and Merge
+- Wait for review/approval (or self-review if authorized)
+- Address any feedback
+- Merge PR to main (via Gitea UI or CLI)
+- Pull latest main: `git checkout main && git pull`
+
+### 6. Close Issue with Reference
+```bash
+# Add closing comment with commit hash from merged PR
+tea comment <issue-number> "Closed by commit <hash>
+
+Summary of changes...
+- What was implemented
+- Files created/updated
+- Test results"
+
+# Close the issue
+tea issues close <issue-number>
+
+# Delete feature branch (optional)
+git branch -d issue-##-brief-description
+git push origin --delete issue-##-brief-description
+```
+
+**Note**: When working on larger feature branches (like the current `subscriptions` branch), you may work directly on that branch with multiple issues before creating a final PR to main.
+
 ## Architecture
 
 ### Domain Model
@@ -145,7 +221,7 @@ This project enforces strict quality standards:
 - Use repository service injection
 
 ### Testing
-- Tests use Pest PHP (not PHPUnit syntax directly)
+- Tests use PHPUnit
 - Zenstruck Foundry for fixtures
 - Both unit and feature test suites available
 

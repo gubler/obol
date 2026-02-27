@@ -23,14 +23,15 @@ $kernel->boot();
 // Create new application
 $application = new Application(kernel: $kernel);
 $application->setAutoExit(boolean: false);
-/** @phpstan-ignore-next-line */
-$dbPath = $application
+/** @var Doctrine\Persistence\ManagerRegistry $doctrine */
+$doctrine = $application
     ->getKernel()
     ->getContainer()
     ->get(id: 'doctrine')
-    ->getConnection()
-    ->getParams()['path']
 ;
+/** @var Doctrine\DBAL\Connection $connection */
+$connection = $doctrine->getConnection();
+$dbPath = $connection->getParams()['path'];
 
 // Unlink (delete) the DB file
 // We can't use doctrine:database:drop because that doesn't work with SQLite

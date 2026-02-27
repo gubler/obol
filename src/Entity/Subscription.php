@@ -135,7 +135,7 @@ class Subscription
                 new Change(field: 'category', current: $this->category->name, new: $category->name),
                 new Change(field: 'name', current: $this->name, new: $name),
                 new Change(field: 'lastPaidDate', current: $this->lastPaidDate->format(format: 'c'), new: $lastPaidDate->format(format: 'c')),
-                new Change(field: 'lastPaidDate', current: $this->description, new: $description),
+                new Change(field: 'description', current: $this->description, new: $description),
                 new Change(field: 'link', current: $this->link, new: $link),
                 new Change(field: 'logo', current: $this->logo, new: $logo),
             ]

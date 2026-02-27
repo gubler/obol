@@ -9,7 +9,6 @@ namespace App\Tests\Unit\Entity;
 
 use App\Entity\Category;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Uid\Ulid;
 
 class CategoryTest extends TestCase
 {

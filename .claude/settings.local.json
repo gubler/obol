@@ -10,7 +10,15 @@
       "Bash(fd:*)",
       "Bash(afplay:*)",
       "Bash(mkdir:*)",
-      "Bash(mise run sa:*)"
+      "Bash(mise run sa:*)",
+      "Bash(tea:*)",
+      "Bash(composer show:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:packagist.org)",
+      "Bash(php:*)",
+      "Bash(mise tasks:*)",
+      "Bash(mise config:*)"
     ],
     "deny": [],
     "ask": []

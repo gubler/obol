@@ -13,7 +13,6 @@ use App\Entity\SubscriptionEvent;
 use App\Enum\PaymentPeriod;
 use App\Enum\SubscriptionEventType;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Uid\Ulid;
 
 class SubscriptionEventTest extends TestCase
 {

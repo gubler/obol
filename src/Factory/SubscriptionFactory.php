@@ -6,12 +6,12 @@ namespace App\Factory;
 
 use App\Entity\Subscription;
 use App\Enum\PaymentPeriod;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * @extends PersistentProxyObjectFactory<Subscription>
+ * @extends PersistentObjectFactory<Subscription>
  */
-final class SubscriptionFactory extends PersistentProxyObjectFactory
+final class SubscriptionFactory extends PersistentObjectFactory
 {
     public static function class(): string
     {

@@ -6,12 +6,12 @@ namespace App\Factory;
 
 use App\Entity\SubscriptionEvent;
 use App\Enum\SubscriptionEventType;
-use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
+use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * @extends PersistentProxyObjectFactory<SubscriptionEvent>
+ * @extends PersistentObjectFactory<SubscriptionEvent>
  */
-final class SubscriptionEventFactory extends PersistentProxyObjectFactory
+final class SubscriptionEventFactory extends PersistentObjectFactory
 {
     public static function class(): string
     {

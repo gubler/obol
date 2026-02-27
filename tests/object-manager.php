@@ -13,7 +13,6 @@ $env = $_SERVER['APP_ENV'];
 
 Assert\Assertion::inArray($env, ['dev', 'test', 'prod']);
 /** @var string $env */
-
 $kernel = new Kernel($env, (bool) $_SERVER['APP_DEBUG']);
 $kernel->boot();
 

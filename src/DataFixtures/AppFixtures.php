@@ -103,43 +103,43 @@ class AppFixtures extends Fixture
 
         // Add payments to subscriptions (2-5 each for active ones)
         for ($i = 0; $i < 5; ++$i) {
-            $netflix->_real()->recordPayment(
+            $netflix->recordPayment(
                 paidDate: new \DateTimeImmutable('-' . $i . ' months'),
                 paymentType: \App\Enum\PaymentType::Verified,
             );
         }
 
         for ($i = 0; $i < 3; ++$i) {
-            $spotify->_real()->recordPayment(
+            $spotify->recordPayment(
                 paidDate: new \DateTimeImmutable('-' . $i . ' months'),
                 paymentType: \App\Enum\PaymentType::Verified,
             );
         }
 
         for ($i = 0; $i < 4; ++$i) {
-            $github->_real()->recordPayment(
+            $github->recordPayment(
                 paidDate: new \DateTimeImmutable('-' . $i . ' months'),
                 paymentType: \App\Enum\PaymentType::Verified,
             );
         }
 
         for ($i = 0; $i < 2; ++$i) {
-            $notion->_real()->recordPayment(
+            $notion->recordPayment(
                 paidDate: new \DateTimeImmutable('-' . $i . ' months'),
                 paymentType: \App\Enum\PaymentType::Verified,
             );
         }
 
         // Update some subscriptions to create events
-        $netflix->_real()->update(
-            category: $entertainment->_real(),
+        $netflix->update(
+            category: $entertainment,
             name: 'Netflix Premium',
-            lastPaidDate: $netflix->_real()->lastPaidDate,
+            lastPaidDate: $netflix->lastPaidDate,
             description: 'Streaming service for movies and TV shows - Premium plan',
             link: 'https://netflix.com',
             logo: '',
-            paymentPeriod: $netflix->_real()->paymentPeriod,
-            paymentPeriodCount: $netflix->_real()->paymentPeriodCount,
+            paymentPeriod: $netflix->paymentPeriod,
+            paymentPeriodCount: $netflix->paymentPeriodCount,
             cost: 1999,
         );
 

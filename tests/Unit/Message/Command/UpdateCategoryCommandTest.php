@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Message\Command;
 
-use App\Message\Command\UpdateCategoryCommand;
+use App\Message\Command\Category\UpdateCategoryCommand;
 use PHPUnit\Framework\TestCase;
 
 class UpdateCategoryCommandTest extends TestCase

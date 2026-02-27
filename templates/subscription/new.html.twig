@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New Subscription{% endblock %}
+
+{% block body %}
+    <div class="container mx-auto px-4 py-8">
+        <div class="mb-6">
+            <a href="{{ path('subscription_index') }}" class="text-blue-600 hover:text-blue-900 mb-4 inline-block">&larr; Back to Subscriptions</a>
+            <h1 class="text-3xl font-bold">New Subscription</h1>
+        </div>
+
+        <div class="bg-white shadow-md rounded p-6 max-w-2xl">
+            {{ form_start(form, {attr: {class: 'space-y-6'}}) }}
+
+            {{ form_widget(form) }}
+
+            <div class="flex justify-end space-x-3">
+                <a href="{{ path('subscription_index') }}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">
+                    Cancel
+                </a>
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Save
+                </button>
+            </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}

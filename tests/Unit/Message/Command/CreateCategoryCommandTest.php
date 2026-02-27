@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Message\Command;
 
-use App\Message\Command\CreateCategoryCommand;
+use App\Message\Command\Category\CreateCategoryCommand;
 use PHPUnit\Framework\TestCase;
 
 class CreateCategoryCommandTest extends TestCase

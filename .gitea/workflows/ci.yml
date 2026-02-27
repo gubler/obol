@@ -13,116 +13,9 @@ permissions:
     contents: read
 
 jobs:
-    php-cs-fixer:
-        name: PHP-CS-Fixer
+    ci:
+        name: Lint & Test
         runs-on: ubuntu-latest
-        steps:
-            - name: "Checkout code"
-              uses: actions/checkout@v5
-
-            - name: PHP-CS-Fixer
-              uses: docker://ghcr.io/php-cs-fixer/php-cs-fixer:3-php8.5
-              with:
-                  args: check --diff --using-cache=no
-
-    twig-cs-fixer:
-        name: Twig-CS-Fixer
-        runs-on: ubuntu-latest
-        steps:
-            - name: "Checkout code"
-              uses: actions/checkout@v5
-
-            - name: Install PHP with extensions
-              uses: shivammathur/setup-php@v2
-              with:
-                  php-version: 8.5
-                  coverage: none
-                  tools: composer:v2
-                  ini-file: development
-
-            - name: "Cache Composer dependencies"
-              uses: actions/cache@v4
-              with:
-                  path: ~/.composer/cache
-                  key: composer-${{ hashFiles('composer.lock') }}
-                  restore-keys: composer-
-
-            - name: Install Composer dependencies
-              uses: ramsey/composer-install@v3
-              with:
-                  dependency-versions: highest
-                  composer-options: --prefer-dist --prefer-stable
-
-            - name: Run Twig CS Fixer
-              run: vendor/bin/twig-cs-fixer check --ansi -v -r github
-
-    linters:
-        name: Linters & Static Analysis
-        runs-on: ubuntu-latest
-
-        steps:
-            - name: "Checkout code"
-              uses: actions/checkout@v5
-
-            - name: "Install PHP with extensions"
-              uses: shivammathur/setup-php@v2
-              with:
-                  coverage: "none"
-                  extensions: intl
-                  php-version: 8.5
-                  tools: composer:v2
-
-            - name: "Cache Composer dependencies"
-              uses: actions/cache@v4
-              with:
-                  path: ~/.composer/cache
-                  key: composer-${{ hashFiles('composer.lock') }}
-                  restore-keys: composer-
-
-            - name: Lint Composer config
-              run: composer validate --no-check-publish --strict
-
-            - name: "Install dependencies"
-              id: install
-              run: composer install --ansi --no-interaction --no-progress --prefer-dist
-
-            - name: Lint YAML files
-              if: always() && steps.install.outcome == 'success'
-              run: ./bin/console lint:yaml config --parse-tags
-
-            - name: Lint Twig templates
-              if: always() && steps.install.outcome == 'success'
-              run: ./bin/console lint:twig templates --env=prod
-
-            - name: Lint XLIFF translation files
-              if: always() && steps.install.outcome == 'success'
-              run: ./bin/console lint:xliff translations
-
-            - name: Lint translation contents
-              if: always() && steps.install.outcome == 'success'
-              run: ./bin/console lint:translations
-
-            - name: Lint Parameters and Services
-              if: always() && steps.install.outcome == 'success'
-              run: ./bin/console lint:container --no-debug
-
-            - name: Lint Doctrine entities
-              if: always() && steps.install.outcome == 'success'
-              run: ./bin/console doctrine:schema:validate --skip-sync -vvv --no-interaction
-
-            - name: Check if any dependencies are compromised
-              if: always() && steps.install.outcome == 'success'
-              run: composer audit
-
-            - name: Run PHPStan
-              if: always() && steps.install.outcome == 'success'
-              run: vendor/bin/phpstan analyze --no-progress --error-format=github
-
-    test:
-        name: PHPUnit Tests
-        runs-on: ubuntu-latest
-        needs: [php-cs-fixer, twig-cs-fixer, linters]
-        continue-on-error: false
 
         steps:
             - name: "Checkout code"
@@ -143,22 +36,72 @@ jobs:
                   key: composer-${{ hashFiles('composer.lock') }}
                   restore-keys: composer-
 
+            - name: "Validate Composer config"
+              run: composer validate --no-check-publish --strict
+
             - name: "Install dependencies"
+              id: install
               run: composer install --ansi --no-interaction --no-progress --prefer-dist
 
+            # Code style checks
+            - name: "PHP-CS-Fixer"
+              if: always() && steps.install.outcome == 'success'
+              run: vendor/bin/php-cs-fixer check --diff --using-cache=no
+
+            - name: "Twig-CS-Fixer"
+              if: always() && steps.install.outcome == 'success'
+              run: vendor/bin/twig-cs-fixer check --ansi -v
+
+            # Linters
+            - name: "Lint YAML files"
+              if: always() && steps.install.outcome == 'success'
+              run: ./bin/console lint:yaml config --parse-tags
+
+            - name: "Lint Twig templates"
+              if: always() && steps.install.outcome == 'success'
+              run: ./bin/console lint:twig templates --env=prod
+
+            - name: "Lint XLIFF translation files"
+              if: always() && steps.install.outcome == 'success'
+              run: ./bin/console lint:xliff translations
+
+            - name: "Lint translation contents"
+              if: always() && steps.install.outcome == 'success'
+              run: ./bin/console lint:translations
+
+            - name: "Lint Parameters and Services"
+              if: always() && steps.install.outcome == 'success'
+              run: ./bin/console lint:container --no-debug
+
+            - name: "Lint Doctrine entities"
+              if: always() && steps.install.outcome == 'success'
+              run: ./bin/console doctrine:schema:validate --skip-sync -vvv --no-interaction
+
+            - name: "Check for compromised dependencies"
+              if: always() && steps.install.outcome == 'success'
+              run: composer audit
+
+            # Static analysis
+            - name: "PHPStan"
+              if: always() && steps.install.outcome == 'success'
+              run: vendor/bin/phpstan analyze --no-progress --error-format=github
+
+            # Tests
             - name: "Build and compile assets"
+              if: always() && steps.install.outcome == 'success'
               run: |
                   php bin/console importmap:install
                   php bin/console asset-map:compile
                   php bin/console tailwind:build
 
-            - name: "Run tests"
+            - name: "PHPUnit"
+              if: always() && steps.install.outcome == 'success'
               run: vendor/bin/phpunit
 
     build:
         name: Build Docker Image
         runs-on: ubuntu-latest
-        needs: [test]
+        needs: [ci]
         if: gitea.ref == 'refs/heads/main'
 
         env:

@@ -81,6 +81,26 @@ The domain model centers on four entities, all using ULID primary keys:
 
 State changes on `Subscription` go through dedicated methods (`update()`, `archive()`, `recordPayment()`) which emit `SubscriptionEvent` records automatically.
 
+## Documentation
+
+Full developer documentation is at [docs.dev88.work/obol](https://docs.dev88.work/obol).
+
+### Working on docs locally
+
+Requires [MkDocs](https://www.mkdocs.org/) with the Material theme:
+
+```bash
+pipx install mkdocs-material
+# or
+pip install mkdocs-material
+```
+
+```bash
+mise run docs:serve   # Live preview at http://127.0.0.1:8000
+mise run docs:build   # Build to site/
+mise run docs:deploy  # Build and deploy to docs.dev88.work/obol
+```
+
 ## License
 
 Proprietary.

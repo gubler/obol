@@ -77,6 +77,25 @@ mise run cs:twig       # Fix twig code style
 mise run rector        # Run Rector
 ```
 
+### Documentation
+```bash
+# Serve docs locally (requires mkdocs-material: pipx install mkdocs-material)
+mise run docs:serve
+
+# Build docs site (output to site/)
+mise run docs:build
+
+# Deploy to docs.dev88.work/obol
+mise run docs:deploy
+```
+
+Full developer documentation is in `docs/`. Key pages:
+- `docs/architecture/` — domain model, CQRS, controllers, forms/DTOs
+- `docs/development/` — standards, testing, git hooks, mise tasks
+- `docs/deployment.md` — Docker, compose setup, environment vars
+- `docs/ci-cd.md` — Gitea Actions workflow
+- `docs/operations/updates.md` — deploying new versions, migrations
+
 ### Gitea Integration
 **IMPORTANT**: This project uses Gitea for issue tracking, NOT GitHub.
 

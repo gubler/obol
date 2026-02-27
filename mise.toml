@@ -73,3 +73,18 @@ description = "Refactoring via Rector"
 run = [
     "php vendor/bin/rector"
 ]
+[tasks."docs:serve"]
+description = "Serve documentation locally"
+run = [
+    "mkdocs serve"
+]
+[tasks."docs:build"]
+description = "Build documentation site"
+run = [
+    "bash scripts/build-docs.sh"
+]
+[tasks."docs:deploy"]
+description = "Build and deploy docs to docs.dev88.work/obol"
+run = [
+    "bash scripts/deploy-docs.sh"
+]

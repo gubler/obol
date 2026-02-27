@@ -1,0 +1,55 @@
+site_name: Obol
+site_description: Developer documentation for Obol — subscription management built on Symfony.
+site_url: https://docs.dev88.work/obol
+repo_url: https://code.dev88.work/dev88/obol
+repo_name: dev88/obol
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: indigo
+    accent: indigo
+  features:
+    - navigation.sections
+    - navigation.indexes
+    - content.code.copy
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Architecture:
+      - architecture/index.md
+      - Domain Model: architecture/domain-model.md
+      - CQRS & Message Bus: architecture/cqrs.md
+      - Controllers: architecture/controllers.md
+      - Forms & DTOs: architecture/forms-and-dtos.md
+  - Frontend: frontend.md
+  - Deployment: deployment.md
+  - CI/CD: ci-cd.md
+  - Development:
+      - development/index.md
+      - Standards: development/standards.md
+      - Testing: development/testing.md
+      - Git Hooks: development/git-hooks.md
+      - Mise Tasks: development/mise-tasks.md
+  - Operations:
+      - Deploying Updates: operations/updates.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - toc:
+      permalink: true

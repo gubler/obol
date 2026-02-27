@@ -21,6 +21,8 @@ COPY . .
 
 RUN composer dump-autoload --classmap-authoritative \
     && composer dump-env prod \
+    && php bin/console importmap:install \
+    && php bin/console tailwind:build \
     && php bin/console asset-map:compile
 
 FROM dunglas/frankenphp:php8.4-bookworm

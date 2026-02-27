@@ -84,8 +84,8 @@ jobs:
               if: always() && steps.install.outcome == 'success'
               run: |
                   php bin/console importmap:install
-                  php bin/console asset-map:compile
                   php bin/console tailwind:build
+                  php bin/console asset-map:compile
 
             - name: "PHPUnit"
               if: always() && steps.install.outcome == 'success'

@@ -1,7 +1,7 @@
 # ABOUTME: Multi-stage Dockerfile for the Obol application using FrankenPHP.
 # ABOUTME: Builder stage installs dependencies, app stage runs the production server.
 
-FROM dunglas/frankenphp:php8.5-bookworm AS builder
+FROM dunglas/frankenphp:php8.5-trixie AS builder
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
@@ -26,7 +26,7 @@ RUN composer dump-autoload --classmap-authoritative \
     && php bin/console tailwind:build \
     && php bin/console asset-map:compile
 
-FROM dunglas/frankenphp:php8.5-bookworm
+FROM dunglas/frankenphp:php8.5-trixie
 
 WORKDIR /app
 

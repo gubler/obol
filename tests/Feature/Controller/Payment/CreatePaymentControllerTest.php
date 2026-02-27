@@ -5,106 +5,95 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Feature\Controller\Payment;
-
 use App\Entity\Subscription;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-class CreatePaymentControllerTest extends WebTestCase
-{
-    public function testDisplaysCreatePaymentForm(): void
-    {
-        $client = static::createClient();
-        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $subscription = SubscriptionFactory::createOne([
-            'category' => $category,
-            'name' => 'Netflix',
-        ]);
+test('displays create payment form', function (): void {
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    $subscription = SubscriptionFactory::createOne([
+        'category' => $category,
+        'name' => 'Netflix',
+    ]);
 
-        $client->request('GET', '/subscriptions/' . $subscription->id . '/payments/new');
+    $client->request('GET', '/subscriptions/' . $subscription->id . '/payments/new');
 
-        self::assertResponseIsSuccessful();
-        self::assertSelectorExists('form');
-    }
+    $this->assertResponseIsSuccessful();
+    $this->assertSelectorExists('form');
+});
 
-    public function testCreatesPaymentWithValidData(): void
-    {
-        $client = static::createClient();
-        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $subscription = SubscriptionFactory::createOne([
-            'category' => $category,
-            'name' => 'Netflix',
-            'cost' => 1599,
-        ]);
+test('creates payment with valid data', function (): void {
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    $subscription = SubscriptionFactory::createOne([
+        'category' => $category,
+        'name' => 'Netflix',
+        'cost' => 1599,
+    ]);
 
-        $initialPaymentCount = \count($subscription->payments);
+    $initialPaymentCount = count($subscription->payments);
 
-        $client->request('GET', '/subscriptions/' . $subscription->id . '/payments/new');
-        $client->submitForm('Save', [
-            'create_payment[amount]' => '1599',
-            'create_payment[paidDate]' => '2025-01-15',
-        ]);
+    $client->request('GET', '/subscriptions/' . $subscription->id . '/payments/new');
+    $client->submitForm('Save', [
+        'create_payment[amount]' => '1599',
+        'create_payment[paidDate]' => '2025-01-15',
+    ]);
 
-        self::assertResponseRedirects('/subscriptions/' . $subscription->id);
+    $this->assertResponseRedirects('/subscriptions/' . $subscription->id);
 
-        $container = static::getContainer();
-        /** @var EntityManagerInterface $entityManager */
-        $entityManager = $container->get(EntityManagerInterface::class);
-        $repository = $entityManager->getRepository(Subscription::class);
-        $entityManager->clear();
+    $container = $this->getContainer();
+    /** @var EntityManagerInterface $entityManager */
+    $entityManager = $container->get(EntityManagerInterface::class);
+    $repository = $entityManager->getRepository(Subscription::class);
+    $entityManager->clear();
 
-        $updatedSubscription = $repository->find($subscription->id);
-        self::assertNotNull($updatedSubscription);
-        self::assertGreaterThan($initialPaymentCount, \count($updatedSubscription->payments));
-    }
+    $updatedSubscription = $repository->find($subscription->id);
+    expect($updatedSubscription)->not->toBeNull();
+    expect(count($updatedSubscription->payments))->toBeGreaterThan($initialPaymentCount);
+});
 
-    public function testShowsSuccessFlashMessageAfterCreation(): void
-    {
-        $client = static::createClient();
-        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $subscription = SubscriptionFactory::createOne([
-            'category' => $category,
-            'name' => 'Netflix',
-        ]);
+test('shows success flash message after creation', function (): void {
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    $subscription = SubscriptionFactory::createOne([
+        'category' => $category,
+        'name' => 'Netflix',
+    ]);
 
-        $client->request('GET', '/subscriptions/' . $subscription->id . '/payments/new');
-        $client->submitForm('Save', [
-            'create_payment[amount]' => '1599',
-            'create_payment[paidDate]' => '2025-01-15',
-        ]);
-        $client->followRedirect();
+    $client->request('GET', '/subscriptions/' . $subscription->id . '/payments/new');
+    $client->submitForm('Save', [
+        'create_payment[amount]' => '1599',
+        'create_payment[paidDate]' => '2025-01-15',
+    ]);
+    $client->followRedirect();
 
-        self::assertSelectorTextContains('.flash-success', 'Payment recorded successfully');
-    }
+    $this->assertSelectorTextContains('.flash-success', 'Payment recorded successfully');
+});
 
-    public function testShowsValidationErrorsForInvalidData(): void
-    {
-        $client = static::createClient();
-        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $subscription = SubscriptionFactory::createOne([
-            'category' => $category,
-            'name' => 'Netflix',
-        ]);
+test('shows validation errors for invalid data', function (): void {
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    $subscription = SubscriptionFactory::createOne([
+        'category' => $category,
+        'name' => 'Netflix',
+    ]);
 
-        $client->request('GET', '/subscriptions/' . $subscription->id . '/payments/new');
-        $client->submitForm('Save', [
-            'create_payment[amount]' => '',
-            'create_payment[paidDate]' => '',
-        ]);
+    $client->request('GET', '/subscriptions/' . $subscription->id . '/payments/new');
+    $client->submitForm('Save', [
+        'create_payment[amount]' => '',
+        'create_payment[paidDate]' => '',
+    ]);
 
-        self::assertResponseStatusCodeSame(422);
-        self::assertSelectorExists('.text-red-700');
-    }
+    $this->assertResponseStatusCodeSame(422);
+    $this->assertSelectorExists('.text-red-700');
+});
 
-    public function testReturns404ForInvalidSubscriptionId(): void
-    {
-        $client = static::createClient();
+test('returns 404 for invalid subscription id', function (): void {
+    $client = $this->createClient();
 
-        $client->request('GET', '/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/payments/new');
+    $client->request('GET', '/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/payments/new');
 
-        self::assertResponseStatusCodeSame(404);
-    }
-}
+    $this->assertResponseStatusCodeSame(404);
+});

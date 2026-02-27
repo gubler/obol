@@ -5,8 +5,6 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Entity;
-
 use App\Entity\Category;
 use App\Entity\Payment;
 use App\Entity\Subscription;
@@ -14,20 +12,14 @@ use App\Entity\SubscriptionEvent;
 use App\Enum\PaymentPeriod;
 use App\Enum\PaymentType;
 use App\Enum\SubscriptionEventType;
-use PHPUnit\Framework\TestCase;
 
-class SubscriptionTest extends TestCase
-{
-    private Category $category;
+beforeEach(function (): void {
+    $this->category = new Category(name: 'Entertainment');
+});
 
-    protected function setUp(): void
-    {
-        $this->category = new Category(name: 'Entertainment');
-    }
-
-    public function testCreatesSubscriptionWithValidData(): void
-    {
-        $lastPaidDate = new \DateTimeImmutable('2024-01-01');
+describe('creation', function (): void {
+    test('creates subscription with valid data', function (): void {
+        $lastPaidDate = new DateTimeImmutable('2024-01-01');
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
@@ -37,66 +29,65 @@ class SubscriptionTest extends TestCase
             cost: 1500,
         );
 
-        self::assertSame($this->category, $subscription->category);
-        self::assertSame('Netflix', $subscription->name);
-        self::assertSame($lastPaidDate, $subscription->lastPaidDate);
-        self::assertSame(PaymentPeriod::Month, $subscription->paymentPeriod);
-        self::assertSame(1, $subscription->paymentPeriodCount);
-        self::assertSame(1500, $subscription->cost);
-    }
+        expect($subscription->category)->toBe($this->category)
+            ->and($subscription->name)->toBe('Netflix')
+            ->and($subscription->lastPaidDate)->toBe($lastPaidDate)
+            ->and($subscription->paymentPeriod)->toBe(PaymentPeriod::Month)
+            ->and($subscription->paymentPeriodCount)->toBe(1)
+            ->and($subscription->cost)->toBe(1500)
+        ;
+    });
 
-    public function testSetsCreatedAtToCurrentTime(): void
-    {
-        $before = new \DateTimeImmutable();
+    test('sets created at to current time', function (): void {
+        $before = new DateTimeImmutable();
         $subscription = new Subscription(
             category: $this->category,
             name: 'Spotify',
-            lastPaidDate: new \DateTimeImmutable(),
+            lastPaidDate: new DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1000,
         );
-        $after = new \DateTimeImmutable();
+        $after = new DateTimeImmutable();
 
-        self::assertGreaterThanOrEqual($before, $subscription->createdAt);
-        self::assertLessThanOrEqual($after, $subscription->createdAt);
-    }
+        expect($subscription->createdAt)->toBeGreaterThanOrEqual($before)
+            ->and($subscription->createdAt)->toBeLessThanOrEqual($after)
+        ;
+    });
 
-    public function testInitializesAsNotArchived(): void
-    {
+    test('initializes as not archived', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Spotify',
-            lastPaidDate: new \DateTimeImmutable(),
-            paymentPeriod: PaymentPeriod::Month,
-            paymentPeriodCount: 1,
-            cost: 1000,
-        );
-
-        self::assertFalse($subscription->archived);
-    }
-
-    public function testInitializesEmptyCollections(): void
-    {
-        $subscription = new Subscription(
-            category: $this->category,
-            name: 'Spotify',
-            lastPaidDate: new \DateTimeImmutable(),
+            lastPaidDate: new DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1000,
         );
 
-        self::assertCount(0, $subscription->payments);
-        self::assertCount(0, $subscription->subscriptionEvents);
-    }
+        expect($subscription->archived)->toBeFalse();
+    });
 
-    public function testAcceptsOptionalFields(): void
-    {
+    test('initializes empty collections', function (): void {
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Spotify',
+            lastPaidDate: new DateTimeImmutable(),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 1000,
+        );
+
+        expect($subscription->payments)->toHaveCount(0)
+            ->and($subscription->subscriptionEvents)->toHaveCount(0)
+        ;
+    });
+
+    test('accepts optional fields', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new \DateTimeImmutable(),
+            lastPaidDate: new DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
@@ -105,33 +96,35 @@ class SubscriptionTest extends TestCase
             logo: 'netflix.png',
         );
 
-        self::assertSame('Streaming service', $subscription->description);
-        self::assertSame('https://netflix.com', $subscription->link);
-        self::assertSame('netflix.png', $subscription->logo);
-    }
+        expect($subscription->description)->toBe('Streaming service')
+            ->and($subscription->link)->toBe('https://netflix.com')
+            ->and($subscription->logo)->toBe('netflix.png')
+        ;
+    });
 
-    public function testDefaultsOptionalFieldsToEmpty(): void
-    {
+    test('defaults optional fields to empty', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Spotify',
-            lastPaidDate: new \DateTimeImmutable(),
+            lastPaidDate: new DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1000,
         );
 
-        self::assertSame('', $subscription->description);
-        self::assertSame('', $subscription->link);
-        self::assertSame('', $subscription->logo);
-    }
+        expect($subscription->description)->toBe('')
+            ->and($subscription->link)->toBe('')
+            ->and($subscription->logo)->toBe('')
+        ;
+    });
+});
 
-    public function testUpdateCreatesOnlyUpdateEventWhenOnlyGeneralFieldsChange(): void
-    {
+describe('update', function (): void {
+    test('creates only update event when only general fields change', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new \DateTimeImmutable('2024-01-01'),
+            lastPaidDate: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
@@ -141,7 +134,7 @@ class SubscriptionTest extends TestCase
         $subscription->update(
             category: $newCategory,
             name: 'Netflix Premium',
-            lastPaidDate: new \DateTimeImmutable('2024-02-01'),
+            lastPaidDate: new DateTimeImmutable('2024-02-01'),
             description: 'Premium plan',
             link: 'https://netflix.com',
             logo: 'netflix.png',
@@ -150,18 +143,18 @@ class SubscriptionTest extends TestCase
             cost: 1500,
         );
 
-        self::assertCount(1, $subscription->subscriptionEvents);
+        expect($subscription->subscriptionEvents)->toHaveCount(1);
         /** @var SubscriptionEvent $event */
         $event = $subscription->subscriptionEvents->first();
-        self::assertSame(SubscriptionEventType::Update, $event->type);
-        self::assertArrayHasKey('category', $event->context);
-        self::assertArrayHasKey('name', $event->context);
-        self::assertArrayNotHasKey('cost', $event->context);
-    }
+        expect($event->type)->toBe(SubscriptionEventType::Update)
+            ->and($event->context)->toHaveKey('category')
+            ->and($event->context)->toHaveKey('name')
+            ->and($event->context)->not->toHaveKey('cost')
+        ;
+    });
 
-    public function testUpdateCreatesOnlyCostChangeEventWhenOnlyCostFieldsChange(): void
-    {
-        $lastPaidDate = new \DateTimeImmutable('2024-01-01');
+    test('creates only cost change event when only cost fields change', function (): void {
+        $lastPaidDate = new DateTimeImmutable('2024-01-01');
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
@@ -183,20 +176,20 @@ class SubscriptionTest extends TestCase
             cost: 15000,
         );
 
-        self::assertCount(1, $subscription->subscriptionEvents);
+        expect($subscription->subscriptionEvents)->toHaveCount(1);
         /** @var SubscriptionEvent $event */
         $event = $subscription->subscriptionEvents->first();
-        self::assertSame(SubscriptionEventType::CostChange, $event->type);
-        self::assertArrayHasKey('paymentPeriod', $event->context);
-        self::assertArrayHasKey('cost', $event->context);
-    }
+        expect($event->type)->toBe(SubscriptionEventType::CostChange)
+            ->and($event->context)->toHaveKey('paymentPeriod')
+            ->and($event->context)->toHaveKey('cost')
+        ;
+    });
 
-    public function testUpdateCreatesBothEventsWhenBothTypesOfFieldsChange(): void
-    {
+    test('creates both events when both types of fields change', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new \DateTimeImmutable('2024-01-01'),
+            lastPaidDate: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
@@ -205,7 +198,7 @@ class SubscriptionTest extends TestCase
         $subscription->update(
             category: $this->category,
             name: 'Netflix Premium',
-            lastPaidDate: new \DateTimeImmutable('2024-01-01'),
+            lastPaidDate: new DateTimeImmutable('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -214,20 +207,20 @@ class SubscriptionTest extends TestCase
             cost: 15000,
         );
 
-        self::assertCount(2, $subscription->subscriptionEvents);
+        expect($subscription->subscriptionEvents)->toHaveCount(2);
 
         /** @var SubscriptionEvent $updateEvent */
         $updateEvent = $subscription->subscriptionEvents[0];
         /** @var SubscriptionEvent $costChangeEvent */
         $costChangeEvent = $subscription->subscriptionEvents[1];
 
-        self::assertSame(SubscriptionEventType::Update, $updateEvent->type);
-        self::assertSame(SubscriptionEventType::CostChange, $costChangeEvent->type);
-    }
+        expect($updateEvent->type)->toBe(SubscriptionEventType::Update)
+            ->and($costChangeEvent->type)->toBe(SubscriptionEventType::CostChange)
+        ;
+    });
 
-    public function testUpdateCreatesNoEventsWhenNoFieldsChange(): void
-    {
-        $lastPaidDate = new \DateTimeImmutable('2024-01-01');
+    test('creates no events when no fields change', function (): void {
+        $lastPaidDate = new DateTimeImmutable('2024-01-01');
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
@@ -249,102 +242,102 @@ class SubscriptionTest extends TestCase
             cost: 1500,
         );
 
-        self::assertCount(0, $subscription->subscriptionEvents);
-    }
+        expect($subscription->subscriptionEvents)->toHaveCount(0);
+    });
+});
 
-    public function testRecordPaymentUpdatesLastPaidDate(): void
-    {
+describe('record payment', function (): void {
+    test('updates last paid date', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new \DateTimeImmutable('2024-01-01'),
+            lastPaidDate: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
         );
 
-        $newPaidDate = new \DateTimeImmutable('2024-02-01');
+        $newPaidDate = new DateTimeImmutable('2024-02-01');
         $subscription->recordPayment(
             paidDate: $newPaidDate,
             paymentType: PaymentType::Verified,
         );
 
-        self::assertSame($newPaidDate, $subscription->lastPaidDate);
-    }
+        expect($subscription->lastPaidDate)->toBe($newPaidDate);
+    });
 
-    public function testRecordPaymentAddsPaymentToCollection(): void
-    {
+    test('adds payment to collection', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new \DateTimeImmutable('2024-01-01'),
+            lastPaidDate: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
         );
 
         $subscription->recordPayment(
-            paidDate: new \DateTimeImmutable('2024-02-01'),
+            paidDate: new DateTimeImmutable('2024-02-01'),
             paymentType: PaymentType::Verified,
         );
 
-        self::assertCount(1, $subscription->payments);
+        expect($subscription->payments)->toHaveCount(1);
         /** @var Payment $payment */
         $payment = $subscription->payments->first();
-        self::assertSame(PaymentType::Verified, $payment->type);
-        self::assertSame(1500, $payment->amount);
-    }
+        expect($payment->type)->toBe(PaymentType::Verified)
+            ->and($payment->amount)->toBe(1500)
+        ;
+    });
 
-    public function testRecordPaymentUsesSubscriptionCostByDefault(): void
-    {
+    test('uses subscription cost by default', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new \DateTimeImmutable('2024-01-01'),
+            lastPaidDate: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
         );
 
         $subscription->recordPayment(
-            paidDate: new \DateTimeImmutable('2024-02-01'),
+            paidDate: new DateTimeImmutable('2024-02-01'),
             paymentType: PaymentType::Verified,
         );
 
         /** @var Payment $payment */
         $payment = $subscription->payments->first();
-        self::assertSame(1500, $payment->amount);
-    }
+        expect($payment->amount)->toBe(1500);
+    });
 
-    public function testRecordPaymentAcceptsCustomAmount(): void
-    {
+    test('accepts custom amount', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new \DateTimeImmutable('2024-01-01'),
+            lastPaidDate: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
         );
 
         $subscription->recordPayment(
-            paidDate: new \DateTimeImmutable('2024-02-01'),
+            paidDate: new DateTimeImmutable('2024-02-01'),
             paymentType: PaymentType::Verified,
             amount: 2000,
         );
 
-        self::assertCount(1, $subscription->payments);
+        expect($subscription->payments)->toHaveCount(1);
         /** @var Payment $payment */
         $payment = $subscription->payments->first();
-        self::assertSame(2000, $payment->amount);
-    }
+        expect($payment->amount)->toBe(2000);
+    });
+});
 
-    public function testArchiveSetsArchivedToTrue(): void
-    {
+describe('archive', function (): void {
+    test('sets archived to true', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new \DateTimeImmutable('2024-01-01'),
+            lastPaidDate: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
@@ -352,15 +345,14 @@ class SubscriptionTest extends TestCase
 
         $subscription->archive();
 
-        self::assertTrue($subscription->archived);
-    }
+        expect($subscription->archived)->toBeTrue();
+    });
 
-    public function testArchiveCreatesArchiveEvent(): void
-    {
+    test('creates archive event', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new \DateTimeImmutable('2024-01-01'),
+            lastPaidDate: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
@@ -368,19 +360,19 @@ class SubscriptionTest extends TestCase
 
         $subscription->archive();
 
-        self::assertCount(1, $subscription->subscriptionEvents);
+        expect($subscription->subscriptionEvents)->toHaveCount(1);
         /** @var SubscriptionEvent $event */
         $event = $subscription->subscriptionEvents->first();
-        self::assertSame(SubscriptionEventType::Archive, $event->type);
-        self::assertSame([], $event->context);
-    }
+        expect($event->type)->toBe(SubscriptionEventType::Archive)
+            ->and($event->context)->toBe([])
+        ;
+    });
 
-    public function testUnarchiveSetsArchivedToFalse(): void
-    {
+    test('unarchive sets archived to false', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new \DateTimeImmutable('2024-01-01'),
+            lastPaidDate: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
@@ -389,15 +381,14 @@ class SubscriptionTest extends TestCase
         $subscription->archive();
         $subscription->unarchive();
 
-        self::assertFalse($subscription->archived);
-    }
+        expect($subscription->archived)->toBeFalse();
+    });
 
-    public function testUnarchiveCreatesUnarchiveEvent(): void
-    {
+    test('unarchive creates unarchive event', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new \DateTimeImmutable('2024-01-01'),
+            lastPaidDate: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
@@ -406,98 +397,83 @@ class SubscriptionTest extends TestCase
         $subscription->archive();
         $subscription->unarchive();
 
-        self::assertCount(2, $subscription->subscriptionEvents);
+        expect($subscription->subscriptionEvents)->toHaveCount(2);
         /** @var SubscriptionEvent $archiveEvent */
         $archiveEvent = $subscription->subscriptionEvents[0];
         /** @var SubscriptionEvent $unarchiveEvent */
         $unarchiveEvent = $subscription->subscriptionEvents[1];
 
-        self::assertSame(SubscriptionEventType::Archive, $archiveEvent->type);
-        self::assertSame(SubscriptionEventType::Unarchive, $unarchiveEvent->type);
-        self::assertSame([], $unarchiveEvent->context);
-    }
+        expect($archiveEvent->type)->toBe(SubscriptionEventType::Archive)
+            ->and($unarchiveEvent->type)->toBe(SubscriptionEventType::Unarchive)
+            ->and($unarchiveEvent->context)->toBe([])
+        ;
+    });
+});
 
-    public function testRejectsEmptyName(): void
-    {
-        $this->expectException(\Assert\InvalidArgumentException::class);
-
+describe('validation', function (): void {
+    test('rejects empty name', function (): void {
         new Subscription(
             category: $this->category,
             name: '',
-            lastPaidDate: new \DateTimeImmutable(),
+            lastPaidDate: new DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
         );
-    }
+    })->throws(Assert\InvalidArgumentException::class);
 
-    public function testRejectsWhitespaceName(): void
-    {
-        $this->expectException(\Assert\InvalidArgumentException::class);
-
+    test('rejects whitespace name', function (): void {
         new Subscription(
             category: $this->category,
             name: '   ',
-            lastPaidDate: new \DateTimeImmutable(),
+            lastPaidDate: new DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
         );
-    }
+    })->throws(Assert\InvalidArgumentException::class);
 
-    public function testRejectsZeroCost(): void
-    {
-        $this->expectException(\Assert\InvalidArgumentException::class);
-
+    test('rejects zero cost', function (): void {
         new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new \DateTimeImmutable(),
+            lastPaidDate: new DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 0,
         );
-    }
+    })->throws(Assert\InvalidArgumentException::class);
 
-    public function testRejectsNegativeCost(): void
-    {
-        $this->expectException(\Assert\InvalidArgumentException::class);
-
+    test('rejects negative cost', function (): void {
         new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new \DateTimeImmutable(),
+            lastPaidDate: new DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: -100,
         );
-    }
+    })->throws(Assert\InvalidArgumentException::class);
 
-    public function testRejectsZeroPeriodCount(): void
-    {
-        $this->expectException(\Assert\InvalidArgumentException::class);
-
+    test('rejects zero period count', function (): void {
         new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new \DateTimeImmutable(),
+            lastPaidDate: new DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 0,
             cost: 1500,
         );
-    }
+    })->throws(Assert\InvalidArgumentException::class);
 
-    public function testRejectsNegativePeriodCount(): void
-    {
-        $this->expectException(\Assert\InvalidArgumentException::class);
-
+    test('rejects negative period count', function (): void {
         new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new \DateTimeImmutable(),
+            lastPaidDate: new DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: -1,
             cost: 1500,
         );
-    }
-}
+    })->throws(Assert\InvalidArgumentException::class);
+});

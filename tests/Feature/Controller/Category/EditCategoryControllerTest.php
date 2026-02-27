@@ -5,149 +5,135 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Feature\Controller\Category;
-
 use App\Entity\Category;
 use App\Factory\CategoryFactory;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Uid\Ulid;
 
-class EditCategoryControllerTest extends WebTestCase
-{
-    public function testGetRequestDisplaysEditFormWithCurrentData(): void
-    {
-        $client = static::createClient();
+test('get request displays edit form with current data', function (): void {
+    $client = $this->createClient();
 
-        $category = CategoryFactory::createOne(['name' => 'Original Name']);
-        $categoryId = $category->id;
+    $category = CategoryFactory::createOne(['name' => 'Original Name']);
+    $categoryId = $category->id;
 
-        $client->request(method: 'GET', uri: '/categories/' . $categoryId . '/edit');
+    $client->request(method: 'GET', uri: '/categories/' . $categoryId . '/edit');
 
-        self::assertResponseIsSuccessful();
-        self::assertSelectorTextContains(selector: 'h1', text: 'Edit Category');
-        self::assertSelectorExists(selector: 'form');
-        self::assertSelectorExists(selector: 'input[name="edit_category[name]"][value="Original Name"]');
-        self::assertSelectorExists(selector: 'button[type="submit"]');
-    }
+    $this->assertResponseIsSuccessful();
+    $this->assertSelectorTextContains(selector: 'h1', text: 'Edit Category');
+    $this->assertSelectorExists(selector: 'form');
+    $this->assertSelectorExists(selector: 'input[name="edit_category[name]"][value="Original Name"]');
+    $this->assertSelectorExists(selector: 'button[type="submit"]');
+});
 
-    public function testShowsCancelLinkBackToShowPage(): void
-    {
-        $client = static::createClient();
+test('shows cancel link back to show page', function (): void {
+    $client = $this->createClient();
 
-        $category = CategoryFactory::createOne(['name' => 'Test Category']);
-        $categoryId = $category->id;
+    $category = CategoryFactory::createOne(['name' => 'Test Category']);
+    $categoryId = $category->id;
 
-        $client->request(method: 'GET', uri: '/categories/' . $categoryId . '/edit');
+    $client->request(method: 'GET', uri: '/categories/' . $categoryId . '/edit');
 
-        self::assertResponseIsSuccessful();
-        self::assertSelectorExists(selector: 'a[href="/categories/' . $categoryId . '"]');
-    }
+    $this->assertResponseIsSuccessful();
+    $this->assertSelectorExists(selector: 'a[href="/categories/' . $categoryId . '"]');
+});
 
-    public function testPostRequestWithValidDataUpdatesCategory(): void
-    {
-        $client = static::createClient();
+test('post request with valid data updates category', function (): void {
+    $client = $this->createClient();
 
-        $category = CategoryFactory::createOne(['name' => 'Old Name']);
-        $categoryId = $category->id;
+    $category = CategoryFactory::createOne(['name' => 'Old Name']);
+    $categoryId = $category->id;
 
-        $crawler = $client->request(method: 'GET', uri: '/categories/' . $categoryId . '/edit');
+    $crawler = $client->request(method: 'GET', uri: '/categories/' . $categoryId . '/edit');
 
-        $form = $crawler->selectButton(value: 'Save')->form();
-        $form['edit_category[name]'] = 'Updated Name';
+    $form = $crawler->selectButton(value: 'Save')->form();
+    $form['edit_category[name]'] = 'Updated Name';
 
-        $client->submit(form: $form);
+    $client->submit(form: $form);
 
-        self::assertResponseRedirects(expectedLocation: '/categories/' . $categoryId);
+    $this->assertResponseRedirects(expectedLocation: '/categories/' . $categoryId);
 
-        $container = static::getContainer();
-        /** @var EntityManagerInterface $entityManager */
-        $entityManager = $container->get(id: EntityManagerInterface::class);
-        $repository = $entityManager->getRepository(className: Category::class);
+    $container = $this->getContainer();
+    /** @var EntityManagerInterface $entityManager */
+    $entityManager = $container->get(id: EntityManagerInterface::class);
+    $repository = $entityManager->getRepository(className: Category::class);
 
-        $updatedCategory = $repository->find($categoryId);
+    $updatedCategory = $repository->find($categoryId);
 
-        self::assertNotNull($updatedCategory);
-        self::assertSame('Updated Name', $updatedCategory->name);
-    }
+    expect($updatedCategory)->not->toBeNull();
+    expect($updatedCategory->name)->toBe('Updated Name');
+});
 
-    public function testPostRequestWithValidDataShowsSuccessFlashMessage(): void
-    {
-        $client = static::createClient();
+test('post request with valid data shows success flash message', function (): void {
+    $client = $this->createClient();
 
-        $category = CategoryFactory::createOne(['name' => 'Test Category']);
-        $categoryId = $category->id;
+    $category = CategoryFactory::createOne(['name' => 'Test Category']);
+    $categoryId = $category->id;
 
-        $crawler = $client->request(method: 'GET', uri: '/categories/' . $categoryId . '/edit');
+    $crawler = $client->request(method: 'GET', uri: '/categories/' . $categoryId . '/edit');
 
-        $form = $crawler->selectButton(value: 'Save')->form();
-        $form['edit_category[name]'] = 'Updated Category';
+    $form = $crawler->selectButton(value: 'Save')->form();
+    $form['edit_category[name]'] = 'Updated Category';
 
-        $client->submit(form: $form);
-        $client->followRedirect();
+    $client->submit(form: $form);
+    $client->followRedirect();
 
-        self::assertSelectorTextContains(selector: '.flash-success', text: 'Category updated successfully');
-    }
+    $this->assertSelectorTextContains(selector: '.flash-success', text: 'Category updated successfully');
+});
 
-    public function testPostRequestWithEmptyNameShowsValidationError(): void
-    {
-        $client = static::createClient();
+test('post request with empty name shows validation error', function (): void {
+    $client = $this->createClient();
 
-        $category = CategoryFactory::createOne(['name' => 'Test Category']);
-        $categoryId = $category->id;
+    $category = CategoryFactory::createOne(['name' => 'Test Category']);
+    $categoryId = $category->id;
 
-        $crawler = $client->request(method: 'GET', uri: '/categories/' . $categoryId . '/edit');
+    $crawler = $client->request(method: 'GET', uri: '/categories/' . $categoryId . '/edit');
 
-        $form = $crawler->selectButton(value: 'Save')->form();
-        $form['edit_category[name]'] = '';
+    $form = $crawler->selectButton(value: 'Save')->form();
+    $form['edit_category[name]'] = '';
 
-        $client->submit(form: $form);
+    $client->submit(form: $form);
 
-        self::assertResponseStatusCodeSame(expectedCode: 422);
-        self::assertSelectorExists(selector: '.form-error');
-        self::assertSelectorTextContains(selector: 'body', text: 'This value should not be blank');
-    }
+    $this->assertResponseStatusCodeSame(expectedCode: 422);
+    $this->assertSelectorExists(selector: '.form-error');
+    $this->assertSelectorTextContains(selector: 'body', text: 'This value should not be blank');
+});
 
-    public function testPostRequestWithTooLongNameShowsValidationError(): void
-    {
-        $client = static::createClient();
+test('post request with too long name shows validation error', function (): void {
+    $client = $this->createClient();
 
-        $category = CategoryFactory::createOne(['name' => 'Test Category']);
-        $categoryId = $category->id;
+    $category = CategoryFactory::createOne(['name' => 'Test Category']);
+    $categoryId = $category->id;
 
-        $crawler = $client->request(method: 'GET', uri: '/categories/' . $categoryId . '/edit');
+    $crawler = $client->request(method: 'GET', uri: '/categories/' . $categoryId . '/edit');
 
-        $form = $crawler->selectButton(value: 'Save')->form();
-        $form['edit_category[name]'] = str_repeat(string: 'a', times: 256);
+    $form = $crawler->selectButton(value: 'Save')->form();
+    $form['edit_category[name]'] = str_repeat(string: 'a', times: 256);
 
-        $client->submit(form: $form);
+    $client->submit(form: $form);
 
-        self::assertResponseStatusCodeSame(expectedCode: 422);
-        self::assertSelectorExists(selector: '.form-error');
-        self::assertSelectorTextContains(selector: 'body', text: 'This value is too long');
-    }
+    $this->assertResponseStatusCodeSame(expectedCode: 422);
+    $this->assertSelectorExists(selector: '.form-error');
+    $this->assertSelectorTextContains(selector: 'body', text: 'This value is too long');
+});
 
-    public function testReturns404ForNonExistentCategory(): void
-    {
-        $client = static::createClient();
+test('returns 404 for non existent category', function (): void {
+    $client = $this->createClient();
 
-        $nonExistentId = new Ulid();
+    $nonExistentId = new Ulid();
 
-        $client->request(method: 'GET', uri: '/categories/' . $nonExistentId . '/edit');
+    $client->request(method: 'GET', uri: '/categories/' . $nonExistentId . '/edit');
 
-        self::assertResponseStatusCodeSame(expectedCode: 404);
-    }
+    $this->assertResponseStatusCodeSame(expectedCode: 404);
+});
 
-    public function testFormIncludesCsrfProtection(): void
-    {
-        $client = static::createClient();
+test('form includes csrf protection', function (): void {
+    $client = $this->createClient();
 
-        $category = CategoryFactory::createOne(['name' => 'Test Category']);
-        $categoryId = $category->id;
+    $category = CategoryFactory::createOne(['name' => 'Test Category']);
+    $categoryId = $category->id;
 
-        $client->request(method: 'GET', uri: '/categories/' . $categoryId . '/edit');
+    $client->request(method: 'GET', uri: '/categories/' . $categoryId . '/edit');
 
-        self::assertResponseIsSuccessful();
-        self::assertSelectorExists(selector: 'input[name="edit_category[_token]"]');
-    }
-}
+    $this->assertResponseIsSuccessful();
+    $this->assertSelectorExists(selector: 'input[name="edit_category[_token]"]');
+});

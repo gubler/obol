@@ -5,17 +5,10 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Message\Command\Payment;
-
 use App\Message\Command\Payment\DeletePaymentCommand;
-use PHPUnit\Framework\TestCase;
 
-class DeletePaymentCommandTest extends TestCase
-{
-    public function testCommandStoresValues(): void
-    {
-        $command = new DeletePaymentCommand(paymentId: '01JKEXAMPLEID000000000001');
+test('command stores values', function (): void {
+    $command = new DeletePaymentCommand(paymentId: '01JKEXAMPLEID000000000001');
 
-        self::assertSame('01JKEXAMPLEID000000000001', $command->paymentId);
-    }
-}
+    expect($command->paymentId)->toBe('01JKEXAMPLEID000000000001');
+});

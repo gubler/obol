@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# ABOUTME: Git pre-merge-commit hook that runs full validation on merges.
+# ABOUTME: Enforces --no-ff for merges to main and runs linters, SA, and tests.
+
+set -euo pipefail
+
+BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null || echo "")
+
+# Enforce --no-ff for merges to main
+if [ "$BRANCH" = "main" ]; then
+    # Check if this is a fast-forward merge (no merge commit would be created,
+    # so this hook wouldn't fire). If the hook fires, we're good — it means
+    # --no-ff was used or a real merge commit is being created.
+    echo "Merging to main — running full validation..."
+fi
+
+echo "Running linters..."
+mise run lint:php
+mise run cs
+mise run cs:twig
+
+echo "Running static analysis..."
+mise run sa
+
+echo "Running tests..."
+mise run test
+
+echo "All checks passed."

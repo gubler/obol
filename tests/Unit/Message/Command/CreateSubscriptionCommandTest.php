@@ -5,77 +5,70 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Message\Command;
-
 use App\Enum\PaymentPeriod;
 use App\Message\Command\Subscription\CreateSubscriptionCommand;
-use PHPUnit\Framework\TestCase;
 
-class CreateSubscriptionCommandTest extends TestCase
-{
-    public function testCreatesCommandWithAllFields(): void
-    {
-        $lastPaidDate = new \DateTimeImmutable('2026-01-01');
+test('creates command with all fields', function (): void {
+    $lastPaidDate = new DateTimeImmutable('2026-01-01');
 
-        $command = new CreateSubscriptionCommand(
-            categoryId: '01JKTEST1234567890ABCDEFGH',
-            name: 'Netflix',
-            lastPaidDate: $lastPaidDate,
-            paymentPeriod: PaymentPeriod::Month,
-            paymentPeriodCount: 1,
-            cost: 1599,
-            description: 'Streaming service',
-            link: 'https://netflix.com',
-            logo: 'netflix.png',
-        );
+    $command = new CreateSubscriptionCommand(
+        categoryId: '01JKTEST1234567890ABCDEFGH',
+        name: 'Netflix',
+        lastPaidDate: $lastPaidDate,
+        paymentPeriod: PaymentPeriod::Month,
+        paymentPeriodCount: 1,
+        cost: 1599,
+        description: 'Streaming service',
+        link: 'https://netflix.com',
+        logo: 'netflix.png',
+    );
 
-        self::assertSame('01JKTEST1234567890ABCDEFGH', $command->categoryId);
-        self::assertSame('Netflix', $command->name);
-        self::assertSame($lastPaidDate, $command->lastPaidDate);
-        self::assertSame(PaymentPeriod::Month, $command->paymentPeriod);
-        self::assertSame(1, $command->paymentPeriodCount);
-        self::assertSame(1599, $command->cost);
-        self::assertSame('Streaming service', $command->description);
-        self::assertSame('https://netflix.com', $command->link);
-        self::assertSame('netflix.png', $command->logo);
-    }
+    expect($command->categoryId)->toBe('01JKTEST1234567890ABCDEFGH')
+        ->and($command->name)->toBe('Netflix')
+        ->and($command->lastPaidDate)->toBe($lastPaidDate)
+        ->and($command->paymentPeriod)->toBe(PaymentPeriod::Month)
+        ->and($command->paymentPeriodCount)->toBe(1)
+        ->and($command->cost)->toBe(1599)
+        ->and($command->description)->toBe('Streaming service')
+        ->and($command->link)->toBe('https://netflix.com')
+        ->and($command->logo)->toBe('netflix.png')
+    ;
+});
 
-    public function testCreatesCommandWithOptionalFieldDefaults(): void
-    {
-        $lastPaidDate = new \DateTimeImmutable('2026-01-01');
+test('creates command with optional field defaults', function (): void {
+    $lastPaidDate = new DateTimeImmutable('2026-01-01');
 
-        $command = new CreateSubscriptionCommand(
-            categoryId: '01JKTEST1234567890ABCDEFGH',
-            name: 'Spotify',
-            lastPaidDate: $lastPaidDate,
-            paymentPeriod: PaymentPeriod::Month,
-            paymentPeriodCount: 1,
-            cost: 999,
-        );
+    $command = new CreateSubscriptionCommand(
+        categoryId: '01JKTEST1234567890ABCDEFGH',
+        name: 'Spotify',
+        lastPaidDate: $lastPaidDate,
+        paymentPeriod: PaymentPeriod::Month,
+        paymentPeriodCount: 1,
+        cost: 999,
+    );
 
-        self::assertSame('01JKTEST1234567890ABCDEFGH', $command->categoryId);
-        self::assertSame('Spotify', $command->name);
-        self::assertSame($lastPaidDate, $command->lastPaidDate);
-        self::assertSame(PaymentPeriod::Month, $command->paymentPeriod);
-        self::assertSame(1, $command->paymentPeriodCount);
-        self::assertSame(999, $command->cost);
-        self::assertSame('', $command->description);
-        self::assertSame('', $command->link);
-        self::assertSame('', $command->logo);
-    }
+    expect($command->categoryId)->toBe('01JKTEST1234567890ABCDEFGH')
+        ->and($command->name)->toBe('Spotify')
+        ->and($command->lastPaidDate)->toBe($lastPaidDate)
+        ->and($command->paymentPeriod)->toBe(PaymentPeriod::Month)
+        ->and($command->paymentPeriodCount)->toBe(1)
+        ->and($command->cost)->toBe(999)
+        ->and($command->description)->toBe('')
+        ->and($command->link)->toBe('')
+        ->and($command->logo)->toBe('')
+    ;
+});
 
-    public function testIsReadonly(): void
-    {
-        $command = new CreateSubscriptionCommand(
-            categoryId: '01JKTEST1234567890ABCDEFGH',
-            name: 'Test',
-            lastPaidDate: new \DateTimeImmutable(),
-            paymentPeriod: PaymentPeriod::Month,
-            paymentPeriodCount: 1,
-            cost: 100,
-        );
+test('is readonly', function (): void {
+    $command = new CreateSubscriptionCommand(
+        categoryId: '01JKTEST1234567890ABCDEFGH',
+        name: 'Test',
+        lastPaidDate: new DateTimeImmutable(),
+        paymentPeriod: PaymentPeriod::Month,
+        paymentPeriodCount: 1,
+        cost: 100,
+    );
 
-        $reflection = new \ReflectionClass($command);
-        self::assertTrue($reflection->isReadOnly());
-    }
-}
+    $reflection = new ReflectionClass($command);
+    expect($reflection->isReadOnly())->toBeTrue();
+});

@@ -5,28 +5,20 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Message\Query;
-
 use App\Message\Query\Subscription\FindSubscriptionQuery;
-use PHPUnit\Framework\TestCase;
 
-class FindSubscriptionQueryTest extends TestCase
-{
-    public function testCreatesQueryWithSubscriptionId(): void
-    {
-        $subscriptionId = '01JKSUB1234567890ABCDEFGH';
-        $query = new FindSubscriptionQuery(subscriptionId: $subscriptionId);
+test('creates query with subscription id', function (): void {
+    $subscriptionId = '01JKSUB1234567890ABCDEFGH';
+    $query = new FindSubscriptionQuery(subscriptionId: $subscriptionId);
 
-        self::assertSame($subscriptionId, $query->subscriptionId);
-    }
+    expect($query->subscriptionId)->toBe($subscriptionId);
+});
 
-    public function testIsReadonly(): void
-    {
-        $query = new FindSubscriptionQuery(
-            subscriptionId: '01JKSUB1234567890ABCDEFGH'
-        );
+test('is readonly', function (): void {
+    $query = new FindSubscriptionQuery(
+        subscriptionId: '01JKSUB1234567890ABCDEFGH'
+    );
 
-        $reflection = new \ReflectionClass($query);
-        self::assertTrue($reflection->isReadOnly());
-    }
-}
+    $reflection = new ReflectionClass($query);
+    expect($reflection->isReadOnly())->toBeTrue();
+});

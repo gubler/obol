@@ -5,28 +5,20 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Message\Query;
-
 use App\Message\Query\Category\FindCategoryQuery;
-use PHPUnit\Framework\TestCase;
 
-class FindCategoryQueryTest extends TestCase
-{
-    public function testCreatesQueryWithCategoryId(): void
-    {
-        $categoryId = '01JBBQ7Z8Z8Z8Z8Z8Z8Z8Z8Z8Z';
-        $query = new FindCategoryQuery(categoryId: $categoryId);
+test('creates query with category id', function (): void {
+    $categoryId = '01JBBQ7Z8Z8Z8Z8Z8Z8Z8Z8Z8Z';
+    $query = new FindCategoryQuery(categoryId: $categoryId);
 
-        self::assertSame($categoryId, $query->categoryId);
-    }
+    expect($query->categoryId)->toBe($categoryId);
+});
 
-    public function testIsReadonly(): void
-    {
-        $query = new FindCategoryQuery(
-            categoryId: '01JBBQ7Z8Z8Z8Z8Z8Z8Z8Z8Z8Z'
-        );
+test('is readonly', function (): void {
+    $query = new FindCategoryQuery(
+        categoryId: '01JBBQ7Z8Z8Z8Z8Z8Z8Z8Z8Z8Z'
+    );
 
-        $reflection = new \ReflectionClass($query);
-        self::assertTrue($reflection->isReadOnly());
-    }
-}
+    $reflection = new ReflectionClass($query);
+    expect($reflection->isReadOnly())->toBeTrue();
+});

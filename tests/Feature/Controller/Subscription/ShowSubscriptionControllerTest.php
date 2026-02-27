@@ -5,101 +5,89 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Feature\Controller\Subscription;
-
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-class ShowSubscriptionControllerTest extends WebTestCase
-{
-    public function testShowsSubscriptionBasicResponse(): void
-    {
-        $client = static::createClient();
-        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $subscription = SubscriptionFactory::createOne([
-            'category' => $category,
-            'name' => 'Netflix Premium',
-            'cost' => 1999,
-            'description' => 'Streaming service',
-        ]);
+test('shows subscription basic response', function (): void {
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    $subscription = SubscriptionFactory::createOne([
+        'category' => $category,
+        'name' => 'Netflix Premium',
+        'cost' => 1999,
+        'description' => 'Streaming service',
+    ]);
 
-        $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id);
+    $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id);
 
-        self::assertResponseIsSuccessful();
-    }
+    $this->assertResponseIsSuccessful();
+});
 
-    public function testShowsEditLink(): void
-    {
-        $client = static::createClient();
-        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $subscription = SubscriptionFactory::createOne([
-            'category' => $category,
-            'name' => 'Netflix',
-        ]);
+test('shows edit link', function (): void {
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    $subscription = SubscriptionFactory::createOne([
+        'category' => $category,
+        'name' => 'Netflix',
+    ]);
 
-        $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id);
+    $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id);
 
-        self::assertResponseIsSuccessful();
-        self::assertSelectorExists(selector: 'a[href="/subscriptions/' . $subscription->id . '/edit"]');
-    }
+    $this->assertResponseIsSuccessful();
+    $this->assertSelectorExists(selector: 'a[href="/subscriptions/' . $subscription->id . '/edit"]');
+});
 
-    public function testShowsDeleteButton(): void
-    {
-        $client = static::createClient();
-        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $subscription = SubscriptionFactory::createOne([
-            'category' => $category,
-            'name' => 'Netflix',
-        ]);
+test('shows delete button', function (): void {
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    $subscription = SubscriptionFactory::createOne([
+        'category' => $category,
+        'name' => 'Netflix',
+    ]);
 
-        $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id);
+    $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id);
 
-        self::assertResponseIsSuccessful();
-        self::assertSelectorExists(selector: 'form[action="/subscriptions/' . $subscription->id . '/delete"]');
-    }
+    $this->assertResponseIsSuccessful();
+    $this->assertSelectorExists(selector: 'form[action="/subscriptions/' . $subscription->id . '/delete"]');
+});
 
-    public function testShowsBackToListLink(): void
-    {
-        $client = static::createClient();
-        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $subscription = SubscriptionFactory::createOne([
-            'category' => $category,
-            'name' => 'Netflix',
-        ]);
+test('shows back to list link', function (): void {
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    $subscription = SubscriptionFactory::createOne([
+        'category' => $category,
+        'name' => 'Netflix',
+    ]);
 
-        $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id);
+    $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id);
 
-        self::assertResponseIsSuccessful();
-        self::assertSelectorExists(selector: 'a[href="/"]');
-    }
+    $this->assertResponseIsSuccessful();
+    $this->assertSelectorExists(selector: 'a[href="/"]');
+});
 
-    public function testInvalidIdReturns404(): void
-    {
-        $client = static::createClient();
+test('invalid id returns 404', function (): void {
+    $client = $this->createClient();
 
-        $client->request(method: 'GET', uri: '/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX');
+    $client->request(method: 'GET', uri: '/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX');
 
-        self::assertResponseStatusCodeSame(expectedCode: 404);
-    }
+    $this->assertResponseStatusCodeSame(expectedCode: 404);
+});
 
-    public function testRendersWithoutErrors(): void
-    {
-        $client = static::createClient();
-        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $subscription = SubscriptionFactory::createOne([
-            'category' => $category,
-            'name' => 'Netflix',
-            'cost' => 1599,
-            'description' => 'Test description',
-        ]);
+test('renders without errors', function (): void {
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    $subscription = SubscriptionFactory::createOne([
+        'category' => $category,
+        'name' => 'Netflix',
+        'cost' => 1599,
+        'description' => 'Test description',
+    ]);
 
-        $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id);
+    $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id);
 
-        self::assertResponseIsSuccessful();
-        // Template should render without errors
-        $content = $client->getResponse()->getContent();
-        self::assertNotFalse($content);
-        self::assertStringContainsString('Netflix', $content);
-    }
-}
+    $this->assertResponseIsSuccessful();
+    // Template should render without errors
+    $content = $client->getResponse()->getContent();
+    expect($content)->not->toBeFalse();
+    expect($content)->toContain('Netflix');
+});

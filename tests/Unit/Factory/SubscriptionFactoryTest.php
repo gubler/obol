@@ -1,54 +1,47 @@
 <?php
 
-declare(strict_types=1);
+// ABOUTME: Unit tests for SubscriptionFactory ensuring proper factory defaults and state methods.
+// ABOUTME: Tests verify subscription creation, custom overrides, and factory state methods.
 
-namespace App\Tests\Unit\Factory;
+declare(strict_types=1);
 
 use App\Factory\SubscriptionFactory;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Zenstruck\Foundry\Test\Factories;
 
-class SubscriptionFactoryTest extends KernelTestCase
-{
-    use Factories;
+uses(KernelTestCase::class);
 
-    public function testCreatesSubscriptionWithRequiredFields(): void
-    {
-        $subscription = SubscriptionFactory::createOne();
+test('creates subscription with required fields', function (): void {
+    $subscription = SubscriptionFactory::createOne();
 
-        self::assertNotEmpty($subscription->name);
-        self::assertGreaterThan(0, $subscription->cost);
-        self::assertGreaterThan(0, $subscription->paymentPeriodCount);
-        self::assertFalse($subscription->archived);
-        self::assertCount(0, $subscription->payments);
-        self::assertCount(0, $subscription->subscriptionEvents);
-    }
+    expect($subscription->name)->not->toBeEmpty()
+        ->and($subscription->cost)->toBeGreaterThan(0)
+        ->and($subscription->paymentPeriodCount)->toBeGreaterThan(0)
+        ->and($subscription->archived)->toBeFalse()
+        ->and($subscription->payments)->toHaveCount(0)
+        ->and($subscription->subscriptionEvents)->toHaveCount(0)
+    ;
+});
 
-    public function testAllowsCustomName(): void
-    {
-        $subscription = SubscriptionFactory::createOne(['name' => 'Netflix']);
+test('allows custom name', function (): void {
+    $subscription = SubscriptionFactory::createOne(['name' => 'Netflix']);
 
-        self::assertSame('Netflix', $subscription->name);
-    }
+    expect($subscription->name)->toBe('Netflix');
+});
 
-    public function testArchivedCreatesArchivedSubscription(): void
-    {
-        $subscription = SubscriptionFactory::new()->archived()->create();
+test('archived creates archived subscription', function (): void {
+    $subscription = SubscriptionFactory::new()->archived()->create();
 
-        self::assertTrue($subscription->archived);
-    }
+    expect($subscription->archived)->toBeTrue();
+});
 
-    public function testWithRecentPaymentCreatesSubscriptionWithRecentPayment(): void
-    {
-        $subscription = SubscriptionFactory::new()->withRecentPayment()->create();
+test('with recent payment creates subscription with recent payment', function (): void {
+    $subscription = SubscriptionFactory::new()->withRecentPayment()->create();
 
-        self::assertCount(1, $subscription->payments);
-    }
+    expect($subscription->payments)->toHaveCount(1);
+});
 
-    public function testExpensiveSubscriptionCreatesSubscriptionWithHighCost(): void
-    {
-        $subscription = SubscriptionFactory::new()->expensiveSubscription()->create();
+test('expensive subscription creates subscription with high cost', function (): void {
+    $subscription = SubscriptionFactory::new()->expensiveSubscription()->create();
 
-        self::assertGreaterThanOrEqual(5000, $subscription->cost);
-    }
-}
+    expect($subscription->cost)->toBeGreaterThanOrEqual(5000);
+});

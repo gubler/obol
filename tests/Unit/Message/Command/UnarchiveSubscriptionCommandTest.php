@@ -5,28 +5,20 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Message\Command;
-
 use App\Message\Command\Subscription\UnarchiveSubscriptionCommand;
-use PHPUnit\Framework\TestCase;
 
-class UnarchiveSubscriptionCommandTest extends TestCase
-{
-    public function testCreatesCommandWithSubscriptionId(): void
-    {
-        $subscriptionId = '01JKSUB1234567890ABCDEFGH';
-        $command = new UnarchiveSubscriptionCommand(subscriptionId: $subscriptionId);
+test('creates command with subscription id', function (): void {
+    $subscriptionId = '01JKSUB1234567890ABCDEFGH';
+    $command = new UnarchiveSubscriptionCommand(subscriptionId: $subscriptionId);
 
-        self::assertSame($subscriptionId, $command->subscriptionId);
-    }
+    expect($command->subscriptionId)->toBe($subscriptionId);
+});
 
-    public function testIsReadonly(): void
-    {
-        $command = new UnarchiveSubscriptionCommand(
-            subscriptionId: '01JKSUB1234567890ABCDEFGH'
-        );
+test('is readonly', function (): void {
+    $command = new UnarchiveSubscriptionCommand(
+        subscriptionId: '01JKSUB1234567890ABCDEFGH'
+    );
 
-        $reflection = new \ReflectionClass($command);
-        self::assertTrue($reflection->isReadOnly());
-    }
-}
+    $reflection = new ReflectionClass($command);
+    expect($reflection->isReadOnly())->toBeTrue();
+});

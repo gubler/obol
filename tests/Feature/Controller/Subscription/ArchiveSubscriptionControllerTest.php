@@ -5,99 +5,88 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Feature\Controller\Subscription;
-
 use App\Entity\Subscription;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-class ArchiveSubscriptionControllerTest extends WebTestCase
-{
-    public function testArchiveRequestArchivesSubscription(): void
-    {
-        $client = static::createClient();
-        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $subscription = SubscriptionFactory::createOne([
-            'category' => $category,
-            'name' => 'Netflix',
-        ]);
+test('archive request archives subscription', function (): void {
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    $subscription = SubscriptionFactory::createOne([
+        'category' => $category,
+        'name' => 'Netflix',
+    ]);
 
-        $client->request(method: 'POST', uri: '/subscriptions/' . $subscription->id . '/archive');
+    $client->request(method: 'POST', uri: '/subscriptions/' . $subscription->id . '/archive');
 
-        self::assertResponseRedirects('/subscriptions/' . $subscription->id);
+    $this->assertResponseRedirects('/subscriptions/' . $subscription->id);
 
-        $container = static::getContainer();
-        /** @var EntityManagerInterface $entityManager */
-        $entityManager = $container->get(id: EntityManagerInterface::class);
-        $repository = $entityManager->getRepository(className: Subscription::class);
-        $entityManager->clear();
+    $container = $this->getContainer();
+    /** @var EntityManagerInterface $entityManager */
+    $entityManager = $container->get(id: EntityManagerInterface::class);
+    $repository = $entityManager->getRepository(className: Subscription::class);
+    $entityManager->clear();
 
-        $archivedSubscription = $repository->find($subscription->id);
-        self::assertNotNull($archivedSubscription);
-        self::assertTrue($archivedSubscription->archived);
-    }
+    $archivedSubscription = $repository->find($subscription->id);
+    expect($archivedSubscription)->not->toBeNull();
+    expect($archivedSubscription->archived)->toBeTrue();
+});
 
-    public function testArchiveRequestShowsSuccessFlashMessage(): void
-    {
-        $client = static::createClient();
-        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $subscription = SubscriptionFactory::createOne([
-            'category' => $category,
-            'name' => 'Spotify',
-        ]);
+test('archive request shows success flash message', function (): void {
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    $subscription = SubscriptionFactory::createOne([
+        'category' => $category,
+        'name' => 'Spotify',
+    ]);
 
-        $client->request(method: 'POST', uri: '/subscriptions/' . $subscription->id . '/archive');
-        $client->followRedirect();
+    $client->request(method: 'POST', uri: '/subscriptions/' . $subscription->id . '/archive');
+    $client->followRedirect();
 
-        self::assertSelectorTextContains('.flash-success', 'Subscription archived successfully');
-    }
+    $this->assertSelectorTextContains('.flash-success', 'Subscription archived successfully');
+});
 
-    public function testArchiveRequestWithInvalidIdReturns404(): void
-    {
-        $client = static::createClient();
+test('archive request with invalid id returns 404', function (): void {
+    $client = $this->createClient();
 
-        $client->request(method: 'POST', uri: '/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/archive');
+    $client->request(method: 'POST', uri: '/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/archive');
 
-        self::assertResponseStatusCodeSame(404);
-    }
+    $this->assertResponseStatusCodeSame(404);
+});
 
-    public function testOnlyAcceptsPostMethod(): void
-    {
-        $client = static::createClient();
-        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $subscription = SubscriptionFactory::createOne([
-            'category' => $category,
-            'name' => 'Netflix',
-        ]);
+test('only accepts post method', function (): void {
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    $subscription = SubscriptionFactory::createOne([
+        'category' => $category,
+        'name' => 'Netflix',
+    ]);
 
-        $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/archive');
+    $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/archive');
 
-        self::assertResponseStatusCodeSame(405);
-    }
+    $this->assertResponseStatusCodeSame(405);
+});
 
-    public function testArchiveCreatesSubscriptionEvent(): void
-    {
-        $client = static::createClient();
-        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $subscription = SubscriptionFactory::createOne([
-            'category' => $category,
-            'name' => 'Netflix',
-        ]);
+test('archive creates subscription event', function (): void {
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    $subscription = SubscriptionFactory::createOne([
+        'category' => $category,
+        'name' => 'Netflix',
+    ]);
 
-        $initialEventCount = \count($subscription->subscriptionEvents);
+    $initialEventCount = count($subscription->subscriptionEvents);
 
-        $client->request(method: 'POST', uri: '/subscriptions/' . $subscription->id . '/archive');
+    $client->request(method: 'POST', uri: '/subscriptions/' . $subscription->id . '/archive');
 
-        $container = static::getContainer();
-        /** @var EntityManagerInterface $entityManager */
-        $entityManager = $container->get(id: EntityManagerInterface::class);
-        $repository = $entityManager->getRepository(className: Subscription::class);
-        $entityManager->clear();
+    $container = $this->getContainer();
+    /** @var EntityManagerInterface $entityManager */
+    $entityManager = $container->get(id: EntityManagerInterface::class);
+    $repository = $entityManager->getRepository(className: Subscription::class);
+    $entityManager->clear();
 
-        $archivedSubscription = $repository->find($subscription->id);
-        self::assertNotNull($archivedSubscription);
-        self::assertGreaterThan($initialEventCount, \count($archivedSubscription->subscriptionEvents));
-    }
-}
+    $archivedSubscription = $repository->find($subscription->id);
+    expect($archivedSubscription)->not->toBeNull();
+    expect(count($archivedSubscription->subscriptionEvents))->toBeGreaterThan($initialEventCount);
+});

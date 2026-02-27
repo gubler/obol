@@ -1,22 +1,72 @@
+[tasks."lint:php"]
+description = "PHP syntax check on changed files"
+run = [
+    """
+    files=$(git diff --cached --name-only --diff-filter=ACM -- '*.php' 2>/dev/null || git diff --name-only HEAD -- '*.php' 2>/dev/null)
+    if [ -z "$files" ]; then
+        echo "No PHP files to lint"
+        exit 0
+    fi
+    errors=0
+    for file in $files; do
+        if [ -f "$file" ]; then
+            php -l "$file" > /dev/null 2>&1
+            if [ $? -ne 0 ]; then
+                php -l "$file"
+                errors=1
+            fi
+        fi
+    done
+    if [ $errors -ne 0 ]; then
+        exit 1
+    fi
+    echo "PHP syntax check passed"
+    """
+]
 [tasks.sa]
 description = "Static Analysis via PhpStan"
 run = [
     "php vendor/bin/phpstan --memory-limit=4G analyze"
 ]
 [tasks.test]
-description = "Tests via PHPUnit"
+description = "Tests via Pest (compact output)"
 run = [
-    "php vendor/bin/phpunit"
+    "php vendor/bin/pest --compact"
+]
+[tasks."test:v"]
+description = "Tests via Pest (verbose output)"
+run = [
+    "php vendor/bin/pest"
+]
+[tasks.coverage]
+description = "Run tests with coverage (min 70%)"
+run = [
+    "XDEBUG_MODE=coverage php vendor/bin/pest --compact --coverage --min=70"
+]
+[tasks."coverage:report"]
+description = "Generate HTML coverage report"
+run = [
+    "XDEBUG_MODE=coverage php vendor/bin/pest --coverage --coverage-html=var/coverage"
 ]
 [tasks.cs]
-description = "Code Style via PHP CS Fixer"
+description = "Code Style via PHP CS Fixer (fix)"
 run = [
     "php vendor/bin/php-cs-fixer fix"
 ]
+[tasks."cs:check"]
+description = "Code Style via PHP CS Fixer (check only)"
+run = [
+    "php vendor/bin/php-cs-fixer check --diff"
+]
 [tasks."cs:twig"]
-description = "Twig Code Style"
+description = "Twig Code Style (fix)"
 run = [
     "php vendor/bin/twig-cs-fixer fix"
+]
+[tasks."cs:twig:check"]
+description = "Twig Code Style (check only)"
+run = [
+    "php vendor/bin/twig-cs-fixer check"
 ]
 [tasks.rector]
 description = "Refactoring via Rector"

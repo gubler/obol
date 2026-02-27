@@ -1,0 +1,105 @@
+{
+    "config": {
+        "verbosity": "normal",
+        "allow-failure": false,
+        "ansi-colors": true,
+        "fail-on-first-error": false
+    },
+    "pre-commit": {
+        "enabled": true,
+        "actions": [
+            {
+                "action": "echo '\\u2718 Direct commits to main are not allowed. Use a feature branch.' && exit 1",
+                "conditions": [
+                    {
+                        "exec": "\\CaptainHook\\App\\Hook\\Condition\\Branch\\On",
+                        "args": ["main"]
+                    }
+                ]
+            },
+            {
+                "action": "mise run lint:php",
+                "conditions": [
+                    {
+                        "exec": "\\CaptainHook\\App\\Hook\\Condition\\Branch\\NotOn",
+                        "args": ["main"]
+                    }
+                ]
+            },
+            {
+                "action": "mise run cs",
+                "conditions": [
+                    {
+                        "exec": "\\CaptainHook\\App\\Hook\\Condition\\Branch\\NotOn",
+                        "args": ["main"]
+                    }
+                ]
+            },
+            {
+                "action": "mise run cs:twig",
+                "conditions": [
+                    {
+                        "exec": "\\CaptainHook\\App\\Hook\\Condition\\Branch\\NotOn",
+                        "args": ["main"]
+                    }
+                ]
+            }
+        ]
+    },
+    "commit-msg": {
+        "enabled": false,
+        "actions": []
+    },
+    "pre-push": {
+        "enabled": true,
+        "actions": [
+            {
+                "action": "mise run lint:php"
+            },
+            {
+                "action": "mise run cs:check"
+            },
+            {
+                "action": "mise run cs:twig:check"
+            },
+            {
+                "action": "mise run sa",
+                "conditions": [
+                    {
+                        "exec": "\\CaptainHook\\App\\Hook\\Condition\\Branch\\On",
+                        "args": ["main"]
+                    }
+                ]
+            },
+            {
+                "action": "mise run test",
+                "conditions": [
+                    {
+                        "exec": "\\CaptainHook\\App\\Hook\\Condition\\Branch\\On",
+                        "args": ["main"]
+                    }
+                ]
+            }
+        ]
+    },
+    "prepare-commit-msg": {
+        "enabled": false,
+        "actions": []
+    },
+    "post-commit": {
+        "enabled": false,
+        "actions": []
+    },
+    "post-merge": {
+        "enabled": false,
+        "actions": []
+    },
+    "post-checkout": {
+        "enabled": false,
+        "actions": []
+    },
+    "post-rewrite": {
+        "enabled": false,
+        "actions": []
+    }
+}

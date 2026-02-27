@@ -5,149 +5,134 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Feature\Controller\Category;
-
 use App\Entity\Category;
 use App\Factory\CategoryFactory;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-class CreateCategoryControllerTest extends WebTestCase
-{
-    public function testGetRequestDisplaysCreateForm(): void
-    {
-        $client = static::createClient();
+test('get request displays create form', function (): void {
+    $client = $this->createClient();
 
-        $client->request(method: 'GET', uri: '/categories/new');
+    $client->request(method: 'GET', uri: '/categories/new');
 
-        self::assertResponseIsSuccessful();
-        self::assertSelectorTextContains(selector: 'h1', text: 'New Category');
-        self::assertSelectorExists(selector: 'form');
-        self::assertSelectorExists(selector: 'input[name="create_category[name]"]');
-        self::assertSelectorExists(selector: 'button[type="submit"]');
-    }
+    $this->assertResponseIsSuccessful();
+    $this->assertSelectorTextContains(selector: 'h1', text: 'New Category');
+    $this->assertSelectorExists(selector: 'form');
+    $this->assertSelectorExists(selector: 'input[name="create_category[name]"]');
+    $this->assertSelectorExists(selector: 'button[type="submit"]');
+});
 
-    public function testShowsCancelLinkBackToIndex(): void
-    {
-        $client = static::createClient();
+test('shows cancel link back to index', function (): void {
+    $client = $this->createClient();
 
-        $client->request(method: 'GET', uri: '/categories/new');
+    $client->request(method: 'GET', uri: '/categories/new');
 
-        self::assertResponseIsSuccessful();
-        self::assertSelectorExists(selector: 'a[href="/categories"]');
-    }
+    $this->assertResponseIsSuccessful();
+    $this->assertSelectorExists(selector: 'a[href="/categories"]');
+});
 
-    public function testPostRequestWithValidDataCreatesCategory(): void
-    {
-        $client = static::createClient();
+test('post request with valid data creates category', function (): void {
+    $client = $this->createClient();
 
-        $crawler = $client->request(method: 'GET', uri: '/categories/new');
+    $crawler = $client->request(method: 'GET', uri: '/categories/new');
 
-        $form = $crawler->selectButton(value: 'Save')->form();
-        $form['create_category[name]'] = 'New Test Category';
+    $form = $crawler->selectButton(value: 'Save')->form();
+    $form['create_category[name]'] = 'New Test Category';
 
-        $client->submit(form: $form);
+    $client->submit(form: $form);
 
-        self::assertResponseRedirects(expectedLocation: '/categories');
+    $this->assertResponseRedirects(expectedLocation: '/categories');
 
-        $container = static::getContainer();
-        /** @var EntityManagerInterface $entityManager */
-        $entityManager = $container->get(id: EntityManagerInterface::class);
-        $repository = $entityManager->getRepository(className: Category::class);
+    $container = $this->getContainer();
+    /** @var EntityManagerInterface $entityManager */
+    $entityManager = $container->get(id: EntityManagerInterface::class);
+    $repository = $entityManager->getRepository(className: Category::class);
 
-        $category = $repository->findOneBy(criteria: ['name' => 'New Test Category']);
+    $category = $repository->findOneBy(criteria: ['name' => 'New Test Category']);
 
-        self::assertNotNull($category);
-        self::assertSame('New Test Category', $category->name);
-    }
+    expect($category)->not->toBeNull();
+    expect($category->name)->toBe('New Test Category');
+});
 
-    public function testPostRequestWithValidDataShowsSuccessFlashMessage(): void
-    {
-        $client = static::createClient();
+test('post request with valid data shows success flash message', function (): void {
+    $client = $this->createClient();
 
-        $crawler = $client->request(method: 'GET', uri: '/categories/new');
+    $crawler = $client->request(method: 'GET', uri: '/categories/new');
 
-        $form = $crawler->selectButton(value: 'Save')->form();
-        $form['create_category[name]'] = 'Flash Test Category';
+    $form = $crawler->selectButton(value: 'Save')->form();
+    $form['create_category[name]'] = 'Flash Test Category';
 
-        $client->submit(form: $form);
-        $client->followRedirect();
+    $client->submit(form: $form);
+    $client->followRedirect();
 
-        self::assertSelectorTextContains(selector: '.flash-success', text: 'Category created successfully');
-    }
+    $this->assertSelectorTextContains(selector: '.flash-success', text: 'Category created successfully');
+});
 
-    public function testPostRequestWithEmptyNameShowsValidationError(): void
-    {
-        $client = static::createClient();
+test('post request with empty name shows validation error', function (): void {
+    $client = $this->createClient();
 
-        $crawler = $client->request(method: 'GET', uri: '/categories/new');
+    $crawler = $client->request(method: 'GET', uri: '/categories/new');
 
-        $form = $crawler->selectButton(value: 'Save')->form();
-        $form['create_category[name]'] = '';
+    $form = $crawler->selectButton(value: 'Save')->form();
+    $form['create_category[name]'] = '';
 
-        $client->submit(form: $form);
+    $client->submit(form: $form);
 
-        self::assertResponseStatusCodeSame(expectedCode: 422);
-        self::assertSelectorExists(selector: '.form-error');
-        self::assertSelectorTextContains(selector: 'body', text: 'This value should not be blank');
-    }
+    $this->assertResponseStatusCodeSame(expectedCode: 422);
+    $this->assertSelectorExists(selector: '.form-error');
+    $this->assertSelectorTextContains(selector: 'body', text: 'This value should not be blank');
+});
 
-    public function testPostRequestWithTooLongNameShowsValidationError(): void
-    {
-        $client = static::createClient();
+test('post request with too long name shows validation error', function (): void {
+    $client = $this->createClient();
 
-        $crawler = $client->request(method: 'GET', uri: '/categories/new');
+    $crawler = $client->request(method: 'GET', uri: '/categories/new');
 
-        $form = $crawler->selectButton(value: 'Save')->form();
-        $form['create_category[name]'] = str_repeat(string: 'a', times: 256);
+    $form = $crawler->selectButton(value: 'Save')->form();
+    $form['create_category[name]'] = str_repeat(string: 'a', times: 256);
 
-        $client->submit(form: $form);
+    $client->submit(form: $form);
 
-        self::assertResponseStatusCodeSame(expectedCode: 422);
-        self::assertSelectorExists(selector: '.form-error');
-        self::assertSelectorTextContains(selector: 'body', text: 'This value is too long');
-    }
+    $this->assertResponseStatusCodeSame(expectedCode: 422);
+    $this->assertSelectorExists(selector: '.form-error');
+    $this->assertSelectorTextContains(selector: 'body', text: 'This value is too long');
+});
 
-    public function testPostRequestWithOnlyWhitespaceShowsValidationError(): void
-    {
-        $client = static::createClient();
+test('post request with only whitespace shows validation error', function (): void {
+    $client = $this->createClient();
 
-        $crawler = $client->request(method: 'GET', uri: '/categories/new');
+    $crawler = $client->request(method: 'GET', uri: '/categories/new');
 
-        $form = $crawler->selectButton(value: 'Save')->form();
-        $form['create_category[name]'] = '   ';
+    $form = $crawler->selectButton(value: 'Save')->form();
+    $form['create_category[name]'] = '   ';
 
-        $client->submit(form: $form);
+    $client->submit(form: $form);
 
-        self::assertResponseStatusCodeSame(expectedCode: 422);
-        self::assertSelectorExists(selector: '.form-error');
-    }
+    $this->assertResponseStatusCodeSame(expectedCode: 422);
+    $this->assertSelectorExists(selector: '.form-error');
+});
 
-    public function testFormIncludesCsrfProtection(): void
-    {
-        $client = static::createClient();
+test('form includes csrf protection', function (): void {
+    $client = $this->createClient();
 
-        $client->request(method: 'GET', uri: '/categories/new');
+    $client->request(method: 'GET', uri: '/categories/new');
 
-        self::assertResponseIsSuccessful();
-        self::assertSelectorExists(selector: 'input[name="create_category[_token]"]');
-    }
+    $this->assertResponseIsSuccessful();
+    $this->assertSelectorExists(selector: 'input[name="create_category[_token]"]');
+});
 
-    public function testPostRequestDoesNotCreateCategoryWhenValidationFails(): void
-    {
-        $client = static::createClient();
+test('post request does not create category when validation fails', function (): void {
+    $client = $this->createClient();
 
-        $crawler = $client->request(method: 'GET', uri: '/categories/new');
+    $crawler = $client->request(method: 'GET', uri: '/categories/new');
 
-        $initialCount = CategoryFactory::count();
+    $initialCount = CategoryFactory::count();
 
-        $form = $crawler->selectButton(value: 'Save')->form();
-        $form['create_category[name]'] = '';
+    $form = $crawler->selectButton(value: 'Save')->form();
+    $form['create_category[name]'] = '';
 
-        $client->submit(form: $form);
+    $client->submit(form: $form);
 
-        $finalCount = CategoryFactory::count();
+    $finalCount = CategoryFactory::count();
 
-        self::assertSame($initialCount, $finalCount);
-    }
-}
+    expect($finalCount)->toBe($initialCount);
+});

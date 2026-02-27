@@ -1,43 +1,36 @@
 <?php
 
-declare(strict_types=1);
+// ABOUTME: Unit tests for PaymentFactory ensuring proper factory defaults and state methods.
+// ABOUTME: Tests verify payment creation, custom amounts, and payment type state methods.
 
-namespace App\Tests\Unit\Factory;
+declare(strict_types=1);
 
 use App\Enum\PaymentType;
 use App\Factory\PaymentFactory;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Zenstruck\Foundry\Test\Factories;
 
-class PaymentFactoryTest extends KernelTestCase
-{
-    use Factories;
+uses(KernelTestCase::class);
 
-    public function testCreatesPaymentWithRequiredFields(): void
-    {
-        $payment = PaymentFactory::createOne();
+test('creates payment with required fields', function (): void {
+    $payment = PaymentFactory::createOne();
 
-        self::assertGreaterThan(0, $payment->amount);
-    }
+    expect($payment->amount)->toBeGreaterThan(0);
+});
 
-    public function testAllowsCustomAmount(): void
-    {
-        $payment = PaymentFactory::createOne(['amount' => 1999]);
+test('allows custom amount', function (): void {
+    $payment = PaymentFactory::createOne(['amount' => 1999]);
 
-        self::assertSame(1999, $payment->amount);
-    }
+    expect($payment->amount)->toBe(1999);
+});
 
-    public function testRegularCreatesVerifiedPayment(): void
-    {
-        $payment = PaymentFactory::new()->regular()->create();
+test('regular creates verified payment', function (): void {
+    $payment = PaymentFactory::new()->regular()->create();
 
-        self::assertSame(PaymentType::Verified, $payment->type);
-    }
+    expect($payment->type)->toBe(PaymentType::Verified);
+});
 
-    public function testGeneratedCreatesGeneratedPayment(): void
-    {
-        $payment = PaymentFactory::new()->generated()->create();
+test('generated creates generated payment', function (): void {
+    $payment = PaymentFactory::new()->generated()->create();
 
-        self::assertSame(PaymentType::Generated, $payment->type);
-    }
-}
+    expect($payment->type)->toBe(PaymentType::Generated);
+});

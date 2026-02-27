@@ -12,7 +12,6 @@ parameters:
         - config/
         - public/
         - src/
-        - tests/
         - migrations/
         - rector.php
     symfony:

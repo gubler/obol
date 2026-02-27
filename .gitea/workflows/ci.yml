@@ -24,7 +24,7 @@ jobs:
             - name: "Install PHP with extensions"
               uses: shivammathur/setup-php@v2
               with:
-                  coverage: "none"
+                  coverage: "xdebug"
                   extensions: "intl, mbstring, pdo_sqlite, zip"
                   php-version: 8.5
                   tools: composer:v2
@@ -87,9 +87,9 @@ jobs:
                   php bin/console tailwind:build
                   php bin/console asset-map:compile
 
-            - name: "PHPUnit"
+            - name: "Pest"
               if: always() && steps.install.outcome == 'success'
-              run: vendor/bin/phpunit
+              run: vendor/bin/pest --compact --coverage --min=70
 
     build:
         name: Build Docker Image

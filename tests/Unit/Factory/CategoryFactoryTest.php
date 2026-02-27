@@ -1,37 +1,31 @@
 <?php
 
-declare(strict_types=1);
+// ABOUTME: Unit tests for CategoryFactory ensuring proper factory defaults and customization.
+// ABOUTME: Tests verify category creation with generated names, uniqueness, and custom overrides.
 
-namespace App\Tests\Unit\Factory;
+declare(strict_types=1);
 
 use App\Entity\Category;
 use App\Factory\CategoryFactory;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Zenstruck\Foundry\Test\Factories;
 
-class CategoryFactoryTest extends KernelTestCase
-{
-    use Factories;
+uses(KernelTestCase::class);
 
-    public function testCreatesCategoryWithGeneratedName(): void
-    {
-        $category = CategoryFactory::createOne();
+test('creates category with generated name', function (): void {
+    $category = CategoryFactory::createOne();
 
-        self::assertNotEmpty($category->name);
-    }
+    expect($category->name)->not->toBeEmpty();
+});
 
-    public function testCreatesMultipleCategoriesWithUniqueNames(): void
-    {
-        $categories = CategoryFactory::createMany(3);
+test('creates multiple categories with unique names', function (): void {
+    $categories = CategoryFactory::createMany(3);
 
-        $names = array_map(fn (Category $cat): string => $cat->name, $categories);
-        self::assertCount(3, array_unique($names));
-    }
+    $names = array_map(fn (Category $cat): string => $cat->name, $categories);
+    expect(array_unique($names))->toHaveCount(3);
+});
 
-    public function testAllowsCustomName(): void
-    {
-        $category = CategoryFactory::createOne(['name' => 'Custom Category']);
+test('allows custom name', function (): void {
+    $category = CategoryFactory::createOne(['name' => 'Custom Category']);
 
-        self::assertSame('Custom Category', $category->name);
-    }
-}
+    expect($category->name)->toBe('Custom Category');
+});

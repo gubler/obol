@@ -5,99 +5,88 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Feature\Controller\Subscription;
-
 use App\Entity\Subscription;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-class UnarchiveSubscriptionControllerTest extends WebTestCase
-{
-    public function testUnarchiveRequestUnarchivesSubscription(): void
-    {
-        $client = static::createClient();
-        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $subscription = SubscriptionFactory::new([
-            'category' => $category,
-            'name' => 'Netflix',
-        ])->archived()->create();
+test('unarchive request unarchives subscription', function (): void {
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    $subscription = SubscriptionFactory::new([
+        'category' => $category,
+        'name' => 'Netflix',
+    ])->archived()->create();
 
-        $client->request(method: 'POST', uri: '/subscriptions/' . $subscription->id . '/unarchive');
+    $client->request(method: 'POST', uri: '/subscriptions/' . $subscription->id . '/unarchive');
 
-        self::assertResponseRedirects('/subscriptions/' . $subscription->id);
+    $this->assertResponseRedirects('/subscriptions/' . $subscription->id);
 
-        $container = static::getContainer();
-        /** @var EntityManagerInterface $entityManager */
-        $entityManager = $container->get(id: EntityManagerInterface::class);
-        $repository = $entityManager->getRepository(className: Subscription::class);
-        $entityManager->clear();
+    $container = $this->getContainer();
+    /** @var EntityManagerInterface $entityManager */
+    $entityManager = $container->get(id: EntityManagerInterface::class);
+    $repository = $entityManager->getRepository(className: Subscription::class);
+    $entityManager->clear();
 
-        $unarchivedSubscription = $repository->find($subscription->id);
-        self::assertNotNull($unarchivedSubscription);
-        self::assertFalse($unarchivedSubscription->archived);
-    }
+    $unarchivedSubscription = $repository->find($subscription->id);
+    expect($unarchivedSubscription)->not->toBeNull();
+    expect($unarchivedSubscription->archived)->toBeFalse();
+});
 
-    public function testUnarchiveRequestShowsSuccessFlashMessage(): void
-    {
-        $client = static::createClient();
-        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $subscription = SubscriptionFactory::new([
-            'category' => $category,
-            'name' => 'Spotify',
-        ])->archived()->create();
+test('unarchive request shows success flash message', function (): void {
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    $subscription = SubscriptionFactory::new([
+        'category' => $category,
+        'name' => 'Spotify',
+    ])->archived()->create();
 
-        $client->request(method: 'POST', uri: '/subscriptions/' . $subscription->id . '/unarchive');
-        $client->followRedirect();
+    $client->request(method: 'POST', uri: '/subscriptions/' . $subscription->id . '/unarchive');
+    $client->followRedirect();
 
-        self::assertSelectorTextContains('.flash-success', 'Subscription unarchived successfully');
-    }
+    $this->assertSelectorTextContains('.flash-success', 'Subscription unarchived successfully');
+});
 
-    public function testUnarchiveRequestWithInvalidIdReturns404(): void
-    {
-        $client = static::createClient();
+test('unarchive request with invalid id returns 404', function (): void {
+    $client = $this->createClient();
 
-        $client->request(method: 'POST', uri: '/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/unarchive');
+    $client->request(method: 'POST', uri: '/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/unarchive');
 
-        self::assertResponseStatusCodeSame(404);
-    }
+    $this->assertResponseStatusCodeSame(404);
+});
 
-    public function testOnlyAcceptsPostMethod(): void
-    {
-        $client = static::createClient();
-        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $subscription = SubscriptionFactory::new([
-            'category' => $category,
-            'name' => 'Netflix',
-        ])->archived()->create();
+test('only accepts post method', function (): void {
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    $subscription = SubscriptionFactory::new([
+        'category' => $category,
+        'name' => 'Netflix',
+    ])->archived()->create();
 
-        $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/unarchive');
+    $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/unarchive');
 
-        self::assertResponseStatusCodeSame(405);
-    }
+    $this->assertResponseStatusCodeSame(405);
+});
 
-    public function testUnarchiveCreatesSubscriptionEvent(): void
-    {
-        $client = static::createClient();
-        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $subscription = SubscriptionFactory::new([
-            'category' => $category,
-            'name' => 'Netflix',
-        ])->archived()->create();
+test('unarchive creates subscription event', function (): void {
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    $subscription = SubscriptionFactory::new([
+        'category' => $category,
+        'name' => 'Netflix',
+    ])->archived()->create();
 
-        $initialEventCount = \count($subscription->subscriptionEvents);
+    $initialEventCount = count($subscription->subscriptionEvents);
 
-        $client->request(method: 'POST', uri: '/subscriptions/' . $subscription->id . '/unarchive');
+    $client->request(method: 'POST', uri: '/subscriptions/' . $subscription->id . '/unarchive');
 
-        $container = static::getContainer();
-        /** @var EntityManagerInterface $entityManager */
-        $entityManager = $container->get(id: EntityManagerInterface::class);
-        $repository = $entityManager->getRepository(className: Subscription::class);
-        $entityManager->clear();
+    $container = $this->getContainer();
+    /** @var EntityManagerInterface $entityManager */
+    $entityManager = $container->get(id: EntityManagerInterface::class);
+    $repository = $entityManager->getRepository(className: Subscription::class);
+    $entityManager->clear();
 
-        $unarchivedSubscription = $repository->find($subscription->id);
-        self::assertNotNull($unarchivedSubscription);
-        self::assertGreaterThan($initialEventCount, \count($unarchivedSubscription->subscriptionEvents));
-    }
-}
+    $unarchivedSubscription = $repository->find($subscription->id);
+    expect($unarchivedSubscription)->not->toBeNull();
+    expect(count($unarchivedSubscription->subscriptionEvents))->toBeGreaterThan($initialEventCount);
+});

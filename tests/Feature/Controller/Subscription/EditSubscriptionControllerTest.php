@@ -5,202 +5,187 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Feature\Controller\Subscription;
-
 use App\Entity\Subscription;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
 use App\Repository\SubscriptionRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-class EditSubscriptionControllerTest extends WebTestCase
-{
-    public function testGetRequestDisplaysEditFormWithExistingData(): void
-    {
-        $client = static::createClient();
-        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $subscription = SubscriptionFactory::createOne([
-            'category' => $category,
-            'name' => 'Netflix',
-            'cost' => 1599,
-        ]);
+test('get request displays edit form with existing data', function (): void {
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    $subscription = SubscriptionFactory::createOne([
+        'category' => $category,
+        'name' => 'Netflix',
+        'cost' => 1599,
+    ]);
 
-        $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+    $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
 
-        self::assertResponseIsSuccessful();
-        self::assertSelectorTextContains(selector: 'h1', text: 'Edit Subscription');
-        self::assertSelectorExists(selector: 'form');
-        self::assertSelectorExists(selector: 'input[name="edit_subscription[name]"][value="Netflix"]');
-    }
+    $this->assertResponseIsSuccessful();
+    $this->assertSelectorTextContains(selector: 'h1', text: 'Edit Subscription');
+    $this->assertSelectorExists(selector: 'form');
+    $this->assertSelectorExists(selector: 'input[name="edit_subscription[name]"][value="Netflix"]');
+});
 
-    public function testGetRequestWithInvalidIdReturns404(): void
-    {
-        $client = static::createClient();
+test('get request with invalid id returns 404', function (): void {
+    $client = $this->createClient();
 
-        $client->request(method: 'GET', uri: '/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/edit');
+    $client->request(method: 'GET', uri: '/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/edit');
 
-        self::assertResponseStatusCodeSame(expectedCode: 404);
-    }
+    $this->assertResponseStatusCodeSame(expectedCode: 404);
+});
 
-    public function testPostRequestWithValidDataUpdatesSubscription(): void
-    {
-        $client = static::createClient();
-        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $newCategory = CategoryFactory::createOne(['name' => 'Utilities']);
-        $subscription = SubscriptionFactory::createOne([
-            'category' => $category,
-            'name' => 'Netflix',
-            'cost' => 1599,
-        ]);
+test('post request with valid data updates subscription', function (): void {
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    $newCategory = CategoryFactory::createOne(['name' => 'Utilities']);
+    $subscription = SubscriptionFactory::createOne([
+        'category' => $category,
+        'name' => 'Netflix',
+        'cost' => 1599,
+    ]);
 
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+    $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
 
-        $form = $crawler->selectButton(value: 'Save')->form([
-            'edit_subscription[category]' => $newCategory->id->toBase32(),
-            'edit_subscription[name]' => 'Netflix Premium',
-            'edit_subscription[lastPaidDate]' => '2026-02-01',
-            'edit_subscription[paymentPeriod]' => 'year',
-            'edit_subscription[paymentPeriodCount]' => '1',
-            'edit_subscription[cost]' => '1999',
-            'edit_subscription[description]' => 'Updated description',
-            'edit_subscription[link]' => 'https://netflix.com/premium',
-        ]);
+    $form = $crawler->selectButton(value: 'Save')->form([
+        'edit_subscription[category]' => $newCategory->id->toBase32(),
+        'edit_subscription[name]' => 'Netflix Premium',
+        'edit_subscription[lastPaidDate]' => '2026-02-01',
+        'edit_subscription[paymentPeriod]' => 'year',
+        'edit_subscription[paymentPeriodCount]' => '1',
+        'edit_subscription[cost]' => '1999',
+        'edit_subscription[description]' => 'Updated description',
+        'edit_subscription[link]' => 'https://netflix.com/premium',
+    ]);
 
-        $client->submit(form: $form);
+    $client->submit(form: $form);
 
-        self::assertResponseRedirects(expectedLocation: '/subscriptions/' . $subscription->id);
+    $this->assertResponseRedirects(expectedLocation: '/subscriptions/' . $subscription->id);
 
-        $container = static::getContainer();
-        /** @var EntityManagerInterface $entityManager */
-        $entityManager = $container->get(id: EntityManagerInterface::class);
-        /** @var SubscriptionRepository $repository */
-        $repository = $entityManager->getRepository(className: Subscription::class);
-        $entityManager->clear();
+    $container = $this->getContainer();
+    /** @var EntityManagerInterface $entityManager */
+    $entityManager = $container->get(id: EntityManagerInterface::class);
+    /** @var SubscriptionRepository $repository */
+    $repository = $entityManager->getRepository(className: Subscription::class);
+    $entityManager->clear();
 
-        $subscription = $repository->find($subscription->id);
-        self::assertNotNull($subscription);
+    $subscription = $repository->find($subscription->id);
+    expect($subscription)->not->toBeNull();
 
-        self::assertSame('Netflix Premium', $subscription->name);
-        self::assertSame(1999, $subscription->cost);
-        self::assertSame('Updated description', $subscription->description);
-        self::assertSame('https://netflix.com/premium', $subscription->link);
-        self::assertTrue($newCategory->id->equals($subscription->category->id));
-    }
+    expect($subscription->name)->toBe('Netflix Premium');
+    expect($subscription->cost)->toBe(1999);
+    expect($subscription->description)->toBe('Updated description');
+    expect($subscription->link)->toBe('https://netflix.com/premium');
+    expect($newCategory->id->equals($subscription->category->id))->toBeTrue();
+});
 
-    public function testPostRequestWithValidDataShowsSuccessFlashMessage(): void
-    {
-        $client = static::createClient();
-        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $subscription = SubscriptionFactory::createOne([
-            'category' => $category,
-            'name' => 'Spotify',
-        ]);
+test('post request with valid data shows success flash message', function (): void {
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    $subscription = SubscriptionFactory::createOne([
+        'category' => $category,
+        'name' => 'Spotify',
+    ]);
 
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+    $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
 
-        $form = $crawler->selectButton(value: 'Save')->form([
-            'edit_subscription[name]' => 'Spotify Premium',
-        ]);
+    $form = $crawler->selectButton(value: 'Save')->form([
+        'edit_subscription[name]' => 'Spotify Premium',
+    ]);
 
-        $client->submit(form: $form);
-        $client->followRedirect();
+    $client->submit(form: $form);
+    $client->followRedirect();
 
-        self::assertSelectorTextContains(selector: '.flash-success', text: 'Subscription updated successfully');
-    }
+    $this->assertSelectorTextContains(selector: '.flash-success', text: 'Subscription updated successfully');
+});
 
-    public function testPostRequestWithEmptyNameShowsValidationError(): void
-    {
-        $client = static::createClient();
-        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $subscription = SubscriptionFactory::createOne([
-            'category' => $category,
-            'name' => 'Netflix',
-        ]);
+test('post request with empty name shows validation error', function (): void {
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    $subscription = SubscriptionFactory::createOne([
+        'category' => $category,
+        'name' => 'Netflix',
+    ]);
 
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+    $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
 
-        $form = $crawler->selectButton(value: 'Save')->form();
-        $form['edit_subscription[name]'] = '';
+    $form = $crawler->selectButton(value: 'Save')->form();
+    $form['edit_subscription[name]'] = '';
 
-        $client->submit(form: $form);
+    $client->submit(form: $form);
 
-        self::assertResponseStatusCodeSame(expectedCode: 422);
-        self::assertSelectorExists(selector: '.text-red-700');
-        self::assertSelectorTextContains(selector: 'body', text: 'This value should not be blank');
-    }
+    $this->assertResponseStatusCodeSame(expectedCode: 422);
+    $this->assertSelectorExists(selector: '.text-red-700');
+    $this->assertSelectorTextContains(selector: 'body', text: 'This value should not be blank');
+});
 
-    public function testPostRequestWithInvalidIdReturns404(): void
-    {
-        $client = static::createClient();
+test('post request with invalid id returns 404', function (): void {
+    $client = $this->createClient();
 
-        $client->request(method: 'POST', uri: '/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/edit');
+    $client->request(method: 'POST', uri: '/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/edit');
 
-        self::assertResponseStatusCodeSame(expectedCode: 404);
-    }
+    $this->assertResponseStatusCodeSame(expectedCode: 404);
+});
 
-    public function testFormIncludesCsrfProtection(): void
-    {
-        $client = static::createClient();
-        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $subscription = SubscriptionFactory::createOne([
-            'category' => $category,
-            'name' => 'Netflix',
-        ]);
+test('form includes csrf protection', function (): void {
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    $subscription = SubscriptionFactory::createOne([
+        'category' => $category,
+        'name' => 'Netflix',
+    ]);
 
-        $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+    $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
 
-        self::assertResponseIsSuccessful();
-        self::assertSelectorExists(selector: 'input[name="edit_subscription[_token]"]');
-    }
+    $this->assertResponseIsSuccessful();
+    $this->assertSelectorExists(selector: 'input[name="edit_subscription[_token]"]');
+});
 
-    public function testShowsCancelLinkBackToSubscription(): void
-    {
-        $client = static::createClient();
-        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $subscription = SubscriptionFactory::createOne([
-            'category' => $category,
-            'name' => 'Netflix',
-        ]);
+test('shows cancel link back to subscription', function (): void {
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    $subscription = SubscriptionFactory::createOne([
+        'category' => $category,
+        'name' => 'Netflix',
+    ]);
 
-        $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+    $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
 
-        self::assertResponseIsSuccessful();
-        self::assertSelectorExists(selector: 'a[href="/subscriptions/' . $subscription->id . '"]');
-    }
+    $this->assertResponseIsSuccessful();
+    $this->assertSelectorExists(selector: 'a[href="/subscriptions/' . $subscription->id . '"]');
+});
 
-    public function testUpdatesCreateSubscriptionEvents(): void
-    {
-        $client = static::createClient();
-        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $subscription = SubscriptionFactory::createOne([
-            'category' => $category,
-            'name' => 'Netflix',
-            'cost' => 1599,
-        ]);
+test('updates create subscription events', function (): void {
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    $subscription = SubscriptionFactory::createOne([
+        'category' => $category,
+        'name' => 'Netflix',
+        'cost' => 1599,
+    ]);
 
-        $initialEventCount = \count($subscription->subscriptionEvents);
+    $initialEventCount = count($subscription->subscriptionEvents);
 
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+    $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
 
-        $form = $crawler->selectButton(value: 'Save')->form([
-            'edit_subscription[name]' => 'Netflix Premium',
-            'edit_subscription[cost]' => '1999',
-        ]);
+    $form = $crawler->selectButton(value: 'Save')->form([
+        'edit_subscription[name]' => 'Netflix Premium',
+        'edit_subscription[cost]' => '1999',
+    ]);
 
-        $client->submit(form: $form);
+    $client->submit(form: $form);
 
-        $container = static::getContainer();
-        /** @var EntityManagerInterface $entityManager */
-        $entityManager = $container->get(id: EntityManagerInterface::class);
-        /** @var SubscriptionRepository $repository */
-        $repository = $entityManager->getRepository(className: Subscription::class);
-        $entityManager->clear();
+    $container = $this->getContainer();
+    /** @var EntityManagerInterface $entityManager */
+    $entityManager = $container->get(id: EntityManagerInterface::class);
+    /** @var SubscriptionRepository $repository */
+    $repository = $entityManager->getRepository(className: Subscription::class);
+    $entityManager->clear();
 
-        $subscription = $repository->find($subscription->id);
-        self::assertNotNull($subscription);
+    $subscription = $repository->find($subscription->id);
+    expect($subscription)->not->toBeNull();
 
-        // Should have at least one new event (Update and/or CostChange)
-        self::assertGreaterThan($initialEventCount, \count($subscription->subscriptionEvents));
-    }
-}
+    // Should have at least one new event (Update and/or CostChange)
+    expect(count($subscription->subscriptionEvents))->toBeGreaterThan($initialEventCount);
+});

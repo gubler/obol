@@ -24,15 +24,19 @@ php -S localhost:8000 -t public
 # Prefer running tests via mise
 mise run test
 
-# If needing direct PHPUnit access
-php vendor/bin/phpunit
+# If needing direct Pest access
+php vendor/bin/pest
 
 # Run specific test suite
 mise run test --testsuite=Unit
 mise run test --testsuite=Feature
+mise run test --testsuite=Integration
 
 # Run single test file
 mise run test tests/Unit/SomeTest.php
+
+# Run tests matching a filter
+mise run test --filter="subscription"
 ```
 
 ### Code Quality
@@ -62,11 +66,15 @@ php bin/console doctrine:fixtures:load
 ### Mise Tasks
 If `mise` is installed, use these shortcuts:
 ```bash
-mise run sa        # Static analysis
-mise run test      # Run tests
-mise run cs        # Fix code style
-mise run cs:twig   # Fix twig code style
-mise run rector    # Run Rector
+mise run lint:php       # PHP syntax check on changed files
+mise run sa            # Static analysis
+mise run test          # Run tests (compact output)
+mise run test:v        # Run tests (verbose output)
+mise run coverage      # Run tests with coverage (min 70%)
+mise run coverage:report  # Generate HTML coverage report in var/coverage/
+mise run cs            # Fix code style
+mise run cs:twig       # Fix twig code style
+mise run rector        # Run Rector
 ```
 
 ### Gitea Integration
@@ -145,6 +153,22 @@ git push origin --delete issue-##-brief-description
 
 **Note**: When working on larger feature branches (like the current `subscriptions` branch), you may work directly on that branch with multiple issues before creating a final PR to main.
 
+## Git Hooks
+
+**Requires Git 2.24+** (for `pre-merge-commit` hook support).
+
+Hooks are managed by [Captain Hook](https://github.com/captainhook-git/captainhook) (`captainhook.json`) with one standalone hook for `pre-merge-commit` (stored in `.githooks/`). Both are auto-installed on `composer install`.
+
+| Hook | Trigger | What Runs |
+|------|---------|-----------|
+| `pre-commit` | Commit to `main` | **BLOCKED** — use a feature branch |
+| `pre-commit` | Commit to branch | Linters (`php -l`, cs-fixer, twig-cs-fixer) |
+| `pre-merge-commit` | Any merge | Linters + PHPStan + Tests |
+| `pre-push` | Push branch | Linters |
+| `pre-push` | Push to `main` | Linters + PHPStan + Tests |
+
+To reinstall hooks manually: `vendor/bin/captainhook install --force && composer run install-hooks`
+
 ## Architecture
 
 ### Domain Model
@@ -221,9 +245,20 @@ This project enforces strict quality standards:
 - Use repository service injection
 
 ### Testing
-- Tests use PHPUnit
+- Tests use Pest PHP (runs on top of PHPUnit)
 - Zenstruck Foundry for fixtures
-- Both unit and feature test suites available
+- Architecture tests in `tests/Arch/` enforce structural rules
+- Test suites: Unit, Feature, Integration
+
+## Code Coverage
+
+Coverage is enforced at **70% minimum** via `--min=70` in both CI and `mise run coverage`. The threshold is intentionally set conservatively and should be manually ratcheted up over time:
+
+1. Run `mise run coverage` to see the current coverage percentage
+2. If coverage is consistently above the threshold (e.g., 85% actual vs 70% minimum), bump `--min=N` in:
+   - `mise.toml` (`tasks.coverage`)
+   - `.gitea/workflows/ci.yml` (Pest step)
+3. Coverage reports can be generated locally with `mise run coverage:report` (output in `var/coverage/`)
 
 ## Notes
 

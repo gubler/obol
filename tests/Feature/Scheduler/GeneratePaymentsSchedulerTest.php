@@ -5,8 +5,6 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Feature\Scheduler;
-
 use App\Entity\Subscription;
 use App\Enum\PaymentPeriod;
 use App\Factory\CategoryFactory;
@@ -15,102 +13,94 @@ use App\Message\Scheduler\GeneratePaymentsHandler;
 use App\Message\Scheduler\GeneratePaymentsMessage;
 use App\Repository\SubscriptionRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
-class GeneratePaymentsSchedulerTest extends KernelTestCase
-{
-    private function createHandler(): GeneratePaymentsHandler
-    {
-        $container = static::getContainer();
+test('generates payment for due subscription', function (): void {
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    $subscription = SubscriptionFactory::createOne([
+        'category' => $category,
+        'name' => 'Netflix',
+        'cost' => 1599,
+        'paymentPeriod' => PaymentPeriod::Month,
+        'paymentPeriodCount' => 1,
+        'lastPaidDate' => new DateTimeImmutable('-35 days'),
+    ]);
 
-        /** @var SubscriptionRepository $repository */
-        $repository = $container->get(SubscriptionRepository::class);
+    $container = $this->getContainer();
 
-        /** @var EntityManagerInterface $entityManager */
-        $entityManager = $container->get(EntityManagerInterface::class);
+    /** @var SubscriptionRepository $repository */
+    $repository = $container->get(SubscriptionRepository::class);
 
-        return new GeneratePaymentsHandler($repository, $entityManager);
+    /** @var EntityManagerInterface $entityManager */
+    $entityManager = $container->get(EntityManagerInterface::class);
+
+    $handler = new GeneratePaymentsHandler($repository, $entityManager);
+    $handler(new GeneratePaymentsMessage());
+
+    $entityManager->clear();
+
+    $repository = $entityManager->getRepository(Subscription::class);
+    $updatedSubscription = $repository->find($subscription->id);
+    expect($updatedSubscription)->not->toBeNull();
+    expect($updatedSubscription->payments)->toHaveCount(1);
+});
+
+test('skips subscription not yet due', function (): void {
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    SubscriptionFactory::createOne([
+        'category' => $category,
+        'name' => 'Spotify',
+        'cost' => 999,
+        'paymentPeriod' => PaymentPeriod::Month,
+        'paymentPeriodCount' => 1,
+        'lastPaidDate' => new DateTimeImmutable('-10 days'),
+    ]);
+
+    $container = $this->getContainer();
+
+    /** @var SubscriptionRepository $repository */
+    $repository = $container->get(SubscriptionRepository::class);
+
+    /** @var EntityManagerInterface $entityManager */
+    $entityManager = $container->get(EntityManagerInterface::class);
+
+    $handler = new GeneratePaymentsHandler($repository, $entityManager);
+    $handler(new GeneratePaymentsMessage());
+
+    $entityManager->clear();
+
+    $repository = $entityManager->getRepository(Subscription::class);
+    $allSubscriptions = $repository->findAll();
+    foreach ($allSubscriptions as $sub) {
+        expect($sub->payments)->toHaveCount(0);
     }
+});
 
-    public function testGeneratesPaymentForDueSubscription(): void
-    {
-        self::bootKernel();
+test('skips archived subscription', function (): void {
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    $subscription = SubscriptionFactory::new([
+        'category' => $category,
+        'name' => 'Old Service',
+        'cost' => 999,
+        'paymentPeriod' => PaymentPeriod::Month,
+        'paymentPeriodCount' => 1,
+        'lastPaidDate' => new DateTimeImmutable('-35 days'),
+    ])->archived()->create();
 
-        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $subscription = SubscriptionFactory::createOne([
-            'category' => $category,
-            'name' => 'Netflix',
-            'cost' => 1599,
-            'paymentPeriod' => PaymentPeriod::Month,
-            'paymentPeriodCount' => 1,
-            'lastPaidDate' => new \DateTimeImmutable('-35 days'),
-        ]);
+    $container = $this->getContainer();
 
-        $handler = $this->createHandler();
-        $handler(new GeneratePaymentsMessage());
+    /** @var SubscriptionRepository $repository */
+    $repository = $container->get(SubscriptionRepository::class);
 
-        /** @var EntityManagerInterface $entityManager */
-        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
-        $entityManager->clear();
+    /** @var EntityManagerInterface $entityManager */
+    $entityManager = $container->get(EntityManagerInterface::class);
 
-        $repository = $entityManager->getRepository(Subscription::class);
-        $updatedSubscription = $repository->find($subscription->id);
-        self::assertNotNull($updatedSubscription);
-        self::assertCount(1, $updatedSubscription->payments);
-    }
+    $handler = new GeneratePaymentsHandler($repository, $entityManager);
+    $handler(new GeneratePaymentsMessage());
 
-    public function testSkipsSubscriptionNotYetDue(): void
-    {
-        self::bootKernel();
+    $entityManager->clear();
 
-        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        SubscriptionFactory::createOne([
-            'category' => $category,
-            'name' => 'Spotify',
-            'cost' => 999,
-            'paymentPeriod' => PaymentPeriod::Month,
-            'paymentPeriodCount' => 1,
-            'lastPaidDate' => new \DateTimeImmutable('-10 days'),
-        ]);
-
-        $handler = $this->createHandler();
-        $handler(new GeneratePaymentsMessage());
-
-        /** @var EntityManagerInterface $entityManager */
-        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
-        $entityManager->clear();
-
-        $repository = $entityManager->getRepository(Subscription::class);
-        $allSubscriptions = $repository->findAll();
-        foreach ($allSubscriptions as $sub) {
-            self::assertCount(0, $sub->payments);
-        }
-    }
-
-    public function testSkipsArchivedSubscription(): void
-    {
-        self::bootKernel();
-
-        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $subscription = SubscriptionFactory::new([
-            'category' => $category,
-            'name' => 'Old Service',
-            'cost' => 999,
-            'paymentPeriod' => PaymentPeriod::Month,
-            'paymentPeriodCount' => 1,
-            'lastPaidDate' => new \DateTimeImmutable('-35 days'),
-        ])->archived()->create();
-
-        $handler = $this->createHandler();
-        $handler(new GeneratePaymentsMessage());
-
-        /** @var EntityManagerInterface $entityManager */
-        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
-        $entityManager->clear();
-
-        $repository = $entityManager->getRepository(Subscription::class);
-        $updatedSubscription = $repository->find($subscription->id);
-        self::assertNotNull($updatedSubscription);
-        self::assertCount(0, $updatedSubscription->payments);
-    }
-}
+    $repository = $entityManager->getRepository(Subscription::class);
+    $updatedSubscription = $repository->find($subscription->id);
+    expect($updatedSubscription)->not->toBeNull();
+    expect($updatedSubscription->payments)->toHaveCount(0);
+});

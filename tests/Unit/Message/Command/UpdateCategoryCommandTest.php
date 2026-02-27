@@ -5,33 +5,26 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Message\Command;
-
 use App\Message\Command\Category\UpdateCategoryCommand;
-use PHPUnit\Framework\TestCase;
 
-class UpdateCategoryCommandTest extends TestCase
-{
-    public function testCreatesCommandWithCategoryIdAndName(): void
-    {
-        $categoryId = '01JBBQ7Z8Z8Z8Z8Z8Z8Z8Z8Z8Z';
-        $command = new UpdateCategoryCommand(
-            categoryId: $categoryId,
-            name: 'Updated Name'
-        );
+test('creates command with category id and name', function (): void {
+    $categoryId = '01JBBQ7Z8Z8Z8Z8Z8Z8Z8Z8Z8Z';
+    $command = new UpdateCategoryCommand(
+        categoryId: $categoryId,
+        name: 'Updated Name'
+    );
 
-        self::assertSame($categoryId, $command->categoryId);
-        self::assertSame('Updated Name', $command->name);
-    }
+    expect($command->categoryId)->toBe($categoryId)
+        ->and($command->name)->toBe('Updated Name')
+    ;
+});
 
-    public function testIsReadonly(): void
-    {
-        $command = new UpdateCategoryCommand(
-            categoryId: '01JBBQ7Z8Z8Z8Z8Z8Z8Z8Z8Z8Z',
-            name: 'Software'
-        );
+test('is readonly', function (): void {
+    $command = new UpdateCategoryCommand(
+        categoryId: '01JBBQ7Z8Z8Z8Z8Z8Z8Z8Z8Z8Z',
+        name: 'Software'
+    );
 
-        $reflection = new \ReflectionClass($command);
-        self::assertTrue($reflection->isReadOnly());
-    }
-}
+    $reflection = new ReflectionClass($command);
+    expect($reflection->isReadOnly())->toBeTrue();
+});

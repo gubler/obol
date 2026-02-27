@@ -5,96 +5,81 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Entity;
-
 use App\Entity\Category;
 use App\Entity\Payment;
 use App\Entity\Subscription;
 use App\Enum\PaymentPeriod;
 use App\Enum\PaymentType;
-use PHPUnit\Framework\TestCase;
 
-class PaymentTest extends TestCase
-{
-    private Subscription $subscription;
+beforeEach(function (): void {
+    $category = new Category(name: 'Test Category');
+    $this->subscription = new Subscription(
+        category: $category,
+        name: 'Test Subscription',
+        lastPaidDate: new DateTimeImmutable(),
+        paymentPeriod: PaymentPeriod::Month,
+        paymentPeriodCount: 1,
+        cost: 1000,
+    );
+});
 
-    protected function setUp(): void
-    {
-        $category = new Category(name: 'Test Category');
-        $this->subscription = new Subscription(
-            category: $category,
-            name: 'Test Subscription',
-            lastPaidDate: new \DateTimeImmutable(),
-            paymentPeriod: PaymentPeriod::Month,
-            paymentPeriodCount: 1,
-            cost: 1000,
-        );
-    }
+test('creates payment with valid data', function (): void {
+    $payment = new Payment(
+        subscription: $this->subscription,
+        type: PaymentType::Verified,
+        amount: 1000,
+    );
 
-    public function testCreatesPaymentWithValidData(): void
-    {
-        $payment = new Payment(
-            subscription: $this->subscription,
-            type: PaymentType::Verified,
-            amount: 1000,
-        );
+    expect($payment->subscription)->toBe($this->subscription)
+        ->and($payment->type)->toBe(PaymentType::Verified)
+        ->and($payment->amount)->toBe(1000)
+    ;
+});
 
-        self::assertSame($this->subscription, $payment->subscription);
-        self::assertSame(PaymentType::Verified, $payment->type);
-        self::assertSame(1000, $payment->amount);
-    }
+test('sets created at to current time', function (): void {
+    $before = new DateTimeImmutable();
+    $payment = new Payment(
+        subscription: $this->subscription,
+        type: PaymentType::Generated,
+        amount: 2000,
+    );
+    $after = new DateTimeImmutable();
 
-    public function testSetsCreatedAtToCurrentTime(): void
-    {
-        $before = new \DateTimeImmutable();
-        $payment = new Payment(
-            subscription: $this->subscription,
-            type: PaymentType::Generated,
-            amount: 2000,
-        );
-        $after = new \DateTimeImmutable();
+    expect($payment->createdAt)->toBeGreaterThanOrEqual($before)
+        ->and($payment->createdAt)->toBeLessThanOrEqual($after)
+    ;
+});
 
-        self::assertGreaterThanOrEqual($before, $payment->createdAt);
-        self::assertLessThanOrEqual($after, $payment->createdAt);
-    }
+test('accepts both payment types', function (): void {
+    $verifiedPayment = new Payment(
+        subscription: $this->subscription,
+        type: PaymentType::Verified,
+        amount: 1000,
+    );
 
-    public function testAcceptsBothPaymentTypes(): void
-    {
-        $verifiedPayment = new Payment(
-            subscription: $this->subscription,
-            type: PaymentType::Verified,
-            amount: 1000,
-        );
+    $generatedPayment = new Payment(
+        subscription: $this->subscription,
+        type: PaymentType::Generated,
+        amount: 1000,
+    );
 
-        $generatedPayment = new Payment(
-            subscription: $this->subscription,
-            type: PaymentType::Generated,
-            amount: 1000,
-        );
+    expect($verifiedPayment->type)->toBe(PaymentType::Verified)
+        ->and($generatedPayment->type)->toBe(PaymentType::Generated)
+    ;
+});
 
-        self::assertSame(PaymentType::Verified, $verifiedPayment->type);
-        self::assertSame(PaymentType::Generated, $generatedPayment->type);
-    }
+test('rejects zero amount', function (): void {
+    new Payment(
+        subscription: $this->subscription,
+        type: PaymentType::Verified,
+        amount: 0,
+    );
+})->throws(Assert\InvalidArgumentException::class);
 
-    public function testRejectsZeroAmount(): void
-    {
-        $this->expectException(\Assert\InvalidArgumentException::class);
-
-        new Payment(
-            subscription: $this->subscription,
-            type: PaymentType::Verified,
-            amount: 0,
-        );
-    }
-
-    public function testRejectsNegativeAmount(): void
-    {
-        $this->expectException(\Assert\InvalidArgumentException::class);
-
-        new Payment(
-            subscription: $this->subscription,
-            type: PaymentType::Verified,
-            amount: -100,
-        );
-    }
-}
+test('rejects negative amount', function (): void {
+    new Payment(
+        subscription: $this->subscription,
+        type: PaymentType::Verified,
+        amount: -100,
+    );
+})->throws(Assert\InvalidArgumentException::class);

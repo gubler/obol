@@ -5,28 +5,20 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Message\Command;
-
 use App\Message\Command\Category\DeleteCategoryCommand;
-use PHPUnit\Framework\TestCase;
 
-class DeleteCategoryCommandTest extends TestCase
-{
-    public function testCreatesCommandWithCategoryId(): void
-    {
-        $categoryId = '01JBBQ7Z8Z8Z8Z8Z8Z8Z8Z8Z8Z';
-        $command = new DeleteCategoryCommand(categoryId: $categoryId);
+test('creates command with category id', function (): void {
+    $categoryId = '01JBBQ7Z8Z8Z8Z8Z8Z8Z8Z8Z8Z';
+    $command = new DeleteCategoryCommand(categoryId: $categoryId);
 
-        self::assertSame($categoryId, $command->categoryId);
-    }
+    expect($command->categoryId)->toBe($categoryId);
+});
 
-    public function testIsReadonly(): void
-    {
-        $command = new DeleteCategoryCommand(
-            categoryId: '01JBBQ7Z8Z8Z8Z8Z8Z8Z8Z8Z8Z'
-        );
+test('is readonly', function (): void {
+    $command = new DeleteCategoryCommand(
+        categoryId: '01JBBQ7Z8Z8Z8Z8Z8Z8Z8Z8Z8Z'
+    );
 
-        $reflection = new \ReflectionClass($command);
-        self::assertTrue($reflection->isReadOnly());
-    }
-}
+    $reflection = new ReflectionClass($command);
+    expect($reflection->isReadOnly())->toBeTrue();
+});

@@ -77,16 +77,29 @@
             </dl>
         </div>
 
-        <div class="bg-white shadow-md rounded p-6 mb-6">
-            <h2 class="text-xl font-semibold mb-4">Payments</h2>
+        <div class="payments-section bg-white shadow-md rounded p-6 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold">Payments</h2>
+                <a href="{{ path('payment_new', {subscriptionId: subscription.id}) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Add Payment
+                </a>
+            </div>
 
             {% if subscription.payments|length > 0 %}
                 <ul class="divide-y divide-gray-200">
                     {% for payment in subscription.payments %}
                         <li class="py-3">
                             <div class="flex justify-between items-center">
-                                <span class="text-gray-900">{{ payment.createdAt|date('Y-m-d') }}</span>
-                                <span class="text-gray-600">${{ (payment.amount / 100)|number_format(2) }}</span>
+                                <div>
+                                    <span class="text-gray-900">{{ payment.createdAt|date('Y-m-d') }}</span>
+                                    <span class="ml-2 text-xs text-gray-500">{{ payment.type.value }}</span>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <span class="text-gray-600">${{ (payment.amount / 100)|number_format(2) }}</span>
+                                    <form action="{{ path('payment_delete', {id: payment.id}) }}" method="POST" class="payment-delete-form inline-block" data-turbo-confirm="Are you sure you want to delete this payment?">
+                                        <button type="submit" class="text-red-600 hover:text-red-900 text-sm">Delete</button>
+                                    </form>
+                                </div>
                             </div>
                         </li>
                     {% endfor %}

@@ -14,7 +14,7 @@ test('schedule returns a Symfony Schedule instance', function (): void {
 
     $result = $schedule->getSchedule();
 
-    expect($result)->toBeInstanceOf(\Symfony\Component\Scheduler\Schedule::class);
+    expect($result)->toBeInstanceOf(Symfony\Component\Scheduler\Schedule::class);
 });
 
 test('schedule has recurring messages configured', function (): void {

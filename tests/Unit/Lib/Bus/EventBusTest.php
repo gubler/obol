@@ -10,7 +10,7 @@ use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 test('dispatches event to underlying bus', function (): void {
-    $event = new \stdClass();
+    $event = new stdClass();
 
     $messageBus = $this->createMock(MessageBusInterface::class);
     $messageBus->expects($this->once())
@@ -24,8 +24,8 @@ test('dispatches event to underlying bus', function (): void {
 });
 
 test('passes stamps to underlying bus', function (): void {
-    $event = new \stdClass();
-    $stamp = $this->createMock(\Symfony\Component\Messenger\Stamp\StampInterface::class);
+    $event = new stdClass();
+    $stamp = $this->createMock(Symfony\Component\Messenger\Stamp\StampInterface::class);
 
     $messageBus = $this->createMock(MessageBusInterface::class);
     $messageBus->expects($this->once())

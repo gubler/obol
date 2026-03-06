@@ -27,7 +27,7 @@ final class UpdateSubscriptionDto
     public PaymentPeriod $paymentPeriod;
     #[GreaterThanOrEqual(value: 1)]
     public int $paymentPeriodCount = 1;
-    #[GreaterThanOrEqual(value: 0)]
+    #[GreaterThanOrEqual(value: 1)]
     public int $cost = 0;
     public string $description = '';
     #[AtLeastOneOf(constraints: [

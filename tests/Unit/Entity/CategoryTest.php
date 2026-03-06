@@ -34,3 +34,20 @@ test('rejects empty name', function (): void {
 test('rejects whitespace name', function (): void {
     new Category(name: '   ');
 })->throws(Assert\InvalidArgumentException::class);
+
+test('setName rejects empty name', function (): void {
+    $category = new Category(name: 'Valid');
+    $category->setName('');
+})->throws(Assert\InvalidArgumentException::class);
+
+test('setName rejects whitespace name', function (): void {
+    $category = new Category(name: 'Valid');
+    $category->setName('   ');
+})->throws(Assert\InvalidArgumentException::class);
+
+test('setName trims name', function (): void {
+    $category = new Category(name: 'Original');
+    $category->setName('  Updated  ');
+
+    expect($category->name)->toBe('Updated');
+});

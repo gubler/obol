@@ -130,6 +130,11 @@ class Subscription
         int $paymentPeriodCount,
         int $cost,
     ): void {
+        $name = trim(string: $name);
+        Assertion::notEq(value1: $name, value2: '', message: 'Subscription name cannot be empty');
+        Assertion::greaterThan(value: $cost, limit: 0, message: 'Subscription cost must be greater than zero');
+        Assertion::greaterThan(value: $paymentPeriodCount, limit: 0, message: 'Payment period count must be greater than zero');
+
         $updateGenerator = new ChangeContextGenerator(
             changes: [
                 new Change(field: 'category', current: $this->category->name, new: $category->name),

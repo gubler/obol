@@ -14,6 +14,7 @@ final class FileUploader
 {
     public function __construct(
         private readonly string $targetDirectory,
+        private readonly string $publicPath,
     ) {
     }
 
@@ -23,6 +24,6 @@ final class FileUploader
 
         $file->move(directory: $this->targetDirectory, name: $filename);
 
-        return 'uploads/logos/' . $filename;
+        return $this->publicPath . '/' . $filename;
     }
 }

@@ -23,8 +23,8 @@ afterEach(function (): void {
     }
 });
 
-test('upload returns relative path', function (): void {
-    $uploader = new FileUploader(targetDirectory: $this->targetDirectory);
+test('upload returns relative path using configured public path', function (): void {
+    $uploader = new FileUploader(targetDirectory: $this->targetDirectory, publicPath: 'uploads/logos');
     $file = createTempUploadedFile();
 
     $result = $uploader->upload(file: $file);
@@ -32,8 +32,17 @@ test('upload returns relative path', function (): void {
     expect($result)->toStartWith('uploads/logos/');
 });
 
+test('upload returns relative path for custom public path', function (): void {
+    $uploader = new FileUploader(targetDirectory: $this->targetDirectory, publicPath: 'media/icons');
+    $file = createTempUploadedFile();
+
+    $result = $uploader->upload(file: $file);
+
+    expect($result)->toStartWith('media/icons/');
+});
+
 test('upload moves file to target directory', function (): void {
-    $uploader = new FileUploader(targetDirectory: $this->targetDirectory);
+    $uploader = new FileUploader(targetDirectory: $this->targetDirectory, publicPath: 'uploads/logos');
     $file = createTempUploadedFile();
 
     $result = $uploader->upload(file: $file);
@@ -43,7 +52,7 @@ test('upload moves file to target directory', function (): void {
 });
 
 test('upload generates unique filenames', function (): void {
-    $uploader = new FileUploader(targetDirectory: $this->targetDirectory);
+    $uploader = new FileUploader(targetDirectory: $this->targetDirectory, publicPath: 'uploads/logos');
 
     $file1 = createTempUploadedFile();
     $file2 = createTempUploadedFile();

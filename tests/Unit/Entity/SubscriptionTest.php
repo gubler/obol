@@ -476,4 +476,167 @@ describe('validation', function (): void {
             cost: 1500,
         );
     })->throws(Assert\InvalidArgumentException::class);
+
+    test('update rejects empty name', function (): void {
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 1500,
+        );
+
+        $subscription->update(
+            category: $this->category,
+            name: '',
+            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            description: '',
+            link: '',
+            logo: '',
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 1500,
+        );
+    })->throws(Assert\InvalidArgumentException::class);
+
+    test('update rejects whitespace name', function (): void {
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 1500,
+        );
+
+        $subscription->update(
+            category: $this->category,
+            name: '   ',
+            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            description: '',
+            link: '',
+            logo: '',
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 1500,
+        );
+    })->throws(Assert\InvalidArgumentException::class);
+
+    test('update rejects zero cost', function (): void {
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 1500,
+        );
+
+        $subscription->update(
+            category: $this->category,
+            name: 'Netflix',
+            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            description: '',
+            link: '',
+            logo: '',
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 0,
+        );
+    })->throws(Assert\InvalidArgumentException::class);
+
+    test('update rejects negative cost', function (): void {
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 1500,
+        );
+
+        $subscription->update(
+            category: $this->category,
+            name: 'Netflix',
+            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            description: '',
+            link: '',
+            logo: '',
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: -100,
+        );
+    })->throws(Assert\InvalidArgumentException::class);
+
+    test('update rejects zero period count', function (): void {
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 1500,
+        );
+
+        $subscription->update(
+            category: $this->category,
+            name: 'Netflix',
+            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            description: '',
+            link: '',
+            logo: '',
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 0,
+            cost: 1500,
+        );
+    })->throws(Assert\InvalidArgumentException::class);
+
+    test('update rejects negative period count', function (): void {
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 1500,
+        );
+
+        $subscription->update(
+            category: $this->category,
+            name: 'Netflix',
+            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            description: '',
+            link: '',
+            logo: '',
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: -1,
+            cost: 1500,
+        );
+    })->throws(Assert\InvalidArgumentException::class);
+
+    test('update trims name', function (): void {
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 1500,
+        );
+
+        $subscription->update(
+            category: $this->category,
+            name: '  Netflix Premium  ',
+            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            description: '',
+            link: '',
+            logo: '',
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 1500,
+        );
+
+        expect($subscription->name)->toBe('Netflix Premium');
+    });
 });

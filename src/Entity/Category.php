@@ -40,6 +40,8 @@ class Category
 
     public function setName(string $name): void
     {
+        $name = trim(string: $name);
+        Assertion::notEq(value1: $name, value2: '');
         $this->name = $name;
     }
 }

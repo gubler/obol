@@ -22,6 +22,11 @@ const RULES = [
     'php_unit_internal_class' => false,
     'octal_notation' => false,
     'static_lambda' => false,
+    // CS Fixer 3.95+ ships a rule that removes declare(strict_types=1)
+    // from every file under @Symfony / @PhpCsFixer. The project convention
+    // (CLAUDE.md) is the opposite — every code file declares strict types.
+    // Explicit override keeps the declares in place.
+    'declare_strict_types' => true,
 ];
 
 $finder = Finder::create()

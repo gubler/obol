@@ -2,34 +2,53 @@
 
 [mise](https://mise.jdx.dev/) provides task runner shortcuts. All tasks are defined in `mise.toml` at the repo root.
 
-## Task Reference
+Most tasks run **inside the `php` container** via `./bin/dc exec`. Only `lint:php` and the `docs:*` tasks run on the host (they need `git` and `mkdocs`, respectively).
 
-### Code Quality
+## Stack control
 
 | Task | Description | Underlying Command |
 |------|-------------|-------------------|
-| `mise run lint:php` | PHP syntax check on changed files | `php -l` on git-diffed `.php` files |
+| `mise run up` | Start the stack (auto-picks solo vs shared mode) | `./bin/dc up -d --wait` |
+| `mise run down` | Stop the stack | `./bin/dc down` |
+| `mise run dce -- <cmd>` | Run an arbitrary command in the php container | `./bin/dc exec -T php <cmd>` |
+
+See [Local Setup](local-setup.md) for how solo and shared modes work.
+
+## Code Quality
+
+| Task | Description | Underlying Command |
+|------|-------------|-------------------|
+| `mise run lint:php` | PHP syntax check on changed files (host-side) | `php -l` on git-diffed `.php` files |
 | `mise run sa` | PHPStan static analysis (level 9) | `phpstan --memory-limit=4G analyze` |
 | `mise run cs` | PHP CS Fixer (auto-fix) | `php-cs-fixer fix` |
 | `mise run cs:check` | PHP CS Fixer (check only, no changes) | `php-cs-fixer check --diff` |
 | `mise run cs:twig` | Twig CS Fixer (auto-fix) | `twig-cs-fixer fix` |
 | `mise run cs:twig:check` | Twig CS Fixer (check only) | `twig-cs-fixer check` |
 | `mise run rector` | Rector automated refactoring | `rector` |
+| `mise run check` | Run `sa`, `test`, `cs`, `cs:twig` in sequence | — |
 
-### Testing
+## Testing
 
 | Task | Description | Underlying Command |
 |------|-------------|-------------------|
 | `mise run test` | All tests (compact output) | `pest --compact` |
 | `mise run test:v` | All tests (verbose output) | `pest` |
-| `mise run coverage` | Tests with coverage, min 70% | `pest --compact --coverage --min=70` |
-| `mise run coverage:report` | HTML coverage report | `pest --coverage --coverage-html=var/coverage` |
+| `mise run coverage` | Tests with coverage, min 70% | `XDEBUG_MODE=coverage pest --coverage --min=70` |
+| `mise run coverage:report` | HTML coverage report under `var/coverage/` | `XDEBUG_MODE=coverage pest --coverage-html=var/coverage` |
 
-### Documentation
+## Assets and Database
 
 | Task | Description | Underlying Command |
 |------|-------------|-------------------|
-| `mise run docs:serve` | Serve docs locally (live reload) | `mkdocs serve` |
+| `mise run tailwind` | Rebuild Tailwind CSS | `php bin/console tailwind:build` |
+| `mise run seed` | Load fixtures | `doctrine:fixtures:load --no-interaction` |
+| `mise run seed:clear` | Drop schema, re-run migrations (no fixtures) | `doctrine:database:drop` + `create` + `migrate` |
+
+## Documentation
+
+| Task | Description | Underlying Command |
+|------|-------------|-------------------|
+| `mise run docs:serve` | Serve docs locally (live reload, host-side) | `mkdocs serve` |
 | `mise run docs:build` | Build docs to `site/` | `scripts/build-docs.sh` |
 | `mise run docs:deploy` | Build and deploy to docs.dev88.work | `scripts/deploy-docs.sh` |
 
@@ -53,12 +72,13 @@ mise run sa -- --debug
 
 ## Without mise
 
-If mise is not installed, run the underlying commands directly:
+If mise is not installed, all commands still work by calling `./bin/dc exec -T php <cmd>` directly:
 
 ```bash
-php vendor/bin/pest --compact
-php vendor/bin/phpstan --memory-limit=4G analyze
-php vendor/bin/php-cs-fixer fix
-php vendor/bin/rector
+./bin/dc up -d --wait
+./bin/dc exec -T php vendor/bin/pest --compact
+./bin/dc exec -T php vendor/bin/phpstan --memory-limit=4G analyze
+./bin/dc exec -T php vendor/bin/php-cs-fixer fix
+./bin/dc exec -T php vendor/bin/rector
 mkdocs serve
 ```

@@ -15,60 +15,40 @@ Built with Symfony 8.0 and PHP 8.5+.
 
 ## Requirements
 
-- PHP 8.5+
-- PostgreSQL 16+
-- [Composer](https://getcomposer.org/)
-- [Symfony CLI](https://symfony.com/download) (optional, for `symfony serve`)
-- [mise](https://mise.jdx.dev/) (optional, for task shortcuts)
+- Docker with the Compose plugin (OrbStack recommended on macOS)
+- [mise](https://mise.jdx.dev/) for task shortcuts
+- [mkcert](https://github.com/FiloSottile/mkcert) for browser-trusted local TLS
+
+The app runs inside Docker via FrankenPHP — no PHP, Composer, or Postgres install required on the host.
 
 ## Setup
 
 ```bash
-# Install dependencies
-composer install
-
-# Start the database
-docker compose up -d
-
-# Run migrations
-php bin/console doctrine:migrations:migrate
-
-# Load fixtures (development only)
-php bin/console doctrine:fixtures:load
-
-# Start the dev server
-symfony serve
+# Bring up the stack — works out of the box with a self-signed cert
+mise run up
 ```
+
+The app is now at **https://obol.localhost:8443**. Your browser will show a cert warning until you follow [Local Setup § Enable TLS in Caddy](docs/development/local-setup.md#3-enable-tls-in-caddy-opt-in) to wire in a mkcert-trusted wildcard cert.
+
+For port-less URLs (`https://obol.localhost`) and running sibling apps in parallel, see [Local Setup § Shared mode](docs/development/local-setup.md#shared-mode-optional-recommended-for-multi-app-setups).
 
 ## Development
 
-### Running Tests
+All tooling runs inside the `php` container via `./bin/dc exec`. Tasks are defined in `mise.toml`.
 
 ```bash
-mise run test                          # All tests
-mise run test --testsuite=Unit         # Unit tests
-mise run test --testsuite=Feature      # Feature tests
-mise run test --testsuite=Integration  # Integration tests
-mise run test tests/Unit/SomeTest.php  # Single file
+mise run test              # run tests (Pest)
+mise run sa                # PHPStan static analysis (level 9)
+mise run cs                # PHP CS Fixer (fix)
+mise run cs:twig           # Twig CS Fixer (fix)
+mise run coverage          # tests + coverage, min 70%
+mise run rector            # Rector
+mise run tailwind          # rebuild Tailwind CSS
+mise run seed              # load fixtures
+mise run dce -- php bin/console <cmd>   # arbitrary Symfony command
 ```
 
-### Code Quality
-
-```bash
-mise run sa       # PHPStan static analysis (level 9)
-mise run cs       # PHP CS Fixer
-mise run cs:twig  # Twig CS Fixer
-mise run rector   # Rector automated refactoring
-```
-
-### Without mise
-
-```bash
-php vendor/bin/phpunit
-php vendor/bin/phpstan analyse
-php vendor/bin/php-cs-fixer fix
-php vendor/bin/rector
-```
+Full task reference: [Mise Tasks](docs/development/mise-tasks.md).
 
 ## Architecture
 

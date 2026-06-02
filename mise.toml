@@ -1,5 +1,32 @@
+[env]
+# `bin/dc` wraps `docker compose`: it applies --env-file .env.local if present and
+# auto-selects compose.solo.yaml (no proxy) or compose.shared.yaml (dev-proxy network
+# reachable) so the same commands work in both modes.
+DC = "./bin/dc"
+DC_EXEC = "./bin/dc exec -T php"
+
+[tasks._ensure-up]
+description = "Verify the php container is running"
+hide = true
+run = [
+    "$DC ps --status running --services | grep -q '^php$' || { echo 'php container not running; run: mise run up' >&2; exit 1; }",
+]
+
+[tasks.up]
+description = "Start the stack (auto-detects shared vs solo mode; reads .env.local if present)"
+run = ["$DC up -d --wait"]
+
+[tasks.down]
+description = "Stop the stack"
+run = ["$DC down"]
+
+[tasks.dce]
+description = "Run a command in the php container, e.g. mise run dce -- php bin/console"
+depends = ["_ensure-up"]
+run = "$DC_EXEC $@"
+
 [tasks."lint:php"]
-description = "PHP syntax check on changed files"
+description = "PHP syntax check on changed files (host-side, needs git)"
 run = [
     """
     files=$(git diff --cached --name-only --diff-filter=ACM -- '*.php' 2>/dev/null || git diff --name-only HEAD -- '*.php' 2>/dev/null)
@@ -23,68 +50,88 @@ run = [
     echo "PHP syntax check passed"
     """
 ]
+
 [tasks.sa]
-description = "Static Analysis via PhpStan"
-run = [
-    "php vendor/bin/phpstan --memory-limit=4G analyze"
-]
+description = "Static Analysis via PHPStan"
+depends = ["_ensure-up"]
+run = ["$DC_EXEC php vendor/bin/phpstan --memory-limit=4G analyze"]
+
 [tasks.test]
 description = "Tests via Pest (compact output)"
-run = [
-    "php vendor/bin/pest --compact"
-]
+depends = ["_ensure-up", "tailwind"]
+run = ["$DC_EXEC php vendor/bin/pest --compact"]
+
 [tasks."test:v"]
 description = "Tests via Pest (verbose output)"
-run = [
-    "php vendor/bin/pest"
-]
+depends = ["_ensure-up", "tailwind"]
+run = ["$DC_EXEC php vendor/bin/pest"]
+
 [tasks.coverage]
 description = "Run tests with coverage (min 70%)"
-run = [
-    "XDEBUG_MODE=coverage php vendor/bin/pest --compact --coverage --min=70"
-]
+depends = ["_ensure-up", "tailwind"]
+run = ["$DC_EXEC sh -c 'XDEBUG_MODE=coverage php vendor/bin/pest --compact --coverage --min=70'"]
+
 [tasks."coverage:report"]
-description = "Generate HTML coverage report"
-run = [
-    "XDEBUG_MODE=coverage php vendor/bin/pest --coverage --coverage-html=var/coverage"
-]
+description = "Generate HTML coverage report under var/coverage/"
+depends = ["_ensure-up", "tailwind"]
+run = ["$DC_EXEC sh -c 'XDEBUG_MODE=coverage php vendor/bin/pest --coverage --coverage-html=var/coverage'"]
+
 [tasks.cs]
 description = "Code Style via PHP CS Fixer (fix)"
-run = [
-    "php vendor/bin/php-cs-fixer fix"
-]
+depends = ["_ensure-up"]
+run = ["$DC_EXEC php vendor/bin/php-cs-fixer fix"]
+
 [tasks."cs:check"]
 description = "Code Style via PHP CS Fixer (check only)"
-run = [
-    "php vendor/bin/php-cs-fixer check --diff"
-]
+depends = ["_ensure-up"]
+run = ["$DC_EXEC php vendor/bin/php-cs-fixer check --diff"]
+
 [tasks."cs:twig"]
 description = "Twig Code Style (fix)"
-run = [
-    "php vendor/bin/twig-cs-fixer fix"
-]
+depends = ["_ensure-up"]
+run = ["$DC_EXEC php vendor/bin/twig-cs-fixer fix"]
+
 [tasks."cs:twig:check"]
 description = "Twig Code Style (check only)"
-run = [
-    "php vendor/bin/twig-cs-fixer check"
-]
+depends = ["_ensure-up"]
+run = ["$DC_EXEC php vendor/bin/twig-cs-fixer check"]
+
 [tasks.rector]
 description = "Refactoring via Rector"
+depends = ["_ensure-up"]
+run = ["$DC_EXEC php vendor/bin/rector"]
+
+[tasks.seed]
+description = "Load fixtures (purges first, then seeds)"
+depends = ["_ensure-up"]
+run = ["$DC_EXEC php bin/console doctrine:fixtures:load --no-interaction"]
+
+[tasks."seed:clear"]
+description = "Drop schema, re-run migrations (no fixtures)"
+depends = ["_ensure-up"]
 run = [
-    "php vendor/bin/rector"
+    "$DC_EXEC php bin/console doctrine:database:drop --force --if-exists",
+    "$DC_EXEC php bin/console doctrine:database:create",
+    "$DC_EXEC php bin/console doctrine:migrations:migrate --no-interaction --all-or-nothing",
 ]
+
+[tasks.tailwind]
+description = "Build Tailwind CSS assets"
+depends = ["_ensure-up"]
+run = ["$DC_EXEC php bin/console tailwind:build"]
+
+[tasks.check]
+description = "Run all checks: PHPStan, tests, CS Fixer, Twig CS"
+depends = ["sa", "test", "cs", "cs:twig"]
+
 [tasks."docs:serve"]
-description = "Serve documentation locally"
-run = [
-    "mkdocs serve"
-]
+description = "Serve MkDocs site locally (runs on host, needs mkdocs-material via pipx)"
+run = ["mkdocs serve"]
+
 [tasks."docs:build"]
-description = "Build documentation site"
-run = [
-    "bash scripts/build-docs.sh"
-]
+description = "Build MkDocs site (host-side)"
+run = ["bash scripts/build-docs.sh"]
+
 [tasks."docs:deploy"]
-description = "Build and deploy docs to docs.dev88.work/obol"
-run = [
-    "bash scripts/deploy-docs.sh"
-]
+description = "Build and deploy docs to docs.dev88.work/obol (host-side)"
+run = ["bash scripts/deploy-docs.sh"]

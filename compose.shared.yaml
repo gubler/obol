@@ -1,0 +1,30 @@
+---
+# Shared mode — joins the external `dev-proxy` Docker network so a shared Traefik
+# (see docs/development/dev-proxy-example.yaml) can route https://${SERVER_NAME}
+# to this app. Traefik terminates TLS with a wildcard mkcert cert.
+#
+# Worktree flow: set SERVER_NAME and COMPOSE_PROJECT_NAME in .env.local, e.g.
+#   SERVER_NAME=obol-feat-42.localhost
+#   COMPOSE_PROJECT_NAME=obol-feat-42
+# bin/dc picks up .env.local; Traefik labels expand to the per-worktree host.
+services:
+  php:
+    environment:
+      # Container Caddy serves HTTP only — Traefik does TLS termination.
+      SERVER_NAME: ":80"
+    networks:
+      - default
+      - dev-proxy
+    # Labels are written as a list (not a map) so compose interpolates $${VAR} in the
+    # label key prefix. Map-form keys containing ${VAR} are passed through literally.
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=dev-proxy"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME:-obol}.rule=Host(`${SERVER_NAME:-obol.localhost}`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME:-obol}.entrypoints=websecure"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME:-obol}.tls=true"
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME:-obol}.loadbalancer.server.port=80"
+
+networks:
+  dev-proxy:
+    external: true

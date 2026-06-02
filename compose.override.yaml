@@ -1,18 +1,40 @@
-
+---
+# Development environment override — always loaded by default.
+# Port publishing and proxy routing live in compose.solo.yaml / compose.shared.yaml;
+# bin/dc auto-picks the right one based on whether the dev-proxy network is present.
 services:
+  php:
+    image: ${IMAGES_PREFIX:-}obol-php-dev
+    build:
+      context: .
+      target: frankenphp_dev
+    volumes:
+      - ./:/app
+      - ./frankenphp/Caddyfile:/etc/frankenphp/Caddyfile:ro
+      - ./frankenphp/conf.d/20-app.dev.ini:/usr/local/etc/php/app.conf.d/20-app.dev.ini:ro
+      # certs are bind-mounted in solo mode only (see compose.solo.yaml); shared mode
+      # offloads TLS to Traefik and doesn't need the cert inside the app container.
+      # If you develop on Mac or Windows you can remove the vendor/ directory
+      # from the bind-mount for better performance by enabling the next line:
+      #- /app/vendor
+    environment:
+      FRANKENPHP_WORKER_CONFIG: watch
+      FRANKENPHP_SITE_CONFIG: hot_reload
+      MERCURE_EXTRA_DIRECTIVES: demo
+      # See https://xdebug.org/docs/all_settings#mode
+      XDEBUG_MODE: "${XDEBUG_MODE:-develop}"
+      APP_ENV: "${APP_ENV:-dev}"
+    extra_hosts:
+      # Ensure that host.docker.internal is correctly defined on Linux
+      - host.docker.internal:host-gateway
+    tty: true
+###> symfony/mercure-bundle ###
+###< symfony/mercure-bundle ###
 ###> doctrine/doctrine-bundle ###
   database:
+    # Default publishes 5432 to host. Set POSTGRES_HOST_PORT in .env.local to
+    # avoid collisions when a sibling app (or a host-installed Postgres) is
+    # already on 5432 — bin/dc picks up .env.local via --env-file.
     ports:
-      - "5432"
+      - "${POSTGRES_HOST_PORT:-5432}:5432"
 ###< doctrine/doctrine-bundle ###
-
-###> symfony/mailer ###
-  mailer:
-    image: axllent/mailpit
-    ports:
-      - "1025"
-      - "8025"
-    environment:
-      MP_SMTP_AUTH_ACCEPT_ANY: 1
-      MP_SMTP_AUTH_ALLOW_INSECURE: 1
-###< symfony/mailer ###

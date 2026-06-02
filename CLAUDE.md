@@ -4,77 +4,58 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Symfony 7.3 application for managing subscriptions with payment tracking and event history. Built with PHP 8.4+, it uses Doctrine ORM for data persistence and follows strict type safety and code quality standards.
+This is a Symfony 8.0 application for managing subscriptions with payment tracking and event history. Built with PHP 8.5+, it uses Doctrine ORM for data persistence and follows strict type safety and code quality standards.
+
+The app runs inside Docker via FrankenPHP. Developer tooling (PHPStan, Pest, CS Fixer, Rector) executes **inside the `php` container** via the `./bin/dc exec -T php` wrapper — `mise` tasks delegate to it. Only `docs:*` and `lint:php` run on the host.
+
+## Local Development
+
+Prereqs: Docker (Compose), mise. Optional: mkcert (for browser-trusted TLS).
+
+```bash
+mise run up
+# → https://obol.localhost:8443 (solo mode, default) — self-signed cert unless you wire mkcert
+# → https://obol.localhost  (shared mode, if dev-proxy Traefik is running)
+```
+
+`bin/dc` auto-picks solo vs shared mode by probing for a `dev-proxy` Docker network. `CADDY_EXTRA_CONFIG` in `.env.local` opts into mkcert-trusted TLS. Full walkthrough: `docs/development/local-setup.md`. Worktree-per-hostname via `.env.local` is supported in shared mode.
 
 ## Commands
 
-### Development
+### Stack control
 ```bash
-# Run Symfony console commands
-php bin/console <command>
-
-# Start development server
-symfony serve
-# or
-php -S localhost:8000 -t public
+mise run up                            # start the stack
+mise run down                          # stop it
+mise run dce -- php bin/console <cmd>  # arbitrary Symfony command
 ```
 
 ### Testing
 ```bash
-# Prefer running tests via mise
-mise run test
-
-# If needing direct Pest access
-php vendor/bin/pest
-
-# Run specific test suite
-mise run test --testsuite=Unit
-mise run test --testsuite=Feature
-mise run test --testsuite=Integration
-
-# Run single test file
-mise run test tests/Unit/SomeTest.php
-
-# Run tests matching a filter
-mise run test --filter="subscription"
+mise run test                          # all tests (compact)
+mise run test:v                        # all tests (verbose)
+mise run test -- --testsuite=Unit      # specific suite
+mise run test -- tests/Unit/SomeTest.php
+mise run test -- --filter="subscription"
+mise run coverage                      # tests + coverage (min 70%)
+mise run coverage:report               # HTML report in var/coverage/
 ```
 
 ### Code Quality
 ```bash
-# PHPStan static analysis (level 9)
-mise run sa
-
-# Fix code style with PHP CS Fixer
-mise run cs
-
-# Run Rector refactoring
-mise run rector
-
-# Fix Twig templates
-mise run cs:twig
+mise run sa             # PHPStan static analysis (level 9)
+mise run cs             # PHP CS Fixer (fix)
+mise run cs:check       # PHP CS Fixer (check only)
+mise run cs:twig        # Twig CS Fixer (fix)
+mise run rector         # Rector
+mise run lint:php       # syntax check on changed files (host-side)
+mise run check          # sa + test + cs + cs:twig in sequence
 ```
 
-### Database
+### Database / fixtures
 ```bash
-# Run migrations
-php bin/console doctrine:migrations:migrate
-
-# Load fixtures
-php bin/console doctrine:fixtures:load
-```
-
-### Mise Tasks
-If `mise` is installed, use these shortcuts:
-```bash
-mise run lint:php       # PHP syntax check on changed files
-mise run sa            # Static analysis
-mise run test          # Run tests (compact output)
-mise run test:v        # Run tests (verbose output)
-mise run coverage      # Run tests with coverage (min 70%)
-mise run coverage:report  # Generate HTML coverage report in var/coverage/
-mise run cs            # Fix code style
-mise run cs:twig       # Fix twig code style
-mise run rector        # Run Rector
+mise run seed                                  # load fixtures
+mise run seed:clear                            # drop + migrate (no fixtures)
+mise run dce -- php bin/console doctrine:migrations:migrate
 ```
 
 ### Documentation
@@ -281,8 +262,8 @@ Coverage is enforced at **70% minimum** via `--min=70` in both CI and `mise run 
 
 ## Notes
 
-- PHP 8.4+ features are actively used (e.g., `public private(set)`, property hooks syntax)
+- PHP 8.5+ features are actively used (e.g., `public private(set)`, property hooks syntax)
 - All code must pass PHPStan level 9 with strict rules
 - Uses Rector for automated refactoring
 - Symfony Flex manages bundles and recipes
-- Docker support available (see compose.yaml)
+- Multi-stage FrankenPHP Dockerfile; `compose.yaml` is the base, `compose.override.yaml` is dev-only, `compose.solo.yaml` / `compose.shared.yaml` handle port publishing vs Traefik routing (`bin/dc` auto-picks), `compose.prod.yaml` is the prod overlay

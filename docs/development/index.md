@@ -61,6 +61,7 @@ After merge: verify the issue was auto-closed, delete the feature branch.
 
 ## Section Contents
 
+- [Local Setup](local-setup.md) — mkcert, dev-proxy, worktree flow
 - [Standards](standards.md) — code quality rules and conventions
 - [Testing](testing.md) — test suites, factories, coverage
 - [Git Hooks](git-hooks.md) — automated checks on commit, push, and merge

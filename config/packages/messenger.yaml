@@ -1,32 +1,8 @@
 framework:
     messenger:
-        failure_transport: failed
-        transports:
-            async:
-                dsn: "doctrine://default"
-                options:
-                    auto_setup: true
-                    queue_name: default
-                    table_name: 'messenger_messages'
-            failed:
-                dsn: "doctrine://default"
-                options:
-                    auto_setup: true
-                    queue_name: failed
-                    table_name: 'messenger_messages'
-        routing:
-            'App\Message\AsyncMessageInterface':  async
-            'Symfony\Component\Mailer\Messenger\SendEmailMessage': async
-
         default_bus: command.bus
         buses:
             command.bus:
-                middleware:
-                    - dispatch_after_current_bus
-                    - validation
-                    - doctrine_transaction
-            event.bus:
-                default_middleware: allow_no_handlers
                 middleware:
                     - dispatch_after_current_bus
                     - validation
@@ -35,12 +11,3 @@ framework:
                 middleware:
                     - dispatch_after_current_bus
                     - validation
-
-#when@test:
-#    framework:
-#        messenger:
-#            transports:
-#                async:
-#                    dsn: 'test://'
-#                email:
-#                    dsn: 'test://'

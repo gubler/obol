@@ -19,6 +19,22 @@ migrated out of the retired `.agent-os` scaffold.
 - **Category icons or colors** - categories carry a name only. (Note: this is distinct
   from #52, an application icon/favicon for Obol itself, which is in scope.)
 
+## Deferred until the SaaS push
+
+Not rejected - planned for if/when Obol becomes a multi-tenant SaaS (a direction under
+consideration after Tollo ships), but deliberately not carried as dead code until a
+concrete need exists.
+
+- **Async / messaging / mail infrastructure** - the speculative `EventBus`,
+  `AsyncMessageInterface`, the `async`/`failed` Messenger transports, and the
+  `symfony/mailer` + `symfony/notifier` packages were removed in #76. None had a live
+  caller (the event bus was dispatched only by its own test; the mail DSN was `null://`
+  with no senders). The `command.bus` and `query.bus` stay - they are in active use.
+  When SaaS work needs outbound mail or background processing, bring it back with
+  `composer require symfony/mailer symfony/messenger-doctrine` (the Flex recipes
+  regenerate `mailer.yaml` and the transport config on current Symfony) rather than
+  preserving a null skeleton in the meantime.
+
 ## If one of these comes back
 
 Reopen the decision explicitly (an ADR superseding the relevant point), rather than

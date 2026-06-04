@@ -149,7 +149,7 @@ class Subscription
         $costChangeGenerator = new ChangeContextGenerator(
             changes: [
                 new Change(field: 'paymentPeriod', current: $this->paymentPeriod->value, new: $paymentPeriod->value),
-                new Change(field: 'paymentPeriodCost', current: $this->paymentPeriodCount, new: $paymentPeriodCount),
+                new Change(field: 'paymentPeriodCount', current: $this->paymentPeriodCount, new: $paymentPeriodCount),
                 new Change(field: 'cost', current: $this->cost, new: $cost),
             ]
         );

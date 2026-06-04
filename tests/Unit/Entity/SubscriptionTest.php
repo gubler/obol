@@ -185,6 +185,39 @@ describe('update', function (): void {
         ;
     });
 
+    test('records a period count change under the paymentPeriodCount key', function (): void {
+        $lastPaidDate = new DateTimeImmutable('2024-01-01');
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            lastPaidDate: $lastPaidDate,
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 1500,
+        );
+
+        $subscription->update(
+            category: $this->category,
+            name: 'Netflix',
+            lastPaidDate: $lastPaidDate,
+            description: '',
+            link: '',
+            logo: '',
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 3,
+            cost: 1500,
+        );
+
+        expect($subscription->subscriptionEvents)->toHaveCount(1);
+        /** @var SubscriptionEvent $event */
+        $event = $subscription->subscriptionEvents->first();
+        expect($event->type)->toBe(SubscriptionEventType::CostChange)
+            ->and($event->context)->toHaveKey('paymentPeriodCount')
+            ->and($event->context)->not->toHaveKey('paymentPeriodCost')
+            ->and($event->context['paymentPeriodCount'])->toBe(['old' => 1, 'new' => 3])
+        ;
+    });
+
     test('creates both events when both types of fields change', function (): void {
         $subscription = new Subscription(
             category: $this->category,

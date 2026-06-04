@@ -2,7 +2,7 @@
 
 A subscription management application for tracking recurring payments, payment history, and subscription lifecycle events.
 
-Built with Symfony 8.0 and PHP 8.5+.
+Built with Symfony 8.1 and PHP 8.5+.
 
 ## Features
 

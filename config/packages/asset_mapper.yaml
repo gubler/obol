@@ -9,3 +9,13 @@ when@prod:
     framework:
         asset_mapper:
             missing_import_mode: warn
+
+# The Tailwind bundle's `@import "tailwindcss"` in app.css is resolved by the bundle,
+# not AssetMapper, so strict mode wrongly treats it as a missing import and 500s any
+# on-the-fly template render. prod already relaxes to warn (above); test needs it too,
+# otherwise the suite only passes when assets are pre-compiled (CI does that, but
+# `mise run test` does not).
+when@test:
+    framework:
+        asset_mapper:
+            missing_import_mode: warn

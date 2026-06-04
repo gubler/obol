@@ -10,8 +10,7 @@ nothing copied into `.git/hooks/`.
 |------|---------|-----------|
 | `pre-commit` | Commit to `main` | **BLOCKED** - use a feature branch |
 | `pre-commit` | Commit to any branch | `lint:php`, `cs` (auto-fix), `cs:twig` (auto-fix) |
-| `pre-push` | Push any branch | `lint:php`, `cs:check`, `cs:twig:check` |
-| `pre-push` | Push to `main` | Above + `sa` (PHPStan) + `test` (full suite) |
+| `pre-push` | Push (any branch) | `lint:php`, `cs:check`, `cs:twig:check`, `sa`, `test` |
 | `pre-merge-commit` | Any merge | `lint:php`, `cs`, `cs:twig`, `sa`, `test` |
 
 ## How they are wired
@@ -50,13 +49,20 @@ git config --local core.hooksPath .githooks
 
 ### Pre-push
 
-Runs the linters in check-only mode (`lint:php`, `cs:check`, `cs:twig:check`) on every push.
-When pushing `main`, it additionally runs PHPStan (`sa`) and the full test suite (`test`).
+Runs the full check set on every push, regardless of branch: `lint:php`, `cs:check`,
+`cs:twig:check`, PHPStan (`sa`), and the full test suite (`test`). This gates pushes on the
+same suite CI runs, catching failures before the server round-trip. (`main` is PR-only, so
+there is no branch-specific gating - every push gets the full set.)
 
 ### Pre-merge-commit
 
 Runs the full validation suite on every merge - linters, static analysis, and tests - so a
 merge commit (especially into `main`) cannot introduce broken code.
+
+### Failure aggregation
+
+Every hook runs all of its checks and aggregates the results (`|| status=1`, no `set -e`),
+so a single run reports every failure at once rather than stopping at the first.
 
 ## Important Rules
 

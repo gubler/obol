@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# ABOUTME: Git pre-push hook that lints on every push and runs full validation for main.
-# ABOUTME: lint:php + CS checks always; static analysis and tests gate pushes to main.
+# ABOUTME: Git pre-push hook that runs the full check set on every push, via mise.
+# ABOUTME: Aggregates failures so one run surfaces them all instead of fix-rerun loops.
 
-set -euo pipefail
+set -uo pipefail
 
-BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null || echo "")
-
-mise run lint:php
-mise run cs:check
-mise run cs:twig:check
-
-if [ "$BRANCH" = "main" ]; then
-    mise run sa
-    mise run test
-fi
+# Run every check and aggregate failures (no `set -e`) so one run surfaces them all.
+# Pushes are gated locally on the same suite CI runs, catching failures before the
+# server round-trip. (main is PR-only, so there is no branch-specific gating here.)
+status=0
+mise run lint:php      || status=1
+mise run cs:check      || status=1
+mise run cs:twig:check || status=1
+mise run sa            || status=1
+mise run test          || status=1
+exit "$status"

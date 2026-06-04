@@ -2,7 +2,7 @@
 # ABOUTME: Git pre-commit hook that blocks direct commits to main and lints staged work.
 # ABOUTME: On feature branches it runs php -l and the CS fixers (cs, cs:twig) via mise.
 
-set -euo pipefail
+set -uo pipefail
 
 BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null || echo "")
 
@@ -11,6 +11,10 @@ if [ "$BRANCH" = "main" ]; then
     exit 1
 fi
 
-mise run lint:php
-mise run cs
-mise run cs:twig
+# Run every check and aggregate failures (no `set -e`) so one run surfaces them all
+# instead of a fix-rerun loop.
+status=0
+mise run lint:php || status=1
+mise run cs       || status=1
+mise run cs:twig  || status=1
+exit "$status"

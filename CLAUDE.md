@@ -184,8 +184,9 @@ directory). Nothing is copied into `.git/hooks/`. See `docs/development/git-hook
 | `pre-commit` | Commit to `main` | **BLOCKED** - use a feature branch |
 | `pre-commit` | Commit to branch | Linters (`php -l`, cs-fixer, twig-cs-fixer) |
 | `pre-merge-commit` | Any merge | Linters + PHPStan + Tests |
-| `pre-push` | Push branch | Linters |
-| `pre-push` | Push to `main` | Linters + PHPStan + Tests |
+| `pre-push` | Push (any branch) | Linters + PHPStan + Tests |
+
+Every hook runs its full check set and reports all failures at once (no fail-fast), so one run surfaces everything instead of a fix-and-rerun loop.
 
 To wire hooks manually: `git config --local core.hooksPath .githooks`
 

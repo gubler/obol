@@ -16,18 +16,41 @@ jobs:
     ci:
         name: Lint & Test
         runs-on: ubuntu-latest
+        container:
+            image: dunglas/frankenphp:1-php8.5
+
+        services:
+            postgres:
+                image: postgres:16-alpine
+                env:
+                    POSTGRES_USER: app
+                    POSTGRES_PASSWORD: "!ChangeMe!"
+                    POSTGRES_DB: app
+                options: >-
+                    --health-cmd pg_isready
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 5
+
+        env:
+            # Reach the postgres service by name; the test bootstrap derives the
+            # app_test database from this via doctrine's dbname_suffix.
+            DATABASE_URL: "postgresql://app:!ChangeMe!@postgres:5432/app?serverVersion=16&charset=utf8"
+            COMPOSER_ALLOW_SUPERUSER: 1
 
         steps:
+            - name: "Install git and nodejs for Gitea Actions runtime"
+              run: |
+                  apt-get update
+                  apt-get install -y --no-install-recommends git nodejs
+
             - name: "Checkout code"
               uses: actions/checkout@v5
 
-            - name: "Install PHP with extensions"
-              uses: shivammathur/setup-php@v2
-              with:
-                  coverage: "xdebug"
-                  extensions: "intl, mbstring, pdo_sqlite, zip"
-                  php-version: 8.5
-                  tools: composer:v2
+            - name: "Install OS packages and PHP extensions"
+              run: |
+                  apt-get install -y --no-install-recommends file ca-certificates
+                  install-php-extensions @composer intl mbstring zip pdo_pgsql pcov
 
             - name: "Validate Composer config"
               run: composer validate --no-check-publish --strict
@@ -48,27 +71,27 @@ jobs:
             # Linters
             - name: "Lint YAML files"
               if: always() && steps.install.outcome == 'success'
-              run: ./bin/console lint:yaml config --parse-tags
+              run: php bin/console lint:yaml config --parse-tags
 
             - name: "Lint Twig templates"
               if: always() && steps.install.outcome == 'success'
-              run: ./bin/console lint:twig templates --env=prod
+              run: php bin/console lint:twig templates --env=prod
 
             - name: "Lint XLIFF translation files"
               if: always() && steps.install.outcome == 'success'
-              run: ./bin/console lint:xliff translations
+              run: php bin/console lint:xliff translations
 
             - name: "Lint translation contents"
               if: always() && steps.install.outcome == 'success'
-              run: ./bin/console lint:translations
+              run: php bin/console lint:translations
 
             - name: "Lint Parameters and Services"
               if: always() && steps.install.outcome == 'success'
-              run: ./bin/console lint:container --no-debug
+              run: php bin/console lint:container --no-debug
 
             - name: "Lint Doctrine entities"
               if: always() && steps.install.outcome == 'success'
-              run: ./bin/console doctrine:schema:validate --skip-sync -vvv --no-interaction
+              run: php bin/console doctrine:schema:validate --skip-sync -vvv --no-interaction
 
             - name: "Check for compromised dependencies"
               if: always() && steps.install.outcome == 'success'
@@ -77,7 +100,8 @@ jobs:
             # Static analysis
             - name: "PHPStan"
               if: always() && steps.install.outcome == 'success'
-              run: vendor/bin/phpstan analyze --no-progress --error-format=github
+              # The FrankenPHP image caps memory_limit at 128M; PHPStan needs more.
+              run: vendor/bin/phpstan analyze --memory-limit=4G --no-progress --error-format=github
 
             # Tests
             - name: "Build and compile assets"

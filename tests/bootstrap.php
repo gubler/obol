@@ -1,5 +1,8 @@
 <?php
 
+// ABOUTME: PHPUnit/Pest bootstrap — boots the test kernel and rebuilds the test
+// ABOUTME: PostgreSQL database from migrations before the suite runs.
+
 declare(strict_types=1);
 
 use App\Kernel;
@@ -23,30 +26,30 @@ $kernel->boot();
 // Create new application
 $application = new Application(kernel: $kernel);
 $application->setAutoExit(boolean: false);
-/** @var Doctrine\Persistence\ManagerRegistry $doctrine */
-$doctrine = $application
-    ->getKernel()
-    ->getContainer()
-    ->get(id: 'doctrine')
-;
-/** @var Doctrine\DBAL\Connection $connection */
-$connection = $doctrine->getConnection();
-$dbPath = $connection->getParams()['path'];
 
-// Unlink (delete) the DB file
-// We can't use doctrine:database:drop because that doesn't work with SQLite
-$dropDatabaseDoctrineCommand = static function () use ($dbPath): void {
-    if (file_exists(filename: $dbPath)) {
-        unlink(filename: $dbPath);
-    }
+// Drop the test database if it exists (--force skips the confirmation prompt)
+$dropDatabaseDoctrineCommand = static function () use ($application): void {
+    $input = new ArrayInput(parameters: [
+        'command' => 'doctrine:database:drop',
+        '--force' => true,
+        '--if-exists' => true,
+    ]);
+
+    $input->setInteractive(interactive: false);
+
+    $application->run(input: $input, output: new ConsoleOutput());
 };
 
-// Touch (create) the DB file
-// We can't use doctrine:database:create because that doesn't work with SQLite
-$createDatabaseDoctrineCommand = static function () use ($dbPath): void {
-    if (!file_exists(filename: $dbPath)) {
-        touch(filename: $dbPath);
-    }
+// Create the test database (no-op if it already exists)
+$createDatabaseDoctrineCommand = static function () use ($application): void {
+    $input = new ArrayInput(parameters: [
+        'command' => 'doctrine:database:create',
+        '--if-not-exists' => true,
+    ]);
+
+    $input->setInteractive(interactive: false);
+
+    $application->run(input: $input, output: new ConsoleOutput());
 };
 
 // Migrate the database to the latest version

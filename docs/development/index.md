@@ -61,7 +61,7 @@ After merge: verify the issue was auto-closed, delete the feature branch.
 
 ## Section Contents
 
-- [Local Setup](local-setup.md) — mkcert, dev-proxy, worktree flow
+- Local routing — see [Lolly](https://code.dev88.work/dev88/lolly), the shared dev proxy. Obol's `bin/dc` wrapper auto-detects whether Lolly is running and picks shared (`https://obol.lolly.localhost`, trusted TLS) or solo (`http://127.0.0.1:8080`, plain HTTP) accordingly.
 - [Standards](standards.md) — code quality rules and conventions
 - [Testing](testing.md) — test suites, factories, coverage
 - [Git Hooks](git-hooks.md) — automated checks on commit, push, and merge

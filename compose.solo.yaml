@@ -1,34 +1,8 @@
 ---
-# Solo mode — no shared proxy. Container Caddy binds to loopback ports.
-# TLS trust is opt-in via CADDY_EXTRA_CONFIG:
-#   - Unset (default, CI): Caddy uses its internal self-signed cert. Fine for CI
-#     (tests exec into the container; Panther drives Chromium with acceptInsecureCerts).
-#   - Set in .env.local: points Caddy at the mkcert wildcard cert — browser-trusted.
-#
-# To get mkcert-trusted TLS locally, place the cert at frankenphp/certs/ (either
-# generate it there directly, or symlink the directory to ~/Projects/dev-proxy/certs)
-# and set in .env.local:
-#
-#   CADDY_EXTRA_CONFIG='https:// { tls /etc/caddy/certs/wildcard.pem /etc/caddy/certs/wildcard.key }'
+# Solo mode — no Lolly proxy. Publishes the container's plain HTTP on loopback
+# (per Lolly's stack-agnostic solo template) for a quick "is it alive" check.
+# Browser-trusted TLS is owned by Lolly — start Lolly to get https://obol.lolly.localhost.
 services:
   php:
-    volumes:
-      - ./frankenphp/certs:/etc/caddy/certs:ro
-    environment:
-      CADDY_EXTRA_CONFIG: "${CADDY_EXTRA_CONFIG:-}"
     ports:
-      - name: http
-        target: 80
-        host_ip: 127.0.0.1
-        published: ${HTTP_PORT:-8080}
-        protocol: tcp
-      - name: https
-        target: 443
-        host_ip: 127.0.0.1
-        published: ${HTTPS_PORT:-8443}
-        protocol: tcp
-      - name: http3
-        target: 443
-        host_ip: 127.0.0.1
-        published: ${HTTP3_PORT:-8443}
-        protocol: udp
+      - "127.0.0.1:${SOLO_HTTP_PORT:-8080}:80"

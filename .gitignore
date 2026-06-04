@@ -36,9 +36,5 @@ phpstan.neon
 /.phpunit.cache/
 ###< phpunit/phpunit ###
 
-# Local TLS certs — wildcard mkcert, generated per-developer.
-/frankenphp/certs/*
-!/frankenphp/certs/.gitkeep
-
 # Postgres bind-mount data — keep the app out of git.
 /docker/db/data/

@@ -1,7 +1,7 @@
 ---
 # Development environment override — always loaded by default.
 # Port publishing and proxy routing live in compose.solo.yaml / compose.shared.yaml;
-# bin/dc auto-picks the right one based on whether the dev-proxy network is present.
+# bin/dc auto-picks the right one based on whether the lolly network is present.
 services:
   php:
     image: ${IMAGES_PREFIX:-}obol-php-dev
@@ -12,8 +12,8 @@ services:
       - ./:/app
       - ./frankenphp/Caddyfile:/etc/frankenphp/Caddyfile:ro
       - ./frankenphp/conf.d/20-app.dev.ini:/usr/local/etc/php/app.conf.d/20-app.dev.ini:ro
-      # certs are bind-mounted in solo mode only (see compose.solo.yaml); shared mode
-      # offloads TLS to Traefik and doesn't need the cert inside the app container.
+      # Solo mode publishes plain HTTP on loopback; browser-trusted TLS comes
+      # from Lolly in shared mode. No per-app cert mount needed.
       # If you develop on Mac or Windows you can remove the vendor/ directory
       # from the bind-mount for better performance by enabling the next line:
       #- /app/vendor

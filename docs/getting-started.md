@@ -6,7 +6,7 @@ This guide covers setting up Obol for local development.
 
 - **Docker** with the Compose plugin. Any compatible engine works; [OrbStack](https://orbstack.dev/) is recommended on macOS for its faster startup and volume mounts.
 - **[mise](https://mise.jdx.dev/)** for task shortcuts.
-- **[mkcert](https://github.com/FiloSottile/mkcert)** (optional, for browser-trusted local TLS).
+- **[Lolly](https://code.dev88.work/dev88/lolly)** — the shared local dev proxy. Optional but recommended; gives you `https://obol.lolly.localhost` with browser-trusted TLS.
 - **[MkDocs Material](https://squidfunk.github.io/mkdocs-material/)** (optional, for editing the docs site).
 
 No PHP, Composer, or Postgres install on the host is required — everything runs inside Docker.
@@ -21,11 +21,10 @@ cd obol
 mise run up
 ```
 
-The app is now at **https://obol.localhost:8443**. Out of the box Caddy uses a self-signed cert, so your browser will warn about trust.
+- With Lolly running: the app is served at **https://obol.lolly.localhost** with browser-trusted TLS.
+- With Lolly stopped: the app is served at **http://127.0.0.1:8080** (plain HTTP, for quick "is it alive" checks).
 
-### 2. (Optional) Wire up trusted TLS
-
-For a browser-trusted dev experience, follow [Local Setup § Enable TLS](development/local-setup.md#3-enable-tls-in-caddy-opt-in). In short: generate a mkcert wildcard cert, set `CADDY_EXTRA_CONFIG` in `.env.local`, restart the stack.
+`bin/dc` auto-detects which mode to use by probing for Lolly's `lolly` Docker network — no flag.
 
 Migrations run automatically inside the container on startup. No fixtures are loaded by default — run `mise run seed` if you want sample data.
 
@@ -53,6 +52,6 @@ mise run docs:build    # output to site/
 
 ## Further reading
 
-- [Local Setup](development/local-setup.md) — shared-proxy mode, worktree-per-hostname, troubleshooting
+- [Lolly's runbook](https://code.dev88.work/dev88/lolly/src/branch/main/docs/agents/integrate-an-app.md) — the full contract for shared-mode routing and worktree-per-hostname
 - [Mise Tasks](development/mise-tasks.md) — full task reference
 - [Deployment](deployment.md) — production Docker setup

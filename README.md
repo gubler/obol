@@ -17,20 +17,21 @@ Built with Symfony 8.0 and PHP 8.5+.
 
 - Docker with the Compose plugin (OrbStack recommended on macOS)
 - [mise](https://mise.jdx.dev/) for task shortcuts
-- [mkcert](https://github.com/FiloSottile/mkcert) for browser-trusted local TLS
+- [Lolly](https://code.dev88.work/dev88/lolly) — the shared local dev proxy. Optional but recommended; gives you `https://obol.lolly.localhost` with browser-trusted TLS.
 
 The app runs inside Docker via FrankenPHP — no PHP, Composer, or Postgres install required on the host.
 
 ## Setup
 
 ```bash
-# Bring up the stack — works out of the box with a self-signed cert
+# Bring up the stack
 mise run up
 ```
 
-The app is now at **https://obol.localhost:8443**. Your browser will show a cert warning until you follow [Local Setup § Enable TLS in Caddy](docs/development/local-setup.md#3-enable-tls-in-caddy-opt-in) to wire in a mkcert-trusted wildcard cert.
+- **With Lolly running**: app served at **https://obol.lolly.localhost** with browser-trusted TLS.
+- **Without Lolly**: app served at **http://127.0.0.1:8080** (plain HTTP, for quick "is it alive" checks).
 
-For port-less URLs (`https://obol.localhost`) and running sibling apps in parallel, see [Local Setup § Shared mode](docs/development/local-setup.md#shared-mode-optional-recommended-for-multi-app-setups).
+`bin/dc` auto-detects which mode to use — no flag. See [Lolly's runbook](https://code.dev88.work/dev88/lolly/src/branch/main/docs/agents/integrate-an-app.md) for the full contract.
 
 ## Development
 

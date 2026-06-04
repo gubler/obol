@@ -31,7 +31,6 @@ nav:
   - CI/CD: ci-cd.md
   - Development:
       - development/index.md
-      - Local Setup: development/local-setup.md
       - Standards: development/standards.md
       - Testing: development/testing.md
       - Git Hooks: development/git-hooks.md

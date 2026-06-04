@@ -8,17 +8,34 @@ This is a Symfony 8.0 application for managing subscriptions with payment tracki
 
 The app runs inside Docker via FrankenPHP. Developer tooling (PHPStan, Pest, CS Fixer, Rector) executes **inside the `php` container** via the `./bin/dc exec -T php` wrapper — `mise` tasks delegate to it. Only `docs:*` and `lint:php` run on the host.
 
-## Local Development
+## Local routing (Lolly)
 
-Prereqs: Docker (Compose), mise. Optional: mkcert (for browser-trusted TLS).
+This app runs behind [Lolly](https://code.dev88.work/dev88/lolly), the shared local
+dev proxy. The `bin/dc` wrapper auto-detects whether Lolly is running and picks the
+mode - there's no flag to set:
 
-```bash
-mise run up
-# → https://obol.localhost:8443 (solo mode, default) — self-signed cert unless you wire mkcert
-# → https://obol.localhost  (shared mode, if dev-proxy Traefik is running)
-```
+- `bin/dc up -d` - start (shared mode if Lolly is up, solo if not).
+- `bin/dc down` - stop.
 
-`bin/dc` auto-picks solo vs shared mode by probing for a `dev-proxy` Docker network. `CADDY_EXTRA_CONFIG` in `.env.local` opts into mkcert-trusted TLS. Full walkthrough: `docs/development/local-setup.md`. Worktree-per-hostname via `.env.local` is supported in shared mode.
+URLs:
+- Shared (Lolly running): `https://obol.lolly.localhost` - clean, browser-trusted.
+- Solo (Lolly stopped): `http://localhost:8080` on loopback - plain HTTP for quick
+  "is it alive" checks. Browser-trusted TLS is Lolly's job.
+
+### Worktrees (read before creating one)
+
+Every git worktree of this app MUST get its own `.env.local` with a UNIQUE
+`SERVER_NAME` and `COMPOSE_PROJECT_NAME`:
+
+    SERVER_NAME=obol-<branch>.lolly.localhost
+    COMPOSE_PROJECT_NAME=obol-<branch>
+
+The Traefik router is named after `COMPOSE_PROJECT_NAME`. Two worktrees that share
+it share a router and silently collide - one shadows the other, and which stack you
+reach becomes a coin flip. Setting only `SERVER_NAME` is just as broken (two
+`Host()` rules under one router name). Set both.
+
+Full contract and how routing works: `~/Projects/lolly/docs/agents/integrate-an-app.md`.
 
 ## Commands
 
@@ -266,4 +283,4 @@ Coverage is enforced at **70% minimum** via `--min=70` in both CI and `mise run 
 - All code must pass PHPStan level 9 with strict rules
 - Uses Rector for automated refactoring
 - Symfony Flex manages bundles and recipes
-- Multi-stage FrankenPHP Dockerfile; `compose.yaml` is the base, `compose.override.yaml` is dev-only, `compose.solo.yaml` / `compose.shared.yaml` handle port publishing vs Traefik routing (`bin/dc` auto-picks), `compose.prod.yaml` is the prod overlay
+- Multi-stage FrankenPHP Dockerfile; `compose.yaml` is the base, `compose.override.yaml` is dev-only, `compose.solo.yaml` / `compose.shared.yaml` handle loopback HTTP vs Lolly routing (`bin/dc` auto-picks), `compose.prod.yaml` is the prod overlay

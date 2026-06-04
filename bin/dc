@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 # ABOUTME: Thin wrapper around `docker compose` — applies --env-file .env.local and
-# ABOUTME: auto-picks compose.solo.yaml vs compose.shared.yaml by probing the dev-proxy network.
+# ABOUTME: auto-picks compose.solo.yaml vs compose.shared.yaml by probing the lolly network.
 
 set -eu
 
@@ -9,7 +9,7 @@ if [ -f .env.local ]; then
     COMPOSE_ARGS="--env-file .env.local"
 fi
 
-if docker network inspect dev-proxy >/dev/null 2>&1; then
+if docker network inspect lolly >/dev/null 2>&1; then
     MODE_FILE="compose.shared.yaml"
 else
     MODE_FILE="compose.solo.yaml"

@@ -106,8 +106,8 @@ RUN <<-EOF
 	mkdir -p var/cache var/log var/share
 	composer dump-autoload --classmap-authoritative --no-dev
 	composer dump-env prod
-	# Run auto-scripts items manually — `composer run-script post-install-cmd` would also
-	# run `install-hooks`, which copies into .git/hooks (.git is excluded from build context).
+	# Production cache + asset build. Run these directly rather than via post-install-cmd
+	# so the prod-only tailwind/asset-map steps sit alongside the auto-scripts items.
 	php bin/console cache:clear --no-warmup
 	php bin/console assets:install public
 	php bin/console importmap:install

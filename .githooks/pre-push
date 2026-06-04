@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# ABOUTME: Git pre-push hook that lints on every push and runs full validation for main.
+# ABOUTME: lint:php + CS checks always; static analysis and tests gate pushes to main.
+
+set -euo pipefail
+
+BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null || echo "")
+
+mise run lint:php
+mise run cs:check
+mise run cs:twig:check
+
+if [ "$BRANCH" = "main" ]; then
+    mise run sa
+    mise run test
+fi

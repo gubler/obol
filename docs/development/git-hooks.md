@@ -1,53 +1,65 @@
 # Git Hooks
 
-Obol uses two hook systems: [Captain Hook](https://github.com/captainhook-git/captainhook) for most hooks, and a standalone script for `pre-merge-commit`.
+Obol's git hooks are plain shell scripts tracked in `.githooks/`. Git is pointed at
+that directory with `core.hooksPath`, so the scripts run directly from the repo with
+nothing copied into `.git/hooks/`.
 
 ## Hook Summary
 
 | Hook | Trigger | What Runs |
 |------|---------|-----------|
-| `pre-commit` | Commit to `main` | **BLOCKED** — use a feature branch |
+| `pre-commit` | Commit to `main` | **BLOCKED** - use a feature branch |
 | `pre-commit` | Commit to any branch | `lint:php`, `cs` (auto-fix), `cs:twig` (auto-fix) |
 | `pre-push` | Push any branch | `lint:php`, `cs:check`, `cs:twig:check` |
 | `pre-push` | Push to `main` | Above + `sa` (PHPStan) + `test` (full suite) |
 | `pre-merge-commit` | Any merge | `lint:php`, `cs`, `cs:twig`, `sa`, `test` |
 
-## Captain Hook
+## How they are wired
 
-Configured in `captainhook.json` at the repo root. Auto-installed on `composer install` via the `captainhook/plugin-composer` Composer plugin.
+The hooks live in `.githooks/` (`pre-commit`, `pre-push`, `pre-merge-commit`). They are
+activated by a single local git setting:
+
+```bash
+git config --local core.hooksPath .githooks
+```
+
+That setting is applied automatically by the `install-hooks` Composer script, which runs
+on every `composer install` and `composer update`:
+
+```jsonc
+"install-hooks": "git rev-parse --git-dir >/dev/null 2>&1 && git config --local core.hooksPath .githooks || true",
+```
+
+The `git rev-parse` guard makes the script a no-op when there is no usable git
+directory (for example during the Docker image build, where `.git` is excluded from the
+build context), so `composer install` never fails because of it.
+
+To wire the hooks by hand:
+
+```bash
+git config --local core.hooksPath .githooks
+```
+
+## Behaviour
 
 ### Pre-commit
 
-Two conditional paths:
-
-- **On `main`**: Prints an error and exits. Direct commits to `main` are not allowed.
-- **On any other branch**: Runs linters and auto-fixes code style. This means CS Fixer and Twig CS Fixer run in fix mode on every commit, keeping the codebase formatted.
+- **On `main`**: prints an error and exits non-zero. Direct commits to `main` are not allowed.
+- **On any other branch**: runs `lint:php` and the CS fixers in fix mode (`cs`, `cs:twig`),
+  keeping the codebase formatted on every commit.
 
 ### Pre-push
 
-Runs linters in check-only mode (no auto-fix) on all branches. Additionally, when pushing to `main`, runs PHPStan and the full test suite.
+Runs the linters in check-only mode (`lint:php`, `cs:check`, `cs:twig:check`) on every push.
+When pushing `main`, it additionally runs PHPStan (`sa`) and the full test suite (`test`).
 
-## Standalone Pre-Merge-Commit
+### Pre-merge-commit
 
-Stored in `.githooks/pre-merge-commit` and installed to `.git/hooks/pre-merge-commit` via Composer's `install-hooks` script.
-
-This hook runs the full validation suite on every merge: linters, static analysis, and tests. It ensures that merge commits (especially into `main`) cannot introduce broken code.
-
-## Installation
-
-Hooks are auto-installed on `composer install` via two mechanisms:
-
-1. **Captain Hook** installs its hooks via the Composer plugin
-2. **`composer run install-hooks`** copies the standalone `pre-merge-commit` hook
-
-To reinstall manually:
-
-```bash
-vendor/bin/captainhook install --force && composer run install-hooks
-```
+Runs the full validation suite on every merge - linters, static analysis, and tests - so a
+merge commit (especially into `main`) cannot introduce broken code.
 
 ## Important Rules
 
 - **Never use `--no-verify`** to bypass hooks. If a hook fails, fix the underlying issue.
-- **Hooks require mise** for running tasks. Ensure `mise` is installed and available in your PATH.
+- **Hooks require mise** for running tasks. Ensure `mise` is installed and on your PATH.
 - **Git 2.24+** is required for `pre-merge-commit` hook support.

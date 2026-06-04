@@ -174,17 +174,20 @@ git push origin --delete issue-##-brief-description
 
 **Requires Git 2.24+** (for `pre-merge-commit` hook support).
 
-Hooks are managed by [Captain Hook](https://github.com/captainhook-git/captainhook) (`captainhook.json`) with one standalone hook for `pre-merge-commit` (stored in `.githooks/`). Both are auto-installed on `composer install`.
+Hooks are plain shell scripts in `.githooks/`, activated via `core.hooksPath`. The
+`install-hooks` Composer script wires them on every `composer install`/`composer update`
+(`git config --local core.hooksPath .githooks`, guarded to no-op when there is no git
+directory). Nothing is copied into `.git/hooks/`. See `docs/development/git-hooks.md`.
 
 | Hook | Trigger | What Runs |
 |------|---------|-----------|
-| `pre-commit` | Commit to `main` | **BLOCKED** — use a feature branch |
+| `pre-commit` | Commit to `main` | **BLOCKED** - use a feature branch |
 | `pre-commit` | Commit to branch | Linters (`php -l`, cs-fixer, twig-cs-fixer) |
 | `pre-merge-commit` | Any merge | Linters + PHPStan + Tests |
 | `pre-push` | Push branch | Linters |
 | `pre-push` | Push to `main` | Linters + PHPStan + Tests |
 
-To reinstall hooks manually: `vendor/bin/captainhook install --force && composer run install-hooks`
+To wire hooks manually: `git config --local core.hooksPath .githooks`
 
 ## Architecture
 

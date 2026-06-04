@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# ABOUTME: Git pre-commit hook that blocks direct commits to main and lints staged work.
+# ABOUTME: On feature branches it runs php -l and the CS fixers (cs, cs:twig) via mise.
+
+set -euo pipefail
+
+BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null || echo "")
+
+if [ "$BRANCH" = "main" ]; then
+    echo "Direct commits to main are not allowed. Use a feature branch." >&2
+    exit 1
+fi
+
+mise run lint:php
+mise run cs
+mise run cs:twig

@@ -6,9 +6,10 @@
 declare(strict_types=1);
 
 use App\Message\Query\Category\FindCategoryQuery;
+use Symfony\Component\Uid\Ulid;
 
 test('creates query with category id', function (): void {
-    $categoryId = '01JBBQ7Z8Z8Z8Z8Z8Z8Z8Z8Z8Z';
+    $categoryId = new Ulid();
     $query = new FindCategoryQuery(categoryId: $categoryId);
 
     expect($query->categoryId)->toBe($categoryId);
@@ -16,7 +17,7 @@ test('creates query with category id', function (): void {
 
 test('is readonly', function (): void {
     $query = new FindCategoryQuery(
-        categoryId: '01JBBQ7Z8Z8Z8Z8Z8Z8Z8Z8Z8Z'
+        categoryId: new Ulid()
     );
 
     $reflection = new ReflectionClass($query);

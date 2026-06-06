@@ -7,10 +7,12 @@ declare(strict_types=1);
 
 namespace App\Message\Command\Subscription;
 
+use Symfony\Component\Uid\Ulid;
+
 final readonly class DeleteSubscriptionCommand
 {
     public function __construct(
-        public string $subscriptionId,
+        public Ulid $subscriptionId,
     ) {
     }
 }

@@ -11,7 +11,6 @@ use App\Exception\CategoryHasSubscriptionsException;
 use App\Repository\CategoryRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
-use Symfony\Component\Uid\Ulid;
 
 #[AsMessageHandler(bus: 'command.bus', handles: DeleteCategoryCommand::class)]
 final readonly class DeleteCategoryHandler
@@ -24,14 +23,14 @@ final readonly class DeleteCategoryHandler
 
     public function __invoke(DeleteCategoryCommand $command): void
     {
-        $category = $this->categoryRepository->find(Ulid::fromString($command->categoryId));
+        $category = $this->categoryRepository->find($command->categoryId);
 
         if (null === $category) {
             throw new \InvalidArgumentException(\sprintf('Category with ID "%s" not found.', $command->categoryId));
         }
 
         if ($category->subscriptions->count() > 0) {
-            throw new CategoryHasSubscriptionsException($command->categoryId);
+            throw new CategoryHasSubscriptionsException((string) $command->categoryId);
         }
 
         $this->entityManager->remove($category);

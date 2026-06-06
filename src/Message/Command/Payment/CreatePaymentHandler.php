@@ -11,7 +11,6 @@ use App\Enum\PaymentType;
 use App\Repository\SubscriptionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
-use Symfony\Component\Uid\Ulid;
 
 #[AsMessageHandler(bus: 'command.bus', handles: CreatePaymentCommand::class)]
 final readonly class CreatePaymentHandler
@@ -24,7 +23,7 @@ final readonly class CreatePaymentHandler
 
     public function __invoke(CreatePaymentCommand $command): void
     {
-        $subscription = $this->subscriptionRepository->find(Ulid::fromString($command->subscriptionId));
+        $subscription = $this->subscriptionRepository->find($command->subscriptionId);
 
         if (null === $subscription) {
             throw new \InvalidArgumentException(\sprintf('Subscription with ID "%s" not found.', $command->subscriptionId));

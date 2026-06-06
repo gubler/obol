@@ -11,7 +11,6 @@ use App\Repository\CategoryRepository;
 use App\Repository\SubscriptionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
-use Symfony\Component\Uid\Ulid;
 
 #[AsMessageHandler(bus: 'command.bus', handles: UpdateSubscriptionCommand::class)]
 final readonly class UpdateSubscriptionHandler
@@ -25,13 +24,13 @@ final readonly class UpdateSubscriptionHandler
 
     public function __invoke(UpdateSubscriptionCommand $command): void
     {
-        $subscription = $this->subscriptionRepository->find(Ulid::fromString($command->subscriptionId));
+        $subscription = $this->subscriptionRepository->find($command->subscriptionId);
 
         if (null === $subscription) {
             throw new \InvalidArgumentException(\sprintf('Subscription with ID "%s" not found.', $command->subscriptionId));
         }
 
-        $category = $this->categoryRepository->find(Ulid::fromString($command->categoryId));
+        $category = $this->categoryRepository->find($command->categoryId);
 
         if (null === $category) {
             throw new \InvalidArgumentException(\sprintf('Category with ID "%s" not found.', $command->categoryId));

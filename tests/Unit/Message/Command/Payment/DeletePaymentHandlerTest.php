@@ -31,7 +31,7 @@ test('handler removes payment', function (): void {
     $entityManager->expects($this->once())->method('flush');
 
     $handler = new DeletePaymentHandler($repository, $entityManager);
-    $handler(new DeletePaymentCommand(paymentId: $ulid->toRfc4122()));
+    $handler(new DeletePaymentCommand(paymentId: $ulid));
 });
 
 test('handler throws when payment not found', function (): void {
@@ -47,5 +47,5 @@ test('handler throws when payment not found', function (): void {
 
     $handler = new DeletePaymentHandler($repository, $entityManager);
 
-    $handler(new DeletePaymentCommand(paymentId: $ulid->toRfc4122()));
+    $handler(new DeletePaymentCommand(paymentId: $ulid));
 })->throws(InvalidArgumentException::class);

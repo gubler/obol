@@ -6,9 +6,10 @@
 declare(strict_types=1);
 
 use App\Message\Query\Subscription\FindSubscriptionQuery;
+use Symfony\Component\Uid\Ulid;
 
 test('creates query with subscription id', function (): void {
-    $subscriptionId = '01JKSUB1234567890ABCDEFGH';
+    $subscriptionId = new Ulid();
     $query = new FindSubscriptionQuery(subscriptionId: $subscriptionId);
 
     expect($query->subscriptionId)->toBe($subscriptionId);
@@ -16,7 +17,7 @@ test('creates query with subscription id', function (): void {
 
 test('is readonly', function (): void {
     $query = new FindSubscriptionQuery(
-        subscriptionId: '01JKSUB1234567890ABCDEFGH'
+        subscriptionId: new Ulid()
     );
 
     $reflection = new ReflectionClass($query);

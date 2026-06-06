@@ -33,7 +33,7 @@ test('handler removes category with no subscriptions', function (): void {
     $entityManager->expects($this->once())->method('flush');
 
     $handler = new DeleteCategoryHandler($repository, $entityManager);
-    $handler(new DeleteCategoryCommand(categoryId: $ulid->toRfc4122()));
+    $handler(new DeleteCategoryCommand(categoryId: $ulid));
 });
 
 test('handler throws when category not found', function (): void {
@@ -49,7 +49,7 @@ test('handler throws when category not found', function (): void {
 
     $handler = new DeleteCategoryHandler($repository, $entityManager);
 
-    $handler(new DeleteCategoryCommand(categoryId: $ulid->toRfc4122()));
+    $handler(new DeleteCategoryCommand(categoryId: $ulid));
 })->throws(InvalidArgumentException::class);
 
 test('handler throws when category has subscriptions', function (): void {
@@ -71,5 +71,5 @@ test('handler throws when category has subscriptions', function (): void {
 
     $handler = new DeleteCategoryHandler($repository, $entityManager);
 
-    $handler(new DeleteCategoryCommand(categoryId: $ulid->toRfc4122()));
+    $handler(new DeleteCategoryCommand(categoryId: $ulid));
 })->throws(CategoryHasSubscriptionsException::class);

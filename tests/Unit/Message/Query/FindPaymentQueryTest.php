@@ -6,9 +6,10 @@
 declare(strict_types=1);
 
 use App\Message\Query\Payment\FindPaymentQuery;
+use Symfony\Component\Uid\Ulid;
 
 test('creates query with payment id', function (): void {
-    $paymentId = '01JKPAY1234567890ABCDEFGH';
+    $paymentId = new Ulid();
     $query = new FindPaymentQuery(paymentId: $paymentId);
 
     expect($query->paymentId)->toBe($paymentId);
@@ -16,7 +17,7 @@ test('creates query with payment id', function (): void {
 
 test('is readonly', function (): void {
     $query = new FindPaymentQuery(
-        paymentId: '01JKPAY1234567890ABCDEFGH'
+        paymentId: new Ulid()
     );
 
     $reflection = new ReflectionClass($query);

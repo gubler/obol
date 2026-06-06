@@ -1,7 +1,7 @@
 <?php
 
 // ABOUTME: Unit tests for FindPaymentRunner verifying payment lookup by ID.
-// ABOUTME: Tests valid ULID lookup, invalid ULID returns null, and not-found returns null.
+// ABOUTME: Tests valid lookup returns the payment and not-found returns null.
 
 declare(strict_types=1);
 
@@ -22,7 +22,7 @@ test('returns payment when found', function (): void {
     ;
 
     $runner = new FindPaymentRunner($repository);
-    $result = $runner(new FindPaymentQuery(paymentId: (string) $ulid));
+    $result = $runner(new FindPaymentQuery(paymentId: $ulid));
 
     expect($result)->toBe($payment);
 });
@@ -37,17 +37,7 @@ test('returns null when not found', function (): void {
     ;
 
     $runner = new FindPaymentRunner($repository);
-    $result = $runner(new FindPaymentQuery(paymentId: (string) $ulid));
-
-    expect($result)->toBeNull();
-});
-
-test('returns null for invalid ulid', function (): void {
-    $repository = $this->createMock(PaymentRepository::class);
-    $repository->expects($this->never())->method('find');
-
-    $runner = new FindPaymentRunner($repository);
-    $result = $runner(new FindPaymentQuery(paymentId: 'not-a-valid-ulid'));
+    $result = $runner(new FindPaymentQuery(paymentId: $ulid));
 
     expect($result)->toBeNull();
 });

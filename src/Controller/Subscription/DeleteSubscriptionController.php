@@ -13,11 +13,12 @@ use App\Message\Query\Subscription\FindSubscriptionQuery;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Uid\Ulid;
 
 final class DeleteSubscriptionController extends AbstractBaseController
 {
     #[Route(path: '/subscriptions/{id}/delete', name: 'subscription_delete', methods: ['POST'])]
-    public function __invoke(string $id): Response
+    public function __invoke(Ulid $id): Response
     {
         $subscription = $this->queryBus->query(query: new FindSubscriptionQuery(subscriptionId: $id));
 

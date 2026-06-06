@@ -34,7 +34,7 @@ test('handler records payment on subscription', function (): void {
 
     $handler = new CreatePaymentHandler($repository, $entityManager);
     $handler(new CreatePaymentCommand(
-        subscriptionId: $ulid->toRfc4122(),
+        subscriptionId: $ulid,
         amount: 1500,
         paidDate: $paidDate,
     ));
@@ -54,7 +54,7 @@ test('handler throws when subscription not found', function (): void {
     $handler = new CreatePaymentHandler($repository, $entityManager);
 
     $handler(new CreatePaymentCommand(
-        subscriptionId: $ulid->toRfc4122(),
+        subscriptionId: $ulid,
         amount: 1500,
         paidDate: new DateTimeImmutable(),
     ));

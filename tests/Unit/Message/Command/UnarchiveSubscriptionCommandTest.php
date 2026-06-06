@@ -6,9 +6,10 @@
 declare(strict_types=1);
 
 use App\Message\Command\Subscription\UnarchiveSubscriptionCommand;
+use Symfony\Component\Uid\Ulid;
 
 test('creates command with subscription id', function (): void {
-    $subscriptionId = '01JKSUB1234567890ABCDEFGH';
+    $subscriptionId = new Ulid();
     $command = new UnarchiveSubscriptionCommand(subscriptionId: $subscriptionId);
 
     expect($command->subscriptionId)->toBe($subscriptionId);
@@ -16,7 +17,7 @@ test('creates command with subscription id', function (): void {
 
 test('is readonly', function (): void {
     $command = new UnarchiveSubscriptionCommand(
-        subscriptionId: '01JKSUB1234567890ABCDEFGH'
+        subscriptionId: new Ulid()
     );
 
     $reflection = new ReflectionClass($command);

@@ -31,7 +31,7 @@ test('handler removes subscription', function (): void {
     $entityManager->expects($this->once())->method('flush');
 
     $handler = new DeleteSubscriptionHandler($repository, $entityManager);
-    $handler(new DeleteSubscriptionCommand(subscriptionId: $ulid->toRfc4122()));
+    $handler(new DeleteSubscriptionCommand(subscriptionId: $ulid));
 });
 
 test('handler throws when subscription not found', function (): void {
@@ -47,5 +47,5 @@ test('handler throws when subscription not found', function (): void {
 
     $handler = new DeleteSubscriptionHandler($repository, $entityManager);
 
-    $handler(new DeleteSubscriptionCommand(subscriptionId: $ulid->toRfc4122()));
+    $handler(new DeleteSubscriptionCommand(subscriptionId: $ulid));
 })->throws(InvalidArgumentException::class);

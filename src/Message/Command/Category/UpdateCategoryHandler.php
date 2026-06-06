@@ -10,7 +10,6 @@ namespace App\Message\Command\Category;
 use App\Repository\CategoryRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
-use Symfony\Component\Uid\Ulid;
 
 #[AsMessageHandler(bus: 'command.bus', handles: UpdateCategoryCommand::class)]
 final readonly class UpdateCategoryHandler
@@ -23,7 +22,7 @@ final readonly class UpdateCategoryHandler
 
     public function __invoke(UpdateCategoryCommand $command): void
     {
-        $category = $this->categoryRepository->find(Ulid::fromString($command->categoryId));
+        $category = $this->categoryRepository->find($command->categoryId);
 
         if (null === $category) {
             throw new \InvalidArgumentException(\sprintf('Category with ID "%s" not found.', $command->categoryId));

@@ -7,10 +7,12 @@ declare(strict_types=1);
 
 namespace App\Message\Query\Subscription;
 
+use Symfony\Component\Uid\Ulid;
+
 final readonly class FindSubscriptionQuery
 {
     public function __construct(
-        public string $subscriptionId,
+        public Ulid $subscriptionId,
     ) {
     }
 }

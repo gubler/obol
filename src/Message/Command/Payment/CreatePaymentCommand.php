@@ -7,10 +7,12 @@ declare(strict_types=1);
 
 namespace App\Message\Command\Payment;
 
+use Symfony\Component\Uid\Ulid;
+
 final readonly class CreatePaymentCommand
 {
     public function __construct(
-        public string $subscriptionId,
+        public Ulid $subscriptionId,
         public int $amount,
         public \DateTimeImmutable $paidDate,
     ) {

@@ -38,7 +38,7 @@ final class CreateSubscriptionController extends AbstractBaseController
                 : '';
 
             $this->commandBus->dispatch(command: new CreateSubscriptionCommand(
-                categoryId: $data->category->id->toRfc4122(),
+                categoryId: $data->category->id,
                 name: $data->name,
                 lastPaidDate: $data->lastPaidDate,
                 paymentPeriod: $data->paymentPeriod,

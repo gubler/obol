@@ -13,11 +13,12 @@ use App\Message\Query\Payment\FindPaymentQuery;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Uid\Ulid;
 
 final class DeletePaymentController extends AbstractBaseController
 {
     #[Route(path: '/payments/{id}/delete', name: 'payment_delete', methods: ['POST'])]
-    public function __invoke(string $id): Response
+    public function __invoke(Ulid $id): Response
     {
         /** @var \App\Entity\Payment|null $payment */
         $payment = $this->queryBus->query(query: new FindPaymentQuery(paymentId: $id));

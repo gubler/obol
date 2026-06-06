@@ -213,6 +213,8 @@ The core domain revolves around subscription management with the following entit
 
 5. **Symfony Scheduler**: The `Schedule` class (implements `ScheduleProviderInterface`) is used for recurring tasks. It's stateful and processes only the last missed run.
 
+6. **CQRS via Messenger with data access in the handler layer**: Reads go through the query bus, writes through the command bus. Data access (repositories, `EntityManager`) is confined to the handler layer (`App\Message` - command handlers, query runners, the scheduler handler); callers (controllers, console commands, services) reach data only through the buses. Messages carry `Ulid` value objects, never Doctrine entities or stringified ids; the handler resolves the `Ulid`. Enforced by an architecture test (`tests/Arch/ArchTest.php`). See `reference/adr/0006` and `reference/adr/0007`.
+
 ### Directory Structure
 
 - `src/Entity/`: Doctrine entities with domain logic

@@ -28,7 +28,7 @@ test('handler unarchives subscription', function (): void {
     $entityManager->expects($this->once())->method('flush');
 
     $handler = new UnarchiveSubscriptionHandler($repository, $entityManager);
-    $handler(new UnarchiveSubscriptionCommand(subscriptionId: $ulid->toRfc4122()));
+    $handler(new UnarchiveSubscriptionCommand(subscriptionId: $ulid));
 });
 
 test('handler throws when subscription not found', function (): void {
@@ -44,5 +44,5 @@ test('handler throws when subscription not found', function (): void {
 
     $handler = new UnarchiveSubscriptionHandler($repository, $entityManager);
 
-    $handler(new UnarchiveSubscriptionCommand(subscriptionId: $ulid->toRfc4122()));
+    $handler(new UnarchiveSubscriptionCommand(subscriptionId: $ulid));
 })->throws(InvalidArgumentException::class);

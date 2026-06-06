@@ -16,11 +16,12 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Uid\Ulid;
 
 final class CreatePaymentController extends AbstractBaseController
 {
     #[Route(path: '/subscriptions/{subscriptionId}/payments/new', name: 'payment_new', methods: ['GET', 'POST'])]
-    public function __invoke(string $subscriptionId, Request $request): Response
+    public function __invoke(Ulid $subscriptionId, Request $request): Response
     {
         /** @var \App\Entity\Subscription|null $subscription */
         $subscription = $this->queryBus->query(query: new FindSubscriptionQuery(subscriptionId: $subscriptionId));
@@ -42,7 +43,7 @@ final class CreatePaymentController extends AbstractBaseController
             \assert(null !== $data->paidDate);
 
             $this->commandBus->dispatch(command: new CreatePaymentCommand(
-                subscriptionId: $subscription->id->toRfc4122(),
+                subscriptionId: $subscription->id,
                 amount: $data->amount,
                 paidDate: $data->paidDate,
             ));

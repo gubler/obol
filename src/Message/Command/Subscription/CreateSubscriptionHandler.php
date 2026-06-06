@@ -11,7 +11,6 @@ use App\Entity\Subscription;
 use App\Repository\CategoryRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
-use Symfony\Component\Uid\Ulid;
 
 #[AsMessageHandler(bus: 'command.bus', handles: CreateSubscriptionCommand::class)]
 final readonly class CreateSubscriptionHandler
@@ -24,7 +23,7 @@ final readonly class CreateSubscriptionHandler
 
     public function __invoke(CreateSubscriptionCommand $command): void
     {
-        $category = $this->categoryRepository->find(Ulid::fromString($command->categoryId));
+        $category = $this->categoryRepository->find($command->categoryId);
 
         if (null === $category) {
             throw new \InvalidArgumentException(\sprintf('Category with ID "%s" not found.', $command->categoryId));

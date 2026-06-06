@@ -7,10 +7,12 @@ declare(strict_types=1);
 
 namespace App\Message\Command\Payment;
 
+use Symfony\Component\Uid\Ulid;
+
 final readonly class DeletePaymentCommand
 {
     public function __construct(
-        public string $paymentId,
+        public Ulid $paymentId,
     ) {
     }
 }

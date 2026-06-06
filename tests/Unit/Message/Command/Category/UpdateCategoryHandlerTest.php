@@ -31,7 +31,7 @@ test('handler updates category name', function (): void {
     $entityManager->expects($this->once())->method('flush');
 
     $handler = new UpdateCategoryHandler($repository, $entityManager);
-    $handler(new UpdateCategoryCommand(categoryId: $ulid->toRfc4122(), name: 'Updated Name'));
+    $handler(new UpdateCategoryCommand(categoryId: $ulid, name: 'Updated Name'));
 });
 
 test('handler throws when category not found', function (): void {
@@ -47,5 +47,5 @@ test('handler throws when category not found', function (): void {
 
     $handler = new UpdateCategoryHandler($repository, $entityManager);
 
-    $handler(new UpdateCategoryCommand(categoryId: $ulid->toRfc4122(), name: 'Updated Name'));
+    $handler(new UpdateCategoryCommand(categoryId: $ulid, name: 'Updated Name'));
 })->throws(InvalidArgumentException::class);

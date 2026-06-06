@@ -10,7 +10,6 @@ namespace App\Message\Command\Payment;
 use App\Repository\PaymentRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
-use Symfony\Component\Uid\Ulid;
 
 #[AsMessageHandler(bus: 'command.bus', handles: DeletePaymentCommand::class)]
 final readonly class DeletePaymentHandler
@@ -23,7 +22,7 @@ final readonly class DeletePaymentHandler
 
     public function __invoke(DeletePaymentCommand $command): void
     {
-        $payment = $this->paymentRepository->find(Ulid::fromString($command->paymentId));
+        $payment = $this->paymentRepository->find($command->paymentId);
 
         if (null === $payment) {
             throw new \InvalidArgumentException(\sprintf('Payment with ID "%s" not found.', $command->paymentId));

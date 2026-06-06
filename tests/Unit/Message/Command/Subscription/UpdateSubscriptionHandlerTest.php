@@ -42,8 +42,8 @@ test('handler updates subscription', function (): void {
 
     $handler = new UpdateSubscriptionHandler($subscriptionRepository, $categoryRepository, $entityManager);
     $handler(new UpdateSubscriptionCommand(
-        subscriptionId: $subscriptionUlid->toRfc4122(),
-        categoryId: $categoryUlid->toRfc4122(),
+        subscriptionId: $subscriptionUlid,
+        categoryId: $categoryUlid,
         name: 'Netflix Premium',
         lastPaidDate: $lastPaidDate,
         description: 'Premium plan',
@@ -71,8 +71,8 @@ test('handler throws when subscription not found', function (): void {
     $handler = new UpdateSubscriptionHandler($subscriptionRepository, $categoryRepository, $entityManager);
 
     $handler(new UpdateSubscriptionCommand(
-        subscriptionId: $subscriptionUlid->toRfc4122(),
-        categoryId: $categoryUlid->toRfc4122(),
+        subscriptionId: $subscriptionUlid,
+        categoryId: $categoryUlid,
         name: 'Netflix',
         lastPaidDate: new DateTimeImmutable(),
         description: '',
@@ -107,8 +107,8 @@ test('handler throws when category not found', function (): void {
     $handler = new UpdateSubscriptionHandler($subscriptionRepository, $categoryRepository, $entityManager);
 
     $handler(new UpdateSubscriptionCommand(
-        subscriptionId: $subscriptionUlid->toRfc4122(),
-        categoryId: $categoryUlid->toRfc4122(),
+        subscriptionId: $subscriptionUlid,
+        categoryId: $categoryUlid,
         name: 'Netflix',
         lastPaidDate: new DateTimeImmutable(),
         description: '',

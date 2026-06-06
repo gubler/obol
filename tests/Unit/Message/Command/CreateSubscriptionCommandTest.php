@@ -7,12 +7,14 @@ declare(strict_types=1);
 
 use App\Enum\PaymentPeriod;
 use App\Message\Command\Subscription\CreateSubscriptionCommand;
+use Symfony\Component\Uid\Ulid;
 
 test('creates command with all fields', function (): void {
+    $categoryId = new Ulid();
     $lastPaidDate = new DateTimeImmutable('2026-01-01');
 
     $command = new CreateSubscriptionCommand(
-        categoryId: '01JKTEST1234567890ABCDEFGH',
+        categoryId: $categoryId,
         name: 'Netflix',
         lastPaidDate: $lastPaidDate,
         paymentPeriod: PaymentPeriod::Month,
@@ -23,7 +25,7 @@ test('creates command with all fields', function (): void {
         logo: 'netflix.png',
     );
 
-    expect($command->categoryId)->toBe('01JKTEST1234567890ABCDEFGH')
+    expect($command->categoryId)->toBe($categoryId)
         ->and($command->name)->toBe('Netflix')
         ->and($command->lastPaidDate)->toBe($lastPaidDate)
         ->and($command->paymentPeriod)->toBe(PaymentPeriod::Month)
@@ -36,10 +38,11 @@ test('creates command with all fields', function (): void {
 });
 
 test('creates command with optional field defaults', function (): void {
+    $categoryId = new Ulid();
     $lastPaidDate = new DateTimeImmutable('2026-01-01');
 
     $command = new CreateSubscriptionCommand(
-        categoryId: '01JKTEST1234567890ABCDEFGH',
+        categoryId: $categoryId,
         name: 'Spotify',
         lastPaidDate: $lastPaidDate,
         paymentPeriod: PaymentPeriod::Month,
@@ -47,7 +50,7 @@ test('creates command with optional field defaults', function (): void {
         cost: 999,
     );
 
-    expect($command->categoryId)->toBe('01JKTEST1234567890ABCDEFGH')
+    expect($command->categoryId)->toBe($categoryId)
         ->and($command->name)->toBe('Spotify')
         ->and($command->lastPaidDate)->toBe($lastPaidDate)
         ->and($command->paymentPeriod)->toBe(PaymentPeriod::Month)
@@ -61,7 +64,7 @@ test('creates command with optional field defaults', function (): void {
 
 test('is readonly', function (): void {
     $command = new CreateSubscriptionCommand(
-        categoryId: '01JKTEST1234567890ABCDEFGH',
+        categoryId: new Ulid(),
         name: 'Test',
         lastPaidDate: new DateTimeImmutable(),
         paymentPeriod: PaymentPeriod::Month,

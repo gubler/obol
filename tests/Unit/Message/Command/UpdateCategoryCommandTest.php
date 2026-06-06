@@ -6,9 +6,10 @@
 declare(strict_types=1);
 
 use App\Message\Command\Category\UpdateCategoryCommand;
+use Symfony\Component\Uid\Ulid;
 
 test('creates command with category id and name', function (): void {
-    $categoryId = '01JBBQ7Z8Z8Z8Z8Z8Z8Z8Z8Z8Z';
+    $categoryId = new Ulid();
     $command = new UpdateCategoryCommand(
         categoryId: $categoryId,
         name: 'Updated Name'
@@ -21,7 +22,7 @@ test('creates command with category id and name', function (): void {
 
 test('is readonly', function (): void {
     $command = new UpdateCategoryCommand(
-        categoryId: '01JBBQ7Z8Z8Z8Z8Z8Z8Z8Z8Z8Z',
+        categoryId: new Ulid(),
         name: 'Software'
     );
 

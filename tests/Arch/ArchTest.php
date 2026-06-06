@@ -30,3 +30,12 @@ arch('repositories must end with Repository')
     ->expect('App\Repository')
     ->toHaveSuffix('Repository')
 ;
+
+arch('data access is confined to the handler layer')
+    ->expect(['App\Repository', 'Doctrine\ORM\EntityManagerInterface'])
+    ->toOnlyBeUsedIn([
+        'App\Message',     // command handlers, query runners, scheduler handler
+        'App\Entity',      // repositoryClass metadata only
+        'App\Repository',  // repositories themselves
+    ])
+;

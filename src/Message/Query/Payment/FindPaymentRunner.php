@@ -1,7 +1,7 @@
 <?php
 
 // ABOUTME: Runner for FindPaymentQuery that retrieves a single payment by ID.
-// ABOUTME: Returns Payment entity or null if not found or ID is invalid.
+// ABOUTME: Returns the Payment entity, or null when not found.
 
 declare(strict_types=1);
 
@@ -10,7 +10,6 @@ namespace App\Message\Query\Payment;
 use App\Entity\Payment;
 use App\Repository\PaymentRepository;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
-use Symfony\Component\Uid\Ulid;
 
 #[AsMessageHandler(bus: 'query.bus', handles: FindPaymentQuery::class)]
 final readonly class FindPaymentRunner
@@ -22,10 +21,6 @@ final readonly class FindPaymentRunner
 
     public function __invoke(FindPaymentQuery $query): ?Payment
     {
-        if (!Ulid::isValid($query->paymentId)) {
-            return null;
-        }
-
-        return $this->paymentRepository->find(Ulid::fromString($query->paymentId));
+        return $this->paymentRepository->find($query->paymentId);
     }
 }

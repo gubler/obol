@@ -7,10 +7,12 @@ declare(strict_types=1);
 
 namespace App\Message\Query\Payment;
 
+use Symfony\Component\Uid\Ulid;
+
 final readonly class FindPaymentQuery
 {
     public function __construct(
-        public string $paymentId,
+        public Ulid $paymentId,
     ) {
     }
 }

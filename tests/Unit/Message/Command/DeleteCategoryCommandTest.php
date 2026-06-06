@@ -6,9 +6,10 @@
 declare(strict_types=1);
 
 use App\Message\Command\Category\DeleteCategoryCommand;
+use Symfony\Component\Uid\Ulid;
 
 test('creates command with category id', function (): void {
-    $categoryId = '01JBBQ7Z8Z8Z8Z8Z8Z8Z8Z8Z8Z';
+    $categoryId = new Ulid();
     $command = new DeleteCategoryCommand(categoryId: $categoryId);
 
     expect($command->categoryId)->toBe($categoryId);
@@ -16,7 +17,7 @@ test('creates command with category id', function (): void {
 
 test('is readonly', function (): void {
     $command = new DeleteCategoryCommand(
-        categoryId: '01JBBQ7Z8Z8Z8Z8Z8Z8Z8Z8Z8Z'
+        categoryId: new Ulid()
     );
 
     $reflection = new ReflectionClass($command);

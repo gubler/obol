@@ -7,13 +7,16 @@ declare(strict_types=1);
 
 use App\Enum\PaymentPeriod;
 use App\Message\Command\Subscription\UpdateSubscriptionCommand;
+use Symfony\Component\Uid\Ulid;
 
 test('creates command with all fields', function (): void {
+    $subscriptionId = new Ulid();
+    $categoryId = new Ulid();
     $lastPaidDate = new DateTimeImmutable('2026-01-15');
 
     $command = new UpdateSubscriptionCommand(
-        subscriptionId: '01JKSUB1234567890ABCDEFGH',
-        categoryId: '01JKCAT1234567890ABCDEFGH',
+        subscriptionId: $subscriptionId,
+        categoryId: $categoryId,
         name: 'Netflix Premium',
         lastPaidDate: $lastPaidDate,
         description: 'Updated streaming service',
@@ -24,8 +27,8 @@ test('creates command with all fields', function (): void {
         cost: 15999,
     );
 
-    expect($command->subscriptionId)->toBe('01JKSUB1234567890ABCDEFGH')
-        ->and($command->categoryId)->toBe('01JKCAT1234567890ABCDEFGH')
+    expect($command->subscriptionId)->toBe($subscriptionId)
+        ->and($command->categoryId)->toBe($categoryId)
         ->and($command->name)->toBe('Netflix Premium')
         ->and($command->lastPaidDate)->toBe($lastPaidDate)
         ->and($command->description)->toBe('Updated streaming service')
@@ -39,8 +42,8 @@ test('creates command with all fields', function (): void {
 
 test('is readonly', function (): void {
     $command = new UpdateSubscriptionCommand(
-        subscriptionId: '01JKSUB1234567890ABCDEFGH',
-        categoryId: '01JKCAT1234567890ABCDEFGH',
+        subscriptionId: new Ulid(),
+        categoryId: new Ulid(),
         name: 'Test',
         lastPaidDate: new DateTimeImmutable(),
         description: 'Test description',

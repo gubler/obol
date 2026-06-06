@@ -17,11 +17,12 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Uid\Ulid;
 
 final class EditCategoryController extends AbstractBaseController
 {
     #[Route(path: '/categories/{id}/edit', name: 'category_edit', methods: ['GET', 'POST'])]
-    public function __invoke(string $id, Request $request): Response
+    public function __invoke(Ulid $id, Request $request): Response
     {
         $category = $this->queryBus->query(query: new FindCategoryQuery(categoryId: $id));
 

@@ -8,12 +8,13 @@ declare(strict_types=1);
 namespace App\Message\Command\Subscription;
 
 use App\Enum\PaymentPeriod;
+use Symfony\Component\Uid\Ulid;
 
 final readonly class UpdateSubscriptionCommand
 {
     public function __construct(
-        public string $subscriptionId,
-        public string $categoryId,
+        public Ulid $subscriptionId,
+        public Ulid $categoryId,
         public string $name,
         public \DateTimeImmutable $lastPaidDate,
         public string $description,

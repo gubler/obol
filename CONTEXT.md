@@ -52,7 +52,8 @@ Recorded under `reference/adr/`:
 - ADR-0003 - Rich domain entities with asymmetric-visibility immutability
 - ADR-0004 - No authentication (single-tenant)
 - ADR-0005 - PostgreSQL as the database of record
+- ADR-0006 - CQRS command/query buses; data access confined to the handler layer
 
-The CQRS-via-Messenger pattern (command/query buses) is under active review (#79, #80)
-and will get its ADR once those design conversations settle, so it is intentionally not
-recorded yet.
+ADR-0006 records the CQRS-via-Messenger decision (keep the command/query buses; data
+access confined to the handler layer) settled in #79. #80 continues to refine the
+command-side specifics (DTO/Command duplication, the `update()` value object).

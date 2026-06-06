@@ -17,8 +17,11 @@ older docs.
 - **Subscription** - the central entity: a recurring charge with a cost, a billing
   cadence, and a lifecycle. Read-only from outside; all state changes go through its
   domain methods (`update`, `archive`, `unarchive`, `recordPayment`).
-- **Payment** - one recorded transaction against a subscription. Immutable once created.
-  Carries an **amount** and a **type** (`Verified` or `Generated`).
+- **Payment** - one recorded transaction against a subscription. Carries an **amount**, a
+  **type** (`Verified` or `Generated`), a **paidDate** (when the charge happened), and a
+  **createdAt** (when the row was written). Amendable via `Payment::amend()`, which corrects
+  the amount/date and marks it `Verified` (used to validate, adjust, or fix a typo). See
+  ADR-0008.
 - **SubscriptionEvent** - an immutable audit entry recording one change to a subscription.
   Its `type` is `Update`, `CostChange`, `Archive`, or `Unarchive`. Its `context` is a
   map of `field -> {old, new}`. Invariant: `Archive`/`Unarchive` carry empty context;
@@ -29,17 +32,20 @@ older docs.
   and **`Week`**. (There is no `Day` case, despite what older docs claimed.)
 - **paymentPeriodCount** - the multiplier on the period, e.g. `paymentPeriodCount: 3` with
   `PaymentPeriod::Month` means "every three months".
-- **PaymentType** - how a payment arose: **`Verified`** (recorded by the user) or
-  **`Generated`** (created automatically by the scheduler).
+- **PaymentType** - how a payment arose: **`Verified`** (asserted by the user) or
+  **`Generated`** (created automatically by the scheduler). A `Generated` payment becomes
+  `Verified` when the user validates or adjusts it; the reverse never happens.
 - **cost** - a subscription's recurring charge, stored as an integer in the currency's
   minor units (e.g. cents). _Avoid_ calling this "amount"; **amount** refers specifically
   to the value recorded on a `Payment` (which defaults to the subscription's cost).
-- **record a payment** - append a `Payment` to a subscription and advance its
-  `lastPaidDate` (`Subscription::recordPayment`). _Avoid_ "create a payment".
+- **record a payment** - append a `Payment` to a subscription and advance its `nextRenewal`
+  by one billing interval (`Subscription::recordPayment`); deleting a payment rolls the
+  anchor back. _Avoid_ "create a payment".
 - **archive / unarchive** - reversibly retire a subscription. Archived subscriptions are
   hidden by default but keep their full history. _Avoid_ "soft-delete" / "delete".
-- **renewal** - the point at which a subscription's next charge falls due. _Avoid_
-  "payment due date" as a separate term.
+- **renewal** - the point at which a subscription's next charge falls due, stored as the
+  `nextRenewal` anchor the scheduler keys off (advanced one interval per payment, not by
+  when the user actually paid). _Avoid_ "payment due date" as a separate term.
 - **savings target** - _(planned, see #26)_ the prorated amount that should be set aside by
   now to cover the next renewal. Not yet implemented.
 

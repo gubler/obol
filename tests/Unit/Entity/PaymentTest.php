@@ -80,6 +80,32 @@ test('accepts both payment types', function (): void {
     ;
 });
 
+test('amend updates amount and paid date and verifies the payment', function (): void {
+    $payment = new Payment(
+        subscription: $this->subscription,
+        type: PaymentType::Generated,
+        amount: 1000,
+        paidDate: new DateTimeImmutable('2024-01-01'),
+    );
+
+    $payment->amend(amount: 1200, paidDate: new DateTimeImmutable('2024-01-05'));
+
+    expect($payment->amount)->toBe(1200)
+        ->and($payment->paidDate)->toEqual(new DateTimeImmutable('2024-01-05'))
+        ->and($payment->type)->toBe(PaymentType::Verified)
+    ;
+});
+
+test('amend rejects a non-positive amount', function (): void {
+    $payment = new Payment(
+        subscription: $this->subscription,
+        type: PaymentType::Generated,
+        amount: 1000,
+    );
+
+    $payment->amend(amount: 0, paidDate: new DateTimeImmutable());
+})->throws(Assert\InvalidArgumentException::class);
+
 test('rejects zero amount', function (): void {
     new Payment(
         subscription: $this->subscription,

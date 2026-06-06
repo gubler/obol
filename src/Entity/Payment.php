@@ -50,4 +50,17 @@ class Payment
         $this->paidDate = $paidDate;
         $this->createdAt = $createdAt;
     }
+
+    /**
+     * Confirm or correct a payment: set the amount and paid date the user asserts,
+     * and mark it Verified. Used for validating, adjusting, or fixing a typo on a payment.
+     */
+    public function amend(int $amount, \DateTimeImmutable $paidDate): void
+    {
+        Assertion::greaterThan(value: $amount, limit: 0, message: 'Payment amount must be greater than zero');
+
+        $this->amount = $amount;
+        $this->paidDate = $paidDate;
+        $this->type = PaymentType::Verified;
+    }
 }

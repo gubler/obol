@@ -648,6 +648,19 @@ describe('validation', function (): void {
         );
     })->throws(Assert\InvalidArgumentException::class);
 
+    test('trims name on creation', function (): void {
+        $subscription = new Subscription(
+            category: $this->category,
+            name: '  Netflix  ',
+            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 1500,
+        );
+
+        expect($subscription->name)->toBe('Netflix');
+    });
+
     test('update trims name', function (): void {
         $subscription = new Subscription(
             category: $this->category,

@@ -82,10 +82,7 @@ class Subscription
         string $link = '',
         string $logo = '',
     ) {
-        $name = trim(string: $name);
-        Assertion::notEq(value1: $name, value2: '', message: 'Subscription name cannot be empty');
-        Assertion::greaterThan(value: $cost, limit: 0, message: 'Subscription cost must be greater than zero');
-        Assertion::greaterThan(value: $paymentPeriodCount, limit: 0, message: 'Payment period count must be greater than zero');
+        $name = self::normalizeAndAssert(name: $name, cost: $cost, paymentPeriodCount: $paymentPeriodCount);
 
         $this->id = new Ulid();
         $this->createdAt = new \DateTimeImmutable();
@@ -130,10 +127,7 @@ class Subscription
         int $paymentPeriodCount,
         int $cost,
     ): void {
-        $name = trim(string: $name);
-        Assertion::notEq(value1: $name, value2: '', message: 'Subscription name cannot be empty');
-        Assertion::greaterThan(value: $cost, limit: 0, message: 'Subscription cost must be greater than zero');
-        Assertion::greaterThan(value: $paymentPeriodCount, limit: 0, message: 'Payment period count must be greater than zero');
+        $name = self::normalizeAndAssert(name: $name, cost: $cost, paymentPeriodCount: $paymentPeriodCount);
 
         $updateGenerator = new ChangeContextGenerator(
             changes: [
@@ -184,6 +178,19 @@ class Subscription
         $this->paymentPeriod = $paymentPeriod;
         $this->paymentPeriodCount = $paymentPeriodCount;
         $this->cost = $cost;
+    }
+
+    /**
+     * Trims the name and asserts the subscription's invariants, returning the normalized name.
+     */
+    private static function normalizeAndAssert(string $name, int $cost, int $paymentPeriodCount): string
+    {
+        $name = trim(string: $name);
+        Assertion::notEq(value1: $name, value2: '', message: 'Subscription name cannot be empty');
+        Assertion::greaterThan(value: $cost, limit: 0, message: 'Subscription cost must be greater than zero');
+        Assertion::greaterThan(value: $paymentPeriodCount, limit: 0, message: 'Payment period count must be greater than zero');
+
+        return $name;
     }
 
     public function archive(): void

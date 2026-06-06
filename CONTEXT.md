@@ -54,6 +54,7 @@ Recorded under `reference/adr/`:
 - ADR-0005 - PostgreSQL as the database of record
 - ADR-0006 - CQRS command/query buses; data access confined to the handler layer
 - ADR-0007 - Write-path message conventions (DTOs stay separate from Commands; Commands carry Ulid)
+- ADR-0008 - Payment lifecycle and fixed-cadence renewal
 
 ADR-0006 records the CQRS-via-Messenger decision (keep the command/query buses; data
 access confined to the handler layer) settled in #79. ADR-0007 extends it with the

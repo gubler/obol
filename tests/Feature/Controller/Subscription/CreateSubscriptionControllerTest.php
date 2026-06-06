@@ -20,7 +20,7 @@ test('get request displays create form', function (): void {
     $this->assertSelectorExists(selector: 'form');
     $this->assertSelectorExists(selector: 'select[name="create_subscription[category]"]');
     $this->assertSelectorExists(selector: 'input[name="create_subscription[name]"]');
-    $this->assertSelectorExists(selector: 'input[name="create_subscription[lastPaidDate]"]');
+    $this->assertSelectorExists(selector: 'input[name="create_subscription[nextRenewal]"]');
     $this->assertSelectorExists(selector: 'button[type="submit"]');
 });
 
@@ -42,7 +42,7 @@ test('post request with valid data creates subscription', function (): void {
     $form = $crawler->selectButton(value: 'Save')->form([
         'create_subscription[category]' => $category->id->toBase32(),
         'create_subscription[name]' => 'Netflix Premium',
-        'create_subscription[lastPaidDate]' => '2026-01-15',
+        'create_subscription[nextRenewal]' => '2026-01-15',
         'create_subscription[paymentPeriod]' => 'month',
         'create_subscription[paymentPeriodCount]' => '1',
         'create_subscription[cost]' => '1999',
@@ -77,7 +77,7 @@ test('post request with valid data shows success flash message', function (): vo
     $form = $crawler->selectButton(value: 'Save')->form([
         'create_subscription[category]' => $category->id->toBase32(),
         'create_subscription[name]' => 'Spotify',
-        'create_subscription[lastPaidDate]' => '2026-01-01',
+        'create_subscription[nextRenewal]' => '2026-01-01',
         'create_subscription[paymentPeriod]' => 'month',
         'create_subscription[paymentPeriodCount]' => '1',
         'create_subscription[cost]' => '999',
@@ -98,7 +98,7 @@ test('post request with empty name shows validation error', function (): void {
     $form = $crawler->selectButton(value: 'Save')->form([
         'create_subscription[category]' => $category->id->toBase32(),
         'create_subscription[name]' => '',
-        'create_subscription[lastPaidDate]' => '2026-01-01',
+        'create_subscription[nextRenewal]' => '2026-01-01',
         'create_subscription[paymentPeriod]' => 'month',
         'create_subscription[paymentPeriodCount]' => '1',
         'create_subscription[cost]' => '999',
@@ -119,7 +119,7 @@ test('post request without category shows validation error', function (): void {
 
     $form = $crawler->selectButton(value: 'Save')->form([
         'create_subscription[name]' => 'Test Sub',
-        'create_subscription[lastPaidDate]' => '2026-01-01',
+        'create_subscription[nextRenewal]' => '2026-01-01',
         'create_subscription[paymentPeriod]' => 'month',
         'create_subscription[paymentPeriodCount]' => '1',
         'create_subscription[cost]' => '999',
@@ -132,7 +132,7 @@ test('post request without category shows validation error', function (): void {
     $this->assertSelectorExists(selector: '.text-red-700');
 });
 
-test('post request without last paid date shows validation error', function (): void {
+test('post request without next renewal date shows validation error', function (): void {
     $client = $this->createClient();
     $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
@@ -145,7 +145,7 @@ test('post request without last paid date shows validation error', function (): 
         'create_subscription[paymentPeriodCount]' => '1',
         'create_subscription[cost]' => '999',
     ]);
-    $form['create_subscription[lastPaidDate]'] = '';
+    $form['create_subscription[nextRenewal]'] = '';
 
     $client->submit(form: $form);
 

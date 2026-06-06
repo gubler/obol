@@ -22,7 +22,7 @@ test('generates payment for due subscription', function (): void {
         'cost' => 1599,
         'paymentPeriod' => PaymentPeriod::Month,
         'paymentPeriodCount' => 1,
-        'lastPaidDate' => new DateTimeImmutable('-35 days'),
+        'nextRenewal' => new DateTimeImmutable('-35 days'),
     ]);
 
     $container = $this->getContainer();
@@ -52,7 +52,7 @@ test('skips subscription not yet due', function (): void {
         'cost' => 999,
         'paymentPeriod' => PaymentPeriod::Month,
         'paymentPeriodCount' => 1,
-        'lastPaidDate' => new DateTimeImmutable('-10 days'),
+        'nextRenewal' => new DateTimeImmutable('+10 days'),
     ]);
 
     $container = $this->getContainer();
@@ -83,7 +83,7 @@ test('skips archived subscription', function (): void {
         'cost' => 999,
         'paymentPeriod' => PaymentPeriod::Month,
         'paymentPeriodCount' => 1,
-        'lastPaidDate' => new DateTimeImmutable('-35 days'),
+        'nextRenewal' => new DateTimeImmutable('-35 days'),
     ])->archived()->create();
 
     $container = $this->getContainer();

@@ -16,7 +16,7 @@ beforeEach(function (): void {
     $this->subscription = new Subscription(
         category: $category,
         name: 'Test Subscription',
-        lastPaidDate: new DateTimeImmutable(),
+        nextRenewal: new DateTimeImmutable(),
         paymentPeriod: PaymentPeriod::Month,
         paymentPeriodCount: 1,
         cost: 1000,

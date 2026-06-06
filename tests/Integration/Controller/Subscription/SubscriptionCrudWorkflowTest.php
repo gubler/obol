@@ -20,7 +20,7 @@ test('complete create read update delete workflow', function (): void {
     $form = $crawler->selectButton(value: 'Save')->form([
         'create_subscription[category]' => $category->id->toBase32(),
         'create_subscription[name]' => 'Workflow Test Subscription',
-        'create_subscription[lastPaidDate]' => '2026-01-15',
+        'create_subscription[nextRenewal]' => '2026-01-15',
         'create_subscription[paymentPeriod]' => 'month',
         'create_subscription[paymentPeriodCount]' => '1',
         'create_subscription[cost]' => '1599',
@@ -125,7 +125,7 @@ test('create multiple subscriptions and verify list order', function (): void {
         $form = $crawler->selectButton(value: 'Save')->form([
             'create_subscription[category]' => $category->id->toBase32(),
             'create_subscription[name]' => $name,
-            'create_subscription[lastPaidDate]' => '2026-01-01',
+            'create_subscription[nextRenewal]' => '2026-01-01',
             'create_subscription[paymentPeriod]' => 'month',
             'create_subscription[paymentPeriodCount]' => '1',
             'create_subscription[cost]' => '999',

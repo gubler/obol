@@ -28,7 +28,7 @@ final readonly class DeletePaymentHandler
             throw new \InvalidArgumentException(\sprintf('Payment with ID "%s" not found.', $command->paymentId));
         }
 
-        $this->entityManager->remove($payment);
+        $payment->subscription->removePayment($payment);
         $this->entityManager->flush();
     }
 }

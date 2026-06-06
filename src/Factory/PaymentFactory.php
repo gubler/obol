@@ -25,7 +25,7 @@ final class PaymentFactory extends PersistentObjectFactory
     {
         return [
             'amount' => self::faker()->numberBetween(500, 5000),
-            'createdAt' => \DateTimeImmutable::createFromMutable(self::faker()->dateTime()),
+            'paidDate' => \DateTimeImmutable::createFromMutable(self::faker()->dateTime()),
             'subscription' => SubscriptionFactory::new(),
             'type' => self::faker()->randomElement(PaymentType::cases()),
         ];

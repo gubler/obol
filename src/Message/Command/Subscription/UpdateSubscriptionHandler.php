@@ -39,7 +39,7 @@ final readonly class UpdateSubscriptionHandler
         $subscription->update(
             category: $category,
             name: $command->name,
-            lastPaidDate: $command->lastPaidDate,
+            nextRenewal: $command->nextRenewal,
             description: $command->description,
             link: $command->link,
             logo: $command->logo,

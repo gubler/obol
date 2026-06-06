@@ -16,7 +16,7 @@ final readonly class UpdateSubscriptionCommand
         public Ulid $subscriptionId,
         public Ulid $categoryId,
         public string $name,
-        public \DateTimeImmutable $lastPaidDate,
+        public \DateTimeImmutable $nextRenewal,
         public string $description,
         public string $link,
         public string $logo,

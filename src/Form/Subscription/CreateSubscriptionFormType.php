@@ -39,8 +39,8 @@ final class CreateSubscriptionFormType extends AbstractType
                 'label' => 'Subscription Name',
                 'empty_data' => '',
             ])
-            ->add(child: 'lastPaidDate', type: DateType::class, options: [
-                'label' => 'Last Paid Date',
+            ->add(child: 'nextRenewal', type: DateType::class, options: [
+                'label' => 'Next Renewal Date',
                 'widget' => 'single_text',
                 'input' => 'datetime_immutable',
             ])

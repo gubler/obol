@@ -15,7 +15,7 @@ final readonly class CreateSubscriptionCommand
     public function __construct(
         public Ulid $categoryId,
         public string $name,
-        public \DateTimeImmutable $lastPaidDate,
+        public \DateTimeImmutable $nextRenewal,
         public PaymentPeriod $paymentPeriod,
         public int $paymentPeriodCount,
         public int $cost,

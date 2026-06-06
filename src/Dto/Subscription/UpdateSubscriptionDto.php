@@ -23,7 +23,7 @@ final class UpdateSubscriptionDto
     public Category $category;
     #[NotBlank]
     public string $name;
-    public \DateTimeImmutable $lastPaidDate;
+    public \DateTimeImmutable $nextRenewal;
     public PaymentPeriod $paymentPeriod;
     #[GreaterThanOrEqual(value: 1)]
     public int $paymentPeriodCount = 1;
@@ -42,7 +42,7 @@ final class UpdateSubscriptionDto
     {
         $this->category = $subscription->category;
         $this->name = $subscription->name;
-        $this->lastPaidDate = $subscription->lastPaidDate;
+        $this->nextRenewal = $subscription->nextRenewal;
         $this->paymentPeriod = $subscription->paymentPeriod;
         $this->paymentPeriodCount = $subscription->paymentPeriodCount;
         $this->cost = $subscription->cost;

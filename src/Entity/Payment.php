@@ -29,12 +29,16 @@ class Payment
     public private(set) int $amount;
 
     #[ORM\Column]
+    public private(set) \DateTimeImmutable $paidDate;
+
+    #[ORM\Column]
     public private(set) \DateTimeImmutable $createdAt;
 
     public function __construct(
         Subscription $subscription,
         PaymentType $type,
         int $amount,
+        \DateTimeImmutable $paidDate = new \DateTimeImmutable(),
         \DateTimeImmutable $createdAt = new \DateTimeImmutable(),
     ) {
         Assertion::greaterThan(value: $amount, limit: 0, message: 'Payment amount must be greater than zero');
@@ -43,6 +47,7 @@ class Payment
         $this->subscription = $subscription;
         $this->type = $type;
         $this->amount = $amount;
+        $this->paidDate = $paidDate;
         $this->createdAt = $createdAt;
     }
 }

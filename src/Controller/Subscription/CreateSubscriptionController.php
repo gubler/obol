@@ -31,7 +31,7 @@ final class CreateSubscriptionController extends AbstractBaseController
             $data = $form->getData();
 
             \assert(null !== $data->category);
-            \assert(null !== $data->lastPaidDate);
+            \assert(null !== $data->nextRenewal);
 
             $logo = null !== $data->logo
                 ? $fileUploader->upload(file: $data->logo)
@@ -40,7 +40,7 @@ final class CreateSubscriptionController extends AbstractBaseController
             $this->commandBus->dispatch(command: new CreateSubscriptionCommand(
                 categoryId: $data->category->id,
                 name: $data->name,
-                lastPaidDate: $data->lastPaidDate,
+                nextRenewal: $data->nextRenewal,
                 paymentPeriod: $data->paymentPeriod,
                 paymentPeriodCount: $data->paymentPeriodCount,
                 cost: $data->cost,

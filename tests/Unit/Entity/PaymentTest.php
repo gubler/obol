@@ -16,7 +16,7 @@ beforeEach(function (): void {
     $this->subscription = new Subscription(
         category: $category,
         name: 'Test Subscription',
-        lastPaidDate: new DateTimeImmutable(),
+        nextRenewal: new DateTimeImmutable(),
         paymentPeriod: PaymentPeriod::Month,
         paymentPeriodCount: 1,
         cost: 1000,
@@ -34,6 +34,18 @@ test('creates payment with valid data', function (): void {
         ->and($payment->type)->toBe(PaymentType::Verified)
         ->and($payment->amount)->toBe(1000)
     ;
+});
+
+test('stores the paid date', function (): void {
+    $paidDate = new DateTimeImmutable('2024-05-01');
+    $payment = new Payment(
+        subscription: $this->subscription,
+        type: PaymentType::Verified,
+        amount: 1000,
+        paidDate: $paidDate,
+    );
+
+    expect($payment->paidDate)->toBe($paidDate);
 });
 
 test('sets created at to current time', function (): void {

@@ -51,7 +51,7 @@ class Subscription
     public private(set) string $name;
 
     #[ORM\Column]
-    public private(set) \DateTimeImmutable $lastPaidDate;
+    public private(set) \DateTimeImmutable $nextRenewal;
 
     #[ORM\Column(enumType: PaymentPeriod::class)]
     public private(set) PaymentPeriod $paymentPeriod;
@@ -74,7 +74,7 @@ class Subscription
     public function __construct(
         Category $category,
         string $name,
-        \DateTimeImmutable $lastPaidDate,
+        \DateTimeImmutable $nextRenewal,
         PaymentPeriod $paymentPeriod,
         int $paymentPeriodCount,
         int $cost,
@@ -91,7 +91,7 @@ class Subscription
 
         $this->category = $category;
         $this->name = $name;
-        $this->lastPaidDate = $lastPaidDate;
+        $this->nextRenewal = $nextRenewal;
         $this->paymentPeriod = $paymentPeriod;
         $this->paymentPeriodCount = $paymentPeriodCount;
         $this->cost = $cost;
@@ -105,21 +105,36 @@ class Subscription
         PaymentType $paymentType,
         ?int $amount = null,
     ): void {
-        $this->lastPaidDate = $paidDate;
         $this->payments->add(
             new Payment(
                 subscription: $this,
                 type: $paymentType,
                 amount: $amount ?? $this->cost,
-                createdAt: $paidDate,
+                paidDate: $paidDate,
             )
         );
+        $this->nextRenewal = $this->nextRenewal->add($this->renewalInterval());
+    }
+
+    public function removePayment(Payment $payment): void
+    {
+        $this->payments->removeElement($payment);
+        $this->nextRenewal = $this->nextRenewal->sub($this->renewalInterval());
+    }
+
+    private function renewalInterval(): \DateInterval
+    {
+        return new \DateInterval(match ($this->paymentPeriod) {
+            PaymentPeriod::Week => \sprintf('P%dW', $this->paymentPeriodCount),
+            PaymentPeriod::Month => \sprintf('P%dM', $this->paymentPeriodCount),
+            PaymentPeriod::Year => \sprintf('P%dY', $this->paymentPeriodCount),
+        });
     }
 
     public function update(
         Category $category,
         string $name,
-        \DateTimeImmutable $lastPaidDate,
+        \DateTimeImmutable $nextRenewal,
         string $description,
         string $link,
         string $logo,
@@ -133,7 +148,7 @@ class Subscription
             changes: [
                 new Change(field: 'category', current: $this->category->name, new: $category->name),
                 new Change(field: 'name', current: $this->name, new: $name),
-                new Change(field: 'lastPaidDate', current: $this->lastPaidDate->format(format: 'c'), new: $lastPaidDate->format(format: 'c')),
+                new Change(field: 'nextRenewal', current: $this->nextRenewal->format(format: 'c'), new: $nextRenewal->format(format: 'c')),
                 new Change(field: 'description', current: $this->description, new: $description),
                 new Change(field: 'link', current: $this->link, new: $link),
                 new Change(field: 'logo', current: $this->logo, new: $logo),
@@ -171,7 +186,7 @@ class Subscription
 
         $this->category = $category;
         $this->name = $name;
-        $this->lastPaidDate = $lastPaidDate;
+        $this->nextRenewal = $nextRenewal;
         $this->description = $description;
         $this->link = $link;
         $this->logo = $logo;

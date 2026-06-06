@@ -12,13 +12,13 @@ use Symfony\Component\Uid\Ulid;
 test('creates command with all fields', function (): void {
     $subscriptionId = new Ulid();
     $categoryId = new Ulid();
-    $lastPaidDate = new DateTimeImmutable('2026-01-15');
+    $nextRenewal = new DateTimeImmutable('2026-01-15');
 
     $command = new UpdateSubscriptionCommand(
         subscriptionId: $subscriptionId,
         categoryId: $categoryId,
         name: 'Netflix Premium',
-        lastPaidDate: $lastPaidDate,
+        nextRenewal: $nextRenewal,
         description: 'Updated streaming service',
         link: 'https://netflix.com/premium',
         logo: 'netflix-premium.png',
@@ -30,7 +30,7 @@ test('creates command with all fields', function (): void {
     expect($command->subscriptionId)->toBe($subscriptionId)
         ->and($command->categoryId)->toBe($categoryId)
         ->and($command->name)->toBe('Netflix Premium')
-        ->and($command->lastPaidDate)->toBe($lastPaidDate)
+        ->and($command->nextRenewal)->toBe($nextRenewal)
         ->and($command->description)->toBe('Updated streaming service')
         ->and($command->link)->toBe('https://netflix.com/premium')
         ->and($command->logo)->toBe('netflix-premium.png')
@@ -45,7 +45,7 @@ test('is readonly', function (): void {
         subscriptionId: new Ulid(),
         categoryId: new Ulid(),
         name: 'Test',
-        lastPaidDate: new DateTimeImmutable(),
+        nextRenewal: new DateTimeImmutable(),
         description: 'Test description',
         link: 'https://test.com',
         logo: 'test.png',

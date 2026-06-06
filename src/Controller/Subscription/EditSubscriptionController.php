@@ -51,7 +51,7 @@ final class EditSubscriptionController extends AbstractBaseController
                 subscriptionId: $id,
                 categoryId: $data->category->id,
                 name: $data->name,
-                lastPaidDate: $data->lastPaidDate,
+                nextRenewal: $data->nextRenewal,
                 description: $data->description,
                 link: $data->link,
                 logo: $logo,

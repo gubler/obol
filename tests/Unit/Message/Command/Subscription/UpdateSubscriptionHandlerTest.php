@@ -18,7 +18,7 @@ use Symfony\Component\Uid\Ulid;
 test('handler updates subscription', function (): void {
     $subscriptionUlid = new Ulid();
     $categoryUlid = new Ulid();
-    $lastPaidDate = new DateTimeImmutable('2025-01-15');
+    $nextRenewal = new DateTimeImmutable('2025-01-15');
 
     $subscription = $this->createMock(Subscription::class);
     $subscription->expects($this->once())->method('update');
@@ -45,7 +45,7 @@ test('handler updates subscription', function (): void {
         subscriptionId: $subscriptionUlid,
         categoryId: $categoryUlid,
         name: 'Netflix Premium',
-        lastPaidDate: $lastPaidDate,
+        nextRenewal: $nextRenewal,
         description: 'Premium plan',
         link: 'https://netflix.com',
         logo: 'logo.png',
@@ -74,7 +74,7 @@ test('handler throws when subscription not found', function (): void {
         subscriptionId: $subscriptionUlid,
         categoryId: $categoryUlid,
         name: 'Netflix',
-        lastPaidDate: new DateTimeImmutable(),
+        nextRenewal: new DateTimeImmutable(),
         description: '',
         link: '',
         logo: '',
@@ -110,7 +110,7 @@ test('handler throws when category not found', function (): void {
         subscriptionId: $subscriptionUlid,
         categoryId: $categoryUlid,
         name: 'Netflix',
-        lastPaidDate: new DateTimeImmutable(),
+        nextRenewal: new DateTimeImmutable(),
         description: '',
         link: '',
         logo: '',

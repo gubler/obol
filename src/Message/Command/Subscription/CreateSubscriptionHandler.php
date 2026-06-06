@@ -32,7 +32,7 @@ final readonly class CreateSubscriptionHandler
         $subscription = new Subscription(
             category: $category,
             name: $command->name,
-            lastPaidDate: $command->lastPaidDate,
+            nextRenewal: $command->nextRenewal,
             paymentPeriod: $command->paymentPeriod,
             paymentPeriodCount: $command->paymentPeriodCount,
             cost: $command->cost,

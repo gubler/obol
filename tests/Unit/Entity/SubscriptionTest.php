@@ -19,11 +19,11 @@ beforeEach(function (): void {
 
 describe('creation', function (): void {
     test('creates subscription with valid data', function (): void {
-        $lastPaidDate = new DateTimeImmutable('2024-01-01');
+        $nextRenewal = new DateTimeImmutable('2024-01-01');
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: $lastPaidDate,
+            nextRenewal: $nextRenewal,
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
@@ -31,7 +31,7 @@ describe('creation', function (): void {
 
         expect($subscription->category)->toBe($this->category)
             ->and($subscription->name)->toBe('Netflix')
-            ->and($subscription->lastPaidDate)->toBe($lastPaidDate)
+            ->and($subscription->nextRenewal)->toBe($nextRenewal)
             ->and($subscription->paymentPeriod)->toBe(PaymentPeriod::Month)
             ->and($subscription->paymentPeriodCount)->toBe(1)
             ->and($subscription->cost)->toBe(1500)
@@ -43,7 +43,7 @@ describe('creation', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Spotify',
-            lastPaidDate: new DateTimeImmutable(),
+            nextRenewal: new DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1000,
@@ -59,7 +59,7 @@ describe('creation', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Spotify',
-            lastPaidDate: new DateTimeImmutable(),
+            nextRenewal: new DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1000,
@@ -72,7 +72,7 @@ describe('creation', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Spotify',
-            lastPaidDate: new DateTimeImmutable(),
+            nextRenewal: new DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1000,
@@ -87,7 +87,7 @@ describe('creation', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new DateTimeImmutable(),
+            nextRenewal: new DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
@@ -106,7 +106,7 @@ describe('creation', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Spotify',
-            lastPaidDate: new DateTimeImmutable(),
+            nextRenewal: new DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1000,
@@ -124,7 +124,7 @@ describe('update', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
@@ -134,7 +134,7 @@ describe('update', function (): void {
         $subscription->update(
             category: $newCategory,
             name: 'Netflix Premium',
-            lastPaidDate: new DateTimeImmutable('2024-02-01'),
+            nextRenewal: new DateTimeImmutable('2024-02-01'),
             description: 'Premium plan',
             link: 'https://netflix.com',
             logo: 'netflix.png',
@@ -154,11 +154,11 @@ describe('update', function (): void {
     });
 
     test('creates only cost change event when only cost fields change', function (): void {
-        $lastPaidDate = new DateTimeImmutable('2024-01-01');
+        $nextRenewal = new DateTimeImmutable('2024-01-01');
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: $lastPaidDate,
+            nextRenewal: $nextRenewal,
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
@@ -167,7 +167,7 @@ describe('update', function (): void {
         $subscription->update(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: $lastPaidDate,
+            nextRenewal: $nextRenewal,
             description: '',
             link: '',
             logo: '',
@@ -186,11 +186,11 @@ describe('update', function (): void {
     });
 
     test('records a period count change under the paymentPeriodCount key', function (): void {
-        $lastPaidDate = new DateTimeImmutable('2024-01-01');
+        $nextRenewal = new DateTimeImmutable('2024-01-01');
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: $lastPaidDate,
+            nextRenewal: $nextRenewal,
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
@@ -199,7 +199,7 @@ describe('update', function (): void {
         $subscription->update(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: $lastPaidDate,
+            nextRenewal: $nextRenewal,
             description: '',
             link: '',
             logo: '',
@@ -222,7 +222,7 @@ describe('update', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
@@ -231,7 +231,7 @@ describe('update', function (): void {
         $subscription->update(
             category: $this->category,
             name: 'Netflix Premium',
-            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new DateTimeImmutable('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -253,11 +253,11 @@ describe('update', function (): void {
     });
 
     test('creates no events when no fields change', function (): void {
-        $lastPaidDate = new DateTimeImmutable('2024-01-01');
+        $nextRenewal = new DateTimeImmutable('2024-01-01');
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: $lastPaidDate,
+            nextRenewal: $nextRenewal,
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
@@ -266,7 +266,7 @@ describe('update', function (): void {
         $subscription->update(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: $lastPaidDate,
+            nextRenewal: $nextRenewal,
             description: '',
             link: '',
             logo: '',
@@ -280,30 +280,53 @@ describe('update', function (): void {
 });
 
 describe('record payment', function (): void {
-    test('updates last paid date', function (): void {
+    test('advances next renewal by one interval from the anchor', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new DateTimeImmutable('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
         );
 
-        $newPaidDate = new DateTimeImmutable('2024-02-01');
+        // Paying late (on the 6th) must not move the anchor off the fixed cadence.
         $subscription->recordPayment(
-            paidDate: $newPaidDate,
+            paidDate: new DateTimeImmutable('2024-02-06'),
             paymentType: PaymentType::Verified,
         );
 
-        expect($subscription->lastPaidDate)->toBe($newPaidDate);
+        expect($subscription->nextRenewal)->toEqual(new DateTimeImmutable('2024-03-01'));
+    });
+
+    test('rolling back a removed payment pulls the renewal anchor back', function (): void {
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: new DateTimeImmutable('2024-02-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 1500,
+        );
+
+        $subscription->recordPayment(
+            paidDate: new DateTimeImmutable('2024-02-01'),
+            paymentType: PaymentType::Verified,
+        );
+        /** @var Payment $payment */
+        $payment = $subscription->payments->first();
+        $subscription->removePayment($payment);
+
+        expect($subscription->payments)->toHaveCount(0)
+            ->and($subscription->nextRenewal)->toEqual(new DateTimeImmutable('2024-02-01'))
+        ;
     });
 
     test('adds payment to collection', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
@@ -326,7 +349,7 @@ describe('record payment', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
@@ -346,7 +369,7 @@ describe('record payment', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
@@ -370,7 +393,7 @@ describe('archive', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
@@ -385,7 +408,7 @@ describe('archive', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
@@ -405,7 +428,7 @@ describe('archive', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
@@ -421,7 +444,7 @@ describe('archive', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
@@ -448,7 +471,7 @@ describe('validation', function (): void {
         new Subscription(
             category: $this->category,
             name: '',
-            lastPaidDate: new DateTimeImmutable(),
+            nextRenewal: new DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
@@ -459,7 +482,7 @@ describe('validation', function (): void {
         new Subscription(
             category: $this->category,
             name: '   ',
-            lastPaidDate: new DateTimeImmutable(),
+            nextRenewal: new DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
@@ -470,7 +493,7 @@ describe('validation', function (): void {
         new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new DateTimeImmutable(),
+            nextRenewal: new DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 0,
@@ -481,7 +504,7 @@ describe('validation', function (): void {
         new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new DateTimeImmutable(),
+            nextRenewal: new DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: -100,
@@ -492,7 +515,7 @@ describe('validation', function (): void {
         new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new DateTimeImmutable(),
+            nextRenewal: new DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 0,
             cost: 1500,
@@ -503,7 +526,7 @@ describe('validation', function (): void {
         new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new DateTimeImmutable(),
+            nextRenewal: new DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: -1,
             cost: 1500,
@@ -514,7 +537,7 @@ describe('validation', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
@@ -523,7 +546,7 @@ describe('validation', function (): void {
         $subscription->update(
             category: $this->category,
             name: '',
-            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new DateTimeImmutable('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -537,7 +560,7 @@ describe('validation', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
@@ -546,7 +569,7 @@ describe('validation', function (): void {
         $subscription->update(
             category: $this->category,
             name: '   ',
-            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new DateTimeImmutable('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -560,7 +583,7 @@ describe('validation', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
@@ -569,7 +592,7 @@ describe('validation', function (): void {
         $subscription->update(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new DateTimeImmutable('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -583,7 +606,7 @@ describe('validation', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
@@ -592,7 +615,7 @@ describe('validation', function (): void {
         $subscription->update(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new DateTimeImmutable('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -606,7 +629,7 @@ describe('validation', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
@@ -615,7 +638,7 @@ describe('validation', function (): void {
         $subscription->update(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new DateTimeImmutable('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -629,7 +652,7 @@ describe('validation', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
@@ -638,7 +661,7 @@ describe('validation', function (): void {
         $subscription->update(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new DateTimeImmutable('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -652,7 +675,7 @@ describe('validation', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: '  Netflix  ',
-            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
@@ -665,7 +688,7 @@ describe('validation', function (): void {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
@@ -674,7 +697,7 @@ describe('validation', function (): void {
         $subscription->update(
             category: $this->category,
             name: '  Netflix Premium  ',
-            lastPaidDate: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new DateTimeImmutable('2024-01-01'),
             description: '',
             link: '',
             logo: '',

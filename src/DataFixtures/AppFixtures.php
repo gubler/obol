@@ -134,7 +134,7 @@ class AppFixtures extends Fixture
         $netflix->update(
             category: $entertainment,
             name: 'Netflix Premium',
-            lastPaidDate: $netflix->lastPaidDate,
+            nextRenewal: $netflix->nextRenewal,
             description: 'Streaming service for movies and TV shows - Premium plan',
             link: 'https://netflix.com',
             logo: '',

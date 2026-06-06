@@ -51,7 +51,7 @@ test('post request with valid data updates subscription', function (): void {
     $form = $crawler->selectButton(value: 'Save')->form([
         'edit_subscription[category]' => $newCategory->id->toBase32(),
         'edit_subscription[name]' => 'Netflix Premium',
-        'edit_subscription[lastPaidDate]' => '2026-02-01',
+        'edit_subscription[nextRenewal]' => '2026-02-01',
         'edit_subscription[paymentPeriod]' => 'year',
         'edit_subscription[paymentPeriodCount]' => '1',
         'edit_subscription[cost]' => '1999',

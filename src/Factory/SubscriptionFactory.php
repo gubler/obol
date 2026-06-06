@@ -27,7 +27,7 @@ final class SubscriptionFactory extends PersistentObjectFactory
             'category' => CategoryFactory::new(),
             'cost' => self::faker()->numberBetween(500, 3000),
             'description' => self::faker()->sentence(),
-            'lastPaidDate' => \DateTimeImmutable::createFromMutable(self::faker()->dateTimeBetween('-60 days', 'now')),
+            'nextRenewal' => \DateTimeImmutable::createFromMutable(self::faker()->dateTimeBetween('now', '+60 days')),
             'link' => self::faker()->url(),
             'logo' => '',
             'name' => self::faker()->words(2, true),
@@ -57,7 +57,7 @@ final class SubscriptionFactory extends PersistentObjectFactory
         return $this->afterInstantiate(function (Subscription $subscription): void {
             PaymentFactory::createOne([
                 'subscription' => $subscription,
-                'createdAt' => new \DateTimeImmutable('-5 days'),
+                'paidDate' => new \DateTimeImmutable('-5 days'),
             ]);
         });
     }

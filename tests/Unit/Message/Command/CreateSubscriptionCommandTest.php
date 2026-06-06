@@ -11,12 +11,12 @@ use Symfony\Component\Uid\Ulid;
 
 test('creates command with all fields', function (): void {
     $categoryId = new Ulid();
-    $lastPaidDate = new DateTimeImmutable('2026-01-01');
+    $nextRenewal = new DateTimeImmutable('2026-01-01');
 
     $command = new CreateSubscriptionCommand(
         categoryId: $categoryId,
         name: 'Netflix',
-        lastPaidDate: $lastPaidDate,
+        nextRenewal: $nextRenewal,
         paymentPeriod: PaymentPeriod::Month,
         paymentPeriodCount: 1,
         cost: 1599,
@@ -27,7 +27,7 @@ test('creates command with all fields', function (): void {
 
     expect($command->categoryId)->toBe($categoryId)
         ->and($command->name)->toBe('Netflix')
-        ->and($command->lastPaidDate)->toBe($lastPaidDate)
+        ->and($command->nextRenewal)->toBe($nextRenewal)
         ->and($command->paymentPeriod)->toBe(PaymentPeriod::Month)
         ->and($command->paymentPeriodCount)->toBe(1)
         ->and($command->cost)->toBe(1599)
@@ -39,12 +39,12 @@ test('creates command with all fields', function (): void {
 
 test('creates command with optional field defaults', function (): void {
     $categoryId = new Ulid();
-    $lastPaidDate = new DateTimeImmutable('2026-01-01');
+    $nextRenewal = new DateTimeImmutable('2026-01-01');
 
     $command = new CreateSubscriptionCommand(
         categoryId: $categoryId,
         name: 'Spotify',
-        lastPaidDate: $lastPaidDate,
+        nextRenewal: $nextRenewal,
         paymentPeriod: PaymentPeriod::Month,
         paymentPeriodCount: 1,
         cost: 999,
@@ -52,7 +52,7 @@ test('creates command with optional field defaults', function (): void {
 
     expect($command->categoryId)->toBe($categoryId)
         ->and($command->name)->toBe('Spotify')
-        ->and($command->lastPaidDate)->toBe($lastPaidDate)
+        ->and($command->nextRenewal)->toBe($nextRenewal)
         ->and($command->paymentPeriod)->toBe(PaymentPeriod::Month)
         ->and($command->paymentPeriodCount)->toBe(1)
         ->and($command->cost)->toBe(999)
@@ -66,7 +66,7 @@ test('is readonly', function (): void {
     $command = new CreateSubscriptionCommand(
         categoryId: new Ulid(),
         name: 'Test',
-        lastPaidDate: new DateTimeImmutable(),
+        nextRenewal: new DateTimeImmutable(),
         paymentPeriod: PaymentPeriod::Month,
         paymentPeriodCount: 1,
         cost: 100,

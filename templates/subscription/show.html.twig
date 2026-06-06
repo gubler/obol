@@ -59,8 +59,8 @@
                     <dd class="text-lg text-gray-900">${{ (subscription.cost / 100)|number_format(2) }} / {{ subscription.paymentPeriod.value }}</dd>
                 </div>
                 <div>
-                    <dt class="text-sm font-medium text-gray-500">Last Paid Date</dt>
-                    <dd class="text-lg text-gray-900">{{ subscription.lastPaidDate|date('Y-m-d') }}</dd>
+                    <dt class="text-sm font-medium text-gray-500">Next Renewal</dt>
+                    <dd class="text-lg text-gray-900">{{ subscription.nextRenewal|date('Y-m-d') }}</dd>
                 </div>
                 {% if subscription.description %}
                 <div>
@@ -91,7 +91,7 @@
                         <li class="py-3">
                             <div class="flex justify-between items-center">
                                 <div>
-                                    <span class="text-gray-900">{{ payment.createdAt|date('Y-m-d') }}</span>
+                                    <span class="text-gray-900">{{ payment.paidDate|date('Y-m-d') }}</span>
                                     <span class="ml-2 text-xs text-gray-500">{{ payment.type.value }}</span>
                                 </div>
                                 <div class="flex items-center space-x-3">

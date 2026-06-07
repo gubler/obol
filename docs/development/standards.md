@@ -54,6 +54,12 @@ Enforced via `symplify/phpstan-rules`:
 
 - No `AbstractController::__construct()` — use `#[Required]` injection
 - No `$this->get()` in controllers or commands
+- Inject services through the **constructor**, not controller method
+  parameters. The `Request` (and route arguments like the `Ulid`) stay as
+  method parameters; everything else is constructor-injected. Rector's
+  `ControllerMethodInjectionToConstructorRector` enforces this. The
+  `AbstractBaseController` bus wiring uses `#[Required]` setter injection, so
+  child constructors coexist with it.
 - Form types must end with `Type` suffix
 - No class-level `#[Route]` attributes (method-level only)
 - No trailing slashes in routes
@@ -81,13 +87,31 @@ Both tools auto-fix on commit (pre-commit hook) and check-only in CI.
 
 ## Rector
 
-Rector (`mise run rector`) performs automated refactoring. All prepared sets are enabled:
+Rector (`mise run rector`) performs automated refactoring. The config in
+`rector.php` carries its own rationale comments; the enabled sets are:
 
 - `deadCode`, `codeQuality`, `codingStyle`
-- `typeDeclarations`, `privatization`, `instanceOf`
-- `earlyReturn`, `strictBooleans`
+- `typeDeclarations`, `privatization`, `instanceOf`, `earlyReturn`
+- `phpunitCodeQuality`, `doctrineCodeQuality`
 - `symfonyCodeQuality`, `symfonyConfigs`
 - Composer-based sets: `twig`, `doctrine`, `phpunit`, `symfony`
+
+Versions track automatically: `withPhpSets()` and `withComposerBased()`
+follow the installed PHP and Symfony versions, so there are no manual
+version sets to bump or dedupe. In Rector 2.x the Symfony/Doctrine/PHPUnit/
+Twig rules ship inside `rector/rector` itself — there are no separate
+`rector/rector-*` packages.
+
+A few rules are skipped or tuned deliberately (see `withSkip()` /
+`withConfiguredRule()` in `rector.php`): `FunctionFirstClassCallableRector`
+is skipped because its `'fn'` → `fn(...)` rewrites read poorly here, and
+`EncapsedStringsToSprintfRector` runs with `always: false` so simple cases
+collapse to concatenation and `sprintf()` is only used when literal text is
+interleaved.
+
+Rector is not always fixed-point in one pass — re-run `mise run rector`
+until it reports "Rector is done!". CI runs `rector --dry-run` non-blocking;
+keep it clean.
 
 ## Comment Guidelines
 

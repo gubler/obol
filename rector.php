@@ -43,6 +43,7 @@ return RectorConfig::configure()
         __DIR__ . '/assets/vendor/*',
         ReturnNeverTypeRector::class,
         OptionalParametersAfterRequiredRector::class,
+        // 'fn' -> fn(...) rewrites (e.g. \call_user_func(...)) read poorly here.
         FunctionFirstClassCallableRector::class,
         NullableCompareToNullRector::class,
         AddArrowFunctionReturnTypeRector::class,

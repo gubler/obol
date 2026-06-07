@@ -22,21 +22,29 @@ final class CreateSubscriptionDto
 {
     #[NotNull]
     public ?Category $category = null;
+
     #[NotBlank]
     public string $name = '';
+
     #[NotNull]
     public ?\DateTimeImmutable $nextRenewal = null;
+
     public PaymentPeriod $paymentPeriod = PaymentPeriod::Year;
+
     #[GreaterThanOrEqual(value: 1)]
     public int $paymentPeriodCount = 1;
+
     #[GreaterThanOrEqual(value: 1)]
     public int $cost = 0;
+
     public string $description = '';
+
     #[AtLeastOneOf(constraints: [
         new Url(),
         new Blank(),
     ])]
     public string $link = '';
+
     #[File]
     public ?UploadedFile $logo = null;
 }

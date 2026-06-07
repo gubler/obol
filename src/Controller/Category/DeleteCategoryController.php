@@ -10,7 +10,6 @@ namespace App\Controller\Category;
 use App\Controller\AbstractBaseController;
 use App\Message\Command\Category\DeleteCategoryCommand;
 use App\Message\Query\Category\FindCategoryQuery;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Uid\Ulid;
@@ -18,7 +17,7 @@ use Symfony\Component\Uid\Ulid;
 final class DeleteCategoryController extends AbstractBaseController
 {
     #[Route(path: '/categories/{id}/delete', name: 'category_delete', methods: ['POST'])]
-    public function __invoke(Ulid $id): Response
+    public function __invoke(Ulid $id): \Symfony\Component\HttpFoundation\RedirectResponse
     {
         $category = $this->queryBus->query(query: new FindCategoryQuery(categoryId: $id));
 
@@ -30,7 +29,7 @@ final class DeleteCategoryController extends AbstractBaseController
             $this->commandBus->dispatch(command: new DeleteCategoryCommand(categoryId: $id));
 
             $this->addFlash(type: self::FLASH_SUCCESS, message: 'Category deleted successfully');
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             $this->addFlash(
                 type: self::FLASH_ERROR,
                 message: 'Cannot delete category with subscriptions. Please reassign or delete subscriptions first.'

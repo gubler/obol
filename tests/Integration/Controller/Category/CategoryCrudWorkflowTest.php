@@ -109,9 +109,7 @@ test('create multiple categories and verify list order', function (): void {
     $crawler = $client->request(method: 'GET', uri: '/categories');
 
     $categoryNames = $crawler->filter('table tbody tr td:first-child')->each(
-        function (Crawler $node): string {
-            return $node->text();
-        }
+        fn (Crawler $node): string => $node->text()
     );
 
     // Should be sorted alphabetically

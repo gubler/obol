@@ -10,7 +10,6 @@ namespace App\Controller\Payment;
 use App\Controller\AbstractBaseController;
 use App\Message\Command\Payment\DeletePaymentCommand;
 use App\Message\Query\Payment\FindPaymentQuery;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Uid\Ulid;
@@ -18,7 +17,7 @@ use Symfony\Component\Uid\Ulid;
 final class DeletePaymentController extends AbstractBaseController
 {
     #[Route(path: '/payments/{id}/delete', name: 'payment_delete', methods: ['POST'])]
-    public function __invoke(Ulid $id): Response
+    public function __invoke(Ulid $id): \Symfony\Component\HttpFoundation\RedirectResponse
     {
         /** @var \App\Entity\Payment|null $payment */
         $payment = $this->queryBus->query(query: new FindPaymentQuery(paymentId: $id));
@@ -33,7 +32,7 @@ final class DeletePaymentController extends AbstractBaseController
             $this->commandBus->dispatch(command: new DeletePaymentCommand(paymentId: $id));
 
             $this->addFlash(type: self::FLASH_SUCCESS, message: 'Payment deleted successfully');
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             $this->addFlash(
                 type: self::FLASH_ERROR,
                 message: 'Failed to delete payment. Please try again.'

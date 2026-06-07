@@ -40,6 +40,7 @@ final class AmendPaymentFormType extends AbstractType
         ]);
     }
 
+    #[\Override]
     public function getBlockPrefix(): string
     {
         return 'amend_payment';

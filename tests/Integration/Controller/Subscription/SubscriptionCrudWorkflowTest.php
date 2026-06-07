@@ -137,9 +137,7 @@ test('create multiple subscriptions and verify list order', function (): void {
     $crawler = $client->request(method: 'GET', uri: '/');
 
     $subscriptionNames = $crawler->filter('table tbody tr td:first-child')->each(
-        function (Symfony\Component\DomCrawler\Crawler $node) {
-            return $node->text();
-        }
+        fn (Symfony\Component\DomCrawler\Crawler $node) => $node->text()
     );
 
     // Should be sorted alphabetically

@@ -10,11 +10,11 @@ namespace App\Service;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Uid\Ulid;
 
-final class FileUploader
+final readonly class FileUploader
 {
     public function __construct(
-        private readonly string $targetDirectory,
-        private readonly string $publicPath,
+        private string $targetDirectory,
+        private string $publicPath,
     ) {
     }
 

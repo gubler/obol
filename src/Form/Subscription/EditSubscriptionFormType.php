@@ -78,6 +78,7 @@ final class EditSubscriptionFormType extends AbstractType
         ]);
     }
 
+    #[\Override]
     public function getBlockPrefix(): string
     {
         return 'edit_subscription';

@@ -10,7 +10,6 @@ namespace App\Controller\Subscription;
 use App\Controller\AbstractBaseController;
 use App\Message\Command\Subscription\DeleteSubscriptionCommand;
 use App\Message\Query\Subscription\FindSubscriptionQuery;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Uid\Ulid;
@@ -18,7 +17,7 @@ use Symfony\Component\Uid\Ulid;
 final class DeleteSubscriptionController extends AbstractBaseController
 {
     #[Route(path: '/subscriptions/{id}/delete', name: 'subscription_delete', methods: ['POST'])]
-    public function __invoke(Ulid $id): Response
+    public function __invoke(Ulid $id): \Symfony\Component\HttpFoundation\RedirectResponse
     {
         $subscription = $this->queryBus->query(query: new FindSubscriptionQuery(subscriptionId: $id));
 
@@ -30,7 +29,7 @@ final class DeleteSubscriptionController extends AbstractBaseController
             $this->commandBus->dispatch(command: new DeleteSubscriptionCommand(subscriptionId: $id));
 
             $this->addFlash(type: self::FLASH_SUCCESS, message: 'Subscription deleted successfully');
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             $this->addFlash(
                 type: self::FLASH_ERROR,
                 message: 'Failed to delete subscription. Please try again.'

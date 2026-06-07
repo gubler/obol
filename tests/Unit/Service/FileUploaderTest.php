@@ -18,6 +18,7 @@ afterEach(function (): void {
     if (false !== $files) {
         array_map(callback: 'unlink', array: $files);
     }
+
     if (is_dir(filename: $this->targetDirectory)) {
         rmdir(directory: $this->targetDirectory);
     }

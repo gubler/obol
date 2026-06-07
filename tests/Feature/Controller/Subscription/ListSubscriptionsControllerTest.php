@@ -66,9 +66,7 @@ test('displays subscriptions in alphabetical order', function (): void {
     $crawler = $client->request(method: 'GET', uri: '/');
 
     $subscriptionNames = $crawler->filter('table tbody tr')->each(
-        function (Symfony\Component\DomCrawler\Crawler $node) {
-            return $node->filter('td')->first()->text();
-        }
+        fn (Symfony\Component\DomCrawler\Crawler $node) => $node->filter('td')->first()->text()
     );
 
     expect($subscriptionNames)->toContain('Alpha Subscription');

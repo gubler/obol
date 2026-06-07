@@ -32,7 +32,7 @@ arch('repositories must end with Repository')
 ;
 
 arch('data access is confined to the handler layer')
-    ->expect(['App\Repository', 'Doctrine\ORM\EntityManagerInterface'])
+    ->expect(['App\Repository', Doctrine\ORM\EntityManagerInterface::class])
     ->toOnlyBeUsedIn([
         'App\Message',     // command handlers, query runners, scheduler handler
         'App\Entity',      // repositoryClass metadata only

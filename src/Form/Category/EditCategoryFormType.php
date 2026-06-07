@@ -35,6 +35,7 @@ final class EditCategoryFormType extends AbstractType
         ]);
     }
 
+    #[\Override]
     public function getBlockPrefix(): string
     {
         return 'edit_category';

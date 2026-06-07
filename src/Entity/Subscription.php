@@ -43,18 +43,8 @@ class Subscription
     #[ORM\OneToMany(targetEntity: SubscriptionEvent::class, mappedBy: 'subscription', cascade: ['persist', 'remove'], orphanRemoval: true)]
     public private(set) Collection $subscriptionEvents;
 
-    #[ORM\ManyToOne(inversedBy: 'subscriptions')]
-    #[ORM\JoinColumn(nullable: false)]
-    public private(set) Category $category;
-
     #[ORM\Column(length: 255)]
     public private(set) string $name;
-
-    #[ORM\Column]
-    public private(set) \DateTimeImmutable $nextRenewal;
-
-    #[ORM\Column(enumType: PaymentPeriod::class)]
-    public private(set) PaymentPeriod $paymentPeriod;
 
     #[ORM\Column]
     public private(set) int $paymentPeriodCount;
@@ -62,42 +52,33 @@ class Subscription
     #[ORM\Column]
     public private(set) int $cost;
 
-    #[ORM\Column(type: Types::TEXT)]
-    public private(set) string $description;
-
-    #[ORM\Column(type: Types::TEXT)]
-    public private(set) string $link;
-
-    #[ORM\Column(length: 255)]
-    public private(set) string $logo;
-
     public function __construct(
-        Category $category,
+        #[ORM\ManyToOne(inversedBy: 'subscriptions')]
+        #[ORM\JoinColumn(nullable: false)]
+        public private(set) Category $category,
         string $name,
-        \DateTimeImmutable $nextRenewal,
-        PaymentPeriod $paymentPeriod,
+        #[ORM\Column]
+        public private(set) \DateTimeImmutable $nextRenewal,
+        #[ORM\Column(enumType: PaymentPeriod::class)]
+        public private(set) PaymentPeriod $paymentPeriod,
         int $paymentPeriodCount,
         int $cost,
-        string $description = '',
-        string $link = '',
-        string $logo = '',
+        #[ORM\Column(type: Types::TEXT)]
+        public private(set) string $description = '',
+        #[ORM\Column(type: Types::TEXT)]
+        public private(set) string $link = '',
+        #[ORM\Column(length: 255)]
+        public private(set) string $logo = '',
     ) {
-        $name = self::normalizeAndAssert(name: $name, cost: $cost, paymentPeriodCount: $paymentPeriodCount);
+        $name = $this->normalizeAndAssert(name: $name, cost: $cost, paymentPeriodCount: $paymentPeriodCount);
 
         $this->id = new Ulid();
         $this->createdAt = new \DateTimeImmutable();
         $this->payments = new ArrayCollection();
         $this->subscriptionEvents = new ArrayCollection();
-
-        $this->category = $category;
         $this->name = $name;
-        $this->nextRenewal = $nextRenewal;
-        $this->paymentPeriod = $paymentPeriod;
         $this->paymentPeriodCount = $paymentPeriodCount;
         $this->cost = $cost;
-        $this->description = $description;
-        $this->link = $link;
-        $this->logo = $logo;
     }
 
     public function recordPayment(
@@ -142,7 +123,7 @@ class Subscription
         int $paymentPeriodCount,
         int $cost,
     ): void {
-        $name = self::normalizeAndAssert(name: $name, cost: $cost, paymentPeriodCount: $paymentPeriodCount);
+        $name = $this->normalizeAndAssert(name: $name, cost: $cost, paymentPeriodCount: $paymentPeriodCount);
 
         $updateGenerator = new ChangeContextGenerator(
             changes: [
@@ -198,7 +179,7 @@ class Subscription
     /**
      * Trims the name and asserts the subscription's invariants, returning the normalized name.
      */
-    private static function normalizeAndAssert(string $name, int $cost, int $paymentPeriodCount): string
+    private function normalizeAndAssert(string $name, int $cost, int $paymentPeriodCount): string
     {
         $name = trim(string: $name);
         Assertion::notEq(value1: $name, value2: '', message: 'Subscription name cannot be empty');

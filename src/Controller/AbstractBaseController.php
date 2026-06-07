@@ -14,12 +14,17 @@ use Symfony\Contracts\Service\Attribute\Required;
 abstract class AbstractBaseController extends AbstractController
 {
     public const string FLASH_SUCCESS = 'success';
+
     public const string FLASH_WARNING = 'warning';
+
     public const string FLASH_ERROR = 'error';
+
     public const string FLASH_NOTICE = 'notice';
 
     protected CommandBus $commandBus;
+
     protected QueryBus $queryBus;
+
     protected LoggerInterface $appLogger;
 
     #[Required]

@@ -20,7 +20,7 @@ final class SubscriptionEventFactory extends PersistentObjectFactory
 
     protected function defaults(): callable
     {
-        return function () {
+        return function (): array {
             $type = self::faker()->randomElement(SubscriptionEventType::cases());
             if (!$type instanceof SubscriptionEventType) {
                 throw new \InvalidArgumentException('Type not an instance of SubscriptionEventType');

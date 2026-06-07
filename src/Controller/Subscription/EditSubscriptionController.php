@@ -22,8 +22,12 @@ use Symfony\Component\Uid\Ulid;
 
 final class EditSubscriptionController extends AbstractBaseController
 {
+    public function __construct(private readonly FileUploader $fileUploader)
+    {
+    }
+
     #[Route(path: '/subscriptions/{id}/edit', name: 'subscription_edit', methods: ['GET', 'POST'])]
-    public function __invoke(Ulid $id, Request $request, FileUploader $fileUploader): Response
+    public function __invoke(Ulid $id, Request $request): Response
     {
         $subscription = $this->queryBus->query(query: new FindSubscriptionQuery(subscriptionId: $id));
 
@@ -44,7 +48,7 @@ final class EditSubscriptionController extends AbstractBaseController
             $data = $form->getData();
 
             $logo = null !== $data->logo
-                ? $fileUploader->upload(file: $data->logo)
+                ? $this->fileUploader->upload(file: $data->logo)
                 : $subscription->logo;
 
             $this->commandBus->dispatch(command: new UpdateSubscriptionCommand(

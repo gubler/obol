@@ -18,8 +18,12 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class CreateSubscriptionController extends AbstractBaseController
 {
+    public function __construct(private readonly FileUploader $fileUploader)
+    {
+    }
+
     #[Route(path: '/subscriptions/new', name: 'subscription_new', methods: ['GET', 'POST'])]
-    public function __invoke(Request $request, FileUploader $fileUploader): Response
+    public function __invoke(Request $request): Response
     {
         $dto = new CreateSubscriptionDto();
         $form = $this->createForm(type: CreateSubscriptionFormType::class, data: $dto);
@@ -34,7 +38,7 @@ final class CreateSubscriptionController extends AbstractBaseController
             \assert(null !== $data->nextRenewal);
 
             $logo = null !== $data->logo
-                ? $fileUploader->upload(file: $data->logo)
+                ? $this->fileUploader->upload(file: $data->logo)
                 : '';
 
             $this->commandBus->dispatch(command: new CreateSubscriptionCommand(

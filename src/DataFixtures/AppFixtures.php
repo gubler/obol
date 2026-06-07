@@ -48,7 +48,7 @@ class AppFixtures extends Fixture
             'description' => 'Source code hosting and collaboration',
         ]);
 
-        $nytimes = SubscriptionFactory::createOne([
+        SubscriptionFactory::createOne([
             'category' => $news,
             'name' => 'New York Times Digital',
             'cost' => 1700,

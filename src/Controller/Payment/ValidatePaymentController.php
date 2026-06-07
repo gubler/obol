@@ -11,7 +11,6 @@ use App\Controller\AbstractBaseController;
 use App\Entity\Payment;
 use App\Message\Command\Payment\AmendPaymentCommand;
 use App\Message\Query\Payment\FindPaymentQuery;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Uid\Ulid;
@@ -19,7 +18,7 @@ use Symfony\Component\Uid\Ulid;
 final class ValidatePaymentController extends AbstractBaseController
 {
     #[Route(path: '/payments/{id}/validate', name: 'payment_validate', methods: ['POST'])]
-    public function __invoke(Ulid $id): Response
+    public function __invoke(Ulid $id): \Symfony\Component\HttpFoundation\RedirectResponse
     {
         $payment = $this->queryBus->query(query: new FindPaymentQuery(paymentId: $id));
 

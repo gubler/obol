@@ -40,6 +40,7 @@ final class CreatePaymentFormType extends AbstractType
         ]);
     }
 
+    #[\Override]
     public function getBlockPrefix(): string
     {
         return 'create_payment';

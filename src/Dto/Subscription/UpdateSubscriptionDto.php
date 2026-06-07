@@ -21,20 +21,28 @@ use Symfony\Component\Validator\Constraints\Url;
 final class UpdateSubscriptionDto
 {
     public Category $category;
+
     #[NotBlank]
     public string $name;
+
     public \DateTimeImmutable $nextRenewal;
+
     public PaymentPeriod $paymentPeriod;
+
     #[GreaterThanOrEqual(value: 1)]
     public int $paymentPeriodCount = 1;
+
     #[GreaterThanOrEqual(value: 1)]
     public int $cost = 0;
+
     public string $description = '';
+
     #[AtLeastOneOf(constraints: [
         new Url(),
         new Blank(),
     ])]
     public string $link = '';
+
     #[File]
     public ?UploadedFile $logo = null;
 

@@ -2,8 +2,8 @@
 
 Obol is a personal, single-user web app for tracking recurring subscriptions and
 their payments. It records each subscription's cost and billing cadence, organizes
-subscriptions by category, keeps a complete audit trail of every change, and (planned)
-helps budget for upcoming renewals.
+subscriptions by category, keeps a complete audit trail of every change, and helps
+budget for upcoming renewals.
 
 It is deliberately single-tenant: no user accounts, no team or household sharing, no
 public API, no bank integration. See `reference/out-of-scope/` for what is explicitly
@@ -50,8 +50,17 @@ older docs.
 - **renewal** - the point at which a subscription's next charge falls due, stored as the
   `nextRenewal` anchor the scheduler keys off (advanced one interval per payment, not by
   when the user actually paid). _Avoid_ "payment due date" as a separate term.
-- **savings target** - _(planned, see #26)_ the prorated amount that should be set aside by
-  now to cover the next renewal. Not yet implemented.
+- **savings target** - the amount that should be set aside by now to cover upcoming renewals
+  (`Subscription::savingsTarget`), in the currency's minor units. Models a monthly budget saved
+  one month ahead: a **monthly cost** is allocated on the first of each calendar month, a renewal
+  is fully funded by the first of the month before it falls due, and that `cost` is held until the
+  renewal is recorded paid (which advances `nextRenewal`). A funded-but-unpaid renewal is therefore
+  held in full while the next cycle's saving has already begun, so the target peaks at one `cost`
+  plus a lead in the unpaid due month, and a monthly bill sits between one and two `cost`s. It is a
+  forward-looking budgeting hint only - there is no stored "actual saved" balance. Summed per
+  category on the homepage (`CategoryGroup::savingsTotal`) to reconcile against an external monthly
+  budget. The lead and allocation cadence become per-user settings later (#121, #120); weekly bills
+  are a placeholder (one payment) until by-week proration. See ADR-0009.
 
 ## Architecture decisions
 
@@ -65,6 +74,7 @@ Recorded under `reference/adr/`:
 - ADR-0006 - CQRS command/query buses; data access confined to the handler layer
 - ADR-0007 - Write-path message conventions (DTOs stay separate from Commands; Commands carry Ulid)
 - ADR-0008 - Payment lifecycle and fixed-cadence renewal
+- ADR-0009 - Savings target model (one-month lead, whole-months proration)
 
 ADR-0006 records the CQRS-via-Messenger decision (keep the command/query buses; data
 access confined to the handler layer) settled in #79. ADR-0007 extends it with the

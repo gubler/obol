@@ -1,7 +1,7 @@
 <?php
 
 // ABOUTME: Read model pairing a category with its subscriptions for the homepage listing.
-// ABOUTME: Exposes the category's combined monthly cost (sum of each subscription's monthly equivalent).
+// ABOUTME: Exposes the category's combined monthly cost and combined savings target as of a fixed date.
 
 declare(strict_types=1);
 
@@ -18,6 +18,7 @@ final readonly class CategoryGroup
     public function __construct(
         public Category $category,
         public array $subscriptions,
+        private \DateTimeImmutable $asOf,
     ) {
     }
 
@@ -28,6 +29,16 @@ final readonly class CategoryGroup
     {
         return array_sum(
             array_map(static fn (Subscription $subscription): int => $subscription->monthlyCost(), $this->subscriptions),
+        );
+    }
+
+    /**
+     * Combined savings target of the group as of `$asOf`, in the currency's minor units.
+     */
+    public function savingsTotal(): int
+    {
+        return array_sum(
+            array_map(fn (Subscription $subscription): int => $subscription->savingsTarget($this->asOf), $this->subscriptions),
         );
     }
 }

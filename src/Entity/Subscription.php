@@ -22,6 +22,12 @@ use Symfony\Component\Uid\Ulid;
 #[ORM\Entity(repositoryClass: SubscriptionRepository::class)]
 class Subscription
 {
+    /**
+     * Look-ahead bound for the savings-target sum; only the next renewal or two ever contribute, so
+     * this is purely a backstop against an unbounded loop for a degenerate sub-cent monthly chunk.
+     */
+    private const int SAVINGS_HORIZON = 24;
+
     #[ORM\Id]
     #[ORM\Column(type: UlidType::NAME, unique: true)]
     public private(set) Ulid $id;
@@ -101,6 +107,57 @@ class Subscription
         };
 
         return (int) round($this->cost / ($this->paymentPeriodCount * $monthsPerPeriod));
+    }
+
+    /**
+     * The amount that should be set aside by `$asOf` to cover upcoming renewals, in the currency's
+     * minor units. Models a monthly budget saved one month ahead: `monthlyCost` is allocated on the
+     * first of each calendar month, a renewal is fully funded by the first of the month before it
+     * falls due, and that full `cost` is held until the renewal is recorded paid (which advances
+     * `nextRenewal`). Saving toward the renewal after it begins once the current one is funded, so a
+     * bill that is funded but not yet paid is held in full *on top of* the next cycle's accrual. See
+     * ADR-0009; the lead and allocation cadence become per-user settings later (#120, #121).
+     */
+    public function savingsTarget(\DateTimeImmutable $asOf): int
+    {
+        // Weekly bills renew several times within an allocation month, which the by-month model
+        // cannot prorate; until by-week proration lands (#120) a weekly bill is treated as one
+        // payment in hand.
+        if (PaymentPeriod::Week === $this->paymentPeriod) {
+            return $this->cost;
+        }
+
+        $monthlyCost = $this->monthlyCost();
+        $asOfMonth = $this->monthOrdinal($asOf);
+
+        $renewal = $this->nextRenewal;
+        $total = 0;
+
+        // Sum what should be set aside for each upcoming renewal. In practice no more than two ever
+        // overlap (the funded-but-unpaid one and the next cycle just begun), so this settles in a
+        // couple of iterations; the horizon is only a backstop against degenerate sub-cent chunks.
+        for ($i = 0; $i < self::SAVINGS_HORIZON; ++$i) {
+            $fundByMonth = $this->monthOrdinal($renewal) - 1; // first of the month before it falls due
+            $monthsToFund = max(0, $fundByMonth - $asOfMonth);
+            $funded = max(0, $this->cost - $monthlyCost * $monthsToFund);
+
+            if (0 === $funded) {
+                break;
+            }
+
+            $total += $funded;
+            $renewal = $renewal->add($this->renewalInterval());
+        }
+
+        return $total;
+    }
+
+    /**
+     * The calendar month of `$date` as a count of months since year zero, for month arithmetic.
+     */
+    private function monthOrdinal(\DateTimeImmutable $date): int
+    {
+        return (int) $date->format('Y') * 12 + (int) $date->format('n') - 1;
     }
 
     public function recordPayment(

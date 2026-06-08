@@ -35,10 +35,13 @@ final readonly class FindSubscriptionsForHomepageRunner
             $grouped[$key]['subscriptions'][] = $subscription;
         }
 
+        $asOf = new \DateTimeImmutable();
+
         return array_map(
             static fn (array $group): CategoryGroup => new CategoryGroup(
                 category: $group['category'],
                 subscriptions: $group['subscriptions'],
+                asOf: $asOf,
             ),
             array_values($grouped),
         );

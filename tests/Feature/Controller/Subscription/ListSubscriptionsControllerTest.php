@@ -183,6 +183,50 @@ test('shows the combined monthly total for a category', function (): void {
     $this->assertSelectorTextContains(selector: '.category-monthly-total', text: '$25.00');
 });
 
+test('shows a savings target for a category that renews beyond a month', function (): void {
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Software']);
+
+    SubscriptionFactory::createOne([
+        'category' => $category,
+        'name' => 'JetBrains',
+        'cost' => 12000,
+        'paymentPeriod' => PaymentPeriod::Year,
+        'paymentPeriodCount' => 1,
+        // Renews next month, so most of the year's cost should already be set aside.
+        'nextRenewal' => (new DateTimeImmutable())->add(new DateInterval('P1M')),
+    ]);
+
+    $crawler = $client->request(method: 'GET', uri: '/');
+
+    $this->assertResponseIsSuccessful();
+    expect($crawler->filter('.category-savings-total')->count())->toBe(1);
+});
+
+test('includes monthly subscriptions in the savings target', function (): void {
+    // A monthly bill is set aside a cycle ahead, so it counts toward the category savings total -
+    // keeping it reconcilable against an external monthly budget. (Exact figures are unit-tested;
+    // here we only assert the total renders, since the by-month value shifts with the calendar month.)
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+
+    SubscriptionFactory::createOne([
+        'category' => $category,
+        'name' => 'Netflix',
+        'cost' => 1500,
+        'paymentPeriod' => PaymentPeriod::Month,
+        'paymentPeriodCount' => 1,
+        // Renews tomorrow, so the current cycle is well underway.
+        'nextRenewal' => (new DateTimeImmutable())->add(new DateInterval('P1D')),
+    ]);
+
+    $crawler = $client->request(method: 'GET', uri: '/');
+
+    $this->assertResponseIsSuccessful();
+    $this->assertSelectorTextContains(selector: '.category-savings-total', text: '$');
+    expect($crawler->filter('.category-savings-total')->count())->toBe(1);
+});
+
 test('hides archived subscriptions by default', function (): void {
     $client = $this->createClient();
     $category = CategoryFactory::createOne(['name' => 'Entertainment']);

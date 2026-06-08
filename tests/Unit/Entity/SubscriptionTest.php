@@ -858,3 +858,87 @@ describe('monthlyCost', function (): void {
         expect($makeSubscription(PaymentPeriod::Year, 1, 1000)->monthlyCost())->toBe(83);
     });
 });
+
+describe('savingsTarget', function (): void {
+    $makeSubscription = function (
+        PaymentPeriod $period,
+        int $count,
+        int $cost,
+        DateTimeImmutable $nextRenewal,
+    ): Subscription {
+        return new Subscription(
+            category: new Category(name: 'Entertainment'),
+            name: 'Example',
+            nextRenewal: $nextRenewal,
+            paymentPeriod: $period,
+            paymentPeriodCount: $count,
+            cost: $cost,
+        );
+    };
+
+    test('ramps by one monthly cost per calendar month toward the renewal', function () use ($makeSubscription): void {
+        // 1200 every 6 months -> 200/mo, due 2024-04-28. Funded by the 1st of March (a month ahead);
+        // by 2024-01-15 four monthly allocations (Oct..Jan) have been made -> 800.
+        $subscription = $makeSubscription(PaymentPeriod::Month, 6, 1200, new DateTimeImmutable('2024-04-28'));
+
+        expect($subscription->savingsTarget(new DateTimeImmutable('2024-01-15')))
+            ->toBeInt()
+            ->toBe(800)
+        ;
+    });
+
+    test('holds the funded cost and the next cycle together in the unpaid due month', function () use ($makeSubscription): void {
+        // In April the 1200 for the 2024-04-28 bill is funded and held (not yet paid), while 200
+        // toward the October renewal has already begun -> 1400.
+        $subscription = $makeSubscription(PaymentPeriod::Month, 6, 1200, new DateTimeImmutable('2024-04-28'));
+
+        expect($subscription->savingsTarget(new DateTimeImmutable('2024-04-15')))->toBe(1400);
+    });
+
+    test('drops to the next cycle once the renewal is recorded paid', function () use ($makeSubscription): void {
+        // Recording the April payment advances nextRenewal to October; the held 1200 is released,
+        // leaving the first 200 of the October cycle.
+        $subscription = $makeSubscription(PaymentPeriod::Month, 6, 1200, new DateTimeImmutable('2024-10-28'));
+
+        expect($subscription->savingsTarget(new DateTimeImmutable('2024-04-28')))->toBe(200);
+    });
+
+    test('stacks this month and next for a monthly bill in its unpaid due month', function () use ($makeSubscription): void {
+        // 100 monthly due the 15th: on the 8th the bill due on the 15th is held (100) and next
+        // month's allocation has begun (100) -> 200.
+        $subscription = $makeSubscription(PaymentPeriod::Month, 1, 100, new DateTimeImmutable('2024-04-15'));
+
+        expect($subscription->savingsTarget(new DateTimeImmutable('2024-04-08')))->toBe(200);
+    });
+
+    test('is one payment for a monthly bill the month before it is due', function () use ($makeSubscription): void {
+        // 1500 monthly due 2024-02-01: in January only the funded February bill is held; saving for
+        // the March bill has not begun -> 1500.
+        $subscription = $makeSubscription(PaymentPeriod::Month, 1, 1500, new DateTimeImmutable('2024-02-01'));
+
+        expect($subscription->savingsTarget(new DateTimeImmutable('2024-01-15')))->toBe(1500);
+    });
+
+    test('treats a weekly bill as one payment in hand', function () use ($makeSubscription): void {
+        // By-month proration cannot split a weekly cadence; until by-week proration lands a weekly
+        // bill is just one payment held.
+        $subscription = $makeSubscription(PaymentPeriod::Week, 1, 1000, new DateTimeImmutable('2024-01-08'));
+
+        expect($subscription->savingsTarget(new DateTimeImmutable('2024-01-05')))->toBe(1000);
+    });
+
+    test('is zero before the first cycle has begun', function () use ($makeSubscription): void {
+        // A future renewal whose funding window has not opened yet has nothing to set aside.
+        $subscription = $makeSubscription(PaymentPeriod::Year, 1, 12000, new DateTimeImmutable('2025-01-01'));
+
+        expect($subscription->savingsTarget(new DateTimeImmutable('2023-12-01')))->toBe(0);
+    });
+
+    test('holds an overdue renewal in full on top of saving for the next', function () use ($makeSubscription): void {
+        // 12000 yearly due 2024-01-01, still unpaid by March: the full 12000 is held while three
+        // monthly allocations toward the 2025 renewal have been made -> 15000.
+        $subscription = $makeSubscription(PaymentPeriod::Year, 1, 12000, new DateTimeImmutable('2024-01-01'));
+
+        expect($subscription->savingsTarget(new DateTimeImmutable('2024-03-01')))->toBe(15000);
+    });
+});

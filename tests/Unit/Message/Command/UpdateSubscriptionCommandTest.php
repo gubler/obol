@@ -6,6 +6,7 @@
 declare(strict_types=1);
 
 use App\Enum\PaymentPeriod;
+use App\Enum\TileColor;
 use App\Message\Command\Subscription\UpdateSubscriptionCommand;
 use Symfony\Component\Uid\Ulid;
 
@@ -25,6 +26,7 @@ test('creates command with all fields', function (): void {
         paymentPeriod: PaymentPeriod::Year,
         paymentPeriodCount: 1,
         cost: 15999,
+        color: TileColor::Blue,
     );
 
     expect($command->subscriptionId)->toBe($subscriptionId)
@@ -37,6 +39,7 @@ test('creates command with all fields', function (): void {
         ->and($command->paymentPeriod)->toBe(PaymentPeriod::Year)
         ->and($command->paymentPeriodCount)->toBe(1)
         ->and($command->cost)->toBe(15999)
+        ->and($command->color)->toBe(TileColor::Blue)
     ;
 });
 
@@ -52,6 +55,7 @@ test('is readonly', function (): void {
         paymentPeriod: PaymentPeriod::Month,
         paymentPeriodCount: 1,
         cost: 100,
+        color: TileColor::Blue,
     );
 
     $reflection = new ReflectionClass($command);

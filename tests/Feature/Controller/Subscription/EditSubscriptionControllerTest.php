@@ -6,6 +6,7 @@
 declare(strict_types=1);
 
 use App\Entity\Subscription;
+use App\Enum\TileColor;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
 use App\Repository\SubscriptionRepository;
@@ -57,6 +58,7 @@ test('post request with valid data updates subscription', function (): void {
         'edit_subscription[cost]' => '1999',
         'edit_subscription[description]' => 'Updated description',
         'edit_subscription[link]' => 'https://netflix.com/premium',
+        'edit_subscription[color]' => 'teal',
     ]);
 
     $client->submit(form: $form);
@@ -77,6 +79,7 @@ test('post request with valid data updates subscription', function (): void {
     expect($subscription->cost)->toBe(1999);
     expect($subscription->description)->toBe('Updated description');
     expect($subscription->link)->toBe('https://netflix.com/premium');
+    expect($subscription->color)->toBe(TileColor::Teal);
     expect($newCategory->id->equals($subscription->category->id))->toBeTrue();
 });
 

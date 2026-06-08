@@ -12,6 +12,7 @@ use App\Entity\SubscriptionEvent;
 use App\Enum\PaymentPeriod;
 use App\Enum\PaymentType;
 use App\Enum\SubscriptionEventType;
+use App\Enum\TileColor;
 
 beforeEach(function (): void {
     $this->category = new Category(name: 'Entertainment');
@@ -141,6 +142,7 @@ describe('update', function (): void {
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
+            color: $subscription->color,
         );
 
         expect($subscription->subscriptionEvents)->toHaveCount(1);
@@ -174,6 +176,7 @@ describe('update', function (): void {
             paymentPeriod: PaymentPeriod::Year,
             paymentPeriodCount: 1,
             cost: 15000,
+            color: $subscription->color,
         );
 
         expect($subscription->subscriptionEvents)->toHaveCount(1);
@@ -206,6 +209,7 @@ describe('update', function (): void {
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 3,
             cost: 1500,
+            color: $subscription->color,
         );
 
         expect($subscription->subscriptionEvents)->toHaveCount(1);
@@ -238,6 +242,7 @@ describe('update', function (): void {
             paymentPeriod: PaymentPeriod::Year,
             paymentPeriodCount: 1,
             cost: 15000,
+            color: $subscription->color,
         );
 
         expect($subscription->subscriptionEvents)->toHaveCount(2);
@@ -273,6 +278,7 @@ describe('update', function (): void {
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
+            color: $subscription->color,
         );
 
         expect($subscription->subscriptionEvents)->toHaveCount(0);
@@ -553,6 +559,7 @@ describe('validation', function (): void {
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
+            color: $subscription->color,
         );
     })->throws(Assert\InvalidArgumentException::class);
 
@@ -576,6 +583,7 @@ describe('validation', function (): void {
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
+            color: $subscription->color,
         );
     })->throws(Assert\InvalidArgumentException::class);
 
@@ -599,6 +607,7 @@ describe('validation', function (): void {
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 0,
+            color: $subscription->color,
         );
     })->throws(Assert\InvalidArgumentException::class);
 
@@ -622,6 +631,7 @@ describe('validation', function (): void {
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: -100,
+            color: $subscription->color,
         );
     })->throws(Assert\InvalidArgumentException::class);
 
@@ -645,6 +655,7 @@ describe('validation', function (): void {
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 0,
             cost: 1500,
+            color: $subscription->color,
         );
     })->throws(Assert\InvalidArgumentException::class);
 
@@ -668,6 +679,7 @@ describe('validation', function (): void {
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: -1,
             cost: 1500,
+            color: $subscription->color,
         );
     })->throws(Assert\InvalidArgumentException::class);
 
@@ -704,8 +716,100 @@ describe('validation', function (): void {
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 1500,
+            color: $subscription->color,
         );
 
         expect($subscription->name)->toBe('Netflix Premium');
+    });
+});
+
+describe('color', function (): void {
+    test('assigns a random palette color when none is given', function (): void {
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 1500,
+        );
+
+        expect($subscription->color)->toBeInstanceOf(TileColor::class);
+    });
+
+    test('accepts an explicit color', function (): void {
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 1500,
+            color: TileColor::Blue,
+        );
+
+        expect($subscription->color)->toBe(TileColor::Blue);
+    });
+
+    test('records a color change as an update event', function (): void {
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 1500,
+            color: TileColor::Blue,
+        );
+
+        $subscription->update(
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            description: '',
+            link: '',
+            logo: '',
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 1500,
+            color: TileColor::Red,
+        );
+
+        expect($subscription->color)->toBe(TileColor::Red)
+            ->and($subscription->subscriptionEvents)->toHaveCount(1)
+        ;
+        /** @var SubscriptionEvent $event */
+        $event = $subscription->subscriptionEvents->first();
+        expect($event->type)->toBe(SubscriptionEventType::Update)
+            ->and($event->context)->toHaveKey('color')
+            ->and($event->context['color'])->toBe(['old' => 'blue', 'new' => 'red'])
+        ;
+    });
+
+    test('records no event when the color is unchanged', function (): void {
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 1500,
+            color: TileColor::Blue,
+        );
+
+        $subscription->update(
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            description: '',
+            link: '',
+            logo: '',
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 1500,
+            color: TileColor::Blue,
+        );
+
+        expect($subscription->subscriptionEvents)->toHaveCount(0);
     });
 });

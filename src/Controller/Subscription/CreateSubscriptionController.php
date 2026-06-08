@@ -51,6 +51,7 @@ final class CreateSubscriptionController extends AbstractBaseController
                 description: $data->description,
                 link: $data->link,
                 logo: $logo,
+                color: $data->color,
             ));
 
             $this->addFlash(type: self::FLASH_SUCCESS, message: 'Subscription created successfully');

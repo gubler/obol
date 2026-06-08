@@ -8,6 +8,7 @@ declare(strict_types=1);
 use App\Entity\Category;
 use App\Entity\Subscription;
 use App\Enum\PaymentPeriod;
+use App\Enum\TileColor;
 use App\Message\Command\Subscription\UpdateSubscriptionCommand;
 use App\Message\Command\Subscription\UpdateSubscriptionHandler;
 use App\Repository\CategoryRepository;
@@ -52,6 +53,7 @@ test('handler updates subscription', function (): void {
         paymentPeriod: PaymentPeriod::Month,
         paymentPeriodCount: 1,
         cost: 1999,
+        color: TileColor::Blue,
     ));
 });
 
@@ -81,6 +83,7 @@ test('handler throws when subscription not found', function (): void {
         paymentPeriod: PaymentPeriod::Month,
         paymentPeriodCount: 1,
         cost: 1500,
+        color: TileColor::Blue,
     ));
 })->throws(InvalidArgumentException::class);
 
@@ -117,5 +120,6 @@ test('handler throws when category not found', function (): void {
         paymentPeriod: PaymentPeriod::Month,
         paymentPeriodCount: 1,
         cost: 1500,
+        color: TileColor::Blue,
     ));
 })->throws(InvalidArgumentException::class);

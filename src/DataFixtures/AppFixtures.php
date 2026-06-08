@@ -141,6 +141,7 @@ class AppFixtures extends Fixture
             paymentPeriod: $netflix->paymentPeriod,
             paymentPeriodCount: $netflix->paymentPeriodCount,
             cost: 1999,
+            color: $netflix->color,
         );
 
         $manager->flush();

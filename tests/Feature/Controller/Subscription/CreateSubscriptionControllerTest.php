@@ -6,6 +6,7 @@
 declare(strict_types=1);
 
 use App\Entity\Subscription;
+use App\Enum\TileColor;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
 use Doctrine\ORM\EntityManagerInterface;
@@ -48,6 +49,7 @@ test('post request with valid data creates subscription', function (): void {
         'create_subscription[cost]' => '1999',
         'create_subscription[description]' => 'Streaming service',
         'create_subscription[link]' => 'https://netflix.com',
+        'create_subscription[color]' => 'blue',
     ]);
 
     $client->submit(form: $form);
@@ -66,6 +68,7 @@ test('post request with valid data creates subscription', function (): void {
     expect($subscription->cost)->toBe(1999);
     expect($subscription->description)->toBe('Streaming service');
     expect($subscription->link)->toBe('https://netflix.com');
+    expect($subscription->color)->toBe(TileColor::Blue);
 });
 
 test('post request with valid data shows success flash message', function (): void {

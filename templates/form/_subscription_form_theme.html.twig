@@ -1,0 +1,16 @@
+{# ABOUTME: Form theme rendering the TileColor field as a grid of selectable swatch chips. #}
+{# ABOUTME: Each swatch shows its actual Tailwind gradient; the checked one gets a ring. #}
+{% block tile_color_widget %}
+    <div class="grid grid-cols-6 gap-2 sm:grid-cols-9">
+        {% for choice in form %}
+            <div class="relative">
+                {{ form_widget(choice, {attr: {class: 'sr-only peer'}}) }}
+                <label for="{{ choice.vars.id }}"
+                       title="{{ choice.vars.label }}"
+                       class="block h-9 w-full cursor-pointer rounded-lg {{ choice.vars.attr['data-gradient'] }} ring-2 ring-transparent ring-offset-2 transition peer-checked:ring-neutral-900 peer-focus-visible:ring-neutral-500">
+                    <span class="sr-only">{{ choice.vars.label }}</span>
+                </label>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

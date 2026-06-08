@@ -7,6 +7,7 @@ namespace App\Entity;
 use App\Enum\PaymentPeriod;
 use App\Enum\PaymentType;
 use App\Enum\SubscriptionEventType;
+use App\Enum\TileColor;
 use App\Lib\ChangeContextGenerator\Change;
 use App\Lib\ChangeContextGenerator\ChangeContextGenerator;
 use App\Repository\SubscriptionRepository;
@@ -52,6 +53,9 @@ class Subscription
     #[ORM\Column]
     public private(set) int $cost;
 
+    #[ORM\Column(enumType: TileColor::class)]
+    public private(set) TileColor $color;
+
     public function __construct(
         #[ORM\ManyToOne(inversedBy: 'subscriptions')]
         #[ORM\JoinColumn(nullable: false)]
@@ -69,6 +73,7 @@ class Subscription
         public private(set) string $link = '',
         #[ORM\Column(length: 255)]
         public private(set) string $logo = '',
+        ?TileColor $color = null,
     ) {
         $name = $this->normalizeAndAssert(name: $name, cost: $cost, paymentPeriodCount: $paymentPeriodCount);
 
@@ -79,6 +84,8 @@ class Subscription
         $this->name = $name;
         $this->paymentPeriodCount = $paymentPeriodCount;
         $this->cost = $cost;
+        // A subscription always carries a tile color; pick a random swatch when one is not supplied.
+        $this->color = $color ?? TileColor::random();
     }
 
     public function recordPayment(
@@ -122,6 +129,7 @@ class Subscription
         PaymentPeriod $paymentPeriod,
         int $paymentPeriodCount,
         int $cost,
+        TileColor $color,
     ): void {
         $name = $this->normalizeAndAssert(name: $name, cost: $cost, paymentPeriodCount: $paymentPeriodCount);
 
@@ -133,6 +141,7 @@ class Subscription
                 new Change(field: 'description', current: $this->description, new: $description),
                 new Change(field: 'link', current: $this->link, new: $link),
                 new Change(field: 'logo', current: $this->logo, new: $logo),
+                new Change(field: 'color', current: $this->color->value, new: $color->value),
             ]
         );
 
@@ -174,6 +183,7 @@ class Subscription
         $this->paymentPeriod = $paymentPeriod;
         $this->paymentPeriodCount = $paymentPeriodCount;
         $this->cost = $cost;
+        $this->color = $color;
     }
 
     /**

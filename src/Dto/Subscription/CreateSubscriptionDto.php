@@ -9,6 +9,7 @@ namespace App\Dto\Subscription;
 
 use App\Entity\Category;
 use App\Enum\PaymentPeriod;
+use App\Enum\TileColor;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Constraints\AtLeastOneOf;
 use Symfony\Component\Validator\Constraints\Blank;
@@ -47,4 +48,12 @@ final class CreateSubscriptionDto
 
     #[File]
     public ?UploadedFile $logo = null;
+
+    public TileColor $color;
+
+    public function __construct()
+    {
+        // Pre-select a random swatch so a new subscription always starts with a color.
+        $this->color = TileColor::random();
+    }
 }

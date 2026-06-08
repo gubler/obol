@@ -6,6 +6,7 @@ namespace App\Factory;
 
 use App\Entity\Subscription;
 use App\Enum\PaymentPeriod;
+use App\Enum\TileColor;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
@@ -25,6 +26,7 @@ final class SubscriptionFactory extends PersistentObjectFactory
     {
         return [
             'category' => CategoryFactory::new(),
+            'color' => self::faker()->randomElement(TileColor::cases()),
             'cost' => self::faker()->numberBetween(500, 3000),
             'description' => self::faker()->sentence(),
             'nextRenewal' => \DateTimeImmutable::createFromMutable(self::faker()->dateTimeBetween('now', '+60 days')),

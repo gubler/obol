@@ -6,6 +6,7 @@
 declare(strict_types=1);
 
 use App\Enum\PaymentPeriod;
+use App\Enum\TileColor;
 use App\Message\Command\Subscription\CreateSubscriptionCommand;
 use Symfony\Component\Uid\Ulid;
 
@@ -23,6 +24,7 @@ test('creates command with all fields', function (): void {
         description: 'Streaming service',
         link: 'https://netflix.com',
         logo: 'netflix.png',
+        color: TileColor::Blue,
     );
 
     expect($command->categoryId)->toBe($categoryId)
@@ -34,6 +36,7 @@ test('creates command with all fields', function (): void {
         ->and($command->description)->toBe('Streaming service')
         ->and($command->link)->toBe('https://netflix.com')
         ->and($command->logo)->toBe('netflix.png')
+        ->and($command->color)->toBe(TileColor::Blue)
     ;
 });
 
@@ -48,6 +51,7 @@ test('creates command with optional field defaults', function (): void {
         paymentPeriod: PaymentPeriod::Month,
         paymentPeriodCount: 1,
         cost: 999,
+        color: TileColor::Blue,
     );
 
     expect($command->categoryId)->toBe($categoryId)
@@ -70,6 +74,7 @@ test('is readonly', function (): void {
         paymentPeriod: PaymentPeriod::Month,
         paymentPeriodCount: 1,
         cost: 100,
+        color: TileColor::Blue,
     );
 
     $reflection = new ReflectionClass($command);

@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace App\Message\Command\Subscription;
 
 use App\Enum\PaymentPeriod;
+use App\Enum\TileColor;
 use Symfony\Component\Uid\Ulid;
 
 final readonly class UpdateSubscriptionCommand
@@ -23,6 +24,7 @@ final readonly class UpdateSubscriptionCommand
         public PaymentPeriod $paymentPeriod,
         public int $paymentPeriodCount,
         public int $cost,
+        public TileColor $color,
     ) {
     }
 }

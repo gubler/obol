@@ -10,6 +10,7 @@ namespace App\Form\Subscription;
 use App\Dto\Subscription\CreateSubscriptionDto;
 use App\Entity\Category;
 use App\Enum\PaymentPeriod;
+use App\Enum\TileColor;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
@@ -68,6 +69,14 @@ final class CreateSubscriptionFormType extends AbstractType
                 'label' => 'Logo',
                 'required' => false,
                 'empty_data' => '',
+            ])
+            ->add(child: 'color', type: EnumType::class, options: [
+                'class' => TileColor::class,
+                'label' => 'Color',
+                'expanded' => true,
+                'choice_label' => static fn (TileColor $color): string => $color->label(),
+                'choice_attr' => static fn (TileColor $color): array => ['data-gradient' => $color->gradientClasses()],
+                'block_prefix' => 'tile_color',
             ])
         ;
     }

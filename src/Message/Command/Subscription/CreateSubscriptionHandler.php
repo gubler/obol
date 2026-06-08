@@ -39,6 +39,7 @@ final readonly class CreateSubscriptionHandler
             description: $command->description,
             link: $command->link,
             logo: $command->logo,
+            color: $command->color,
         );
 
         $this->entityManager->persist($subscription);

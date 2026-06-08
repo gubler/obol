@@ -46,6 +46,7 @@ final readonly class UpdateSubscriptionHandler
             paymentPeriod: $command->paymentPeriod,
             paymentPeriodCount: $command->paymentPeriodCount,
             cost: $command->cost,
+            color: $command->color,
         );
 
         $this->entityManager->flush();

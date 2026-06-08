@@ -62,6 +62,7 @@ final class EditSubscriptionController extends AbstractBaseController
                 paymentPeriod: $data->paymentPeriod,
                 paymentPeriodCount: $data->paymentPeriodCount,
                 cost: $data->cost,
+                color: $data->color,
             ));
 
             $this->addFlash(type: self::FLASH_SUCCESS, message: 'Subscription updated successfully');

@@ -10,6 +10,7 @@ namespace App\Dto\Subscription;
 use App\Entity\Category;
 use App\Entity\Subscription;
 use App\Enum\PaymentPeriod;
+use App\Enum\TileColor;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Constraints\AtLeastOneOf;
 use Symfony\Component\Validator\Constraints\Blank;
@@ -46,6 +47,8 @@ final class UpdateSubscriptionDto
     #[File]
     public ?UploadedFile $logo = null;
 
+    public TileColor $color;
+
     public function __construct(Subscription $subscription)
     {
         $this->category = $subscription->category;
@@ -56,5 +59,6 @@ final class UpdateSubscriptionDto
         $this->cost = $subscription->cost;
         $this->description = $subscription->description;
         $this->link = $subscription->link;
+        $this->color = $subscription->color;
     }
 }

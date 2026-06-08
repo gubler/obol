@@ -3,7 +3,7 @@
 {% block title %}Obol{% endblock %}
 
 {% block header %}
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex justify-between items-center">
         <h1 class="text-3xl font-bold tracking-tight text-white">
             Subscriptions
         </h1>
@@ -14,46 +14,67 @@
 {% endblock %}
 
 {% block body %}
-    <div class="container mx-auto px-4 py-8">
+    {% for message in app.flashes('success') %}
+        <div class="flash-success bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+            {{ message }}
+        </div>
+    {% endfor %}
 
-        {% for message in app.flashes('success') %}
-            <div class="flash-success bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-                {{ message }}
-            </div>
-        {% endfor %}
+    {% set subscription_count = 0 %}
+    {% for group in groups %}
+        {% set subscription_count = subscription_count + group.subscriptions|length %}
+    {% endfor %}
 
-        {% if subscriptions|length > 0 %}
-            <div class="bg-white shadow-md rounded overflow-hidden">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        {% for subscription in subscriptions %}
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    {{ subscription.name }}
-                                    {% if subscription.archived %}
-                                        <span class="archived-badge ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Archived</span>
-                                    {% endif %}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <a href="{{ path('subscription_show', {id: subscription.id}) }}" class="text-blue-600 hover:text-blue-900 mr-3">View</a>
-                                    <a href="{{ path('subscription_edit', {id: subscription.id}) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+    {% if subscription_count == 0 %}
+        <div class="empty-state bg-gray-100 border border-gray-300 rounded-lg px-6 py-12 text-center">
+            <p class="text-gray-600 text-lg">No subscriptions found</p>
+            <p class="text-gray-500 mt-2">Get started by creating your first subscription</p>
+        </div>
+    {% else %}
+        {% set toggle_link = 'rounded-md px-3 py-2 text-sm font-medium transition' %}
+        {% set toggle_on = 'bg-gray-800 text-white' %}
+        {% set toggle_off = 'bg-gray-100 text-gray-700 hover:bg-gray-200' %}
+
+        <div class="mb-6 flex flex-wrap items-center gap-2">
+            <div class="inline-flex rounded-md bg-gray-100 p-1">
+                <a href="{{ path('subscription_index', {view: 'tiles', group: grouped ? '1' : '0', archived: includeArchived ? '1' : '0'}) }}"
+                   class="{{ toggle_link }} {{ view == 'tiles' ? toggle_on : toggle_off }}">Tiles</a>
+                <a href="{{ path('subscription_index', {view: 'list', group: grouped ? '1' : '0', archived: includeArchived ? '1' : '0'}) }}"
+                   class="{{ toggle_link }} {{ view == 'list' ? toggle_on : toggle_off }}">List</a>
             </div>
+
+            <a href="{{ path('subscription_index', {view: view, group: grouped ? '0' : '1', archived: includeArchived ? '1' : '0'}) }}"
+               class="{{ toggle_link }} {{ grouped ? toggle_on : toggle_off }}">{{ grouped ? 'Grouped' : 'Group by category' }}</a>
+
+            <a href="{{ path('subscription_index', {view: view, group: grouped ? '1' : '0', archived: includeArchived ? '0' : '1'}) }}"
+               class="{{ toggle_link }} {{ includeArchived ? toggle_on : toggle_off }}">{{ includeArchived ? 'Showing archived' : 'Show archived' }}</a>
+        </div>
+
+        {% if grouped %}
+            {% for group in groups %}
+                <section class="category-group mb-8">
+                    <h2 class="category-header mb-3 flex items-baseline justify-between border-b border-gray-200 pb-2">
+                        <span class="text-lg font-semibold text-gray-900">{{ group.category.name }}</span>
+                        <span class="category-monthly-total text-sm font-medium text-gray-500">${{ (group.monthlyTotal / 100)|number_format(2) }} / mo</span>
+                    </h2>
+                    {% if view == 'tiles' %}
+                        {{ include('subscription/_tiles.html.twig', {subscriptions: group.subscriptions}) }}
+                    {% else %}
+                        {{ include('subscription/_list.html.twig', {subscriptions: group.subscriptions}) }}
+                    {% endif %}
+                </section>
+            {% endfor %}
         {% else %}
-            <div class="empty-state bg-gray-100 border border-gray-300 rounded-lg px-6 py-12 text-center">
-                <p class="text-gray-600 text-lg">No subscriptions found</p>
-                <p class="text-gray-500 mt-2">Get started by creating your first subscription</p>
-            </div>
+            {% set all_subscriptions = [] %}
+            {% for group in groups %}
+                {% set all_subscriptions = all_subscriptions|merge(group.subscriptions) %}
+            {% endfor %}
+            {% set all_subscriptions = all_subscriptions|sort((a, b) => a.name|lower <=> b.name|lower) %}
+            {% if view == 'tiles' %}
+                {{ include('subscription/_tiles.html.twig', {subscriptions: all_subscriptions}) }}
+            {% else %}
+                {{ include('subscription/_list.html.twig', {subscriptions: all_subscriptions}) }}
+            {% endif %}
         {% endif %}
-    </div>
+    {% endif %}
 {% endblock %}

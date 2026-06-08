@@ -38,6 +38,10 @@ older docs.
 - **cost** - a subscription's recurring charge, stored as an integer in the currency's
   minor units (e.g. cents). _Avoid_ calling this "amount"; **amount** refers specifically
   to the value recorded on a `Payment` (which defaults to the subscription's cost).
+- **monthly cost** - a subscription's `cost` normalized to a one-month equivalent in the
+  currency's minor units (`Subscription::monthlyCost`), rounded to the nearest whole cent.
+  Yearly costs divide by twelve; weekly costs use 52 weeks per year. Used for the homepage
+  category totals and the list view. _Avoid_ "cost per month" as a separate term.
 - **record a payment** - append a `Payment` to a subscription and advance its `nextRenewal`
   by one billing interval (`Subscription::recordPayment`); deleting a payment rolls the
   anchor back. _Avoid_ "create a payment".

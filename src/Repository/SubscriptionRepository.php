@@ -18,6 +18,27 @@ class SubscriptionRepository extends ServiceEntityRepository
         parent::__construct($registry, Subscription::class);
     }
 
+    /**
+     * Subscriptions for the homepage listing, ordered by category name then subscription name.
+     * Archived subscriptions are excluded unless $includeArchived is true.
+     *
+     * @return list<Subscription>
+     */
+    public function findForHomepage(bool $includeArchived): array
+    {
+        $qb = $this->createQueryBuilder('s')
+            ->join('s.category', 'c')
+            ->orderBy('c.name', 'ASC')
+            ->addOrderBy('s.name', 'ASC')
+        ;
+
+        if (!$includeArchived) {
+            $qb->andWhere('s.archived = false');
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
     //    /**
     //     * @return Subscription[] Returns an array of Subscription objects
     //     */

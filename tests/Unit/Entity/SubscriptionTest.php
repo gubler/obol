@@ -813,3 +813,48 @@ describe('color', function (): void {
         expect($subscription->subscriptionEvents)->toHaveCount(0);
     });
 });
+
+describe('monthlyCost', function (): void {
+    $makeSubscription = function (PaymentPeriod $period, int $count, int $cost): Subscription {
+        return new Subscription(
+            category: new Category(name: 'Entertainment'),
+            name: 'Example',
+            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            paymentPeriod: $period,
+            paymentPeriodCount: $count,
+            cost: $cost,
+        );
+    };
+
+    test('returns the cost itself for a monthly subscription', function () use ($makeSubscription): void {
+        expect($makeSubscription(PaymentPeriod::Month, 1, 1500)->monthlyCost())
+            ->toBeInt()
+            ->toBe(1500)
+        ;
+    });
+
+    test('divides by the period count for a multi-month subscription', function () use ($makeSubscription): void {
+        // 3000 every 3 months is 1000 per month.
+        expect($makeSubscription(PaymentPeriod::Month, 3, 3000)->monthlyCost())->toBe(1000);
+    });
+
+    test('divides a yearly cost across twelve months', function () use ($makeSubscription): void {
+        // 12000 per year is 1000 per month.
+        expect($makeSubscription(PaymentPeriod::Year, 1, 12000)->monthlyCost())->toBe(1000);
+    });
+
+    test('normalizes a multi-year subscription', function () use ($makeSubscription): void {
+        // 4800 every 2 years is 200 per month.
+        expect($makeSubscription(PaymentPeriod::Year, 2, 4800)->monthlyCost())->toBe(200);
+    });
+
+    test('normalizes a weekly subscription using 52 weeks per year', function () use ($makeSubscription): void {
+        // 1000 per week is 1000 * 52 / 12 = 4333.33 -> 4333 cents per month.
+        expect($makeSubscription(PaymentPeriod::Week, 1, 1000)->monthlyCost())->toBe(4333);
+    });
+
+    test('rounds to the nearest whole cent', function () use ($makeSubscription): void {
+        // 1000 per year is 83.33 -> 83 cents per month.
+        expect($makeSubscription(PaymentPeriod::Year, 1, 1000)->monthlyCost())->toBe(83);
+    });
+});

@@ -88,6 +88,21 @@ class Subscription
         $this->color = $color ?? TileColor::random();
     }
 
+    /**
+     * The subscription's cost normalized to a one-month equivalent, in the currency's minor units
+     * (rounded to the nearest whole cent). Weekly cadences use 52 weeks per year.
+     */
+    public function monthlyCost(): int
+    {
+        $monthsPerPeriod = match ($this->paymentPeriod) {
+            PaymentPeriod::Year => 12.0,
+            PaymentPeriod::Month => 1.0,
+            PaymentPeriod::Week => 12.0 / 52.0,
+        };
+
+        return (int) round($this->cost / ($this->paymentPeriodCount * $monthsPerPeriod));
+    }
+
     public function recordPayment(
         \DateTimeImmutable $paidDate,
         PaymentType $paymentType,

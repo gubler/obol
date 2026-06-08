@@ -134,7 +134,7 @@ test('create multiple subscriptions and verify list order', function (): void {
         $client->followRedirect();
     }
 
-    $crawler = $client->request(method: 'GET', uri: '/');
+    $crawler = $client->request(method: 'GET', uri: '/?view=list');
 
     $subscriptionNames = $crawler->filter('table tbody tr td:first-child')->each(
         fn (Symfony\Component\DomCrawler\Crawler $node) => $node->text()

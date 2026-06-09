@@ -82,6 +82,75 @@ test('displays subscriptions in alphabetical order in the list view', function (
     expect($betaIndex)->toBeLessThan($zebraIndex);
 });
 
+test('renders sort controls', function (): void {
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    SubscriptionFactory::createOne(['category' => $category, 'name' => 'Netflix']);
+
+    $crawler = $client->request(method: 'GET', uri: '/');
+
+    $this->assertResponseIsSuccessful();
+    $sortControls = $crawler->filter('.sort-controls');
+    expect($sortControls->count())->toBe(1)
+        ->and($sortControls->text())->toContain('Name')
+        ->and($sortControls->text())->toContain('Renewal')
+        ->and($sortControls->text())->toContain('Monthly cost')
+        ->and($sortControls->text())->toContain('Cost')
+    ;
+});
+
+test('orders the list view by next renewal when sorting by renewal', function (): void {
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+
+    // Alphabetical order is the reverse of renewal order, so only a renewal sort yields Zulu, Alfa.
+    SubscriptionFactory::createOne([
+        'category' => $category,
+        'name' => 'Alfa',
+        'nextRenewal' => new DateTimeImmutable('+30 days'),
+    ]);
+    SubscriptionFactory::createOne([
+        'category' => $category,
+        'name' => 'Zulu',
+        'nextRenewal' => new DateTimeImmutable('+2 days'),
+    ]);
+
+    $crawler = $client->request(method: 'GET', uri: '/?view=list&sort=renewal');
+
+    $names = $crawler->filter('table tbody tr')->each(
+        fn (Symfony\Component\DomCrawler\Crawler $node) => $node->filter('td')->first()->text()
+    );
+
+    expect(array_search('Zulu', $names, true))->toBeLessThan(array_search('Alfa', $names, true));
+});
+
+test('orders the list view by cost descending when sorting by cost', function (): void {
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+
+    SubscriptionFactory::createOne(['category' => $category, 'name' => 'Alfa', 'cost' => 100]);
+    SubscriptionFactory::createOne(['category' => $category, 'name' => 'Zulu', 'cost' => 9999]);
+
+    $crawler = $client->request(method: 'GET', uri: '/?view=list&sort=cost');
+
+    $names = $crawler->filter('table tbody tr')->each(
+        fn (Symfony\Component\DomCrawler\Crawler $node) => $node->filter('td')->first()->text()
+    );
+
+    expect(array_search('Zulu', $names, true))->toBeLessThan(array_search('Alfa', $names, true));
+});
+
+test('preserves the sort preference across the view toggle links', function (): void {
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    SubscriptionFactory::createOne(['category' => $category, 'name' => 'Netflix']);
+
+    $client->request(method: 'GET', uri: '/?sort=cost');
+
+    $this->assertResponseIsSuccessful();
+    $this->assertSelectorExists(selector: 'a[href*="view=list"][href*="sort=cost"]');
+});
+
 test('shows links to individual subscriptions', function (): void {
     $client = $this->createClient();
     $category = CategoryFactory::createOne(['name' => 'Entertainment']);

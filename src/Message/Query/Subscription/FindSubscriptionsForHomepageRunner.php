@@ -1,7 +1,7 @@
 <?php
 
-// ABOUTME: Runner for FindSubscriptionsForHomepageQuery that groups subscriptions by category.
-// ABOUTME: Returns a list of CategoryGroup read models, ordered as the repository sorts them.
+// ABOUTME: Runner for FindSubscriptionsForHomepageQuery that sorts and groups subscriptions for the homepage.
+// ABOUTME: Returns a HomepageListing: groups ordered by category name with subscriptions sorted within, plus a flat sorted list.
 
 declare(strict_types=1);
 
@@ -9,6 +9,7 @@ namespace App\Message\Query\Subscription;
 
 use App\Entity\Category;
 use App\Entity\Subscription;
+use App\Enum\SubscriptionSort;
 use App\Repository\SubscriptionRepository;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -20,13 +21,29 @@ final readonly class FindSubscriptionsForHomepageRunner
     ) {
     }
 
-    /**
-     * @return list<CategoryGroup>
-     */
-    public function __invoke(FindSubscriptionsForHomepageQuery $query): array
+    public function __invoke(FindSubscriptionsForHomepageQuery $query): HomepageListing
     {
         $subscriptions = $this->subscriptionRepository->findForHomepage($query->includeArchived);
+        usort($subscriptions, $this->comparator($query->sort));
 
+        $asOf = new \DateTimeImmutable();
+
+        return new HomepageListing(
+            groups: $this->group($subscriptions, $asOf),
+            subscriptions: $subscriptions,
+        );
+    }
+
+    /**
+     * Partition the already-sorted subscriptions into category groups, ordered by category name. Each
+     * group keeps the global sort order, so appending in iteration order leaves it sorted within.
+     *
+     * @param list<Subscription> $subscriptions
+     *
+     * @return list<CategoryGroup>
+     */
+    private function group(array $subscriptions, \DateTimeImmutable $asOf): array
+    {
         /** @var array<string, array{category: Category, subscriptions: list<Subscription>}> $grouped */
         $grouped = [];
         foreach ($subscriptions as $subscription) {
@@ -35,7 +52,10 @@ final readonly class FindSubscriptionsForHomepageRunner
             $grouped[$key]['subscriptions'][] = $subscription;
         }
 
-        $asOf = new \DateTimeImmutable();
+        usort(
+            $grouped,
+            static fn (array $a, array $b): int => strcasecmp($a['category']->name, $b['category']->name),
+        );
 
         return array_map(
             static fn (array $group): CategoryGroup => new CategoryGroup(
@@ -43,7 +63,24 @@ final readonly class FindSubscriptionsForHomepageRunner
                 subscriptions: $group['subscriptions'],
                 asOf: $asOf,
             ),
-            array_values($grouped),
+            $grouped,
         );
+    }
+
+    /**
+     * The comparator for a sort mode. Every mode breaks ties on name so output stays deterministic.
+     *
+     * @return \Closure(Subscription, Subscription): int
+     */
+    private function comparator(SubscriptionSort $sort): \Closure
+    {
+        $byName = static fn (Subscription $a, Subscription $b): int => strcasecmp($a->name, $b->name);
+
+        return match ($sort) {
+            SubscriptionSort::Name => $byName,
+            SubscriptionSort::Renewal => static fn (Subscription $a, Subscription $b): int => ($a->nextRenewal <=> $b->nextRenewal) ?: $byName($a, $b),
+            SubscriptionSort::MonthlyCost => static fn (Subscription $a, Subscription $b): int => ($b->monthlyCost() <=> $a->monthlyCost()) ?: $byName($a, $b),
+            SubscriptionSort::Cost => static fn (Subscription $a, Subscription $b): int => ($b->cost <=> $a->cost) ?: $byName($a, $b),
+        };
     }
 }

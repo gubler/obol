@@ -20,10 +20,7 @@
         </div>
     {% endfor %}
 
-    {% set subscription_count = 0 %}
-    {% for group in groups %}
-        {% set subscription_count = subscription_count + group.subscriptions|length %}
-    {% endfor %}
+    {% set subscription_count = listing.subscriptions|length %}
 
     {% if subscription_count == 0 %}
         <div class="empty-state bg-gray-100 border border-gray-300 rounded-lg px-6 py-12 text-center">
@@ -35,23 +32,35 @@
         {% set toggle_on = 'bg-gray-800 text-white' %}
         {% set toggle_off = 'bg-gray-100 text-gray-700 hover:bg-gray-200' %}
 
+        {% set base_params = {view: view, group: grouped ? '1' : '0', archived: includeArchived ? '1' : '0', sort: sort.value} %}
+
         <div class="mb-6 flex flex-wrap items-center gap-2">
             <div class="inline-flex rounded-md bg-gray-100 p-1">
-                <a href="{{ path('subscription_index', {view: 'tiles', group: grouped ? '1' : '0', archived: includeArchived ? '1' : '0'}) }}"
+                <a href="{{ path('subscription_index', base_params|merge({view: 'tiles'})) }}"
                    class="{{ toggle_link }} {{ view == 'tiles' ? toggle_on : toggle_off }}">Tiles</a>
-                <a href="{{ path('subscription_index', {view: 'list', group: grouped ? '1' : '0', archived: includeArchived ? '1' : '0'}) }}"
+                <a href="{{ path('subscription_index', base_params|merge({view: 'list'})) }}"
                    class="{{ toggle_link }} {{ view == 'list' ? toggle_on : toggle_off }}">List</a>
             </div>
 
-            <a href="{{ path('subscription_index', {view: view, group: grouped ? '0' : '1', archived: includeArchived ? '1' : '0'}) }}"
+            <a href="{{ path('subscription_index', base_params|merge({group: grouped ? '0' : '1'})) }}"
                class="{{ toggle_link }} {{ grouped ? toggle_on : toggle_off }}">{{ grouped ? 'Grouped' : 'Group by category' }}</a>
 
-            <a href="{{ path('subscription_index', {view: view, group: grouped ? '1' : '0', archived: includeArchived ? '0' : '1'}) }}"
+            <a href="{{ path('subscription_index', base_params|merge({archived: includeArchived ? '0' : '1'})) }}"
                class="{{ toggle_link }} {{ includeArchived ? toggle_on : toggle_off }}">{{ includeArchived ? 'Showing archived' : 'Show archived' }}</a>
+
+            <div class="sort-controls inline-flex items-center gap-2">
+                <span class="text-sm font-medium text-gray-500">Sort</span>
+                <div class="inline-flex rounded-md bg-gray-100 p-1">
+                    {% for option in sortOptions %}
+                        <a href="{{ path('subscription_index', base_params|merge({sort: option.value})) }}"
+                           class="{{ toggle_link }} {{ sort == option ? toggle_on : toggle_off }}">{{ option.label }}</a>
+                    {% endfor %}
+                </div>
+            </div>
         </div>
 
         {% if grouped %}
-            {% for group in groups %}
+            {% for group in listing.groups %}
                 <section class="category-group mb-8">
                     <h2 class="category-header mb-3 flex items-baseline justify-between border-b border-gray-200 pb-2">
                         <span class="text-lg font-semibold text-gray-900">{{ group.category.name }}</span>
@@ -70,15 +79,10 @@
                 </section>
             {% endfor %}
         {% else %}
-            {% set all_subscriptions = [] %}
-            {% for group in groups %}
-                {% set all_subscriptions = all_subscriptions|merge(group.subscriptions) %}
-            {% endfor %}
-            {% set all_subscriptions = all_subscriptions|sort((a, b) => a.name|lower <=> b.name|lower) %}
             {% if view == 'tiles' %}
-                {{ include('subscription/_tiles.html.twig', {subscriptions: all_subscriptions}) }}
+                {{ include('subscription/_tiles.html.twig', {subscriptions: listing.subscriptions}) }}
             {% else %}
-                {{ include('subscription/_list.html.twig', {subscriptions: all_subscriptions}) }}
+                {{ include('subscription/_list.html.twig', {subscriptions: listing.subscriptions}) }}
             {% endif %}
         {% endif %}
     {% endif %}

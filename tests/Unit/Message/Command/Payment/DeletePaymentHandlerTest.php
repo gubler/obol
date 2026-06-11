@@ -8,12 +8,14 @@ declare(strict_types=1);
 use App\Entity\Category;
 use App\Entity\Payment;
 use App\Entity\Subscription;
+use App\Enum\Currency;
 use App\Enum\PaymentGeneration;
 use App\Enum\PaymentPeriod;
 use App\Enum\PaymentType;
 use App\Message\Command\Payment\DeletePaymentCommand;
 use App\Message\Command\Payment\DeletePaymentHandler;
 use App\Repository\PaymentRepository;
+use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Uid\Ulid;
 
@@ -24,7 +26,7 @@ test('removes the payment, rolls back the renewal anchor, and switches to manual
         nextRenewal: new DateTimeImmutable('2024-02-01'),
         paymentPeriod: PaymentPeriod::Month,
         paymentPeriodCount: 1,
-        cost: 1500,
+        cost: new Money(1500, Currency::USD),
     );
     $subscription->recordPayment(
         paidDate: new DateTimeImmutable('2024-01-01'),

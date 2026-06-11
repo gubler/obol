@@ -9,11 +9,15 @@ namespace App\ValueObject;
 
 use App\Enum\Currency;
 use Assert\Assertion;
+use Doctrine\ORM\Mapping as ORM;
 
+#[ORM\Embeddable]
 final readonly class Money
 {
     public function __construct(
+        #[ORM\Column(name: 'amount', type: 'integer')]
         public int $minorAmount,
+        #[ORM\Column(name: 'currency', enumType: Currency::class)]
         public Currency $currency,
     ) {
     }

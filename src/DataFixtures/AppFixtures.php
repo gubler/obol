@@ -7,8 +7,10 @@ declare(strict_types=1);
 
 namespace App\DataFixtures;
 
+use App\Enum\Currency;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
+use App\ValueObject\Money;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 
@@ -30,35 +32,35 @@ class AppFixtures extends Fixture
         $netflix = SubscriptionFactory::createOne([
             'category' => $entertainment,
             'name' => 'Netflix',
-            'cost' => 1599,
+            'cost' => new Money(1599, Currency::USD),
             'description' => 'Streaming service for movies and TV shows',
         ]);
 
         $spotify = SubscriptionFactory::createOne([
             'category' => $entertainment,
             'name' => 'Spotify Premium',
-            'cost' => 999,
+            'cost' => new Money(999, Currency::USD),
             'description' => 'Music streaming service',
         ]);
 
         $github = SubscriptionFactory::createOne([
             'category' => $software,
             'name' => 'GitHub Pro',
-            'cost' => 700,
+            'cost' => new Money(700, Currency::USD),
             'description' => 'Source code hosting and collaboration',
         ]);
 
         SubscriptionFactory::createOne([
             'category' => $news,
             'name' => 'New York Times Digital',
-            'cost' => 1700,
+            'cost' => new Money(1700, Currency::USD),
             'description' => 'Digital news subscription',
         ]);
 
         $notion = SubscriptionFactory::createOne([
             'category' => $productivity,
             'name' => 'Notion',
-            'cost' => 1000,
+            'cost' => new Money(1000, Currency::USD),
             'description' => 'All-in-one workspace',
         ]);
 
@@ -66,7 +68,7 @@ class AppFixtures extends Fixture
         SubscriptionFactory::createOne([
             'category' => $entertainment,
             'name' => 'Hulu',
-            'cost' => 1299,
+            'cost' => new Money(1299, Currency::USD),
             'description' => 'Streaming service',
         ])->archive();
 
@@ -74,7 +76,7 @@ class AppFixtures extends Fixture
         SubscriptionFactory::createOne([
             'category' => $storage,
             'name' => 'Dropbox Plus',
-            'cost' => 11990,
+            'cost' => new Money(11990, Currency::USD),
             'paymentPeriod' => \App\Enum\PaymentPeriod::Year,
             'paymentPeriodCount' => 1,
             'description' => 'Cloud storage',
@@ -83,21 +85,21 @@ class AppFixtures extends Fixture
         SubscriptionFactory::createOne([
             'category' => $software,
             'name' => 'Adobe Creative Cloud',
-            'cost' => 5499,
+            'cost' => new Money(5499, Currency::USD),
             'description' => 'Creative software suite',
         ]);
 
         SubscriptionFactory::createOne([
             'category' => $fitness,
             'name' => 'Gym Membership',
-            'cost' => 4500,
+            'cost' => new Money(4500, Currency::USD),
             'description' => 'Monthly gym access',
         ]);
 
         SubscriptionFactory::createOne([
             'category' => $education,
             'name' => 'Udemy Pro',
-            'cost' => 1999,
+            'cost' => new Money(1999, Currency::USD),
             'description' => 'Online learning platform',
         ]);
 
@@ -140,7 +142,7 @@ class AppFixtures extends Fixture
             logo: '',
             paymentPeriod: $netflix->paymentPeriod,
             paymentPeriodCount: $netflix->paymentPeriodCount,
-            cost: 1999,
+            cost: new Money(1999, Currency::USD),
             color: $netflix->color,
         );
 

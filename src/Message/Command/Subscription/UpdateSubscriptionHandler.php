@@ -7,8 +7,10 @@ declare(strict_types=1);
 
 namespace App\Message\Command\Subscription;
 
+use App\Enum\Currency;
 use App\Repository\CategoryRepository;
 use App\Repository\SubscriptionRepository;
+use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -45,7 +47,8 @@ final readonly class UpdateSubscriptionHandler
             logo: $command->logo,
             paymentPeriod: $command->paymentPeriod,
             paymentPeriodCount: $command->paymentPeriodCount,
-            cost: $command->cost,
+            // The edit form has no currency picker yet (A3, #129); default to USD for now.
+            cost: new Money($command->cost, Currency::USD),
             color: $command->color,
         );
 

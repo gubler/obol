@@ -9,6 +9,8 @@ namespace App\Message\Query\Subscription;
 
 use App\Entity\Category;
 use App\Entity\Subscription;
+use App\ValueObject\Money;
+use Assert\Assertion;
 
 final readonly class CategoryGroup
 {
@@ -23,22 +25,39 @@ final readonly class CategoryGroup
     }
 
     /**
-     * Combined monthly-equivalent cost of the group, in the currency's minor units.
+     * Combined monthly-equivalent cost of the group.
      */
-    public function monthlyTotal(): int
+    public function monthlyTotal(): Money
     {
-        return array_sum(
-            array_map(static fn (Subscription $subscription): int => $subscription->monthlyCost(), $this->subscriptions),
-        );
+        return $this->sum(static fn (Subscription $subscription): Money => $subscription->monthlyCost());
     }
 
     /**
-     * Combined savings target of the group as of `$asOf`, in the currency's minor units.
+     * Combined savings target of the group as of `$asOf`.
      */
-    public function savingsTotal(): int
+    public function savingsTotal(): Money
     {
-        return array_sum(
-            array_map(fn (Subscription $subscription): int => $subscription->savingsTarget($this->asOf), $this->subscriptions),
-        );
+        return $this->sum(fn (Subscription $subscription): Money => $subscription->savingsTarget($this->asOf));
+    }
+
+    /**
+     * Sum a per-subscription Money figure across the group. A group is always built from at least one
+     * subscription, so there is always a currency to denominate the total in. Today every group is
+     * single-currency; once non-USD costs are allowed (A3, #129) a mixed-currency group will make
+     * `Money::add` throw - the converted cross-currency total is the reports work (#28, B1).
+     *
+     * @param callable(Subscription): Money $amount
+     */
+    private function sum(callable $amount): Money
+    {
+        $total = null;
+        foreach ($this->subscriptions as $subscription) {
+            $value = $amount($subscription);
+            $total = null === $total ? $value : $total->add($value);
+        }
+
+        Assertion::notNull($total, 'A category group must contain at least one subscription');
+
+        return $total;
     }
 }

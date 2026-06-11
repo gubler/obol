@@ -22,7 +22,7 @@ final class AmendPaymentDto
 
     public function __construct(Payment $payment)
     {
-        $this->amount = $payment->amount;
+        $this->amount = $payment->amount->minorAmount;
         $this->paidDate = $payment->paidDate;
     }
 }

@@ -65,7 +65,7 @@ test('post request with valid data creates subscription', function (): void {
 
     expect($subscription)->not->toBeNull();
     expect($subscription->name)->toBe('Netflix Premium');
-    expect($subscription->cost)->toBe(1999);
+    expect($subscription->cost->minorAmount)->toBe(1999);
     expect($subscription->description)->toBe('Streaming service');
     expect($subscription->link)->toBe('https://netflix.com');
     expect($subscription->color)->toBe(TileColor::Blue);

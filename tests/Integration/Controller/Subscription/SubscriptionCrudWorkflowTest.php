@@ -6,9 +6,11 @@
 declare(strict_types=1);
 
 use App\Entity\Subscription;
+use App\Enum\Currency;
 use App\Enum\SubscriptionEventType;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
+use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
 
 test('complete create read update delete workflow', function (): void {
@@ -61,7 +63,7 @@ test('complete create read update delete workflow', function (): void {
     $updatedSubscription = $repository->find($subscriptionId);
     expect($updatedSubscription)->not->toBeNull();
     expect($updatedSubscription->name)->toBe('Updated Workflow Subscription');
-    expect($updatedSubscription->cost)->toBe(1999);
+    expect($updatedSubscription->cost->minorAmount)->toBe(1999);
 
     // Delete
     $client->request(method: 'POST', uri: '/subscriptions/' . $subscriptionId . '/delete');
@@ -79,7 +81,7 @@ test('update creates subscription events', function (): void {
     $subscription = SubscriptionFactory::createOne([
         'category' => $category,
         'name' => 'Netflix',
-        'cost' => 1599,
+        'cost' => new Money(1599, Currency::USD),
     ]);
 
     $initialEventCount = $subscription->subscriptionEvents->count();

@@ -14,7 +14,7 @@ test('creates subscription with required fields', function (): void {
     $subscription = SubscriptionFactory::createOne();
 
     expect($subscription->name)->not->toBeEmpty()
-        ->and($subscription->cost)->toBeGreaterThan(0)
+        ->and($subscription->cost->minorAmount)->toBeGreaterThan(0)
         ->and($subscription->paymentPeriodCount)->toBeGreaterThan(0)
         ->and($subscription->archived)->toBeFalse()
         ->and($subscription->payments)->toHaveCount(0)
@@ -49,5 +49,5 @@ test('manual creates a subscription with manual payment generation', function ()
 test('expensive subscription creates subscription with high cost', function (): void {
     $subscription = SubscriptionFactory::new()->expensiveSubscription()->create();
 
-    expect($subscription->cost)->toBeGreaterThanOrEqual(5000);
+    expect($subscription->cost->minorAmount)->toBeGreaterThanOrEqual(5000);
 });

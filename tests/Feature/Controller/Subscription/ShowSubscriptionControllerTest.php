@@ -5,9 +5,11 @@
 
 declare(strict_types=1);
 
+use App\Enum\Currency;
 use App\Factory\CategoryFactory;
 use App\Factory\PaymentFactory;
 use App\Factory\SubscriptionFactory;
+use App\ValueObject\Money;
 
 test('shows subscription basic response', function (): void {
     $client = $this->createClient();
@@ -15,7 +17,7 @@ test('shows subscription basic response', function (): void {
     $subscription = SubscriptionFactory::createOne([
         'category' => $category,
         'name' => 'Netflix Premium',
-        'cost' => 1999,
+        'cost' => new Money(1999, Currency::USD),
         'description' => 'Streaming service',
     ]);
 
@@ -80,7 +82,7 @@ test('renders without errors', function (): void {
     $subscription = SubscriptionFactory::createOne([
         'category' => $category,
         'name' => 'Netflix',
-        'cost' => 1599,
+        'cost' => new Money(1599, Currency::USD),
         'description' => 'Test description',
     ]);
 

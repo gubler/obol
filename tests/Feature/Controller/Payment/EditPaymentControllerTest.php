@@ -6,20 +6,22 @@
 declare(strict_types=1);
 
 use App\Entity\Payment;
+use App\Enum\Currency;
 use App\Enum\PaymentType;
 use App\Factory\CategoryFactory;
 use App\Factory\PaymentFactory;
 use App\Factory\SubscriptionFactory;
+use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
 
 test('get request displays the edit form prefilled with the payment amount', function (): void {
     $client = $this->createClient();
     $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-    $subscription = SubscriptionFactory::createOne(['category' => $category, 'cost' => 1599]);
+    $subscription = SubscriptionFactory::createOne(['category' => $category, 'cost' => new Money(1599, Currency::USD)]);
     $payment = PaymentFactory::createOne([
         'subscription' => $subscription,
         'type' => PaymentType::Generated,
-        'amount' => 1599,
+        'amount' => new Money(1599, Currency::USD),
         'paidDate' => new DateTimeImmutable('2024-01-01'),
     ]);
 
@@ -32,11 +34,11 @@ test('get request displays the edit form prefilled with the payment amount', fun
 test('post request amends the payment and verifies it', function (): void {
     $client = $this->createClient();
     $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-    $subscription = SubscriptionFactory::createOne(['category' => $category, 'cost' => 1599]);
+    $subscription = SubscriptionFactory::createOne(['category' => $category, 'cost' => new Money(1599, Currency::USD)]);
     $payment = PaymentFactory::createOne([
         'subscription' => $subscription,
         'type' => PaymentType::Generated,
-        'amount' => 1599,
+        'amount' => new Money(1599, Currency::USD),
         'paidDate' => new DateTimeImmutable('2024-01-01'),
     ]);
 
@@ -56,7 +58,7 @@ test('post request amends the payment and verifies it', function (): void {
 
     $updated = $entityManager->getRepository(Payment::class)->find($payment->id);
     expect($updated)->not->toBeNull();
-    expect($updated->amount)->toBe(1299)
+    expect($updated->amount->minorAmount)->toBe(1299)
         ->and($updated->type)->toBe(PaymentType::Verified)
     ;
 });

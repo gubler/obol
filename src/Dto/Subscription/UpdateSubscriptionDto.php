@@ -68,7 +68,7 @@ final class UpdateSubscriptionDto
         $this->nextRenewal = $subscription->nextRenewal;
         $this->paymentPeriod = $subscription->paymentPeriod;
         $this->paymentPeriodCount = $subscription->paymentPeriodCount;
-        $this->cost = $subscription->cost;
+        $this->cost = $subscription->cost->minorAmount;
         $this->description = $subscription->description;
         $this->link = $subscription->link;
         $this->color = $subscription->color;

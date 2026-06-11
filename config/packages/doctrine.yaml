@@ -23,6 +23,14 @@ doctrine:
                 dir: '%kernel.project_dir%/src/Entity'
                 prefix: 'App\Entity'
                 alias: App
+            # Doctrine embeddables (e.g. the Money value object) live alongside the domain value
+            # objects, not under Entity; register that namespace so their mapping is discovered.
+            AppValueObject:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/ValueObject'
+                prefix: 'App\ValueObject'
+                alias: AppValueObject
         controller_resolver:
             auto_mapping: false
 

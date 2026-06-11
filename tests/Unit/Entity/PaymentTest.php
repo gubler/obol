@@ -8,8 +8,10 @@ declare(strict_types=1);
 use App\Entity\Category;
 use App\Entity\Payment;
 use App\Entity\Subscription;
+use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\PaymentType;
+use App\ValueObject\Money;
 
 beforeEach(function (): void {
     $category = new Category(name: 'Test Category');
@@ -19,7 +21,7 @@ beforeEach(function (): void {
         nextRenewal: new DateTimeImmutable(),
         paymentPeriod: PaymentPeriod::Month,
         paymentPeriodCount: 1,
-        cost: 1000,
+        cost: new Money(1000, Currency::USD),
     );
 });
 
@@ -27,12 +29,12 @@ test('creates payment with valid data', function (): void {
     $payment = new Payment(
         subscription: $this->subscription,
         type: PaymentType::Verified,
-        amount: 1000,
+        amount: new Money(1000, Currency::USD),
     );
 
     expect($payment->subscription)->toBe($this->subscription)
         ->and($payment->type)->toBe(PaymentType::Verified)
-        ->and($payment->amount)->toBe(1000)
+        ->and($payment->amount->minorAmount)->toBe(1000)
     ;
 });
 
@@ -41,7 +43,7 @@ test('stores the paid date', function (): void {
     $payment = new Payment(
         subscription: $this->subscription,
         type: PaymentType::Verified,
-        amount: 1000,
+        amount: new Money(1000, Currency::USD),
         paidDate: $paidDate,
     );
 
@@ -53,7 +55,7 @@ test('sets created at to current time', function (): void {
     $payment = new Payment(
         subscription: $this->subscription,
         type: PaymentType::Generated,
-        amount: 2000,
+        amount: new Money(2000, Currency::USD),
     );
     $after = new DateTimeImmutable();
 
@@ -66,13 +68,13 @@ test('accepts both payment types', function (): void {
     $verifiedPayment = new Payment(
         subscription: $this->subscription,
         type: PaymentType::Verified,
-        amount: 1000,
+        amount: new Money(1000, Currency::USD),
     );
 
     $generatedPayment = new Payment(
         subscription: $this->subscription,
         type: PaymentType::Generated,
-        amount: 1000,
+        amount: new Money(1000, Currency::USD),
     );
 
     expect($verifiedPayment->type)->toBe(PaymentType::Verified)
@@ -84,13 +86,13 @@ test('amend updates amount and paid date and verifies the payment', function ():
     $payment = new Payment(
         subscription: $this->subscription,
         type: PaymentType::Generated,
-        amount: 1000,
+        amount: new Money(1000, Currency::USD),
         paidDate: new DateTimeImmutable('2024-01-01'),
     );
 
     $payment->amend(amount: 1200, paidDate: new DateTimeImmutable('2024-01-05'));
 
-    expect($payment->amount)->toBe(1200)
+    expect($payment->amount->minorAmount)->toBe(1200)
         ->and($payment->paidDate)->toEqual(new DateTimeImmutable('2024-01-05'))
         ->and($payment->type)->toBe(PaymentType::Verified)
     ;
@@ -100,7 +102,7 @@ test('amend rejects a non-positive amount', function (): void {
     $payment = new Payment(
         subscription: $this->subscription,
         type: PaymentType::Generated,
-        amount: 1000,
+        amount: new Money(1000, Currency::USD),
     );
 
     $payment->amend(amount: 0, paidDate: new DateTimeImmutable());
@@ -110,7 +112,7 @@ test('rejects zero amount', function (): void {
     new Payment(
         subscription: $this->subscription,
         type: PaymentType::Verified,
-        amount: 0,
+        amount: new Money(0, Currency::USD),
     );
 })->throws(Assert\InvalidArgumentException::class);
 
@@ -118,6 +120,6 @@ test('rejects negative amount', function (): void {
     new Payment(
         subscription: $this->subscription,
         type: PaymentType::Verified,
-        amount: -100,
+        amount: new Money(-100, Currency::USD),
     );
 })->throws(Assert\InvalidArgumentException::class);

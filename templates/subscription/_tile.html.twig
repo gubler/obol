@@ -9,7 +9,7 @@
         </div>
         <div class="text-xl font-bold leading-none"
              title="per {{ subscription.paymentPeriodCount > 1 ? subscription.paymentPeriodCount ~ ' ' : '' }}{{ subscription.paymentPeriod.value }}">
-            ${{ (subscription.cost / 100)|number_format(2) }}
+            {{ subscription.cost.format() }}
         </div>
     </div>
     <div>

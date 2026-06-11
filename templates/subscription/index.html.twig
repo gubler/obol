@@ -65,10 +65,11 @@
                     <h2 class="category-header mb-3 flex items-baseline justify-between border-b border-gray-200 pb-2">
                         <span class="text-lg font-semibold text-gray-900">{{ group.category.name }}</span>
                         <span class="flex items-baseline gap-3 text-sm font-medium text-gray-500">
-                            {% if group.savingsTotal > 0 %}
-                                <span class="category-savings-total">${{ (group.savingsTotal / 100)|number_format(2) }} set aside</span>
+                            {% set savingsTotal = group.savingsTotal %}
+                            {% if savingsTotal.minorAmount > 0 %}
+                                <span class="category-savings-total">{{ savingsTotal.format() }} set aside</span>
                             {% endif %}
-                            <span class="category-monthly-total">${{ (group.monthlyTotal / 100)|number_format(2) }} / mo</span>
+                            <span class="category-monthly-total">{{ group.monthlyTotal.format() }} / mo</span>
                         </span>
                     </h2>
                     {% if view == 'tiles' %}

@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 use App\Entity\Category;
 use App\Entity\Subscription;
+use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\SubscriptionSort;
 use App\Message\Query\Subscription\CategoryGroup;
@@ -14,6 +15,7 @@ use App\Message\Query\Subscription\FindSubscriptionsForHomepageQuery;
 use App\Message\Query\Subscription\FindSubscriptionsForHomepageRunner;
 use App\Message\Query\Subscription\HomepageListing;
 use App\Repository\SubscriptionRepository;
+use App\ValueObject\Money;
 
 function makeHomepageSubscription(
     Category $category,
@@ -29,7 +31,7 @@ function makeHomepageSubscription(
         nextRenewal: new DateTimeImmutable($renewal),
         paymentPeriod: $period,
         paymentPeriodCount: $count,
-        cost: $cost,
+        cost: new Money($cost, Currency::USD),
     );
 }
 
@@ -144,7 +146,7 @@ test('sums each category monthly total', function (): void {
 
     $listing = runHomepage($subscriptions, new FindSubscriptionsForHomepageQuery());
 
-    expect($listing->groups[0]->monthlyTotal())->toBe(2500);
+    expect($listing->groups[0]->monthlyTotal()->minorAmount)->toBe(2500);
 });
 
 test('passes the archived flag through to the repository', function (): void {

@@ -9,11 +9,13 @@ use App\Entity\Category;
 use App\Entity\Payment;
 use App\Entity\Subscription;
 use App\Entity\SubscriptionEvent;
+use App\Enum\Currency;
 use App\Enum\PaymentGeneration;
 use App\Enum\PaymentPeriod;
 use App\Enum\PaymentType;
 use App\Enum\SubscriptionEventType;
 use App\Enum\TileColor;
+use App\ValueObject\Money;
 
 beforeEach(function (): void {
     $this->category = new Category(name: 'Entertainment');
@@ -28,7 +30,7 @@ describe('creation', function (): void {
             nextRenewal: $nextRenewal,
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
 
         expect($subscription->category)->toBe($this->category)
@@ -36,7 +38,7 @@ describe('creation', function (): void {
             ->and($subscription->nextRenewal)->toBe($nextRenewal)
             ->and($subscription->paymentPeriod)->toBe(PaymentPeriod::Month)
             ->and($subscription->paymentPeriodCount)->toBe(1)
-            ->and($subscription->cost)->toBe(1500)
+            ->and($subscription->cost->minorAmount)->toBe(1500)
         ;
     });
 
@@ -48,7 +50,7 @@ describe('creation', function (): void {
             nextRenewal: new DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1000,
+            cost: new Money(1000, Currency::USD),
         );
         $after = new DateTimeImmutable();
 
@@ -64,7 +66,7 @@ describe('creation', function (): void {
             nextRenewal: new DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1000,
+            cost: new Money(1000, Currency::USD),
         );
 
         expect($subscription->archived)->toBeFalse();
@@ -77,7 +79,7 @@ describe('creation', function (): void {
             nextRenewal: new DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1000,
+            cost: new Money(1000, Currency::USD),
         );
 
         expect($subscription->payments)->toHaveCount(0)
@@ -92,7 +94,7 @@ describe('creation', function (): void {
             nextRenewal: new DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
             description: 'Streaming service',
             link: 'https://netflix.com',
             logo: 'netflix.png',
@@ -111,7 +113,7 @@ describe('creation', function (): void {
             nextRenewal: new DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1000,
+            cost: new Money(1000, Currency::USD),
         );
 
         expect($subscription->description)->toBe('')
@@ -129,7 +131,7 @@ describe('update', function (): void {
             nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
 
         $newCategory = new Category(name: 'Streaming');
@@ -142,7 +144,7 @@ describe('update', function (): void {
             logo: 'netflix.png',
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
             color: $subscription->color,
         );
 
@@ -164,7 +166,7 @@ describe('update', function (): void {
             nextRenewal: $nextRenewal,
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
 
         $subscription->update(
@@ -176,7 +178,7 @@ describe('update', function (): void {
             logo: '',
             paymentPeriod: PaymentPeriod::Year,
             paymentPeriodCount: 1,
-            cost: 15000,
+            cost: new Money(15000, Currency::USD),
             color: $subscription->color,
         );
 
@@ -197,7 +199,7 @@ describe('update', function (): void {
             nextRenewal: $nextRenewal,
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
 
         $subscription->update(
@@ -209,7 +211,7 @@ describe('update', function (): void {
             logo: '',
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 3,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
             color: $subscription->color,
         );
 
@@ -230,7 +232,7 @@ describe('update', function (): void {
             nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
 
         $subscription->update(
@@ -242,7 +244,7 @@ describe('update', function (): void {
             logo: '',
             paymentPeriod: PaymentPeriod::Year,
             paymentPeriodCount: 1,
-            cost: 15000,
+            cost: new Money(15000, Currency::USD),
             color: $subscription->color,
         );
 
@@ -266,7 +268,7 @@ describe('update', function (): void {
             nextRenewal: $nextRenewal,
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
 
         $subscription->update(
@@ -278,7 +280,7 @@ describe('update', function (): void {
             logo: '',
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
             color: $subscription->color,
         );
 
@@ -294,7 +296,7 @@ describe('record payment', function (): void {
             nextRenewal: new DateTimeImmutable('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
 
         // Paying late (on the 6th) must not move the anchor off the fixed cadence.
@@ -313,7 +315,7 @@ describe('record payment', function (): void {
             nextRenewal: new DateTimeImmutable('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
 
         $subscription->recordPayment(
@@ -336,7 +338,7 @@ describe('record payment', function (): void {
             nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
 
         $subscription->recordPayment(
@@ -348,7 +350,7 @@ describe('record payment', function (): void {
         /** @var Payment $payment */
         $payment = $subscription->payments->first();
         expect($payment->type)->toBe(PaymentType::Verified)
-            ->and($payment->amount)->toBe(1500)
+            ->and($payment->amount->minorAmount)->toBe(1500)
         ;
     });
 
@@ -359,7 +361,7 @@ describe('record payment', function (): void {
             nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
 
         $subscription->recordPayment(
@@ -369,7 +371,7 @@ describe('record payment', function (): void {
 
         /** @var Payment $payment */
         $payment = $subscription->payments->first();
-        expect($payment->amount)->toBe(1500);
+        expect($payment->amount->minorAmount)->toBe(1500);
     });
 
     test('accepts custom amount', function (): void {
@@ -379,7 +381,7 @@ describe('record payment', function (): void {
             nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
 
         $subscription->recordPayment(
@@ -391,7 +393,7 @@ describe('record payment', function (): void {
         expect($subscription->payments)->toHaveCount(1);
         /** @var Payment $payment */
         $payment = $subscription->payments->first();
-        expect($payment->amount)->toBe(2000);
+        expect($payment->amount->minorAmount)->toBe(2000);
     });
 });
 
@@ -403,7 +405,7 @@ describe('payment generation', function (): void {
             nextRenewal: new DateTimeImmutable('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
 
         expect($subscription->paymentGeneration)->toBe(PaymentGeneration::Automated)
@@ -418,7 +420,7 @@ describe('payment generation', function (): void {
             nextRenewal: new DateTimeImmutable('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
 
         $subscription->switchToManualPayments();
@@ -435,7 +437,7 @@ describe('payment generation', function (): void {
             nextRenewal: new DateTimeImmutable('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
         $subscription->switchToManualPayments();
 
@@ -456,7 +458,7 @@ describe('payment generation', function (): void {
             nextRenewal: new DateTimeImmutable('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
         // Record while automated so the anchor advances to 2024-03-01, then switch to manual.
         $subscription->recordPayment(
@@ -480,7 +482,7 @@ describe('payment generation', function (): void {
             nextRenewal: new DateTimeImmutable('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
         $subscription->recordPayment(
             paidDate: new DateTimeImmutable('2024-02-01'),
@@ -504,7 +506,7 @@ describe('payment generation', function (): void {
             nextRenewal: new DateTimeImmutable('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
         $subscription->recordPayment(
             paidDate: new DateTimeImmutable('2024-01-01'),
@@ -527,7 +529,7 @@ describe('payment generation', function (): void {
             nextRenewal: new DateTimeImmutable('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
         $subscription->switchToManualPayments();
 
@@ -547,7 +549,7 @@ describe('payment generation', function (): void {
             nextRenewal: new DateTimeImmutable('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
         $subscription->switchToManualPayments();
 
@@ -561,7 +563,7 @@ describe('payment generation', function (): void {
             nextRenewal: new DateTimeImmutable('2020-01-15'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
 
         $suggested = $subscription->suggestedResumeRenewal();
@@ -580,7 +582,7 @@ describe('payment generation', function (): void {
             nextRenewal: $future,
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
 
         expect($subscription->suggestedResumeRenewal())->toEqual($future);
@@ -595,7 +597,7 @@ describe('archive', function (): void {
             nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
 
         $subscription->archive();
@@ -610,7 +612,7 @@ describe('archive', function (): void {
             nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
 
         $subscription->archive();
@@ -630,7 +632,7 @@ describe('archive', function (): void {
             nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
 
         $subscription->archive();
@@ -646,7 +648,7 @@ describe('archive', function (): void {
             nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
 
         $subscription->archive();
@@ -673,7 +675,7 @@ describe('validation', function (): void {
             nextRenewal: new DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
     })->throws(Assert\InvalidArgumentException::class);
 
@@ -684,7 +686,7 @@ describe('validation', function (): void {
             nextRenewal: new DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
     })->throws(Assert\InvalidArgumentException::class);
 
@@ -695,7 +697,7 @@ describe('validation', function (): void {
             nextRenewal: new DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 0,
+            cost: new Money(0, Currency::USD),
         );
     })->throws(Assert\InvalidArgumentException::class);
 
@@ -706,7 +708,7 @@ describe('validation', function (): void {
             nextRenewal: new DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: -100,
+            cost: new Money(-100, Currency::USD),
         );
     })->throws(Assert\InvalidArgumentException::class);
 
@@ -717,7 +719,7 @@ describe('validation', function (): void {
             nextRenewal: new DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 0,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
     })->throws(Assert\InvalidArgumentException::class);
 
@@ -728,7 +730,7 @@ describe('validation', function (): void {
             nextRenewal: new DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: -1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
     })->throws(Assert\InvalidArgumentException::class);
 
@@ -739,7 +741,7 @@ describe('validation', function (): void {
             nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
 
         $subscription->update(
@@ -751,7 +753,7 @@ describe('validation', function (): void {
             logo: '',
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
             color: $subscription->color,
         );
     })->throws(Assert\InvalidArgumentException::class);
@@ -763,7 +765,7 @@ describe('validation', function (): void {
             nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
 
         $subscription->update(
@@ -775,7 +777,7 @@ describe('validation', function (): void {
             logo: '',
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
             color: $subscription->color,
         );
     })->throws(Assert\InvalidArgumentException::class);
@@ -787,7 +789,7 @@ describe('validation', function (): void {
             nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
 
         $subscription->update(
@@ -799,7 +801,7 @@ describe('validation', function (): void {
             logo: '',
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 0,
+            cost: new Money(0, Currency::USD),
             color: $subscription->color,
         );
     })->throws(Assert\InvalidArgumentException::class);
@@ -811,7 +813,7 @@ describe('validation', function (): void {
             nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
 
         $subscription->update(
@@ -823,7 +825,7 @@ describe('validation', function (): void {
             logo: '',
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: -100,
+            cost: new Money(-100, Currency::USD),
             color: $subscription->color,
         );
     })->throws(Assert\InvalidArgumentException::class);
@@ -835,7 +837,7 @@ describe('validation', function (): void {
             nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
 
         $subscription->update(
@@ -847,7 +849,7 @@ describe('validation', function (): void {
             logo: '',
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 0,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
             color: $subscription->color,
         );
     })->throws(Assert\InvalidArgumentException::class);
@@ -859,7 +861,7 @@ describe('validation', function (): void {
             nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
 
         $subscription->update(
@@ -871,7 +873,7 @@ describe('validation', function (): void {
             logo: '',
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: -1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
             color: $subscription->color,
         );
     })->throws(Assert\InvalidArgumentException::class);
@@ -883,7 +885,7 @@ describe('validation', function (): void {
             nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
 
         expect($subscription->name)->toBe('Netflix');
@@ -896,7 +898,7 @@ describe('validation', function (): void {
             nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
 
         $subscription->update(
@@ -908,7 +910,7 @@ describe('validation', function (): void {
             logo: '',
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
             color: $subscription->color,
         );
 
@@ -924,7 +926,7 @@ describe('color', function (): void {
             nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
         );
 
         expect($subscription->color)->toBeInstanceOf(TileColor::class);
@@ -937,7 +939,7 @@ describe('color', function (): void {
             nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
             color: TileColor::Blue,
         );
 
@@ -951,7 +953,7 @@ describe('color', function (): void {
             nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
             color: TileColor::Blue,
         );
 
@@ -964,7 +966,7 @@ describe('color', function (): void {
             logo: '',
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
             color: TileColor::Red,
         );
 
@@ -986,7 +988,7 @@ describe('color', function (): void {
             nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
             color: TileColor::Blue,
         );
 
@@ -999,7 +1001,7 @@ describe('color', function (): void {
             logo: '',
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
-            cost: 1500,
+            cost: new Money(1500, Currency::USD),
             color: TileColor::Blue,
         );
 
@@ -1015,12 +1017,12 @@ describe('monthlyCost', function (): void {
             nextRenewal: new DateTimeImmutable('2024-01-01'),
             paymentPeriod: $period,
             paymentPeriodCount: $count,
-            cost: $cost,
+            cost: new Money($cost, Currency::USD),
         );
     };
 
     test('returns the cost itself for a monthly subscription', function () use ($makeSubscription): void {
-        expect($makeSubscription(PaymentPeriod::Month, 1, 1500)->monthlyCost())
+        expect($makeSubscription(PaymentPeriod::Month, 1, 1500)->monthlyCost()->minorAmount)
             ->toBeInt()
             ->toBe(1500)
         ;
@@ -1028,27 +1030,27 @@ describe('monthlyCost', function (): void {
 
     test('divides by the period count for a multi-month subscription', function () use ($makeSubscription): void {
         // 3000 every 3 months is 1000 per month.
-        expect($makeSubscription(PaymentPeriod::Month, 3, 3000)->monthlyCost())->toBe(1000);
+        expect($makeSubscription(PaymentPeriod::Month, 3, 3000)->monthlyCost()->minorAmount)->toBe(1000);
     });
 
     test('divides a yearly cost across twelve months', function () use ($makeSubscription): void {
         // 12000 per year is 1000 per month.
-        expect($makeSubscription(PaymentPeriod::Year, 1, 12000)->monthlyCost())->toBe(1000);
+        expect($makeSubscription(PaymentPeriod::Year, 1, 12000)->monthlyCost()->minorAmount)->toBe(1000);
     });
 
     test('normalizes a multi-year subscription', function () use ($makeSubscription): void {
         // 4800 every 2 years is 200 per month.
-        expect($makeSubscription(PaymentPeriod::Year, 2, 4800)->monthlyCost())->toBe(200);
+        expect($makeSubscription(PaymentPeriod::Year, 2, 4800)->monthlyCost()->minorAmount)->toBe(200);
     });
 
     test('normalizes a weekly subscription using 52 weeks per year', function () use ($makeSubscription): void {
         // 1000 per week is 1000 * 52 / 12 = 4333.33 -> 4333 cents per month.
-        expect($makeSubscription(PaymentPeriod::Week, 1, 1000)->monthlyCost())->toBe(4333);
+        expect($makeSubscription(PaymentPeriod::Week, 1, 1000)->monthlyCost()->minorAmount)->toBe(4333);
     });
 
     test('rounds to the nearest whole cent', function () use ($makeSubscription): void {
         // 1000 per year is 83.33 -> 83 cents per month.
-        expect($makeSubscription(PaymentPeriod::Year, 1, 1000)->monthlyCost())->toBe(83);
+        expect($makeSubscription(PaymentPeriod::Year, 1, 1000)->monthlyCost()->minorAmount)->toBe(83);
     });
 });
 
@@ -1065,7 +1067,7 @@ describe('savingsTarget', function (): void {
             nextRenewal: $nextRenewal,
             paymentPeriod: $period,
             paymentPeriodCount: $count,
-            cost: $cost,
+            cost: new Money($cost, Currency::USD),
         );
     };
 
@@ -1074,7 +1076,7 @@ describe('savingsTarget', function (): void {
         // by 2024-01-15 four monthly allocations (Oct..Jan) have been made -> 800.
         $subscription = $makeSubscription(PaymentPeriod::Month, 6, 1200, new DateTimeImmutable('2024-04-28'));
 
-        expect($subscription->savingsTarget(new DateTimeImmutable('2024-01-15')))
+        expect($subscription->savingsTarget(new DateTimeImmutable('2024-01-15'))->minorAmount)
             ->toBeInt()
             ->toBe(800)
         ;
@@ -1085,7 +1087,7 @@ describe('savingsTarget', function (): void {
         // toward the October renewal has already begun -> 1400.
         $subscription = $makeSubscription(PaymentPeriod::Month, 6, 1200, new DateTimeImmutable('2024-04-28'));
 
-        expect($subscription->savingsTarget(new DateTimeImmutable('2024-04-15')))->toBe(1400);
+        expect($subscription->savingsTarget(new DateTimeImmutable('2024-04-15'))->minorAmount)->toBe(1400);
     });
 
     test('drops to the next cycle once the renewal is recorded paid', function () use ($makeSubscription): void {
@@ -1093,7 +1095,7 @@ describe('savingsTarget', function (): void {
         // leaving the first 200 of the October cycle.
         $subscription = $makeSubscription(PaymentPeriod::Month, 6, 1200, new DateTimeImmutable('2024-10-28'));
 
-        expect($subscription->savingsTarget(new DateTimeImmutable('2024-04-28')))->toBe(200);
+        expect($subscription->savingsTarget(new DateTimeImmutable('2024-04-28'))->minorAmount)->toBe(200);
     });
 
     test('stacks this month and next for a monthly bill in its unpaid due month', function () use ($makeSubscription): void {
@@ -1101,7 +1103,7 @@ describe('savingsTarget', function (): void {
         // month's allocation has begun (100) -> 200.
         $subscription = $makeSubscription(PaymentPeriod::Month, 1, 100, new DateTimeImmutable('2024-04-15'));
 
-        expect($subscription->savingsTarget(new DateTimeImmutable('2024-04-08')))->toBe(200);
+        expect($subscription->savingsTarget(new DateTimeImmutable('2024-04-08'))->minorAmount)->toBe(200);
     });
 
     test('is one payment for a monthly bill the month before it is due', function () use ($makeSubscription): void {
@@ -1109,7 +1111,7 @@ describe('savingsTarget', function (): void {
         // the March bill has not begun -> 1500.
         $subscription = $makeSubscription(PaymentPeriod::Month, 1, 1500, new DateTimeImmutable('2024-02-01'));
 
-        expect($subscription->savingsTarget(new DateTimeImmutable('2024-01-15')))->toBe(1500);
+        expect($subscription->savingsTarget(new DateTimeImmutable('2024-01-15'))->minorAmount)->toBe(1500);
     });
 
     test('treats a weekly bill as one payment in hand', function () use ($makeSubscription): void {
@@ -1117,14 +1119,14 @@ describe('savingsTarget', function (): void {
         // bill is just one payment held.
         $subscription = $makeSubscription(PaymentPeriod::Week, 1, 1000, new DateTimeImmutable('2024-01-08'));
 
-        expect($subscription->savingsTarget(new DateTimeImmutable('2024-01-05')))->toBe(1000);
+        expect($subscription->savingsTarget(new DateTimeImmutable('2024-01-05'))->minorAmount)->toBe(1000);
     });
 
     test('is zero before the first cycle has begun', function () use ($makeSubscription): void {
         // A future renewal whose funding window has not opened yet has nothing to set aside.
         $subscription = $makeSubscription(PaymentPeriod::Year, 1, 12000, new DateTimeImmutable('2025-01-01'));
 
-        expect($subscription->savingsTarget(new DateTimeImmutable('2023-12-01')))->toBe(0);
+        expect($subscription->savingsTarget(new DateTimeImmutable('2023-12-01'))->minorAmount)->toBe(0);
     });
 
     test('holds an overdue renewal in full on top of saving for the next', function () use ($makeSubscription): void {
@@ -1132,6 +1134,6 @@ describe('savingsTarget', function (): void {
         // monthly allocations toward the 2025 renewal have been made -> 15000.
         $subscription = $makeSubscription(PaymentPeriod::Year, 1, 12000, new DateTimeImmutable('2024-01-01'));
 
-        expect($subscription->savingsTarget(new DateTimeImmutable('2024-03-01')))->toBe(15000);
+        expect($subscription->savingsTarget(new DateTimeImmutable('2024-03-01'))->minorAmount)->toBe(15000);
     });
 });

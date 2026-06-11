@@ -5,8 +5,10 @@
 
 declare(strict_types=1);
 
+use App\Enum\Currency;
 use App\Enum\PaymentType;
 use App\Factory\PaymentFactory;
+use App\ValueObject\Money;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 uses(KernelTestCase::class);
@@ -14,13 +16,13 @@ uses(KernelTestCase::class);
 test('creates payment with required fields', function (): void {
     $payment = PaymentFactory::createOne();
 
-    expect($payment->amount)->toBeGreaterThan(0);
+    expect($payment->amount->minorAmount)->toBeGreaterThan(0);
 });
 
 test('allows custom amount', function (): void {
-    $payment = PaymentFactory::createOne(['amount' => 1999]);
+    $payment = PaymentFactory::createOne(['amount' => new Money(1999, Currency::USD)]);
 
-    expect($payment->amount)->toBe(1999);
+    expect($payment->amount->minorAmount)->toBe(1999);
 });
 
 test('regular creates verified payment', function (): void {

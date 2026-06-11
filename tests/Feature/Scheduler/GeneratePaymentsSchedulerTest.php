@@ -6,12 +6,14 @@
 declare(strict_types=1);
 
 use App\Entity\Subscription;
+use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
 use App\Message\Scheduler\GeneratePaymentsHandler;
 use App\Message\Scheduler\GeneratePaymentsMessage;
 use App\Repository\SubscriptionRepository;
+use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
 
 test('generates payment for due subscription', function (): void {
@@ -19,7 +21,7 @@ test('generates payment for due subscription', function (): void {
     $subscription = SubscriptionFactory::createOne([
         'category' => $category,
         'name' => 'Netflix',
-        'cost' => 1599,
+        'cost' => new Money(1599, Currency::USD),
         'paymentPeriod' => PaymentPeriod::Month,
         'paymentPeriodCount' => 1,
         'nextRenewal' => new DateTimeImmutable('-35 days'),
@@ -49,7 +51,7 @@ test('skips subscription not yet due', function (): void {
     SubscriptionFactory::createOne([
         'category' => $category,
         'name' => 'Spotify',
-        'cost' => 999,
+        'cost' => new Money(999, Currency::USD),
         'paymentPeriod' => PaymentPeriod::Month,
         'paymentPeriodCount' => 1,
         'nextRenewal' => new DateTimeImmutable('+10 days'),
@@ -80,7 +82,7 @@ test('skips archived subscription', function (): void {
     $subscription = SubscriptionFactory::new([
         'category' => $category,
         'name' => 'Old Service',
-        'cost' => 999,
+        'cost' => new Money(999, Currency::USD),
         'paymentPeriod' => PaymentPeriod::Month,
         'paymentPeriodCount' => 1,
         'nextRenewal' => new DateTimeImmutable('-35 days'),

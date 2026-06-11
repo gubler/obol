@@ -79,8 +79,8 @@ final readonly class FindSubscriptionsForHomepageRunner
         return match ($sort) {
             SubscriptionSort::Name => $byName,
             SubscriptionSort::Renewal => static fn (Subscription $a, Subscription $b): int => ($a->nextRenewal <=> $b->nextRenewal) ?: $byName($a, $b),
-            SubscriptionSort::MonthlyCost => static fn (Subscription $a, Subscription $b): int => ($b->monthlyCost() <=> $a->monthlyCost()) ?: $byName($a, $b),
-            SubscriptionSort::Cost => static fn (Subscription $a, Subscription $b): int => ($b->cost <=> $a->cost) ?: $byName($a, $b),
+            SubscriptionSort::MonthlyCost => static fn (Subscription $a, Subscription $b): int => ($b->monthlyCost()->minorAmount <=> $a->monthlyCost()->minorAmount) ?: $byName($a, $b),
+            SubscriptionSort::Cost => static fn (Subscription $a, Subscription $b): int => ($b->cost->minorAmount <=> $a->cost->minorAmount) ?: $byName($a, $b),
         };
     }
 }

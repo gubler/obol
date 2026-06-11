@@ -6,9 +6,11 @@
 declare(strict_types=1);
 
 use App\Entity\Subscription;
+use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
+use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
 
 test('displays create payment form', function (): void {
@@ -31,7 +33,7 @@ test('creates payment with valid data', function (): void {
     $subscription = SubscriptionFactory::createOne([
         'category' => $category,
         'name' => 'Netflix',
-        'cost' => 1599,
+        'cost' => new Money(1599, Currency::USD),
     ]);
 
     $initialPaymentCount = count($subscription->payments);
@@ -115,7 +117,7 @@ test('resumes automated generation when restart is requested from the payment fo
     $client = $this->createClient();
     $subscription = SubscriptionFactory::new()->manual()->create([
         'name' => 'Netflix',
-        'cost' => 1599,
+        'cost' => new Money(1599, Currency::USD),
         'paymentPeriod' => PaymentPeriod::Month,
         'paymentPeriodCount' => 1,
     ]);
@@ -148,7 +150,7 @@ test('keeps manual generation when the payment form is submitted without restart
     $client = $this->createClient();
     $subscription = SubscriptionFactory::new()->manual()->create([
         'name' => 'Netflix',
-        'cost' => 1599,
+        'cost' => new Money(1599, Currency::USD),
     ]);
 
     $client->request('GET', '/subscriptions/' . $subscription->id . '/payments/new');

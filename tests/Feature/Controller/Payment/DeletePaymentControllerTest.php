@@ -6,9 +6,11 @@
 declare(strict_types=1);
 
 use App\Entity\Subscription;
+use App\Enum\Currency;
 use App\Factory\CategoryFactory;
 use App\Factory\PaymentFactory;
 use App\Factory\SubscriptionFactory;
+use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
 
 test('deletes payment', function (): void {
@@ -20,7 +22,7 @@ test('deletes payment', function (): void {
     ]);
     $payment = PaymentFactory::createOne([
         'subscription' => $subscription,
-        'amount' => 1599,
+        'amount' => new Money(1599, Currency::USD),
     ]);
 
     $client->request('POST', '/payments/' . $payment->id . '/delete');
@@ -47,7 +49,7 @@ test('shows success flash message', function (): void {
     ]);
     $payment = PaymentFactory::createOne([
         'subscription' => $subscription,
-        'amount' => 1599,
+        'amount' => new Money(1599, Currency::USD),
     ]);
 
     $client->request('POST', '/payments/' . $payment->id . '/delete');
@@ -73,7 +75,7 @@ test('only accepts post method', function (): void {
     ]);
     $payment = PaymentFactory::createOne([
         'subscription' => $subscription,
-        'amount' => 1599,
+        'amount' => new Money(1599, Currency::USD),
     ]);
 
     $client->request('GET', '/payments/' . $payment->id . '/delete');

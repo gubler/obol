@@ -35,11 +35,15 @@ older docs.
 - **PaymentType** - how a payment arose: **`Verified`** (asserted by the user) or
   **`Generated`** (created automatically by the scheduler). A `Generated` payment becomes
   `Verified` when the user validates or adjusts it; the reverse never happens.
-- **cost** - a subscription's recurring charge, stored as an integer in the currency's
-  minor units (e.g. cents). _Avoid_ calling this "amount"; **amount** refers specifically
-  to the value recorded on a `Payment` (which defaults to the subscription's cost).
-- **monthly cost** - a subscription's `cost` normalized to a one-month equivalent in the
-  currency's minor units (`Subscription::monthlyCost`), rounded to the nearest whole cent.
+- **Money** - the value object every monetary figure is held in: an integer amount in a
+  currency's minor units (e.g. cents) plus its `Currency`. Persisted as a Doctrine embeddable
+  (`*_amount` + `*_currency` columns). Arithmetic is same-currency only; cross-currency
+  conversion goes through the converter (#126).
+- **cost** - a subscription's recurring charge, a `Money`. _Avoid_ calling this "amount";
+  **amount** refers specifically to the value recorded on a `Payment` (which defaults to the
+  subscription's cost and inherits its currency).
+- **monthly cost** - a subscription's `cost` normalized to a one-month equivalent
+  (`Subscription::monthlyCost`), a `Money` rounded to the nearest whole minor unit.
   Yearly costs divide by twelve; weekly costs use 52 weeks per year. Used for the homepage
   category totals and the list view. _Avoid_ "cost per month" as a separate term.
 - **record a payment** - append a `Payment` to a subscription. Under automated **payment

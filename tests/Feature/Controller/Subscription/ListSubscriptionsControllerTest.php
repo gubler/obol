@@ -5,9 +5,11 @@
 
 declare(strict_types=1);
 
+use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
+use App\ValueObject\Money;
 
 test('displays list of subscriptions', function (): void {
     $client = $this->createClient();
@@ -128,8 +130,8 @@ test('orders the list view by cost descending when sorting by cost', function ()
     $client = $this->createClient();
     $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
-    SubscriptionFactory::createOne(['category' => $category, 'name' => 'Alfa', 'cost' => 100]);
-    SubscriptionFactory::createOne(['category' => $category, 'name' => 'Zulu', 'cost' => 9999]);
+    SubscriptionFactory::createOne(['category' => $category, 'name' => 'Alfa', 'cost' => new Money(100, Currency::USD)]);
+    SubscriptionFactory::createOne(['category' => $category, 'name' => 'Zulu', 'cost' => new Money(9999, Currency::USD)]);
 
     $crawler = $client->request(method: 'GET', uri: '/?view=list&sort=cost');
 
@@ -233,14 +235,14 @@ test('shows the combined monthly total for a category', function (): void {
     SubscriptionFactory::createOne([
         'category' => $category,
         'name' => 'Netflix',
-        'cost' => 1500,
+        'cost' => new Money(1500, Currency::USD),
         'paymentPeriod' => PaymentPeriod::Month,
         'paymentPeriodCount' => 1,
     ]);
     SubscriptionFactory::createOne([
         'category' => $category,
         'name' => 'Spotify',
-        'cost' => 1000,
+        'cost' => new Money(1000, Currency::USD),
         'paymentPeriod' => PaymentPeriod::Month,
         'paymentPeriodCount' => 1,
     ]);
@@ -259,7 +261,7 @@ test('shows a savings target for a category that renews beyond a month', functio
     SubscriptionFactory::createOne([
         'category' => $category,
         'name' => 'JetBrains',
-        'cost' => 12000,
+        'cost' => new Money(12000, Currency::USD),
         'paymentPeriod' => PaymentPeriod::Year,
         'paymentPeriodCount' => 1,
         // Renews next month, so most of the year's cost should already be set aside.
@@ -282,7 +284,7 @@ test('includes monthly subscriptions in the savings target', function (): void {
     SubscriptionFactory::createOne([
         'category' => $category,
         'name' => 'Netflix',
-        'cost' => 1500,
+        'cost' => new Money(1500, Currency::USD),
         'paymentPeriod' => PaymentPeriod::Month,
         'paymentPeriodCount' => 1,
         // Renews tomorrow, so the current cycle is well underway.
@@ -329,7 +331,7 @@ test('shows the relative renewal and cost on a tile', function (): void {
     SubscriptionFactory::createOne([
         'category' => $category,
         'name' => 'Netflix',
-        'cost' => 1500,
+        'cost' => new Money(1500, Currency::USD),
         // The extra hours keep the floored relative span clear of the day boundary.
         'nextRenewal' => new DateTimeImmutable('+2 days +6 hours'),
     ]);

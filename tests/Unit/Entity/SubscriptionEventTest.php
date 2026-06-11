@@ -8,8 +8,10 @@ declare(strict_types=1);
 use App\Entity\Category;
 use App\Entity\Subscription;
 use App\Entity\SubscriptionEvent;
+use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\SubscriptionEventType;
+use App\ValueObject\Money;
 
 beforeEach(function (): void {
     $category = new Category(name: 'Test Category');
@@ -19,7 +21,7 @@ beforeEach(function (): void {
         nextRenewal: new DateTimeImmutable(),
         paymentPeriod: PaymentPeriod::Month,
         paymentPeriodCount: 1,
-        cost: 1000,
+        cost: new Money(1000, Currency::USD),
     );
 });
 

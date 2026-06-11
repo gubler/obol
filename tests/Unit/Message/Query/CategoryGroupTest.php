@@ -7,8 +7,10 @@ declare(strict_types=1);
 
 use App\Entity\Category;
 use App\Entity\Subscription;
+use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Message\Query\Subscription\CategoryGroup;
+use App\ValueObject\Money;
 
 test('sums each subscription savings target as of the given date', function (): void {
     $category = new Category(name: 'Software');
@@ -21,7 +23,7 @@ test('sums each subscription savings target as of the given date', function (): 
         nextRenewal: new DateTimeImmutable('2024-01-01'),
         paymentPeriod: PaymentPeriod::Year,
         paymentPeriodCount: 1,
-        cost: 12000,
+        cost: new Money(12000, Currency::USD),
     );
 
     $group = new CategoryGroup(
@@ -30,5 +32,5 @@ test('sums each subscription savings target as of the given date', function (): 
         asOf: new DateTimeImmutable('2023-07-01'),
     );
 
-    expect($group->savingsTotal())->toBe(14000);
+    expect($group->savingsTotal()->minorAmount)->toBe(14000);
 });

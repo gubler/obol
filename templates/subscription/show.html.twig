@@ -63,7 +63,7 @@
                 </div>
                 <div>
                     <dt class="text-sm font-medium text-gray-500">Cost</dt>
-                    <dd class="text-lg text-gray-900">${{ (subscription.cost / 100)|number_format(2) }} / {{ subscription.paymentPeriod.value }}</dd>
+                    <dd class="text-lg text-gray-900">{{ subscription.cost.format() }} / {{ subscription.paymentPeriod.value }}</dd>
                 </div>
                 <div>
                     <dt class="text-sm font-medium text-gray-500">Next Renewal</dt>
@@ -102,7 +102,7 @@
                                     <span class="ml-2 text-xs text-gray-500">{{ payment.type.value }}</span>
                                 </div>
                                 <div class="flex items-center space-x-3">
-                                    <span class="text-gray-600">${{ (payment.amount / 100)|number_format(2) }}</span>
+                                    <span class="text-gray-600">{{ payment.amount.format() }}</span>
                                     {% if payment.type.value == 'generated' %}
                                         <form action="{{ path('payment_validate', {id: payment.id}) }}" method="POST" class="payment-validate-form inline-block">
                                             <button type="submit" class="text-green-600 hover:text-green-900 text-sm">Validate</button>

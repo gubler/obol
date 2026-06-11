@@ -30,7 +30,7 @@ final class ValidatePaymentController extends AbstractBaseController
 
         $this->commandBus->dispatch(command: new AmendPaymentCommand(
             paymentId: $id,
-            amount: $payment->amount,
+            amount: $payment->amount->minorAmount,
             paidDate: $payment->paidDate,
         ));
 

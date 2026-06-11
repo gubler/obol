@@ -5,8 +5,10 @@
 
 declare(strict_types=1);
 
+use App\Enum\Currency;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
+use App\ValueObject\Money;
 
 test('full payment workflow', function (): void {
     $client = $this->createClient();
@@ -14,7 +16,7 @@ test('full payment workflow', function (): void {
     $subscription = SubscriptionFactory::createOne([
         'category' => $category,
         'name' => 'Netflix',
-        'cost' => 1599,
+        'cost' => new Money(1599, Currency::USD),
     ]);
 
     // Visit subscription show page — no payments yet

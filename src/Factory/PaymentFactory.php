@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Factory;
 
 use App\Entity\Payment;
+use App\Enum\Currency;
 use App\Enum\PaymentType;
+use App\ValueObject\Money;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
@@ -24,7 +26,7 @@ final class PaymentFactory extends PersistentObjectFactory
     protected function defaults(): array
     {
         return [
-            'amount' => self::faker()->numberBetween(500, 5000),
+            'amount' => new Money(self::faker()->numberBetween(500, 5000), Currency::USD),
             'paidDate' => \DateTimeImmutable::createFromMutable(self::faker()->dateTime()),
             'subscription' => SubscriptionFactory::new(),
             'type' => self::faker()->randomElement(PaymentType::cases()),

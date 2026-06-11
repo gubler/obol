@@ -71,3 +71,14 @@ method on the entity, not a new type.
   tracked in #102.
 - The command bus and its `doctrine_transaction` middleware are unchanged (retained per
   ADR-0006).
+
+## Note (2026-06-11, #128)
+
+"No value object for the entity attributes" above rejects a *composite* `SubscriptionAttributes`
+object that would bundle the whole nine-parameter signature. It does not bar a value object as the
+type of an individual attribute. When `cost` and `amount` became `Money` (#128, part of the
+multi-currency foundation #126), the `__construct` / `update` / `recordPayment` signatures kept
+their arity - `Money` simply replaced `int` for one field - so the candidate-4 rejection still
+holds. The commands continue to carry a scalar `int` cost/amount (no currency input exists until
+the picker lands, #129); the handler wraps it in `Money` before calling the entity, keeping the VO
+off the bus per the `Ulid`-only convention above.

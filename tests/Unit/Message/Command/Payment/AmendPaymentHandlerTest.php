@@ -8,11 +8,13 @@ declare(strict_types=1);
 use App\Entity\Category;
 use App\Entity\Payment;
 use App\Entity\Subscription;
+use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\PaymentType;
 use App\Message\Command\Payment\AmendPaymentCommand;
 use App\Message\Command\Payment\AmendPaymentHandler;
 use App\Repository\PaymentRepository;
+use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Uid\Ulid;
 
@@ -23,12 +25,12 @@ test('amends the payment and flushes', function (): void {
         nextRenewal: new DateTimeImmutable('2024-02-01'),
         paymentPeriod: PaymentPeriod::Month,
         paymentPeriodCount: 1,
-        cost: 1000,
+        cost: new Money(1000, Currency::USD),
     );
     $payment = new Payment(
         subscription: $subscription,
         type: PaymentType::Generated,
-        amount: 1000,
+        amount: new Money(1000, Currency::USD),
         paidDate: new DateTimeImmutable('2024-01-01'),
     );
 
@@ -45,7 +47,7 @@ test('amends the payment and flushes', function (): void {
         paidDate: new DateTimeImmutable('2024-01-05'),
     ));
 
-    expect($payment->amount)->toBe(1200)
+    expect($payment->amount->minorAmount)->toBe(1200)
         ->and($payment->paidDate)->toEqual(new DateTimeImmutable('2024-01-05'))
         ->and($payment->type)->toBe(PaymentType::Verified)
     ;

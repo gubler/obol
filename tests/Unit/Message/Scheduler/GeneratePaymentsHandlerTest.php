@@ -8,11 +8,13 @@ declare(strict_types=1);
 use App\Entity\Category;
 use App\Entity\Payment;
 use App\Entity\Subscription;
+use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\PaymentType;
 use App\Message\Scheduler\GeneratePaymentsHandler;
 use App\Message\Scheduler\GeneratePaymentsMessage;
 use App\Repository\SubscriptionRepository;
+use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
 
 function makeSubscription(PaymentPeriod $period, int $count, DateTimeImmutable $nextRenewal): Subscription
@@ -23,7 +25,7 @@ function makeSubscription(PaymentPeriod $period, int $count, DateTimeImmutable $
         nextRenewal: $nextRenewal,
         paymentPeriod: $period,
         paymentPeriodCount: $count,
-        cost: 1599,
+        cost: new Money(1599, Currency::USD),
     );
 }
 
@@ -41,7 +43,7 @@ test('generates a payment dated to the renewal when it has passed', function ():
     /** @var Payment $payment */
     $payment = $subscription->payments->first();
     expect($payment->type)->toBe(PaymentType::Generated)
-        ->and($payment->amount)->toBe(1599)
+        ->and($payment->amount->minorAmount)->toBe(1599)
         ->and($payment->paidDate)->toEqual(new DateTimeImmutable('2020-01-01'))
         ->and($subscription->nextRenewal)->toEqual(new DateTimeImmutable('2020-02-01'))
     ;

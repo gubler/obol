@@ -46,7 +46,7 @@
                         <li class="py-3">
                             <div class="flex justify-between items-center">
                                 <span class="text-gray-900">{{ subscription.name }}</span>
-                                <span class="text-gray-600">${{ subscription.cost }} / {{ subscription.paymentPeriod.value }}</span>
+                                <span class="text-gray-600">{{ subscription.cost.format() }} / {{ subscription.paymentPeriod.value }}</span>
                             </div>
                         </li>
                     {% endfor %}

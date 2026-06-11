@@ -22,9 +22,9 @@
                             <span class="manual-payments-badge ml-2 inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800" title="Automatic payment generation is paused">Manual</span>
                         {% endif %}
                     </td>
-                    <td class="whitespace-nowrap px-6 py-4 text-right text-gray-900">${{ (subscription.monthlyCost / 100)|number_format(2) }}</td>
+                    <td class="whitespace-nowrap px-6 py-4 text-right text-gray-900">{{ subscription.monthlyCost.format() }}</td>
                     <td class="whitespace-nowrap px-6 py-4 text-right text-gray-900">
-                        ${{ (subscription.cost / 100)|number_format(2) }} / {{ subscription.paymentPeriodCount > 1 ? subscription.paymentPeriodCount ~ ' ' : '' }}{{ subscription.paymentPeriod.value }}{{ subscription.paymentPeriodCount > 1 ? 's' : '' }}
+                        {{ subscription.cost.format() }} / {{ subscription.paymentPeriodCount > 1 ? subscription.paymentPeriodCount ~ ' ' : '' }}{{ subscription.paymentPeriod.value }}{{ subscription.paymentPeriodCount > 1 ? 's' : '' }}
                     </td>
                     <td class="whitespace-nowrap px-6 py-4 text-gray-900">{{ subscription.nextRenewal|date('M j, Y') }}</td>
                     <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">

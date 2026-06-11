@@ -6,10 +6,12 @@
 declare(strict_types=1);
 
 use App\Entity\Payment;
+use App\Enum\Currency;
 use App\Enum\PaymentType;
 use App\Factory\CategoryFactory;
 use App\Factory\PaymentFactory;
 use App\Factory\SubscriptionFactory;
+use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
 
 test('post request validates a generated payment', function (): void {
@@ -19,7 +21,7 @@ test('post request validates a generated payment', function (): void {
     $payment = PaymentFactory::createOne([
         'subscription' => $subscription,
         'type' => PaymentType::Generated,
-        'amount' => 1599,
+        'amount' => new Money(1599, Currency::USD),
     ]);
 
     $client->request(method: 'POST', uri: '/payments/' . $payment->id . '/validate');
@@ -34,7 +36,7 @@ test('post request validates a generated payment', function (): void {
     $updated = $entityManager->getRepository(Payment::class)->find($payment->id);
     expect($updated)->not->toBeNull();
     expect($updated->type)->toBe(PaymentType::Verified)
-        ->and($updated->amount)->toBe(1599)
+        ->and($updated->amount->minorAmount)->toBe(1599)
     ;
 });
 

@@ -6,10 +6,12 @@
 declare(strict_types=1);
 
 use App\Entity\Subscription;
+use App\Enum\Currency;
 use App\Enum\TileColor;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
 use App\Repository\SubscriptionRepository;
+use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
 
 test('get request displays edit form with existing data', function (): void {
@@ -18,7 +20,7 @@ test('get request displays edit form with existing data', function (): void {
     $subscription = SubscriptionFactory::createOne([
         'category' => $category,
         'name' => 'Netflix',
-        'cost' => 1599,
+        'cost' => new Money(1599, Currency::USD),
     ]);
 
     $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
@@ -44,7 +46,7 @@ test('post request with valid data updates subscription', function (): void {
     $subscription = SubscriptionFactory::createOne([
         'category' => $category,
         'name' => 'Netflix',
-        'cost' => 1599,
+        'cost' => new Money(1599, Currency::USD),
     ]);
 
     $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
@@ -76,7 +78,7 @@ test('post request with valid data updates subscription', function (): void {
     expect($subscription)->not->toBeNull();
 
     expect($subscription->name)->toBe('Netflix Premium');
-    expect($subscription->cost)->toBe(1999);
+    expect($subscription->cost->minorAmount)->toBe(1999);
     expect($subscription->description)->toBe('Updated description');
     expect($subscription->link)->toBe('https://netflix.com/premium');
     expect($subscription->color)->toBe(TileColor::Teal);
@@ -99,7 +101,7 @@ test('resumes automated generation from the edit form when restart is requested'
     $subscription = SubscriptionFactory::new()->manual()->create([
         'category' => $category,
         'name' => 'Netflix',
-        'cost' => 1599,
+        'cost' => new Money(1599, Currency::USD),
     ]);
 
     $future = (new DateTimeImmutable('+45 days'))->format('Y-m-d');
@@ -139,7 +141,7 @@ test('rejects a restart with a non-future renewal date', function (): void {
     $subscription = SubscriptionFactory::new()->manual()->create([
         'category' => $category,
         'name' => 'Netflix',
-        'cost' => 1599,
+        'cost' => new Money(1599, Currency::USD),
     ]);
 
     $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
@@ -250,7 +252,7 @@ test('updates create subscription events', function (): void {
     $subscription = SubscriptionFactory::createOne([
         'category' => $category,
         'name' => 'Netflix',
-        'cost' => 1599,
+        'cost' => new Money(1599, Currency::USD),
     ]);
 
     $initialEventCount = count($subscription->subscriptionEvents);

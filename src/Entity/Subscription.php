@@ -12,6 +12,7 @@ use App\Enum\TileColor;
 use App\Lib\ChangeContextGenerator\Change;
 use App\Lib\ChangeContextGenerator\ChangeContextGenerator;
 use App\Repository\SubscriptionRepository;
+use App\ValueObject\Money;
 use Assert\Assertion;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -67,8 +68,8 @@ class Subscription
     #[ORM\Column]
     public private(set) int $paymentPeriodCount;
 
-    #[ORM\Column]
-    public private(set) int $cost;
+    #[ORM\Embedded(class: Money::class, columnPrefix: 'cost_')]
+    public private(set) Money $cost;
 
     #[ORM\Column(enumType: TileColor::class)]
     public private(set) TileColor $color;
@@ -83,7 +84,7 @@ class Subscription
         #[ORM\Column(enumType: PaymentPeriod::class)]
         public private(set) PaymentPeriod $paymentPeriod,
         int $paymentPeriodCount,
-        int $cost,
+        Money $cost,
         #[ORM\Column(type: Types::TEXT)]
         public private(set) string $description = '',
         #[ORM\Column(type: Types::TEXT)]
@@ -106,10 +107,10 @@ class Subscription
     }
 
     /**
-     * The subscription's cost normalized to a one-month equivalent, in the currency's minor units
-     * (rounded to the nearest whole cent). Weekly cadences use 52 weeks per year.
+     * The subscription's cost normalized to a one-month equivalent, in its own currency (rounded to
+     * the nearest whole minor unit). Weekly cadences use 52 weeks per year.
      */
-    public function monthlyCost(): int
+    public function monthlyCost(): Money
     {
         $monthsPerPeriod = match ($this->paymentPeriod) {
             PaymentPeriod::Year => 12.0,
@@ -117,7 +118,9 @@ class Subscription
             PaymentPeriod::Week => 12.0 / 52.0,
         };
 
-        return (int) round($this->cost / ($this->paymentPeriodCount * $monthsPerPeriod));
+        $monthly = (int) round($this->cost->minorAmount / ($this->paymentPeriodCount * $monthsPerPeriod));
+
+        return new Money($monthly, $this->cost->currency);
     }
 
     /**
@@ -129,7 +132,7 @@ class Subscription
      * bill that is funded but not yet paid is held in full *on top of* the next cycle's accrual. See
      * ADR-0009; the lead and allocation cadence become per-user settings later (#120, #121).
      */
-    public function savingsTarget(\DateTimeImmutable $asOf): int
+    public function savingsTarget(\DateTimeImmutable $asOf): Money
     {
         // Weekly bills renew several times within an allocation month, which the by-month model
         // cannot prorate; until by-week proration lands (#120) a weekly bill is treated as one
@@ -138,7 +141,8 @@ class Subscription
             return $this->cost;
         }
 
-        $monthlyCost = $this->monthlyCost();
+        $costMinor = $this->cost->minorAmount;
+        $monthlyCost = $this->monthlyCost()->minorAmount;
         $asOfMonth = $this->monthOrdinal($asOf);
 
         $renewal = $this->nextRenewal;
@@ -150,7 +154,7 @@ class Subscription
         for ($i = 0; $i < self::SAVINGS_HORIZON; ++$i) {
             $fundByMonth = $this->monthOrdinal($renewal) - 1; // first of the month before it falls due
             $monthsToFund = max(0, $fundByMonth - $asOfMonth);
-            $funded = max(0, $this->cost - $monthlyCost * $monthsToFund);
+            $funded = max(0, $costMinor - $monthlyCost * $monthsToFund);
 
             if (0 === $funded) {
                 break;
@@ -160,7 +164,7 @@ class Subscription
             $renewal = $renewal->add($this->renewalInterval());
         }
 
-        return $total;
+        return new Money($total, $this->cost->currency);
     }
 
     /**
@@ -176,11 +180,15 @@ class Subscription
         PaymentType $paymentType,
         ?int $amount = null,
     ): void {
+        // A payment is denominated in its subscription's currency; a custom amount is the minor-unit
+        // figure in that same currency, and the default is the full subscription cost.
+        $money = null !== $amount ? new Money($amount, $this->cost->currency) : $this->cost;
+
         $this->payments->add(
             new Payment(
                 subscription: $this,
                 type: $paymentType,
-                amount: $amount ?? $this->cost,
+                amount: $money,
                 paidDate: $paidDate,
             )
         );
@@ -253,7 +261,7 @@ class Subscription
         string $logo,
         PaymentPeriod $paymentPeriod,
         int $paymentPeriodCount,
-        int $cost,
+        Money $cost,
         TileColor $color,
     ): void {
         $name = $this->normalizeAndAssert(name: $name, cost: $cost, paymentPeriodCount: $paymentPeriodCount);
@@ -274,7 +282,7 @@ class Subscription
             changes: [
                 new Change(field: 'paymentPeriod', current: $this->paymentPeriod->value, new: $paymentPeriod->value),
                 new Change(field: 'paymentPeriodCount', current: $this->paymentPeriodCount, new: $paymentPeriodCount),
-                new Change(field: 'cost', current: $this->cost, new: $cost),
+                new Change(field: 'cost', current: $this->cost->minorAmount, new: $cost->minorAmount),
             ]
         );
 
@@ -314,11 +322,11 @@ class Subscription
     /**
      * Trims the name and asserts the subscription's invariants, returning the normalized name.
      */
-    private function normalizeAndAssert(string $name, int $cost, int $paymentPeriodCount): string
+    private function normalizeAndAssert(string $name, Money $cost, int $paymentPeriodCount): string
     {
         $name = trim(string: $name);
         Assertion::notEq(value1: $name, value2: '', message: 'Subscription name cannot be empty');
-        Assertion::greaterThan(value: $cost, limit: 0, message: 'Subscription cost must be greater than zero');
+        Assertion::greaterThan(value: $cost->minorAmount, limit: 0, message: 'Subscription cost must be greater than zero');
         Assertion::greaterThan(value: $paymentPeriodCount, limit: 0, message: 'Payment period count must be greater than zero');
 
         return $name;

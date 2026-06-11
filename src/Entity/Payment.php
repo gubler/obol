@@ -6,6 +6,7 @@ namespace App\Entity;
 
 use App\Enum\PaymentType;
 use App\Repository\PaymentRepository;
+use App\ValueObject\Money;
 use Assert\Assertion;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
@@ -18,8 +19,8 @@ class Payment
     #[ORM\Column(type: UlidType::NAME, unique: true)]
     public private(set) Ulid $id;
 
-    #[ORM\Column]
-    public private(set) int $amount;
+    #[ORM\Embedded(class: Money::class, columnPrefix: 'amount_')]
+    public private(set) Money $amount;
 
     public function __construct(
         #[ORM\ManyToOne(inversedBy: 'payments')]
@@ -27,13 +28,13 @@ class Payment
         public private(set) Subscription $subscription,
         #[ORM\Column(enumType: PaymentType::class)]
         public private(set) PaymentType $type,
-        int $amount,
+        Money $amount,
         #[ORM\Column]
         public private(set) \DateTimeImmutable $paidDate = new \DateTimeImmutable(),
         #[ORM\Column]
         public private(set) \DateTimeImmutable $createdAt = new \DateTimeImmutable(),
     ) {
-        Assertion::greaterThan(value: $amount, limit: 0, message: 'Payment amount must be greater than zero');
+        Assertion::greaterThan(value: $amount->minorAmount, limit: 0, message: 'Payment amount must be greater than zero');
 
         $this->id = new Ulid();
         $this->amount = $amount;
@@ -47,7 +48,8 @@ class Payment
     {
         Assertion::greaterThan(value: $amount, limit: 0, message: 'Payment amount must be greater than zero');
 
-        $this->amount = $amount;
+        // An amended amount is a minor-unit figure in the payment's existing currency.
+        $this->amount = new Money($amount, $this->amount->currency);
         $this->paidDate = $paidDate;
         $this->type = PaymentType::Verified;
     }

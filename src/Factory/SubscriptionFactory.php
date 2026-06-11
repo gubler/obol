@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Factory;
 
 use App\Entity\Subscription;
+use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\TileColor;
+use App\ValueObject\Money;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
@@ -27,7 +29,7 @@ final class SubscriptionFactory extends PersistentObjectFactory
         return [
             'category' => CategoryFactory::new(),
             'color' => self::faker()->randomElement(TileColor::cases()),
-            'cost' => self::faker()->numberBetween(500, 3000),
+            'cost' => new Money(self::faker()->numberBetween(500, 3000), Currency::USD),
             'description' => self::faker()->sentence(),
             'nextRenewal' => \DateTimeImmutable::createFromMutable(self::faker()->dateTimeBetween('now', '+60 days')),
             'link' => self::faker()->url(),
@@ -75,7 +77,7 @@ final class SubscriptionFactory extends PersistentObjectFactory
     public function expensiveSubscription(): self
     {
         return $this->with([
-            'cost' => self::faker()->numberBetween(5000, 15000),
+            'cost' => new Money(self::faker()->numberBetween(5000, 15000), Currency::USD),
         ]);
     }
 }

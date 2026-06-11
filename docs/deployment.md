@@ -28,13 +28,21 @@ The `Dockerfile` uses a multi-stage build:
 
 ### Production (`compose.yaml`)
 
-Two services:
+Three services:
 
-**`app`** — the Obol application
+**`php`** — the Obol application (FrankenPHP)
 
 - Ports: `8080:80`, `8443:443`
 - Depends on `database` with healthcheck
 - Volume: `uploads_data` mounted at `/app/public/uploads`
+
+**`worker`** — long-running Messenger consumer for the Symfony Scheduler
+
+- Same image as `php`, run with `messenger:consume scheduler_default --time-limit=3600`
+- Drives the daily payment-generation schedule; **without it the scheduler never fires**
+- Depends on `php` being healthy (so vendor install and migrations are already done before it boots), and on `database`
+- `restart: unless-stopped`; recycles hourly via the time limit
+- Present in dev too (base + override), so the scheduler runs locally
 
 **`database`** — PostgreSQL 16 Alpine
 

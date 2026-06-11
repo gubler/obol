@@ -28,6 +28,16 @@ services:
       # Ensure that host.docker.internal is correctly defined on Linux
       - host.docker.internal:host-gateway
     tty: true
+
+  # Dev worker: same image as the dev php (built by the php service), with the source bind-mounted
+  # so it picks up local changes. It waits for php to be healthy (base compose), so vendor is
+  # installed before it boots.
+  worker:
+    image: ${IMAGES_PREFIX:-}obol-php-dev
+    volumes:
+      - ./:/app
+    environment:
+      APP_ENV: "${APP_ENV:-dev}"
 ###> symfony/mercure-bundle ###
 ###< symfony/mercure-bundle ###
 ###> doctrine/doctrine-bundle ###

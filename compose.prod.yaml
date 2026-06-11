@@ -10,3 +10,10 @@ services:
       APP_SECRET: ${APP_SECRET}
       MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET}
       MERCURE_SUBSCRIBER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET}
+
+  # Prod worker: same prod image as php (built by the php service), plus the app secret the kernel
+  # needs. DATABASE_URL comes from the base compose anchor; depends_on (php healthy) from base too.
+  worker:
+    image: ${IMAGES_PREFIX:-}obol-php-prod
+    environment:
+      APP_SECRET: ${APP_SECRET}

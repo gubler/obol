@@ -48,6 +48,7 @@ final class CreateSubscriptionController extends AbstractBaseController
                 paymentPeriod: $data->paymentPeriod,
                 paymentPeriodCount: $data->paymentPeriodCount,
                 cost: $data->cost,
+                currency: $data->currency,
                 description: $data->description,
                 link: $data->link,
                 logo: $logo,

@@ -1137,3 +1137,55 @@ describe('savingsTarget', function (): void {
         expect($subscription->savingsTarget(new DateTimeImmutable('2024-03-01'))->minorAmount)->toBe(15000);
     });
 });
+
+describe('currency', function (): void {
+    $makeSubscription = static fn (): Subscription => new Subscription(
+        category: new Category(name: 'Entertainment'),
+        name: 'Netflix',
+        nextRenewal: new DateTimeImmutable('2024-02-01'),
+        paymentPeriod: PaymentPeriod::Month,
+        paymentPeriodCount: 1,
+        cost: new Money(1500, Currency::USD),
+    );
+
+    $update = static function (Subscription $subscription, Money $cost): void {
+        $subscription->update(
+            category: $subscription->category,
+            name: $subscription->name,
+            nextRenewal: $subscription->nextRenewal,
+            description: '',
+            link: '',
+            logo: '',
+            paymentPeriod: $subscription->paymentPeriod,
+            paymentPeriodCount: $subscription->paymentPeriodCount,
+            cost: $cost,
+            color: $subscription->color,
+        );
+    };
+
+    test('allows changing the currency while there are no payments', function () use ($makeSubscription, $update): void {
+        $subscription = $makeSubscription();
+
+        $update($subscription, new Money(1500, Currency::EUR));
+
+        expect($subscription->cost->currency)->toBe(Currency::EUR);
+    });
+
+    test('rejects changing the currency once a payment has been recorded', function () use ($makeSubscription, $update): void {
+        $subscription = $makeSubscription();
+        $subscription->recordPayment(paidDate: new DateTimeImmutable('2024-02-01'), paymentType: PaymentType::Verified);
+
+        $update($subscription, new Money(1500, Currency::EUR));
+    })->throws(Assert\InvalidArgumentException::class);
+
+    test('allows a same-currency cost change after a payment exists', function () use ($makeSubscription, $update): void {
+        $subscription = $makeSubscription();
+        $subscription->recordPayment(paidDate: new DateTimeImmutable('2024-02-01'), paymentType: PaymentType::Verified);
+
+        $update($subscription, new Money(1999, Currency::USD));
+
+        expect($subscription->cost->minorAmount)->toBe(1999)
+            ->and($subscription->cost->currency)->toBe(Currency::USD)
+        ;
+    });
+});

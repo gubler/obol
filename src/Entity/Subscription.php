@@ -266,6 +266,14 @@ class Subscription
     ): void {
         $name = $this->normalizeAndAssert(name: $name, cost: $cost, paymentPeriodCount: $paymentPeriodCount);
 
+        // A subscription's currency is fixed once it has any recorded payment: the payments are
+        // denominated in it, so changing it would silently restate that history. It stays editable
+        // only while no payment exists (the picker is disabled in the edit form once one does).
+        Assertion::true(
+            $this->payments->isEmpty() || $cost->currency === $this->cost->currency,
+            'Currency cannot be changed once a payment has been recorded',
+        );
+
         $updateGenerator = new ChangeContextGenerator(
             changes: [
                 new Change(field: 'category', current: $this->category->name, new: $category->name),

@@ -6,6 +6,7 @@
 declare(strict_types=1);
 
 use App\Entity\Subscription;
+use App\Enum\Currency;
 use App\Enum\TileColor;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
@@ -69,6 +70,40 @@ test('post request with valid data creates subscription', function (): void {
     expect($subscription->description)->toBe('Streaming service');
     expect($subscription->link)->toBe('https://netflix.com');
     expect($subscription->color)->toBe(TileColor::Blue);
+});
+
+test('post request creates a subscription in a chosen non-default currency', function (): void {
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+
+    $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
+
+    $form = $crawler->selectButton(value: 'Save')->form([
+        'create_subscription[category]' => $category->id->toBase32(),
+        'create_subscription[name]' => 'Manga Box',
+        'create_subscription[nextRenewal]' => '2026-01-15',
+        'create_subscription[paymentPeriod]' => 'month',
+        'create_subscription[paymentPeriodCount]' => '1',
+        'create_subscription[cost]' => '1500',
+        'create_subscription[currency]' => 'EUR',
+    ]);
+
+    $client->submit(form: $form);
+    $this->assertResponseRedirects(expectedLocation: '/');
+
+    $container = $this->getContainer();
+    /** @var EntityManagerInterface $entityManager */
+    $entityManager = $container->get(id: EntityManagerInterface::class);
+    $subscription = $entityManager->getRepository(Subscription::class)->findOneBy(['name' => 'Manga Box']);
+
+    expect($subscription)->not->toBeNull();
+    expect($subscription->cost->currency)->toBe(Currency::EUR)
+        ->and($subscription->cost->minorAmount)->toBe(1500)
+    ;
+
+    // The chosen currency drives rendering on the detail page.
+    $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id);
+    $this->assertSelectorTextContains(selector: 'body', text: '€15.00');
 });
 
 test('post request with valid data shows success flash message', function (): void {

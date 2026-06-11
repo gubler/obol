@@ -9,6 +9,7 @@ namespace App\Form\Subscription;
 
 use App\Dto\Subscription\UpdateSubscriptionDto;
 use App\Entity\Category;
+use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\TileColor;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
@@ -53,7 +54,15 @@ final class EditSubscriptionFormType extends AbstractType
                 'label' => 'Payment Period Count',
             ])
             ->add(child: 'cost', type: NumberType::class, options: [
-                'label' => 'Cost (USD)',
+                'label' => 'Cost',
+            ])
+            ->add(child: 'currency', type: EnumType::class, options: [
+                'class' => Currency::class,
+                'label' => 'Currency',
+                'choice_label' => static fn (Currency $currency): string => $currency->value . ' - ' . $currency->label(),
+                // Locked once a payment exists: a disabled field is never bound from the request,
+                // so the subscription keeps its currency regardless of what is submitted.
+                'disabled' => true === $options['lock_currency'],
             ])
             ->add(child: 'description', type: TextareaType::class, options: [
                 'label' => 'Description',
@@ -95,8 +104,10 @@ final class EditSubscriptionFormType extends AbstractType
         $resolver->setDefaults(defaults: [
             'data_class' => UpdateSubscriptionDto::class,
             'offer_restart' => false,
+            'lock_currency' => false,
         ]);
         $resolver->setAllowedTypes(option: 'offer_restart', allowedTypes: 'bool');
+        $resolver->setAllowedTypes(option: 'lock_currency', allowedTypes: 'bool');
     }
 
     #[\Override]

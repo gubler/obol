@@ -85,6 +85,44 @@ test('post request with valid data updates subscription', function (): void {
     expect($newCategory->id->equals($subscription->category->id))->toBeTrue();
 });
 
+test('changes the currency while the subscription has no payments', function (): void {
+    $client = $this->createClient();
+    $subscription = SubscriptionFactory::createOne([
+        'name' => 'Netflix',
+        'cost' => new Money(1599, Currency::USD),
+    ]);
+
+    $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+    $form = $crawler->selectButton(value: 'Save')->form([
+        'edit_subscription[currency]' => 'EUR',
+    ]);
+    $client->submit(form: $form);
+
+    $this->assertResponseRedirects(expectedLocation: '/subscriptions/' . $subscription->id);
+
+    $container = $this->getContainer();
+    /** @var EntityManagerInterface $entityManager */
+    $entityManager = $container->get(id: EntityManagerInterface::class);
+    $entityManager->clear();
+    $updated = $entityManager->getRepository(Subscription::class)->find($subscription->id);
+
+    expect($updated->cost->currency)->toBe(Currency::EUR);
+});
+
+test('locks the currency field once a payment has been recorded', function (): void {
+    $client = $this->createClient();
+    $subscription = SubscriptionFactory::new()->withRecentPayment()->create([
+        'name' => 'Netflix',
+        'cost' => new Money(1599, Currency::USD),
+    ]);
+
+    $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+
+    $this->assertResponseIsSuccessful();
+    // The picker is rendered disabled, so the currency cannot be resubmitted once payments exist.
+    $this->assertSelectorExists(selector: 'select[name="edit_subscription[currency]"][disabled]');
+});
+
 test('does not offer the restart control for an automated subscription', function (): void {
     $client = $this->createClient();
     $subscription = SubscriptionFactory::createOne(['name' => 'Netflix']);

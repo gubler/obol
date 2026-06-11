@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace App\Message\Command\Subscription;
 
-use App\Enum\Currency;
 use App\Repository\CategoryRepository;
 use App\Repository\SubscriptionRepository;
 use App\ValueObject\Money;
@@ -47,8 +46,7 @@ final readonly class UpdateSubscriptionHandler
             logo: $command->logo,
             paymentPeriod: $command->paymentPeriod,
             paymentPeriodCount: $command->paymentPeriodCount,
-            // The edit form has no currency picker yet (A3, #129); default to USD for now.
-            cost: new Money($command->cost, Currency::USD),
+            cost: new Money($command->cost, $command->currency),
             color: $command->color,
         );
 

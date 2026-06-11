@@ -9,6 +9,7 @@ namespace App\Form\Subscription;
 
 use App\Dto\Subscription\CreateSubscriptionDto;
 use App\Entity\Category;
+use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\TileColor;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
@@ -53,7 +54,12 @@ final class CreateSubscriptionFormType extends AbstractType
                 'label' => 'Payment Period Count',
             ])
             ->add(child: 'cost', type: NumberType::class, options: [
-                'label' => 'Cost (USD)',
+                'label' => 'Cost',
+            ])
+            ->add(child: 'currency', type: EnumType::class, options: [
+                'class' => Currency::class,
+                'label' => 'Currency',
+                'choice_label' => static fn (Currency $currency): string => $currency->value . ' - ' . $currency->label(),
             ])
             ->add(child: 'description', type: TextareaType::class, options: [
                 'label' => 'Description',

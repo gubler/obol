@@ -39,9 +39,10 @@ older docs.
   currency's minor units (e.g. cents) plus its `Currency`. Persisted as a Doctrine embeddable
   (`*_amount` + `*_currency` columns). Arithmetic is same-currency only; cross-currency
   conversion goes through the converter (#126).
-- **cost** - a subscription's recurring charge, a `Money`. _Avoid_ calling this "amount";
-  **amount** refers specifically to the value recorded on a `Payment` (which defaults to the
-  subscription's cost and inherits its currency).
+- **cost** - a subscription's recurring charge, a `Money`. Its currency is chosen when the
+  subscription is created and is fixed once the first payment is recorded (the payments are
+  denominated in it). _Avoid_ calling this "amount"; **amount** refers specifically to the value
+  recorded on a `Payment` (which defaults to the subscription's cost and inherits its currency).
 - **monthly cost** - a subscription's `cost` normalized to a one-month equivalent
   (`Subscription::monthlyCost`), a `Money` rounded to the nearest whole minor unit.
   Yearly costs divide by twelve; weekly costs use 52 weeks per year. Used for the homepage

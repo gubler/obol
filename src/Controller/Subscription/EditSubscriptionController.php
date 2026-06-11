@@ -41,6 +41,8 @@ final class EditSubscriptionController extends AbstractBaseController
 
         $form = $this->createForm(type: EditSubscriptionFormType::class, data: $dto, options: [
             'offer_restart' => !$subscription->generatesPaymentsAutomatically(),
+            // The currency is fixed once any payment exists; disable the picker so it cannot change.
+            'lock_currency' => !$subscription->payments->isEmpty(),
         ]);
 
         $form->handleRequest(request: $request);
@@ -64,6 +66,7 @@ final class EditSubscriptionController extends AbstractBaseController
                 paymentPeriod: $data->paymentPeriod,
                 paymentPeriodCount: $data->paymentPeriodCount,
                 cost: $data->cost,
+                currency: $data->currency,
                 color: $data->color,
                 restartPaymentGeneration: $data->restartPaymentGeneration,
             ));

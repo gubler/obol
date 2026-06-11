@@ -5,6 +5,7 @@
 
 declare(strict_types=1);
 
+use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\TileColor;
 use App\Message\Command\Subscription\UpdateSubscriptionCommand;
@@ -26,6 +27,7 @@ test('creates command with all fields', function (): void {
         paymentPeriod: PaymentPeriod::Year,
         paymentPeriodCount: 1,
         cost: 15999,
+        currency: Currency::EUR,
         color: TileColor::Blue,
     );
 
@@ -39,6 +41,7 @@ test('creates command with all fields', function (): void {
         ->and($command->paymentPeriod)->toBe(PaymentPeriod::Year)
         ->and($command->paymentPeriodCount)->toBe(1)
         ->and($command->cost)->toBe(15999)
+        ->and($command->currency)->toBe(Currency::EUR)
         ->and($command->color)->toBe(TileColor::Blue)
     ;
 });
@@ -55,6 +58,7 @@ test('is readonly', function (): void {
         paymentPeriod: PaymentPeriod::Month,
         paymentPeriodCount: 1,
         cost: 100,
+        currency: Currency::USD,
         color: TileColor::Blue,
     );
 

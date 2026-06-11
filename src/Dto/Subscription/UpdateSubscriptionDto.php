@@ -9,6 +9,7 @@ namespace App\Dto\Subscription;
 
 use App\Entity\Category;
 use App\Entity\Subscription;
+use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\TileColor;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -48,6 +49,12 @@ final class UpdateSubscriptionDto
     #[GreaterThanOrEqual(value: 1)]
     public int $cost = 0;
 
+    /**
+     * The currency the cost is denominated in. Editable only while the subscription has no payments
+     * (the form disables this field once one exists; the entity rejects a change server-side, #129).
+     */
+    public Currency $currency;
+
     public string $description = '';
 
     #[AtLeastOneOf(constraints: [
@@ -69,6 +76,7 @@ final class UpdateSubscriptionDto
         $this->paymentPeriod = $subscription->paymentPeriod;
         $this->paymentPeriodCount = $subscription->paymentPeriodCount;
         $this->cost = $subscription->cost->minorAmount;
+        $this->currency = $subscription->cost->currency;
         $this->description = $subscription->description;
         $this->link = $subscription->link;
         $this->color = $subscription->color;

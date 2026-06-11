@@ -8,7 +8,6 @@ declare(strict_types=1);
 namespace App\Message\Command\Subscription;
 
 use App\Entity\Subscription;
-use App\Enum\Currency;
 use App\Repository\CategoryRepository;
 use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
@@ -37,8 +36,7 @@ final readonly class CreateSubscriptionHandler
             nextRenewal: $command->nextRenewal,
             paymentPeriod: $command->paymentPeriod,
             paymentPeriodCount: $command->paymentPeriodCount,
-            // The create form has no currency picker yet (A3, #129); default to USD for now.
-            cost: new Money($command->cost, Currency::USD),
+            cost: new Money($command->cost, $command->currency),
             description: $command->description,
             link: $command->link,
             logo: $command->logo,

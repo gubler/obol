@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 use App\Entity\Category;
 use App\Entity\Subscription;
+use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\TileColor;
 use App\Message\Command\Subscription\UpdateSubscriptionCommand;
@@ -54,6 +55,7 @@ test('handler updates subscription', function (): void {
         paymentPeriod: PaymentPeriod::Month,
         paymentPeriodCount: 1,
         cost: 1999,
+        currency: Currency::USD,
         color: TileColor::Blue,
     ));
 });
@@ -90,6 +92,7 @@ test('handler resumes automated generation when restart is requested', function 
         paymentPeriod: PaymentPeriod::Month,
         paymentPeriodCount: 1,
         cost: 1999,
+        currency: Currency::USD,
         color: TileColor::Blue,
         restartPaymentGeneration: true,
     ));
@@ -121,6 +124,7 @@ test('handler throws when subscription not found', function (): void {
         paymentPeriod: PaymentPeriod::Month,
         paymentPeriodCount: 1,
         cost: 1500,
+        currency: Currency::USD,
         color: TileColor::Blue,
     ));
 })->throws(InvalidArgumentException::class);
@@ -158,6 +162,7 @@ test('handler throws when category not found', function (): void {
         paymentPeriod: PaymentPeriod::Month,
         paymentPeriodCount: 1,
         cost: 1500,
+        currency: Currency::USD,
         color: TileColor::Blue,
     ));
 })->throws(InvalidArgumentException::class);

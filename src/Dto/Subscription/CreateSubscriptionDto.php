@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace App\Dto\Subscription;
 
 use App\Entity\Category;
+use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\TileColor;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -37,6 +38,12 @@ final class CreateSubscriptionDto
 
     #[GreaterThanOrEqual(value: 1)]
     public int $cost = 0;
+
+    /**
+     * The currency the cost is denominated in. Defaults to the display currency (USD for now,
+     * #131); freely chosen at creation and fixed once the first payment is recorded (#129).
+     */
+    public Currency $currency = Currency::USD;
 
     public string $description = '';
 

@@ -65,6 +65,13 @@ final class SubscriptionFactory extends PersistentObjectFactory
         });
     }
 
+    public function manual(): self
+    {
+        return $this->afterInstantiate(function (Subscription $subscription): void {
+            $subscription->switchToManualPayments();
+        });
+    }
+
     public function expensiveSubscription(): self
     {
         return $this->with([

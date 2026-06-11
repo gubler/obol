@@ -22,6 +22,7 @@ test('handler records payment on subscription', function (): void {
         ->method('recordPayment')
         ->with($paidDate, PaymentType::Verified, 1500)
     ;
+    $subscription->expects($this->never())->method('automatePayments');
 
     $repository = $this->createMock(SubscriptionRepository::class);
     $repository->expects($this->once())
@@ -37,6 +38,37 @@ test('handler records payment on subscription', function (): void {
         subscriptionId: $ulid,
         amount: 1500,
         paidDate: $paidDate,
+    ));
+});
+
+test('handler resumes automated generation when restart is requested', function (): void {
+    $ulid = new Ulid();
+    $paidDate = new DateTimeImmutable('2025-01-15');
+    $nextRenewal = new DateTimeImmutable('2025-03-01');
+
+    $subscription = $this->createMock(Subscription::class);
+    $subscription->expects($this->once())
+        ->method('recordPayment')
+        ->with($paidDate, PaymentType::Verified, 1500)
+    ;
+    $subscription->expects($this->once())
+        ->method('automatePayments')
+        ->with($nextRenewal)
+    ;
+
+    $repository = $this->createMock(SubscriptionRepository::class);
+    $repository->expects($this->once())->method('find')->willReturn($subscription);
+
+    $entityManager = $this->createMock(EntityManagerInterface::class);
+    $entityManager->expects($this->once())->method('flush');
+
+    $handler = new CreatePaymentHandler($repository, $entityManager);
+    $handler(new CreatePaymentCommand(
+        subscriptionId: $ulid,
+        amount: 1500,
+        paidDate: $paidDate,
+        restartPaymentGeneration: true,
+        nextRenewal: $nextRenewal,
     ));
 });
 

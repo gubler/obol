@@ -8,6 +8,7 @@ declare(strict_types=1);
 use App\Entity\Category;
 use App\Entity\Payment;
 use App\Entity\Subscription;
+use App\Enum\PaymentGeneration;
 use App\Enum\PaymentPeriod;
 use App\Enum\PaymentType;
 use App\Message\Command\Payment\DeletePaymentCommand;
@@ -16,7 +17,7 @@ use App\Repository\PaymentRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Uid\Ulid;
 
-test('removes the payment and rolls back the renewal anchor', function (): void {
+test('removes the payment, rolls back the renewal anchor, and switches to manual generation', function (): void {
     $subscription = new Subscription(
         category: new Category(name: 'Test'),
         name: 'Netflix',
@@ -43,6 +44,7 @@ test('removes the payment and rolls back the renewal anchor', function (): void 
 
     expect($subscription->payments)->toHaveCount(0)
         ->and($subscription->nextRenewal)->toEqual(new DateTimeImmutable('2024-02-01'))
+        ->and($subscription->paymentGeneration)->toBe(PaymentGeneration::Manual)
     ;
 });
 

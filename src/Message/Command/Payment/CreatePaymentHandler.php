@@ -29,11 +29,18 @@ final readonly class CreatePaymentHandler
             throw new \InvalidArgumentException(\sprintf('Subscription with ID "%s" not found.', $command->subscriptionId));
         }
 
+        // Record first: while the subscription is manual this leaves the anchor untouched. Resuming
+        // afterwards sets the future anchor and flips back to automated.
         $subscription->recordPayment(
             paidDate: $command->paidDate,
             paymentType: PaymentType::Verified,
             amount: $command->amount,
         );
+
+        if ($command->restartPaymentGeneration) {
+            \assert(null !== $command->nextRenewal);
+            $subscription->automatePayments($command->nextRenewal);
+        }
 
         $this->entityManager->flush();
     }

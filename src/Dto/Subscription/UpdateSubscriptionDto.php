@@ -15,9 +15,11 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Constraints\AtLeastOneOf;
 use Symfony\Component\Validator\Constraints\Blank;
 use Symfony\Component\Validator\Constraints\File;
+use Symfony\Component\Validator\Constraints\GreaterThan;
 use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Url;
+use Symfony\Component\Validator\Constraints\When;
 
 final class UpdateSubscriptionDto
 {
@@ -26,7 +28,17 @@ final class UpdateSubscriptionDto
     #[NotBlank]
     public string $name;
 
+    #[When(
+        expression: 'this.restartPaymentGeneration === true',
+        constraints: [new GreaterThan(value: 'today', message: 'The next renewal date must be in the future to restart automatic payments.')],
+    )]
     public \DateTimeImmutable $nextRenewal;
+
+    /**
+     * Only offered for a manual subscription. When checked, the subscription returns to automated
+     * generation anchored to `nextRenewal`, which must be a future date.
+     */
+    public bool $restartPaymentGeneration = false;
 
     public PaymentPeriod $paymentPeriod;
 

@@ -28,7 +28,7 @@ final readonly class GeneratePaymentsHandler
         $today = new \DateTimeImmutable('today');
 
         foreach ($subscriptions as $subscription) {
-            if ($subscription->nextRenewal <= $today) {
+            if ($subscription->generatesPaymentsAutomatically() && $subscription->nextRenewal <= $today) {
                 $subscription->recordPayment(
                     paidDate: $subscription->nextRenewal,
                     paymentType: PaymentType::Generated,

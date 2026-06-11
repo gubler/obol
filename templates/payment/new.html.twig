@@ -13,7 +13,21 @@
         <div class="bg-white shadow-md rounded p-6 max-w-2xl">
             {{ form_start(form, {attr: {class: 'space-y-6'}}) }}
 
-            {{ form_widget(form) }}
+            {{ form_row(form.amount) }}
+            {{ form_row(form.paidDate) }}
+
+            {% if form.restartPaymentGeneration is defined %}
+                <div class="border-t border-gray-200 pt-4 space-y-3" data-controller="conditional-field">
+                    <p class="text-sm text-gray-600">Automatic payment generation is paused for this subscription.</p>
+                    {{ form_row(form.restartPaymentGeneration, {attr: {
+                        'data-conditional-field-target': 'trigger',
+                        'data-action': 'conditional-field#toggle',
+                    }}) }}
+                    <div data-conditional-field-target="field">
+                        {{ form_row(form.nextRenewal) }}
+                    </div>
+                </div>
+            {% endif %}
 
             <div class="flex justify-end space-x-3">
                 <a href="{{ path('subscription_show', {id: subscription.id}) }}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">

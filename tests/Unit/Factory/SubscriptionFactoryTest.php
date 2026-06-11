@@ -40,6 +40,12 @@ test('with recent payment creates subscription with recent payment', function ()
     expect($subscription->payments)->toHaveCount(1);
 });
 
+test('manual creates a subscription with manual payment generation', function (): void {
+    $subscription = SubscriptionFactory::new()->manual()->create();
+
+    expect($subscription->generatesPaymentsAutomatically())->toBeFalse();
+});
+
 test('expensive subscription creates subscription with high cost', function (): void {
     $subscription = SubscriptionFactory::new()->expensiveSubscription()->create();
 

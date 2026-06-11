@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Enum\PaymentGeneration;
 use App\Enum\PaymentPeriod;
 use App\Enum\PaymentType;
 use App\Enum\SubscriptionEventType;
@@ -34,6 +35,16 @@ class Subscription
 
     #[ORM\Column]
     public private(set) bool $archived = false;
+
+    /**
+     * Whether Obol generates this subscription's payments automatically or the user manages them.
+     * Under `Manual` the scheduler generates nothing and the renewal anchor is left entirely in the
+     * user's hands; recording or removing a payment no longer shifts `nextRenewal`. Set to `Manual`
+     * when the user deletes the latest payment; returned to `Automated` only by an explicit resume
+     * with a future renewal date. See ADR-0008.
+     */
+    #[ORM\Column(enumType: PaymentGeneration::class)]
+    public private(set) PaymentGeneration $paymentGeneration = PaymentGeneration::Automated;
 
     #[ORM\Column]
     public private(set) \DateTimeImmutable $createdAt;
@@ -173,13 +184,55 @@ class Subscription
                 paidDate: $paidDate,
             )
         );
-        $this->nextRenewal = $this->nextRenewal->add($this->renewalInterval());
+
+        // Under manual generation the user owns the anchor; recording a payment must not shift it.
+        if ($this->generatesPaymentsAutomatically()) {
+            $this->nextRenewal = $this->nextRenewal->add($this->renewalInterval());
+        }
     }
 
     public function removePayment(Payment $payment): void
     {
         $this->payments->removeElement($payment);
-        $this->nextRenewal = $this->nextRenewal->sub($this->renewalInterval());
+
+        // Under manual generation the user owns the anchor; removing a payment must not shift it.
+        if ($this->generatesPaymentsAutomatically()) {
+            $this->nextRenewal = $this->nextRenewal->sub($this->renewalInterval());
+        }
+    }
+
+    /**
+     * Deletes the most recent payment, the only one a user may remove. Deletion means "this was not
+     * paid", so it hands generation to the user (`Manual`) - which also stops the scheduler from
+     * recreating it next run. The first such delete still rolls the anchor back (it happens while
+     * generation is still automated); once manual, the anchor stays put. See ADR-0008.
+     */
+    public function removeLatestPayment(Payment $payment): void
+    {
+        $latest = $this->latestPayment();
+        Assertion::true(
+            null !== $latest && $payment->id->equals($latest->id),
+            'Only the latest payment can be deleted',
+        );
+
+        $this->removePayment($payment);
+        $this->switchToManualPayments();
+    }
+
+    /**
+     * The most recent payment by paid date, or null when there are none. This is the only payment a
+     * user may delete (see `removeLatestPayment`); the UI offers the delete action on it alone.
+     */
+    public function latestPayment(): ?Payment
+    {
+        $latest = null;
+        foreach ($this->payments as $payment) {
+            if (null === $latest || $payment->paidDate > $latest->paidDate) {
+                $latest = $payment;
+            }
+        }
+
+        return $latest;
     }
 
     private function renewalInterval(): \DateInterval
@@ -293,5 +346,51 @@ class Subscription
                 context: [],
             )
         );
+    }
+
+    public function generatesPaymentsAutomatically(): bool
+    {
+        return PaymentGeneration::Automated === $this->paymentGeneration;
+    }
+
+    /**
+     * Hands renewal management to the user: the scheduler stops generating payments and the anchor
+     * is no longer shifted automatically. Returned to automated by an explicit resume with a future
+     * renewal date.
+     */
+    public function switchToManualPayments(): void
+    {
+        $this->paymentGeneration = PaymentGeneration::Manual;
+    }
+
+    /**
+     * Resumes automated generation, anchored to a future renewal. The anchor must be after today so
+     * resuming never triggers an immediate catch-up generation on the next scheduler run.
+     */
+    public function automatePayments(\DateTimeImmutable $nextRenewal): void
+    {
+        Assertion::true(
+            $nextRenewal > new \DateTimeImmutable('today'),
+            'Automated payments require a renewal date in the future',
+        );
+
+        $this->paymentGeneration = PaymentGeneration::Automated;
+        $this->nextRenewal = $nextRenewal;
+    }
+
+    /**
+     * A sensible future anchor for resuming automated generation: the configured cadence stepped
+     * forward from the current anchor until it lands strictly after today. A renewal already in the
+     * future is returned unchanged.
+     */
+    public function suggestedResumeRenewal(): \DateTimeImmutable
+    {
+        $today = new \DateTimeImmutable('today');
+        $renewal = $this->nextRenewal;
+        while ($renewal <= $today) {
+            $renewal = $renewal->add($this->renewalInterval());
+        }
+
+        return $renewal;
     }
 }

@@ -9,6 +9,7 @@ use App\Entity\Category;
 use App\Entity\Payment;
 use App\Entity\Subscription;
 use App\Entity\SubscriptionEvent;
+use App\Enum\PaymentGeneration;
 use App\Enum\PaymentPeriod;
 use App\Enum\PaymentType;
 use App\Enum\SubscriptionEventType;
@@ -391,6 +392,198 @@ describe('record payment', function (): void {
         /** @var Payment $payment */
         $payment = $subscription->payments->first();
         expect($payment->amount)->toBe(2000);
+    });
+});
+
+describe('payment generation', function (): void {
+    test('defaults to automated', function (): void {
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: new DateTimeImmutable('2024-02-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 1500,
+        );
+
+        expect($subscription->paymentGeneration)->toBe(PaymentGeneration::Automated)
+            ->and($subscription->generatesPaymentsAutomatically())->toBeTrue()
+        ;
+    });
+
+    test('switching to manual sets payment generation to manual', function (): void {
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: new DateTimeImmutable('2024-02-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 1500,
+        );
+
+        $subscription->switchToManualPayments();
+
+        expect($subscription->paymentGeneration)->toBe(PaymentGeneration::Manual)
+            ->and($subscription->generatesPaymentsAutomatically())->toBeFalse()
+        ;
+    });
+
+    test('recording a payment under manual generation leaves the renewal anchor untouched', function (): void {
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: new DateTimeImmutable('2024-02-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 1500,
+        );
+        $subscription->switchToManualPayments();
+
+        $subscription->recordPayment(
+            paidDate: new DateTimeImmutable('2024-02-01'),
+            paymentType: PaymentType::Verified,
+        );
+
+        expect($subscription->payments)->toHaveCount(1)
+            ->and($subscription->nextRenewal)->toEqual(new DateTimeImmutable('2024-02-01'))
+        ;
+    });
+
+    test('removing a payment under manual generation leaves the renewal anchor untouched', function (): void {
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: new DateTimeImmutable('2024-02-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 1500,
+        );
+        // Record while automated so the anchor advances to 2024-03-01, then switch to manual.
+        $subscription->recordPayment(
+            paidDate: new DateTimeImmutable('2024-02-01'),
+            paymentType: PaymentType::Verified,
+        );
+        $subscription->switchToManualPayments();
+        /** @var Payment $payment */
+        $payment = $subscription->payments->first();
+        $subscription->removePayment($payment);
+
+        expect($subscription->payments)->toHaveCount(0)
+            ->and($subscription->nextRenewal)->toEqual(new DateTimeImmutable('2024-03-01'))
+        ;
+    });
+
+    test('removing the latest payment switches generation to manual and rolls back the anchor', function (): void {
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: new DateTimeImmutable('2024-02-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 1500,
+        );
+        $subscription->recordPayment(
+            paidDate: new DateTimeImmutable('2024-02-01'),
+            paymentType: PaymentType::Verified,
+        );
+        /** @var Payment $payment */
+        $payment = $subscription->payments->first();
+
+        $subscription->removeLatestPayment($payment);
+
+        expect($subscription->payments)->toHaveCount(0)
+            ->and($subscription->paymentGeneration)->toBe(PaymentGeneration::Manual)
+            ->and($subscription->nextRenewal)->toEqual(new DateTimeImmutable('2024-02-01'))
+        ;
+    });
+
+    test('removing a payment that is not the latest is rejected', function (): void {
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: new DateTimeImmutable('2024-02-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 1500,
+        );
+        $subscription->recordPayment(
+            paidDate: new DateTimeImmutable('2024-01-01'),
+            paymentType: PaymentType::Verified,
+        );
+        $subscription->recordPayment(
+            paidDate: new DateTimeImmutable('2024-02-01'),
+            paymentType: PaymentType::Verified,
+        );
+        /** @var Payment $older */
+        $older = $subscription->payments->first();
+
+        $subscription->removeLatestPayment($older);
+    })->throws(Assert\InvalidArgumentException::class);
+
+    test('automating sets generation to automated and anchors the future renewal', function (): void {
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: new DateTimeImmutable('2024-02-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 1500,
+        );
+        $subscription->switchToManualPayments();
+
+        $future = new DateTimeImmutable('tomorrow');
+        $subscription->automatePayments($future);
+
+        expect($subscription->paymentGeneration)->toBe(PaymentGeneration::Automated)
+            ->and($subscription->generatesPaymentsAutomatically())->toBeTrue()
+            ->and($subscription->nextRenewal)->toEqual($future)
+        ;
+    });
+
+    test('automating with a non-future renewal is rejected', function (): void {
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: new DateTimeImmutable('2024-02-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 1500,
+        );
+        $subscription->switchToManualPayments();
+
+        $subscription->automatePayments(new DateTimeImmutable('2020-01-01'));
+    })->throws(Assert\InvalidArgumentException::class);
+
+    test('suggested resume renewal steps the cadence to the first date after today', function (): void {
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: new DateTimeImmutable('2020-01-15'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 1500,
+        );
+
+        $suggested = $subscription->suggestedResumeRenewal();
+
+        // Lands strictly after today and stays on the original day-of-cadence (the 15th).
+        expect($suggested > new DateTimeImmutable('today'))->toBeTrue()
+            ->and($suggested->format('d'))->toBe('15')
+        ;
+    });
+
+    test('suggested resume renewal keeps a renewal that is already in the future', function (): void {
+        $future = new DateTimeImmutable('+40 days');
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: $future,
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 1500,
+        );
+
+        expect($subscription->suggestedResumeRenewal())->toEqual($future);
     });
 });
 

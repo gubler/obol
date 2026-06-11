@@ -14,6 +14,13 @@
         <div class="bg-white shadow-md rounded p-6 max-w-2xl">
             {{ form_start(form, {attr: {class: 'space-y-6'}}) }}
 
+            {% if form.restartPaymentGeneration is defined %}
+                <div class="rounded border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                    Automatic payment generation is paused for this subscription. To resume it, set the
+                    Next Renewal Date to a future date and check &ldquo;Restart automatic payments?&rdquo; below.
+                </div>
+            {% endif %}
+
             {{ form_widget(form) }}
 
             <div class="flex justify-end space-x-3">

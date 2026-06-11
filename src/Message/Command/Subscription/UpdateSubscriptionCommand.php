@@ -25,6 +25,7 @@ final readonly class UpdateSubscriptionCommand
         public int $paymentPeriodCount,
         public int $cost,
         public TileColor $color,
+        public bool $restartPaymentGeneration = false,
     ) {
     }
 }

@@ -13,6 +13,7 @@ use App\Enum\PaymentPeriod;
 use App\Enum\TileColor;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\EnumType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
@@ -78,13 +79,24 @@ final class EditSubscriptionFormType extends AbstractType
                 'block_prefix' => 'tile_color',
             ])
         ;
+
+        // Resuming automated generation is only meaningful for a subscription the user has taken
+        // over manually; the Next Renewal Date above doubles as the resume anchor.
+        if (true === $options['offer_restart']) {
+            $builder->add(child: 'restartPaymentGeneration', type: CheckboxType::class, options: [
+                'label' => 'Restart automatic payments?',
+                'required' => false,
+            ]);
+        }
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults(defaults: [
             'data_class' => UpdateSubscriptionDto::class,
+            'offer_restart' => false,
         ]);
+        $resolver->setAllowedTypes(option: 'offer_restart', allowedTypes: 'bool');
     }
 
     #[\Override]

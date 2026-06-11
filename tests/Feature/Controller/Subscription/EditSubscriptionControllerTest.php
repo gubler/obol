@@ -83,6 +83,91 @@ test('post request with valid data updates subscription', function (): void {
     expect($newCategory->id->equals($subscription->category->id))->toBeTrue();
 });
 
+test('does not offer the restart control for an automated subscription', function (): void {
+    $client = $this->createClient();
+    $subscription = SubscriptionFactory::createOne(['name' => 'Netflix']);
+
+    $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+
+    $this->assertResponseIsSuccessful();
+    $this->assertSelectorNotExists(selector: '#edit_subscription_restartPaymentGeneration');
+});
+
+test('resumes automated generation from the edit form when restart is requested', function (): void {
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    $subscription = SubscriptionFactory::new()->manual()->create([
+        'category' => $category,
+        'name' => 'Netflix',
+        'cost' => 1599,
+    ]);
+
+    $future = (new DateTimeImmutable('+45 days'))->format('Y-m-d');
+
+    $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+
+    $this->assertSelectorExists(selector: '#edit_subscription_restartPaymentGeneration');
+
+    $form = $crawler->selectButton(value: 'Save')->form([
+        'edit_subscription[category]' => $category->id->toBase32(),
+        'edit_subscription[name]' => 'Netflix',
+        'edit_subscription[nextRenewal]' => $future,
+        'edit_subscription[paymentPeriod]' => 'month',
+        'edit_subscription[paymentPeriodCount]' => '1',
+        'edit_subscription[cost]' => '1599',
+        'edit_subscription[color]' => 'teal',
+        'edit_subscription[restartPaymentGeneration]' => '1',
+    ]);
+    $client->submit(form: $form);
+
+    $this->assertResponseRedirects(expectedLocation: '/subscriptions/' . $subscription->id);
+
+    $container = $this->getContainer();
+    /** @var EntityManagerInterface $entityManager */
+    $entityManager = $container->get(id: EntityManagerInterface::class);
+    $entityManager->clear();
+
+    $updated = $entityManager->getRepository(className: Subscription::class)->find($subscription->id);
+    expect($updated->generatesPaymentsAutomatically())->toBeTrue()
+        ->and($updated->nextRenewal->format('Y-m-d'))->toBe($future)
+    ;
+});
+
+test('rejects a restart with a non-future renewal date', function (): void {
+    $client = $this->createClient();
+    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    $subscription = SubscriptionFactory::new()->manual()->create([
+        'category' => $category,
+        'name' => 'Netflix',
+        'cost' => 1599,
+    ]);
+
+    $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+
+    $form = $crawler->selectButton(value: 'Save')->form([
+        'edit_subscription[category]' => $category->id->toBase32(),
+        'edit_subscription[name]' => 'Netflix',
+        'edit_subscription[nextRenewal]' => '2020-01-01',
+        'edit_subscription[paymentPeriod]' => 'month',
+        'edit_subscription[paymentPeriodCount]' => '1',
+        'edit_subscription[cost]' => '1599',
+        'edit_subscription[color]' => 'teal',
+        'edit_subscription[restartPaymentGeneration]' => '1',
+    ]);
+    $client->submit(form: $form);
+
+    $this->assertResponseStatusCodeSame(expectedCode: 422);
+
+    $container = $this->getContainer();
+    /** @var EntityManagerInterface $entityManager */
+    $entityManager = $container->get(id: EntityManagerInterface::class);
+    $entityManager->clear();
+
+    // Still manual - the invalid restart did not take effect.
+    $updated = $entityManager->getRepository(className: Subscription::class)->find($subscription->id);
+    expect($updated->generatesPaymentsAutomatically())->toBeFalse();
+});
+
 test('post request with valid data shows success flash message', function (): void {
     $client = $this->createClient();
     $category = CategoryFactory::createOne(['name' => 'Entertainment']);

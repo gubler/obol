@@ -59,6 +59,21 @@ test('skips a subscription whose renewal is in the future', function (): void {
     expect($subscription->payments)->toHaveCount(0);
 });
 
+test('skips a subscription set to manual payment generation even when its renewal has passed', function (): void {
+    $subscription = makeSubscription(PaymentPeriod::Month, 1, new DateTimeImmutable('2020-01-01'));
+    $subscription->switchToManualPayments();
+
+    $repository = $this->createMock(SubscriptionRepository::class);
+    $repository->method('findBy')->with(['archived' => false])->willReturn([$subscription]);
+    $entityManager = $this->createMock(EntityManagerInterface::class);
+
+    (new GeneratePaymentsHandler($repository, $entityManager))(new GeneratePaymentsMessage());
+
+    expect($subscription->payments)->toHaveCount(0)
+        ->and($subscription->nextRenewal)->toEqual(new DateTimeImmutable('2020-01-01'))
+    ;
+});
+
 test('advances the renewal anchor by the configured interval', function (PaymentPeriod $period, int $count, string $expected): void {
     $subscription = makeSubscription($period, $count, new DateTimeImmutable('2020-01-01'));
 

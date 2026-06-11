@@ -30,8 +30,17 @@ final class CreatePaymentController extends AbstractBaseController
             throw new NotFoundHttpException(\sprintf('Subscription with ID "%s" not found.', $subscriptionId));
         }
 
+        $offerRestart = !$subscription->generatesPaymentsAutomatically();
+
         $dto = new CreatePaymentDto();
-        $form = $this->createForm(type: CreatePaymentFormType::class, data: $dto);
+        if ($offerRestart) {
+            // Prefill a sensible future anchor should the user choose to resume automated generation.
+            $dto->nextRenewal = $subscription->suggestedResumeRenewal();
+        }
+
+        $form = $this->createForm(type: CreatePaymentFormType::class, data: $dto, options: [
+            'offer_restart' => $offerRestart,
+        ]);
 
         $form->handleRequest(request: $request);
 
@@ -46,6 +55,8 @@ final class CreatePaymentController extends AbstractBaseController
                 subscriptionId: $subscription->id,
                 amount: $data->amount,
                 paidDate: $data->paidDate,
+                restartPaymentGeneration: $data->restartPaymentGeneration,
+                nextRenewal: $data->nextRenewal,
             ));
 
             $this->addFlash(type: self::FLASH_SUCCESS, message: 'Payment recorded successfully');

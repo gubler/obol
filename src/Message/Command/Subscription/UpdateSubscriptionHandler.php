@@ -49,6 +49,11 @@ final readonly class UpdateSubscriptionHandler
             color: $command->color,
         );
 
+        // update() has already set the anchor; resuming re-anchors it and flips back to automated.
+        if ($command->restartPaymentGeneration) {
+            $subscription->automatePayments($command->nextRenewal);
+        }
+
         $this->entityManager->flush();
     }
 }

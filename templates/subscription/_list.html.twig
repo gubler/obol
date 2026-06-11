@@ -18,6 +18,9 @@
                         {% if subscription.archived %}
                             <span class="archived-badge ml-2 inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">Archived</span>
                         {% endif %}
+                        {% if not subscription.generatesPaymentsAutomatically %}
+                            <span class="manual-payments-badge ml-2 inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800" title="Automatic payment generation is paused">Manual</span>
+                        {% endif %}
                     </td>
                     <td class="whitespace-nowrap px-6 py-4 text-right text-gray-900">${{ (subscription.monthlyCost / 100)|number_format(2) }}</td>
                     <td class="whitespace-nowrap px-6 py-4 text-right text-gray-900">

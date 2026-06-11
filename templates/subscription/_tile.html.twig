@@ -18,5 +18,11 @@
         {% if subscription.archived %}
             <span class="archived-badge mt-2 inline-flex items-center rounded-full bg-black/30 px-2 py-0.5 text-xs font-medium text-white">Archived</span>
         {% endif %}
+        {% if not subscription.generatesPaymentsAutomatically %}
+            <span class="manual-payments-badge mt-2 inline-flex items-center gap-1 rounded-full bg-black/30 px-2 py-0.5 text-xs font-medium text-white" title="Automatic payment generation is paused">
+                <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path d="M7 4a1 1 0 0 1 1 1v10a1 1 0 1 1-2 0V5a1 1 0 0 1 1-1Zm6 0a1 1 0 0 1 1 1v10a1 1 0 1 1-2 0V5a1 1 0 0 1 1-1Z"/></svg>
+                Manual
+            </span>
+        {% endif %}
     </div>
 </a>

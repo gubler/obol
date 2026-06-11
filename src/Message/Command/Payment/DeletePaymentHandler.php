@@ -1,7 +1,7 @@
 <?php
 
-// ABOUTME: Handler for DeletePaymentCommand that removes a payment entity.
-// ABOUTME: Finds payment by ID, removes it via entity manager, and flushes.
+// ABOUTME: Handler for DeletePaymentCommand that deletes a subscription's latest payment.
+// ABOUTME: Removing the latest payment switches the subscription to manual generation (ADR-0008).
 
 declare(strict_types=1);
 
@@ -28,7 +28,7 @@ final readonly class DeletePaymentHandler
             throw new \InvalidArgumentException(\sprintf('Payment with ID "%s" not found.', $command->paymentId));
         }
 
-        $payment->subscription->removePayment($payment);
+        $payment->subscription->removeLatestPayment($payment);
         $this->entityManager->flush();
     }
 }

@@ -6,6 +6,7 @@
 declare(strict_types=1);
 
 use App\Factory\CategoryFactory;
+use App\Factory\PaymentFactory;
 use App\Factory\SubscriptionFactory;
 
 test('shows subscription basic response', function (): void {
@@ -90,4 +91,37 @@ test('renders without errors', function (): void {
     $content = $client->getResponse()->getContent();
     expect($content)->not->toBeFalse();
     expect($content)->toContain('Netflix');
+});
+
+test('shows a manual-payments badge for a manual subscription', function (): void {
+    $client = $this->createClient();
+    $subscription = SubscriptionFactory::new()->manual()->create(['name' => 'Netflix']);
+
+    $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id);
+
+    $this->assertResponseIsSuccessful();
+    $this->assertSelectorExists(selector: '.manual-payments-badge');
+});
+
+test('shows no manual-payments badge for an automated subscription', function (): void {
+    $client = $this->createClient();
+    $subscription = SubscriptionFactory::createOne(['name' => 'Netflix']);
+
+    $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id);
+
+    $this->assertResponseIsSuccessful();
+    $this->assertSelectorNotExists(selector: '.manual-payments-badge');
+});
+
+test('offers the delete action only on the latest payment', function (): void {
+    $client = $this->createClient();
+    $subscription = SubscriptionFactory::createOne(['name' => 'Netflix']);
+    PaymentFactory::createOne(['subscription' => $subscription, 'paidDate' => new DateTimeImmutable('2024-01-01')]);
+    PaymentFactory::createOne(['subscription' => $subscription, 'paidDate' => new DateTimeImmutable('2024-02-01')]);
+
+    $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id);
+
+    $this->assertResponseIsSuccessful();
+    // Two payments listed, but only the latest one is deletable.
+    expect($crawler->filter('.payment-delete-form')->count())->toBe(1);
 });

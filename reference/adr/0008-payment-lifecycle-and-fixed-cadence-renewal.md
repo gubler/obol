@@ -57,7 +57,36 @@ cheap, and not reconstructable after the fact if later needed.
   lands first as a bug fix (#106); the payment validate/adjust capability (#107) rides on
   top.
 - Accepted edges (not engineered around): deleting a still-due `Generated` payment lets the
-  scheduler recreate it next run; an interval change mid-life may need a manual
-  `nextRenewal` correction.
+  scheduler recreate it next run (**superseded by the 2026-06-11 amendment below**); an
+  interval change mid-life may need a manual `nextRenewal` correction.
 - Supersedes the glossary's "Payment is immutable" line. ADR-0002 (subscription audit) is
   unaffected.
+
+## Amendment (2026-06-11): payment generation mode - automated vs manual (#124)
+
+The original "accepted edge" - deleting a still-due `Generated` payment lets the scheduler
+recreate it next run - proved user-hostile: a deliberately deleted payment reappearing every
+day reads as the system overriding the user. Deleting a payment has one meaning - *this was
+not paid* - and it must stay deleted.
+
+**Decision.** A `Subscription` carries a `paymentGeneration` mode (`PaymentGeneration` enum:
+`Automated` | `Manual`), defaulting to `Automated`. The enum names exactly what is tracked -
+who generates payments, Obol or the user - rather than a vaguer "paused" flag.
+
+- **Deleting the latest payment** switches the subscription to `Manual`. Only the most recent
+  payment is deletable; deleting a historical one would desync the anchor and is unsupported.
+  The triggering delete still rolls `nextRenewal` back (it happens while generation is still
+  automated), so the unpaid cycle correctly reads as owed.
+- **Under `Manual`** the scheduler skips the subscription entirely and the anchor is the
+  user's: recording or removing a payment no longer shifts `nextRenewal` (anchor automation is
+  gated on `Automated`). `nextRenewal` is edited directly on the subscription edit form.
+- **Resuming is always explicit and requires a future renewal date**, so it never triggers an
+  immediate catch-up generation. Two surfaces offer it: a "restart automatic payments?" control
+  on the record-payment form (revealing a next-renewal field prefilled with the next cadence
+  after today) and on the edit form. `Subscription::automatePayments()` validates the future
+  date, flips back to `Automated`, and sets the anchor.
+
+We deliberately do **not** infer the user's finances (e.g. "they recorded enough catch-up
+payments, so they must be current"); pausing and resuming are explicit user actions. This
+respects that someone may choose to run a subscription entirely by hand for the life of their
+account. Supersedes the delete-recreate accepted edge above; implemented in #124.

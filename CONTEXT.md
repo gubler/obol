@@ -42,14 +42,21 @@ older docs.
   currency's minor units (`Subscription::monthlyCost`), rounded to the nearest whole cent.
   Yearly costs divide by twelve; weekly costs use 52 weeks per year. Used for the homepage
   category totals and the list view. _Avoid_ "cost per month" as a separate term.
-- **record a payment** - append a `Payment` to a subscription and advance its `nextRenewal`
-  by one billing interval (`Subscription::recordPayment`); deleting a payment rolls the
-  anchor back. _Avoid_ "create a payment".
+- **record a payment** - append a `Payment` to a subscription. Under automated **payment
+  generation** this advances `nextRenewal` by one billing interval (`Subscription::recordPayment`)
+  and deleting the latest payment rolls the anchor back; under manual generation the anchor is left
+  untouched. _Avoid_ "create a payment".
 - **archive / unarchive** - reversibly retire a subscription. Archived subscriptions are
   hidden by default but keep their full history. _Avoid_ "soft-delete" / "delete".
 - **renewal** - the point at which a subscription's next charge falls due, stored as the
   `nextRenewal` anchor the scheduler keys off (advanced one interval per payment, not by
   when the user actually paid). _Avoid_ "payment due date" as a separate term.
+- **payment generation** - whether Obol generates a subscription's payments automatically or the
+  user manages them, stored as the `paymentGeneration` mode (`Automated` | `Manual`). Deleting a
+  subscription's latest payment switches it to **manual**: the scheduler stops generating and the
+  `nextRenewal` anchor is left entirely to the user. Resuming **automated** generation is an
+  explicit user action requiring a future renewal date. _Avoid_ "paused" - the subscription is not
+  dormant, only its generation is manual. See ADR-0008.
 - **savings target** - the amount that should be set aside by now to cover upcoming renewals
   (`Subscription::savingsTarget`), in the currency's minor units. Models a monthly budget saved
   one month ahead: a **monthly cost** is allocated on the first of each calendar month, a renewal

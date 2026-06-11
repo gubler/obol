@@ -23,6 +23,7 @@ test('handler updates subscription', function (): void {
 
     $subscription = $this->createMock(Subscription::class);
     $subscription->expects($this->once())->method('update');
+    $subscription->expects($this->never())->method('automatePayments');
 
     $category = $this->createMock(Category::class);
 
@@ -54,6 +55,43 @@ test('handler updates subscription', function (): void {
         paymentPeriodCount: 1,
         cost: 1999,
         color: TileColor::Blue,
+    ));
+});
+
+test('handler resumes automated generation when restart is requested', function (): void {
+    $subscriptionUlid = new Ulid();
+    $categoryUlid = new Ulid();
+    $nextRenewal = new DateTimeImmutable('2025-03-01');
+
+    $subscription = $this->createMock(Subscription::class);
+    $subscription->expects($this->once())->method('update');
+    $subscription->expects($this->once())->method('automatePayments')->with($nextRenewal);
+
+    $category = $this->createMock(Category::class);
+
+    $subscriptionRepository = $this->createMock(SubscriptionRepository::class);
+    $subscriptionRepository->expects($this->once())->method('find')->willReturn($subscription);
+
+    $categoryRepository = $this->createMock(CategoryRepository::class);
+    $categoryRepository->expects($this->once())->method('find')->willReturn($category);
+
+    $entityManager = $this->createMock(EntityManagerInterface::class);
+    $entityManager->expects($this->once())->method('flush');
+
+    $handler = new UpdateSubscriptionHandler($subscriptionRepository, $categoryRepository, $entityManager);
+    $handler(new UpdateSubscriptionCommand(
+        subscriptionId: $subscriptionUlid,
+        categoryId: $categoryUlid,
+        name: 'Netflix Premium',
+        nextRenewal: $nextRenewal,
+        description: 'Premium plan',
+        link: 'https://netflix.com',
+        logo: 'logo.png',
+        paymentPeriod: PaymentPeriod::Month,
+        paymentPeriodCount: 1,
+        cost: 1999,
+        color: TileColor::Blue,
+        restartPaymentGeneration: true,
     ));
 });
 

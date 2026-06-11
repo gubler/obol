@@ -39,7 +39,9 @@ final class EditSubscriptionController extends AbstractBaseController
 
         $dto = new UpdateSubscriptionDto(subscription: $subscription);
 
-        $form = $this->createForm(type: EditSubscriptionFormType::class, data: $dto);
+        $form = $this->createForm(type: EditSubscriptionFormType::class, data: $dto, options: [
+            'offer_restart' => !$subscription->generatesPaymentsAutomatically(),
+        ]);
 
         $form->handleRequest(request: $request);
 
@@ -63,6 +65,7 @@ final class EditSubscriptionController extends AbstractBaseController
                 paymentPeriodCount: $data->paymentPeriodCount,
                 cost: $data->cost,
                 color: $data->color,
+                restartPaymentGeneration: $data->restartPaymentGeneration,
             ));
 
             $this->addFlash(type: self::FLASH_SUCCESS, message: 'Subscription updated successfully');

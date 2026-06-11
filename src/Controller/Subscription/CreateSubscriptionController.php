@@ -11,6 +11,7 @@ use App\Controller\AbstractBaseController;
 use App\Dto\Subscription\CreateSubscriptionDto;
 use App\Form\Subscription\CreateSubscriptionFormType;
 use App\Message\Command\Subscription\CreateSubscriptionCommand;
+use App\Service\DisplayCurrencyProvider;
 use App\Service\FileUploader;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,14 +19,18 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class CreateSubscriptionController extends AbstractBaseController
 {
-    public function __construct(private readonly FileUploader $fileUploader)
-    {
+    public function __construct(
+        private readonly FileUploader $fileUploader,
+        private readonly DisplayCurrencyProvider $displayCurrencyProvider,
+    ) {
     }
 
     #[Route(path: '/subscriptions/new', name: 'subscription_new', methods: ['GET', 'POST'])]
     public function __invoke(Request $request): Response
     {
         $dto = new CreateSubscriptionDto();
+        // Pre-select the display currency; the user can still pick another before the first payment.
+        $dto->currency = $this->displayCurrencyProvider->get();
         $form = $this->createForm(type: CreateSubscriptionFormType::class, data: $dto);
 
         $form->handleRequest(request: $request);

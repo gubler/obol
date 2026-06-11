@@ -26,4 +26,28 @@ class ExchangeRateRepository extends ServiceEntityRepository
     {
         return null !== $this->findOneBy(['currency' => $currency, 'asOf' => $asOf]);
     }
+
+    /**
+     * The most recent EUR-pivot rate for a currency (units of the currency per 1 EUR), or null when
+     * none is stored. With `$asOf` set, the latest rate dated on or before it - the historical lookup
+     * a future report can use; without it, the latest rate overall.
+     */
+    public function latestRate(Currency $currency, ?\DateTimeImmutable $asOf = null): ?float
+    {
+        $qb = $this->createQueryBuilder('r')
+            ->where('r.currency = :currency')
+            ->setParameter('currency', $currency)
+            ->orderBy('r.asOf', 'DESC')
+            ->setMaxResults(1)
+        ;
+
+        if (null !== $asOf) {
+            $qb->andWhere('r.asOf <= :asOf')->setParameter('asOf', $asOf);
+        }
+
+        $rate = $qb->getQuery()->getOneOrNullResult();
+        \assert(null === $rate || $rate instanceof ExchangeRate);
+
+        return $rate?->rate;
+    }
 }

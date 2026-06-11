@@ -6,6 +6,8 @@
 parameters:
     app.uploads_directory: '%kernel.project_dir%/public/uploads/logos'
     app.uploads_public_path: 'uploads/logos'
+    # The currency converted totals are presented in. One value today; becomes per-user under SaaS.
+    app.display_currency: 'USD'
 
 services:
     # default configuration for services in *this* file
@@ -22,6 +24,10 @@ services:
         arguments:
             $targetDirectory: '%app.uploads_directory%'
             $publicPath: '%app.uploads_public_path%'
+
+    App\Service\DisplayCurrencyProvider:
+        arguments:
+            $displayCurrency: '%app.display_currency%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

@@ -24,5 +24,6 @@ test('schedule has recurring messages configured', function (): void {
     $result = $schedule->getSchedule();
     $messages = $result->getRecurringMessages();
 
-    expect($messages)->toHaveCount(1);
+    // Daily payment generation plus the daily exchange-rate pull.
+    expect($messages)->toHaveCount(2);
 });

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App;
 
 use App\Message\Scheduler\GeneratePaymentsMessage;
+use App\Message\Scheduler\PullExchangeRatesMessage;
 use Symfony\Component\Scheduler\Attribute\AsSchedule;
 use Symfony\Component\Scheduler\RecurringMessage;
 use Symfony\Component\Scheduler\Schedule as SymfonySchedule;
@@ -25,6 +26,7 @@ readonly class Schedule implements ScheduleProviderInterface
             ->stateful($this->cache) // ensure missed tasks are executed
             ->processOnlyLastMissedRun(true) // ensure only last missed task is run
             ->add(RecurringMessage::every('1 day', new GeneratePaymentsMessage()))
+            ->add(RecurringMessage::every('1 day', new PullExchangeRatesMessage()))
         ;
     }
 }

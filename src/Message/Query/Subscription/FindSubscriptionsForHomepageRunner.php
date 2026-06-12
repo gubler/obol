@@ -10,7 +10,9 @@ namespace App\Message\Query\Subscription;
 use App\Entity\Category;
 use App\Entity\Subscription;
 use App\Enum\SubscriptionSort;
+use App\Message\Currency\CurrencyTotaller;
 use App\Repository\SubscriptionRepository;
+use App\ValueObject\Money;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(bus: 'query.bus', handles: FindSubscriptionsForHomepageQuery::class)]
@@ -18,6 +20,7 @@ final readonly class FindSubscriptionsForHomepageRunner
 {
     public function __construct(
         private SubscriptionRepository $subscriptionRepository,
+        private CurrencyTotaller $currencyTotaller,
     ) {
     }
 
@@ -58,9 +61,17 @@ final readonly class FindSubscriptionsForHomepageRunner
         );
 
         return array_map(
-            static fn (array $group): CategoryGroup => new CategoryGroup(
+            fn (array $group): CategoryGroup => new CategoryGroup(
                 category: $group['category'],
                 subscriptions: $group['subscriptions'],
+                monthlyTotal: $this->currencyTotaller->total(
+                    array_map(static fn (Subscription $s): Money => $s->monthlyCost(), $group['subscriptions']),
+                    $asOf,
+                ),
+                savingsTotal: $this->currencyTotaller->total(
+                    array_map(static fn (Subscription $s): Money => $s->savingsTarget($asOf), $group['subscriptions']),
+                    $asOf,
+                ),
                 asOf: $asOf,
             ),
             $grouped,

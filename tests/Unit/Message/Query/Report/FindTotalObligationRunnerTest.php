@@ -10,6 +10,7 @@ use App\Entity\Subscription;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Message\Currency\Converter;
+use App\Message\Currency\CurrencyTotaller;
 use App\Message\Query\Report\FindTotalObligationQuery;
 use App\Message\Query\Report\FindTotalObligationRunner;
 use App\Message\Query\Report\TotalObligation;
@@ -46,8 +47,7 @@ function runTotalObligation(array $subscriptions, array $rates, string $displayC
 
     $runner = new FindTotalObligationRunner(
         $subscriptionRepository,
-        new Converter($exchangeRateRepository),
-        new DisplayCurrencyProvider($displayCurrency),
+        new CurrencyTotaller(new Converter($exchangeRateRepository), new DisplayCurrencyProvider($displayCurrency)),
     );
 
     return $runner(new FindTotalObligationQuery());

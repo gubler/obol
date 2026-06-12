@@ -1,16 +1,16 @@
 <?php
 
 // ABOUTME: Runner for FindTotalObligationQuery: the total obligation over active subscriptions.
-// ABOUTME: Sums monthlyCost by native currency, converts to the display currency, and scales week/month/year.
+// ABOUTME: Totals monthlyCost in the display currency via CurrencyTotaller, then scales week/month/year.
 
 declare(strict_types=1);
 
 namespace App\Message\Query\Report;
 
+use App\Entity\Subscription;
 use App\Enum\PaymentPeriod;
-use App\Message\Currency\Converter;
+use App\Message\Currency\CurrencyTotaller;
 use App\Repository\SubscriptionRepository;
-use App\Service\DisplayCurrencyProvider;
 use App\ValueObject\Money;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -19,55 +19,29 @@ final readonly class FindTotalObligationRunner
 {
     public function __construct(
         private SubscriptionRepository $subscriptionRepository,
-        private Converter $converter,
-        private DisplayCurrencyProvider $displayCurrencyProvider,
+        private CurrencyTotaller $currencyTotaller,
     ) {
     }
 
     public function __invoke(FindTotalObligationQuery $query): TotalObligation
     {
-        $display = $this->displayCurrencyProvider->get();
         $asOf = new \DateTimeImmutable();
 
-        $native = $this->nativeMonthlyByCurrency();
+        $monthlyCosts = array_map(
+            static fn (Subscription $subscription): Money => $subscription->monthlyCost(),
+            $this->subscriptionRepository->findBy(['archived' => false]),
+        );
 
-        $monthly = new Money(0, $display);
-        $approximate = false;
-        foreach ($native as $amount) {
-            if ($amount->currency !== $display) {
-                $approximate = true;
-            }
-            $monthly = $monthly->add($this->converter->convert($amount, $display, $asOf));
-        }
+        $monthly = $this->currencyTotaller->total($monthlyCosts, $asOf);
 
         return new TotalObligation(
-            weekly: $this->scale($monthly, PaymentPeriod::Week->monthsPerPeriod()),
-            monthly: $monthly,
-            yearly: $this->scale($monthly, PaymentPeriod::Year->monthsPerPeriod()),
-            breakdown: array_values($native),
+            weekly: $this->scale($monthly->converted, PaymentPeriod::Week->monthsPerPeriod()),
+            monthly: $monthly->converted,
+            yearly: $this->scale($monthly->converted, PaymentPeriod::Year->monthsPerPeriod()),
+            breakdown: $monthly->breakdown,
             asOf: $asOf,
-            isApproximate: $approximate,
+            isApproximate: $monthly->isApproximate,
         );
-    }
-
-    /**
-     * The monthly obligation per native currency over active subscriptions, key-sorted by currency
-     * code so the breakdown and any change comparison have a deterministic order.
-     *
-     * @return array<string, Money>
-     */
-    private function nativeMonthlyByCurrency(): array
-    {
-        $native = [];
-        foreach ($this->subscriptionRepository->findBy(['archived' => false]) as $subscription) {
-            $monthly = $subscription->monthlyCost();
-            $code = $monthly->currency->value;
-            $native[$code] = isset($native[$code]) ? $native[$code]->add($monthly) : $monthly;
-        }
-
-        ksort($native);
-
-        return $native;
     }
 
     private function scale(Money $money, float $factor): Money

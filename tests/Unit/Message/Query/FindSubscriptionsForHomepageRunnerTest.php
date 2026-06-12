@@ -1,7 +1,7 @@
 <?php
 
 // ABOUTME: Unit tests for FindSubscriptionsForHomepageRunner verifying grouping, totals and sorting.
-// ABOUTME: Mocks the repository; asserts group order, per-group and flat sort order, and archived pass-through.
+// ABOUTME: Mocks the repository; asserts group order, sort order, archived pass-through, and converted totals.
 
 declare(strict_types=1);
 
@@ -10,11 +10,15 @@ use App\Entity\Subscription;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\SubscriptionSort;
+use App\Message\Currency\Converter;
+use App\Message\Currency\CurrencyTotaller;
 use App\Message\Query\Subscription\CategoryGroup;
 use App\Message\Query\Subscription\FindSubscriptionsForHomepageQuery;
 use App\Message\Query\Subscription\FindSubscriptionsForHomepageRunner;
 use App\Message\Query\Subscription\HomepageListing;
+use App\Repository\ExchangeRateRepository;
 use App\Repository\SubscriptionRepository;
+use App\Service\DisplayCurrencyProvider;
 use App\ValueObject\Money;
 
 function makeHomepageSubscription(
@@ -24,6 +28,7 @@ function makeHomepageSubscription(
     PaymentPeriod $period = PaymentPeriod::Month,
     int $count = 1,
     string $renewal = '2024-01-01',
+    Currency $currency = Currency::USD,
 ): Subscription {
     return new Subscription(
         category: $category,
@@ -31,8 +36,21 @@ function makeHomepageSubscription(
         nextRenewal: new DateTimeImmutable($renewal),
         paymentPeriod: $period,
         paymentPeriodCount: $count,
-        cost: new Money($cost, Currency::USD),
+        cost: new Money($cost, $currency),
     );
+}
+
+/**
+ * @param array<string, float> $rates EUR-pivot rates by currency code (units per 1 EUR)
+ */
+function homepageTotaller(array $rates = []): CurrencyTotaller
+{
+    $exchangeRateRepository = test()->createMock(ExchangeRateRepository::class);
+    $exchangeRateRepository->method('latestRate')
+        ->willReturnCallback(static fn (Currency $currency): ?float => $rates[$currency->value] ?? null)
+    ;
+
+    return new CurrencyTotaller(new Converter($exchangeRateRepository), new DisplayCurrencyProvider('USD'));
 }
 
 /**
@@ -43,12 +61,15 @@ function names(array $subscriptions): array
     return array_map(static fn (Subscription $s): string => $s->name, $subscriptions);
 }
 
-function runHomepage(array $subscriptions, FindSubscriptionsForHomepageQuery $query): HomepageListing
+/**
+ * @param array<string, float> $rates
+ */
+function runHomepage(array $subscriptions, FindSubscriptionsForHomepageQuery $query, array $rates = []): HomepageListing
 {
     $repository = test()->createMock(SubscriptionRepository::class);
     $repository->method('findForHomepage')->willReturn($subscriptions);
 
-    return (new FindSubscriptionsForHomepageRunner($repository))($query);
+    return (new FindSubscriptionsForHomepageRunner($repository, homepageTotaller($rates)))($query);
 }
 
 test('groups by category ordered by category name, sorted by name within each group', function (): void {
@@ -146,7 +167,46 @@ test('sums each category monthly total', function (): void {
 
     $listing = runHomepage($subscriptions, new FindSubscriptionsForHomepageQuery());
 
-    expect($listing->groups[0]->monthlyTotal()->minorAmount)->toBe(2500);
+    expect($listing->groups[0]->monthlyTotal->converted->minorAmount)->toBe(2500)
+        ->and($listing->groups[0]->monthlyTotal->isApproximate)->toBeFalse()
+    ;
+});
+
+test('sums each category savings total across its subscriptions', function (): void {
+    $software = new Category(name: 'Software');
+
+    // A near renewal so the savings target is non-zero; it is constant within the day, so the runner's
+    // "now" matches the value computed here.
+    $asOf = new DateTimeImmutable();
+    $renewal = $asOf->modify('+1 day')->format('Y-m-d');
+    $perSubscription = makeHomepageSubscription($software, 'Solo', 1000, renewal: $renewal)->savingsTarget($asOf)->minorAmount;
+
+    $listing = runHomepage([
+        makeHomepageSubscription($software, 'JetBrains', 1000, renewal: $renewal),
+        makeHomepageSubscription($software, '1Password', 1000, renewal: $renewal),
+    ], new FindSubscriptionsForHomepageQuery());
+
+    expect($perSubscription)->toBeGreaterThan(0)
+        ->and($listing->groups[0]->savingsTotal->converted->minorAmount)->toBe(2 * $perSubscription)
+    ;
+});
+
+test('converts a mixed-currency category to the display currency with a native breakdown', function (): void {
+    $mixed = new Category(name: 'Mixed');
+
+    $subscriptions = [
+        makeHomepageSubscription($mixed, 'Dollar', 4000),                                   // 4000 USD/mo
+        makeHomepageSubscription($mixed, 'Euro', 3000, currency: Currency::EUR),            // 3000 EUR/mo -> 3240 USD
+    ];
+
+    $listing = runHomepage($subscriptions, new FindSubscriptionsForHomepageQuery(), rates: ['EUR' => 1.0, 'USD' => 1.08]);
+
+    $monthly = $listing->groups[0]->monthlyTotal;
+    expect($monthly->converted->minorAmount)->toBe(7240)   // 4000 USD + 3240 USD
+        ->and($monthly->converted->currency)->toBe(Currency::USD)
+        ->and($monthly->isApproximate)->toBeTrue()
+        ->and($monthly->breakdown)->toHaveCount(2)
+    ;
 });
 
 test('passes the archived flag through to the repository', function (): void {
@@ -157,7 +217,7 @@ test('passes the archived flag through to the repository', function (): void {
         ->willReturn([])
     ;
 
-    $runner = new FindSubscriptionsForHomepageRunner($repository);
+    $runner = new FindSubscriptionsForHomepageRunner($repository, homepageTotaller());
     $listing = $runner(new FindSubscriptionsForHomepageQuery(includeArchived: true));
 
     expect($listing->groups)->toBe([])

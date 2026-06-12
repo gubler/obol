@@ -1,0 +1,28 @@
+{#
+    Reusable money figure with an optional native-currency disclosure. Reused across the homepage
+    capstone and the reports pages.
+    Params:
+      amount       (Money)                 the headline figure, in the display currency
+      label        (string, default '')    a suffix such as '/ mo'
+      asOf         (DateTimeImmutable|null) date the rates were read, shown in the disclosure
+      breakdown    (Money[], default [])   native per-currency amounts; when present, renders a disclosure
+      approximate  (bool, default false)   prefixes '~' to mark a converted figure
+#}
+{%- set prefix = approximate ? '~ ' : '' -%}
+{%- if breakdown|default([])|length > 0 -%}
+    <details class="money-disclosure inline-block">
+        <summary class="money-disclosure-summary cursor-pointer list-none">
+            {{- prefix }}{{ amount.format() }}{% if label is defined and label %} {{ label }}{% endif -%}
+        </summary>
+        <div class="money-disclosure-breakdown mt-1 text-sm font-normal text-gray-500">
+            {%- if asOf is defined and asOf %}
+                <div class="money-disclosure-asof">as of {{ asOf|date('M j, Y') }}</div>
+            {%- endif %}
+            {%- for money in breakdown %}
+                <div>{{ money.format() }}</div>
+            {%- endfor %}
+        </div>
+    </details>
+{%- else -%}
+    <span class="money-disclosure">{{ prefix }}{{ amount.format() }}{% if label is defined and label %} {{ label }}{% endif %}</span>
+{%- endif -%}

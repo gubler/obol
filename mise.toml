@@ -79,12 +79,14 @@ run = ["$DC_EXEC sh -c 'XDEBUG_MODE=coverage php vendor/bin/pest --coverage --co
 [tasks.cs]
 description = "Code Style via PHP CS Fixer (fix)"
 depends = ["_ensure-up"]
-run = ["$DC_EXEC php vendor/bin/php-cs-fixer fix"]
+# --using-cache=no keeps local parity with CI; the cache has masked violations the cacheless CI run then caught.
+run = ["$DC_EXEC php vendor/bin/php-cs-fixer fix --using-cache=no"]
 
 [tasks."cs:check"]
 description = "Code Style via PHP CS Fixer (check only)"
 depends = ["_ensure-up"]
-run = ["$DC_EXEC php vendor/bin/php-cs-fixer check --diff"]
+# --using-cache=no keeps local parity with CI; the cache has masked violations the cacheless CI run then caught.
+run = ["$DC_EXEC php vendor/bin/php-cs-fixer check --diff --using-cache=no"]
 
 [tasks."cs:twig"]
 description = "Twig Code Style (fix)"

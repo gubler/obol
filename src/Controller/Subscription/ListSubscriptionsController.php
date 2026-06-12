@@ -9,6 +9,7 @@ namespace App\Controller\Subscription;
 
 use App\Controller\AbstractBaseController;
 use App\Enum\SubscriptionSort;
+use App\Message\Query\Report\FindTotalObligationQuery;
 use App\Message\Query\Subscription\FindSubscriptionsForHomepageQuery;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,8 +29,12 @@ final class ListSubscriptionsController extends AbstractBaseController
             query: new FindSubscriptionsForHomepageQuery(includeArchived: $includeArchived, sort: $sort),
         );
 
+        // The capstone always reflects active obligation, independent of the listing's archived toggle.
+        $totals = $this->queryBus->query(query: new FindTotalObligationQuery());
+
         return $this->render(view: 'subscription/index.html.twig', parameters: [
             'listing' => $listing,
+            'totals' => $totals,
             'view' => $view,
             'grouped' => $grouped,
             'includeArchived' => $includeArchived,

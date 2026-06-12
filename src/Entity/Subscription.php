@@ -117,13 +117,7 @@ class Subscription
      */
     public function monthlyCost(): Money
     {
-        $monthsPerPeriod = match ($this->paymentPeriod) {
-            PaymentPeriod::Year => 12.0,
-            PaymentPeriod::Month => 1.0,
-            PaymentPeriod::Week => 12.0 / 52.0,
-        };
-
-        $monthly = (int) round($this->cost->minorAmount / ($this->paymentPeriodCount * $monthsPerPeriod));
+        $monthly = (int) round($this->cost->minorAmount / ($this->paymentPeriodCount * $this->paymentPeriod->monthsPerPeriod()));
 
         return new Money($monthly, $this->cost->currency);
     }

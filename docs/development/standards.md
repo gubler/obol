@@ -65,6 +65,14 @@ Enforced via `symplify/phpstan-rules`:
 - No trailing slashes in routes
 - All routes must have names
 - Listeners must implement a contract interface
+- **Message handlers do not call `EntityManager::flush()`.** Every bus
+  (`command.bus`, `query.bus`, `event.bus`) carries the `doctrine_transaction`
+  middleware, which opens a transaction around the handler and commits it on
+  return. A handler `persist()`s or `remove()`s and returns; the middleware
+  owns the transaction boundary. A flush is only warranted mid-handler when the
+  handler must read back a DB-generated value before doing more work — rare,
+  since entities mint their own ULIDs. (Retrofitting the older handlers that
+  still flush redundantly is tracked in #148.)
 
 ## File Comments
 

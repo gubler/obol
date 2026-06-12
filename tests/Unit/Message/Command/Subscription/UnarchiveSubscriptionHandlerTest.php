@@ -9,6 +9,7 @@ use App\Entity\Subscription;
 use App\Message\Command\Subscription\UnarchiveSubscriptionCommand;
 use App\Message\Command\Subscription\UnarchiveSubscriptionHandler;
 use App\Repository\SubscriptionRepository;
+use App\Service\SubscriptionChangeNotifierInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Uid\Ulid;
 
@@ -27,7 +28,10 @@ test('handler unarchives subscription', function (): void {
     $entityManager = $this->createMock(EntityManagerInterface::class);
     $entityManager->expects($this->once())->method('flush');
 
-    $handler = new UnarchiveSubscriptionHandler($repository, $entityManager);
+    $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
+    $notifier->expects($this->once())->method('notifyChanged');
+
+    $handler = new UnarchiveSubscriptionHandler($repository, $entityManager, $notifier);
     $handler(new UnarchiveSubscriptionCommand(subscriptionId: $ulid));
 });
 
@@ -42,7 +46,10 @@ test('handler throws when subscription not found', function (): void {
 
     $entityManager = $this->createMock(EntityManagerInterface::class);
 
-    $handler = new UnarchiveSubscriptionHandler($repository, $entityManager);
+    $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
+    $notifier->expects($this->never())->method('notifyChanged');
+
+    $handler = new UnarchiveSubscriptionHandler($repository, $entityManager, $notifier);
 
     $handler(new UnarchiveSubscriptionCommand(subscriptionId: $ulid));
 })->throws(InvalidArgumentException::class);

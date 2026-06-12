@@ -62,6 +62,19 @@ older docs.
   `nextRenewal` anchor is left entirely to the user. Resuming **automated** generation is an
   explicit user action requiring a future renewal date. _Avoid_ "paused" - the subscription is not
   dormant, only its generation is manual. See ADR-0008.
+- **obligation** - what the owner is committed to paying, as opposed to what was actually spent
+  (Obol tracks obligation; the payment log is incidental). The **total obligation** is the sum of
+  every active subscription's period-normalized **monthly cost**; it consults neither payments nor
+  `nextRenewal`. Archived subscriptions are excluded, and a **Generated** payment counts as paid.
+  _Avoid_ "spend" / "expense" - those imply money actually left an account. See ADR-0010.
+- **obligation snapshot** - a recording of the total monthly obligation at a point in time, stored
+  as the `ObligationSnapshot` entity. Each row holds the **native per-currency** obligation as a
+  JSON map (currency code to minor units, e.g. `{"USD":4000,"EUR":3000}`) plus the date recorded.
+  Native, unconverted storage means a row survives subscription deletion and bakes in no FX rate;
+  conversion to a display currency happens at read time using today's rate. Recorded **on change** -
+  every subscription create/update/archive/delete announces a **SubscriptionsChanged** event, and a
+  row is appended only when the obligation differs from the latest. Because obligation moves only on
+  an edit, this captures the series exactly. Feeds the obligations-over-time chart. See ADR-0010.
 - **savings target** - the amount that should be set aside by now to cover upcoming renewals
   (`Subscription::savingsTarget`), in the currency's minor units. Models a monthly budget saved
   one month ahead: a **monthly cost** is allocated on the first of each calendar month, a renewal
@@ -87,6 +100,8 @@ Recorded under `reference/adr/`:
 - ADR-0007 - Write-path message conventions (DTOs stay separate from Commands; Commands carry Ulid)
 - ADR-0008 - Payment lifecycle and fixed-cadence renewal
 - ADR-0009 - Savings target model (one-month lead, whole-months proration)
+- ADR-0010 - Reporting and obligation-snapshot model (on-change native-per-currency series, convert-at-read)
+- ADR-0011 - Reinstate the synchronous event bus for domain events
 
 ADR-0006 records the CQRS-via-Messenger decision (keep the command/query buses; data
 access confined to the handler layer) settled in #79. ADR-0007 extends it with the

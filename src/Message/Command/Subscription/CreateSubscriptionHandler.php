@@ -9,6 +9,7 @@ namespace App\Message\Command\Subscription;
 
 use App\Entity\Subscription;
 use App\Repository\CategoryRepository;
+use App\Service\SubscriptionChangeNotifierInterface;
 use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -19,6 +20,7 @@ final readonly class CreateSubscriptionHandler
     public function __construct(
         private CategoryRepository $categoryRepository,
         private EntityManagerInterface $entityManager,
+        private SubscriptionChangeNotifierInterface $subscriptionChangeNotifier,
     ) {
     }
 
@@ -45,5 +47,7 @@ final readonly class CreateSubscriptionHandler
 
         $this->entityManager->persist($subscription);
         $this->entityManager->flush();
+
+        $this->subscriptionChangeNotifier->notifyChanged();
     }
 }

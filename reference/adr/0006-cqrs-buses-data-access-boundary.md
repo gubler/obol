@@ -3,6 +3,10 @@
 - Status: Accepted
 - Date: 2026-06-06
 
+> Note (2026-06-12): the absence of an event bus recorded here (removed in #76) is superseded by
+> ADR-0011, which reinstates a synchronous `event.bus` for domain events. The command/query buses
+> and the data-access boundary below stand unchanged.
+
 ## Context
 
 The 2026-06-02 survey (epic #74) flagged the CQRS read path as ceremony outpacing the

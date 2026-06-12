@@ -11,3 +11,7 @@ framework:
                 middleware:
                     - dispatch_after_current_bus
                     - validation
+            event.bus:
+                middleware:
+                    - dispatch_after_current_bus
+                    - doctrine_transaction

@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace App\Message\Command\Subscription;
 
 use App\Repository\SubscriptionRepository;
+use App\Service\SubscriptionChangeNotifierInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -17,6 +18,7 @@ final readonly class UnarchiveSubscriptionHandler
     public function __construct(
         private SubscriptionRepository $subscriptionRepository,
         private EntityManagerInterface $entityManager,
+        private SubscriptionChangeNotifierInterface $subscriptionChangeNotifier,
     ) {
     }
 
@@ -31,5 +33,7 @@ final readonly class UnarchiveSubscriptionHandler
         $subscription->unarchive();
 
         $this->entityManager->flush();
+
+        $this->subscriptionChangeNotifier->notifyChanged();
     }
 }

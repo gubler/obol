@@ -14,6 +14,7 @@ use App\Message\Command\Subscription\UpdateSubscriptionCommand;
 use App\Message\Command\Subscription\UpdateSubscriptionHandler;
 use App\Repository\CategoryRepository;
 use App\Repository\SubscriptionRepository;
+use App\Service\SubscriptionChangeNotifierInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Uid\Ulid;
 
@@ -43,7 +44,10 @@ test('handler updates subscription', function (): void {
     $entityManager = $this->createMock(EntityManagerInterface::class);
     $entityManager->expects($this->once())->method('flush');
 
-    $handler = new UpdateSubscriptionHandler($subscriptionRepository, $categoryRepository, $entityManager);
+    $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
+    $notifier->expects($this->once())->method('notifyChanged');
+
+    $handler = new UpdateSubscriptionHandler($subscriptionRepository, $categoryRepository, $entityManager, $notifier);
     $handler(new UpdateSubscriptionCommand(
         subscriptionId: $subscriptionUlid,
         categoryId: $categoryUlid,
@@ -80,7 +84,10 @@ test('handler resumes automated generation when restart is requested', function 
     $entityManager = $this->createMock(EntityManagerInterface::class);
     $entityManager->expects($this->once())->method('flush');
 
-    $handler = new UpdateSubscriptionHandler($subscriptionRepository, $categoryRepository, $entityManager);
+    $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
+    $notifier->expects($this->once())->method('notifyChanged');
+
+    $handler = new UpdateSubscriptionHandler($subscriptionRepository, $categoryRepository, $entityManager, $notifier);
     $handler(new UpdateSubscriptionCommand(
         subscriptionId: $subscriptionUlid,
         categoryId: $categoryUlid,
@@ -111,7 +118,10 @@ test('handler throws when subscription not found', function (): void {
     $categoryRepository = $this->createMock(CategoryRepository::class);
     $entityManager = $this->createMock(EntityManagerInterface::class);
 
-    $handler = new UpdateSubscriptionHandler($subscriptionRepository, $categoryRepository, $entityManager);
+    $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
+    $notifier->expects($this->never())->method('notifyChanged');
+
+    $handler = new UpdateSubscriptionHandler($subscriptionRepository, $categoryRepository, $entityManager, $notifier);
 
     $handler(new UpdateSubscriptionCommand(
         subscriptionId: $subscriptionUlid,
@@ -149,7 +159,10 @@ test('handler throws when category not found', function (): void {
 
     $entityManager = $this->createMock(EntityManagerInterface::class);
 
-    $handler = new UpdateSubscriptionHandler($subscriptionRepository, $categoryRepository, $entityManager);
+    $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
+    $notifier->expects($this->never())->method('notifyChanged');
+
+    $handler = new UpdateSubscriptionHandler($subscriptionRepository, $categoryRepository, $entityManager, $notifier);
 
     $handler(new UpdateSubscriptionCommand(
         subscriptionId: $subscriptionUlid,

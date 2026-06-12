@@ -9,6 +9,7 @@ use App\Entity\Subscription;
 use App\Message\Command\Subscription\DeleteSubscriptionCommand;
 use App\Message\Command\Subscription\DeleteSubscriptionHandler;
 use App\Repository\SubscriptionRepository;
+use App\Service\SubscriptionChangeNotifierInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Uid\Ulid;
 
@@ -30,7 +31,10 @@ test('handler removes subscription', function (): void {
     ;
     $entityManager->expects($this->once())->method('flush');
 
-    $handler = new DeleteSubscriptionHandler($repository, $entityManager);
+    $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
+    $notifier->expects($this->once())->method('notifyChanged');
+
+    $handler = new DeleteSubscriptionHandler($repository, $entityManager, $notifier);
     $handler(new DeleteSubscriptionCommand(subscriptionId: $ulid));
 });
 
@@ -45,7 +49,10 @@ test('handler throws when subscription not found', function (): void {
 
     $entityManager = $this->createMock(EntityManagerInterface::class);
 
-    $handler = new DeleteSubscriptionHandler($repository, $entityManager);
+    $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
+    $notifier->expects($this->never())->method('notifyChanged');
+
+    $handler = new DeleteSubscriptionHandler($repository, $entityManager, $notifier);
 
     $handler(new DeleteSubscriptionCommand(subscriptionId: $ulid));
 })->throws(InvalidArgumentException::class);

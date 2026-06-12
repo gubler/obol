@@ -9,6 +9,7 @@ use App\Entity\Subscription;
 use App\Message\Command\Subscription\ArchiveSubscriptionCommand;
 use App\Message\Command\Subscription\ArchiveSubscriptionHandler;
 use App\Repository\SubscriptionRepository;
+use App\Service\SubscriptionChangeNotifierInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Uid\Ulid;
 
@@ -27,7 +28,10 @@ test('handler archives subscription', function (): void {
     $entityManager = $this->createMock(EntityManagerInterface::class);
     $entityManager->expects($this->once())->method('flush');
 
-    $handler = new ArchiveSubscriptionHandler($repository, $entityManager);
+    $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
+    $notifier->expects($this->once())->method('notifyChanged');
+
+    $handler = new ArchiveSubscriptionHandler($repository, $entityManager, $notifier);
     $handler(new ArchiveSubscriptionCommand(subscriptionId: $ulid));
 });
 
@@ -42,7 +46,10 @@ test('handler throws when subscription not found', function (): void {
 
     $entityManager = $this->createMock(EntityManagerInterface::class);
 
-    $handler = new ArchiveSubscriptionHandler($repository, $entityManager);
+    $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
+    $notifier->expects($this->never())->method('notifyChanged');
+
+    $handler = new ArchiveSubscriptionHandler($repository, $entityManager, $notifier);
 
     $handler(new ArchiveSubscriptionCommand(subscriptionId: $ulid));
 })->throws(InvalidArgumentException::class);

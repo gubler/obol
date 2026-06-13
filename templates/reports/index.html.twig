@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Reports{% endblock %}
+
+{% block header %}
+    <h1 class="text-3xl font-bold tracking-tight text-white">Reports</h1>
+{% endblock %}
+
+{% block body %}
+    <section class="reports-composition">
+        <div class="mb-4 flex flex-wrap items-baseline justify-between gap-2 border-b border-gray-200 pb-3">
+            <h2 class="text-lg font-semibold text-gray-900">Monthly obligation by category</h2>
+            <div class="report-total text-2xl font-semibold text-gray-900">
+                {{ include('components/money_disclosure.html.twig', {
+                    amount: composition.total.converted,
+                    label: '/ mo',
+                    asOf: composition.asOf,
+                    breakdown: composition.total.breakdown,
+                    approximate: composition.total.isApproximate,
+                }) }}
+            </div>
+        </div>
+
+        {% if composition.slices is empty %}
+            <div class="empty-state rounded-lg border border-gray-300 bg-gray-100 px-6 py-12 text-center">
+                <p class="text-lg text-gray-600">Nothing to report yet</p>
+                <p class="mt-2 text-gray-500">Add an active subscription to see it broken down here.</p>
+            </div>
+        {% else %}
+            <div class="grid items-center gap-8 md:grid-cols-2">
+                {{ include('reports/_pie.html.twig', {chart: chart}) }}
+
+                <ul class="report-category-list divide-y divide-gray-100">
+                    {% for slice in composition.slices %}
+                        <li>
+                            <a href="{{ path('reports_category', {id: slice.id}) }}"
+                               class="report-category-link flex items-baseline justify-between gap-4 py-2 text-gray-900 hover:bg-gray-50">
+                                <span class="report-category font-medium">{{ slice.label }}</span>
+                                <span class="report-category-amount text-sm text-gray-500">
+                                    {{ include('components/money_disclosure.html.twig', {amount: slice.converted, label: '/ mo', approximate: slice.isApproximate}) }}
+                                </span>
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    </section>
+{% endblock %}

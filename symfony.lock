@@ -318,6 +318,9 @@
             "ref": "0df5844274d871b37fc3816c57a768ffc60a43a5"
         }
     },
+    "symfony/ux-chartjs": {
+        "version": "v3.1.0"
+    },
     "symfony/ux-icons": {
         "version": "2.30",
         "recipe": {

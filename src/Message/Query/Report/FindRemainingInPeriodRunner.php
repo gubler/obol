@@ -1,0 +1,60 @@
+<?php
+
+// ABOUTME: Runner for FindRemainingInPeriodQuery: what is still owed by each calendar period's end.
+// ABOUTME: Projects each active sub's nextRenewal forward to the period boundary, then converts the total.
+
+declare(strict_types=1);
+
+namespace App\Message\Query\Report;
+
+use App\Entity\Subscription;
+use App\Enum\PaymentPeriod;
+use App\Message\Currency\ConvertedTotal;
+use App\Message\Currency\CurrencyTotaller;
+use App\Repository\SubscriptionRepository;
+use App\Service\PeriodBoundaries;
+use Psr\Clock\ClockInterface;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+
+#[AsMessageHandler(bus: 'query.bus', handles: FindRemainingInPeriodQuery::class)]
+final readonly class FindRemainingInPeriodRunner
+{
+    public function __construct(
+        private SubscriptionRepository $subscriptionRepository,
+        private PeriodBoundaries $periodBoundaries,
+        private CurrencyTotaller $currencyTotaller,
+        private ClockInterface $clock,
+    ) {
+    }
+
+    public function __invoke(FindRemainingInPeriodQuery $query): RemainingInPeriod
+    {
+        $asOf = $this->clock->now();
+        $subscriptions = $this->subscriptionRepository->findBy(['archived' => false]);
+
+        return new RemainingInPeriod(
+            weekly: $this->remaining(PaymentPeriod::Week, $subscriptions, $asOf),
+            monthly: $this->remaining(PaymentPeriod::Month, $subscriptions, $asOf),
+            yearly: $this->remaining(PaymentPeriod::Year, $subscriptions, $asOf),
+            asOf: $asOf,
+        );
+    }
+
+    /**
+     * @param array<Subscription> $subscriptions
+     */
+    private function remaining(PaymentPeriod $period, array $subscriptions, \DateTimeImmutable $asOf): ConvertedTotal
+    {
+        $periodEnd = $this->periodBoundaries->endOfPeriod($period, $asOf);
+
+        $amounts = [];
+        foreach ($subscriptions as $subscription) {
+            $remaining = $subscription->remainingInPeriod($periodEnd);
+            if ($remaining->minorAmount > 0) {
+                $amounts[] = $remaining;
+            }
+        }
+
+        return $this->currencyTotaller->total($amounts, $asOf);
+    }
+}

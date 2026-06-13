@@ -9,6 +9,7 @@ namespace App\Controller\Subscription;
 
 use App\Controller\AbstractBaseController;
 use App\Enum\SubscriptionSort;
+use App\Message\Query\Report\FindRemainingInPeriodQuery;
 use App\Message\Query\Report\FindTotalObligationQuery;
 use App\Message\Query\Subscription\FindSubscriptionsForHomepageQuery;
 use Symfony\Component\HttpFoundation\Request;
@@ -30,11 +31,15 @@ final class ListSubscriptionsController extends AbstractBaseController
         );
 
         // The capstone always reflects active obligation, independent of the listing's archived toggle.
-        $totals = $this->queryBus->query(query: new FindTotalObligationQuery());
+        $capstoneMode = 'remaining' === $request->query->get('capstone') ? 'remaining' : 'totals';
+        $capstone = 'remaining' === $capstoneMode
+            ? $this->queryBus->query(query: new FindRemainingInPeriodQuery())
+            : $this->queryBus->query(query: new FindTotalObligationQuery());
 
         return $this->render(view: 'subscription/index.html.twig', parameters: [
             'listing' => $listing,
-            'totals' => $totals,
+            'capstone' => $capstone,
+            'capstoneMode' => $capstoneMode,
             'view' => $view,
             'grouped' => $grouped,
             'includeArchived' => $includeArchived,

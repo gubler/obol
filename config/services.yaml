@@ -8,6 +8,9 @@ parameters:
     app.uploads_public_path: 'uploads/logos'
     # The currency converted totals are presented in. One value today; becomes per-user under SaaS.
     app.display_currency: 'USD'
+    # The day the week starts on, as a day-of-week ordinal: 0 = Sunday (US), 1 = Monday (ISO 8601).
+    # Drives the "remaining this week" boundary; becomes locale/per-user later. See ADR-0010.
+    app.week_start_day: 0
 
 services:
     # default configuration for services in *this* file

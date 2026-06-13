@@ -1,21 +1,18 @@
-{# Global Totals capstone: the total obligation across active subscriptions, week/month/year. Expects: totals (TotalObligation). #}
-<section class="global-totals mb-6 rounded-lg border border-gray-200 bg-white p-4">
-    <h2 class="text-sm font-medium text-gray-500">Global totals</h2>
-    <div class="mt-2 flex flex-wrap items-baseline gap-x-6 gap-y-2">
-        <div class="global-total-monthly text-2xl font-semibold text-gray-900">
-            {{ include('components/money_disclosure.html.twig', {
-                amount: totals.monthly,
-                label: '/ mo',
-                asOf: totals.asOf,
-                breakdown: totals.breakdown,
-                approximate: totals.isApproximate,
-            }) }}
-        </div>
-        <div class="global-total-weekly text-sm text-gray-500">
-            {{ include('components/money_disclosure.html.twig', {amount: totals.weekly, label: '/ wk', approximate: totals.isApproximate}) }}
-        </div>
-        <div class="global-total-yearly text-sm text-gray-500">
-            {{ include('components/money_disclosure.html.twig', {amount: totals.yearly, label: '/ yr', approximate: totals.isApproximate}) }}
-        </div>
+{# Global Totals figures (the total obligation, week/month/year). Expects: totals (TotalObligation). #}
+<div class="flex flex-wrap items-baseline gap-x-6 gap-y-2">
+    <div class="global-total-monthly text-2xl font-semibold text-gray-900">
+        {{ include('components/money_disclosure.html.twig', {
+            amount: totals.monthly,
+            label: '/ mo',
+            asOf: totals.asOf,
+            breakdown: totals.breakdown,
+            approximate: totals.isApproximate,
+        }) }}
     </div>
-</section>
+    <div class="global-total-weekly text-sm text-gray-500">
+        {{ include('components/money_disclosure.html.twig', {amount: totals.weekly, label: '/ wk', approximate: totals.isApproximate}) }}
+    </div>
+    <div class="global-total-yearly text-sm text-gray-500">
+        {{ include('components/money_disclosure.html.twig', {amount: totals.yearly, label: '/ yr', approximate: totals.isApproximate}) }}
+    </div>
+</div>

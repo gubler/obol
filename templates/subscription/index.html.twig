@@ -28,13 +28,25 @@
             <p class="text-gray-500 mt-2">Get started by creating your first subscription</p>
         </div>
     {% else %}
-        {{ include('subscription/_global_totals.html.twig', {totals: totals}) }}
-
         {% set toggle_link = 'rounded-md px-3 py-2 text-sm font-medium transition' %}
         {% set toggle_on = 'bg-gray-800 text-white' %}
         {% set toggle_off = 'bg-gray-100 text-gray-700 hover:bg-gray-200' %}
 
-        {% set base_params = {view: view, group: grouped ? '1' : '0', archived: includeArchived ? '1' : '0', sort: sort.value} %}
+        {% set base_params = {view: view, group: grouped ? '1' : '0', archived: includeArchived ? '1' : '0', sort: sort.value, capstone: capstoneMode} %}
+
+        <section class="global-totals mb-6 rounded-lg border border-gray-200 bg-white p-4">
+            <div class="mb-3 inline-flex rounded-md bg-gray-100 p-1">
+                <a href="{{ path('subscription_index', base_params|merge({capstone: 'totals'})) }}"
+                   class="{{ toggle_link }} {{ capstoneMode == 'totals' ? toggle_on : toggle_off }}">Global totals</a>
+                <a href="{{ path('subscription_index', base_params|merge({capstone: 'remaining'})) }}"
+                   class="{{ toggle_link }} {{ capstoneMode == 'remaining' ? toggle_on : toggle_off }}">Remaining</a>
+            </div>
+            {% if capstoneMode == 'remaining' %}
+                {{ include('subscription/_remaining.html.twig', {remaining: capstone}) }}
+            {% else %}
+                {{ include('subscription/_global_totals.html.twig', {totals: capstone}) }}
+            {% endif %}
+        </section>
 
         <div class="mb-6 flex flex-wrap items-center gap-2">
             <div class="inline-flex rounded-md bg-gray-100 p-1">

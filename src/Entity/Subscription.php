@@ -167,6 +167,24 @@ class Subscription
     }
 
     /**
+     * What is still owed by `$periodEnd`: the sum of `cost` for every renewal from `nextRenewal` up
+     * to and including `$periodEnd`, in the subscription's currency. Payments are never consulted -
+     * `nextRenewal` is the authoritative next-owed - so a `nextRenewal` already in the past counts its
+     * overdue renewals and arrears fall out for free. See #145 and ADR-0010.
+     */
+    public function remainingInPeriod(\DateTimeImmutable $periodEnd): Money
+    {
+        $count = 0;
+        $renewal = $this->nextRenewal;
+        while ($renewal <= $periodEnd) {
+            ++$count;
+            $renewal = $renewal->add($this->renewalInterval());
+        }
+
+        return new Money($this->cost->minorAmount * $count, $this->cost->currency);
+    }
+
+    /**
      * The calendar month of `$date` as a count of months since year zero, for month arithmetic.
      */
     private function monthOrdinal(\DateTimeImmutable $date): int

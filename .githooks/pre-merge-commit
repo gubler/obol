@@ -1,14 +1,10 @@
 #!/usr/bin/env bash
-# ABOUTME: Git pre-merge-commit hook that runs full validation on merges.
-# ABOUTME: Aggregates failures so one run surfaces them all instead of fix-rerun loops.
+# ABOUTME: Git pre-merge-commit hook that runs the full check set in fail-fast sprints on merges.
+# ABOUTME: Sprints: fast static checks -> PHPStan -> tests; stops at the first failing sprint.
 
 set -uo pipefail
 
-# Run every check and aggregate failures (no `set -e`) so one run surfaces them all.
-status=0
-mise run lint:php || status=1
-mise run cs       || status=1
-mise run cs:twig  || status=1
-mise run sa       || status=1
-mise run test     || status=1
-exit "$status"
+# shellcheck source=.githooks/lib.sh
+. "$(dirname "$0")/lib.sh"
+
+full_checks

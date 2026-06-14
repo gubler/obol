@@ -1,7 +1,7 @@
 <?php
 
 // ABOUTME: Handler for CreatePaymentCommand that records a payment on a subscription.
-// ABOUTME: Finds subscription by ID, calls recordPayment with Verified type, and flushes.
+// ABOUTME: Finds subscription by ID and records a Verified payment; the command bus commits the change.
 
 declare(strict_types=1);
 
@@ -9,7 +9,6 @@ namespace App\Message\Command\Payment;
 
 use App\Enum\PaymentType;
 use App\Repository\SubscriptionRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(bus: 'command.bus', handles: CreatePaymentCommand::class)]
@@ -17,7 +16,6 @@ final readonly class CreatePaymentHandler
 {
     public function __construct(
         private SubscriptionRepository $subscriptionRepository,
-        private EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -41,7 +39,5 @@ final readonly class CreatePaymentHandler
             \assert(null !== $command->nextRenewal);
             $subscription->automatePayments($command->nextRenewal);
         }
-
-        $this->entityManager->flush();
     }
 }

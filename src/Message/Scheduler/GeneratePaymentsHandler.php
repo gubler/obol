@@ -9,7 +9,6 @@ namespace App\Message\Scheduler;
 
 use App\Enum\PaymentType;
 use App\Repository\SubscriptionRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(bus: 'command.bus', handles: GeneratePaymentsMessage::class)]
@@ -17,7 +16,6 @@ final readonly class GeneratePaymentsHandler
 {
     public function __construct(
         private SubscriptionRepository $subscriptionRepository,
-        private EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -35,7 +33,5 @@ final readonly class GeneratePaymentsHandler
                 );
             }
         }
-
-        $this->entityManager->flush();
     }
 }

@@ -16,7 +16,6 @@ use App\Message\Command\Payment\DeletePaymentCommand;
 use App\Message\Command\Payment\DeletePaymentHandler;
 use App\Repository\PaymentRepository;
 use App\ValueObject\Money;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Uid\Ulid;
 
 test('removes the payment, rolls back the renewal anchor, and switches to manual generation', function (): void {
@@ -38,10 +37,7 @@ test('removes the payment, rolls back the renewal anchor, and switches to manual
     $repository = $this->createMock(PaymentRepository::class);
     $repository->expects($this->once())->method('find')->willReturn($payment);
 
-    $entityManager = $this->createMock(EntityManagerInterface::class);
-    $entityManager->expects($this->once())->method('flush');
-
-    $handler = new DeletePaymentHandler($repository, $entityManager);
+    $handler = new DeletePaymentHandler($repository);
     $handler(new DeletePaymentCommand(paymentId: $payment->id));
 
     expect($subscription->payments)->toHaveCount(0)
@@ -54,9 +50,7 @@ test('throws when payment not found', function (): void {
     $repository = $this->createMock(PaymentRepository::class);
     $repository->expects($this->once())->method('find')->willReturn(null);
 
-    $entityManager = $this->createMock(EntityManagerInterface::class);
-
-    $handler = new DeletePaymentHandler($repository, $entityManager);
+    $handler = new DeletePaymentHandler($repository);
 
     $handler(new DeletePaymentCommand(paymentId: new Ulid()));
 })->throws(InvalidArgumentException::class);

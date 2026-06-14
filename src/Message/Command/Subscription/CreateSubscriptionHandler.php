@@ -46,7 +46,6 @@ final readonly class CreateSubscriptionHandler
         );
 
         $this->entityManager->persist($subscription);
-        $this->entityManager->flush();
 
         $this->subscriptionChangeNotifier->notifyChanged();
     }

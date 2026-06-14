@@ -34,6 +34,5 @@ final readonly class DeleteCategoryHandler
         }
 
         $this->entityManager->remove($category);
-        $this->entityManager->flush();
     }
 }

@@ -32,7 +32,8 @@ test('stores a rate per supported currency, skipping any already stored for the 
         ->method('persist')
         ->with($this->isInstanceOf(ExchangeRate::class))
     ;
-    $entityManager->expects($this->once())->method('flush');
+    // The command bus owns the transaction (doctrine_transaction middleware); the handler never flushes.
+    $entityManager->expects($this->never())->method('flush');
 
     (new PullExchangeRatesHandler($provider, $repository, $entityManager))(new PullExchangeRatesMessage());
 });

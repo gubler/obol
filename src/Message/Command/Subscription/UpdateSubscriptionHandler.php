@@ -1,7 +1,7 @@
 <?php
 
 // ABOUTME: Handler for UpdateSubscriptionCommand that updates existing subscription entities.
-// ABOUTME: Finds subscription by ID and updates all fields, flushing changes via Doctrine.
+// ABOUTME: Finds subscription by ID and updates all fields; the command bus commits the change.
 
 declare(strict_types=1);
 
@@ -11,7 +11,6 @@ use App\Repository\CategoryRepository;
 use App\Repository\SubscriptionRepository;
 use App\Service\SubscriptionChangeNotifierInterface;
 use App\ValueObject\Money;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(bus: 'command.bus', handles: UpdateSubscriptionCommand::class)]
@@ -20,7 +19,6 @@ final readonly class UpdateSubscriptionHandler
     public function __construct(
         private SubscriptionRepository $subscriptionRepository,
         private CategoryRepository $categoryRepository,
-        private EntityManagerInterface $entityManager,
         private SubscriptionChangeNotifierInterface $subscriptionChangeNotifier,
     ) {
     }
@@ -56,8 +54,6 @@ final readonly class UpdateSubscriptionHandler
         if ($command->restartPaymentGeneration) {
             $subscription->automatePayments($command->nextRenewal);
         }
-
-        $this->entityManager->flush();
 
         $this->subscriptionChangeNotifier->notifyChanged();
     }

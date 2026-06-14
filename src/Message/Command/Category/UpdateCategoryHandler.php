@@ -1,14 +1,13 @@
 <?php
 
 // ABOUTME: Handler for UpdateCategoryCommand that updates existing category entities.
-// ABOUTME: Finds category by ID and updates name, flushing changes via Doctrine.
+// ABOUTME: Finds category by ID and updates name; the command bus commits the change.
 
 declare(strict_types=1);
 
 namespace App\Message\Command\Category;
 
 use App\Repository\CategoryRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(bus: 'command.bus', handles: UpdateCategoryCommand::class)]
@@ -16,7 +15,6 @@ final readonly class UpdateCategoryHandler
 {
     public function __construct(
         private CategoryRepository $categoryRepository,
-        private EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -29,7 +27,5 @@ final readonly class UpdateCategoryHandler
         }
 
         $category->setName($command->name);
-
-        $this->entityManager->flush();
     }
 }

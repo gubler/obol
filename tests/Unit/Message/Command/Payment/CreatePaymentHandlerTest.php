@@ -1,7 +1,7 @@
 <?php
 
 // ABOUTME: Unit tests for CreatePaymentHandler verifying payment recording via Subscription entity.
-// ABOUTME: Tests that handler finds subscription, calls recordPayment, and flushes entity manager.
+// ABOUTME: Tests that handler finds subscription and calls recordPayment; the command bus commits the change.
 
 declare(strict_types=1);
 
@@ -10,7 +10,6 @@ use App\Enum\PaymentType;
 use App\Message\Command\Payment\CreatePaymentCommand;
 use App\Message\Command\Payment\CreatePaymentHandler;
 use App\Repository\SubscriptionRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Uid\Ulid;
 
 test('handler records payment on subscription', function (): void {
@@ -30,10 +29,7 @@ test('handler records payment on subscription', function (): void {
         ->willReturn($subscription)
     ;
 
-    $entityManager = $this->createMock(EntityManagerInterface::class);
-    $entityManager->expects($this->once())->method('flush');
-
-    $handler = new CreatePaymentHandler($repository, $entityManager);
+    $handler = new CreatePaymentHandler($repository);
     $handler(new CreatePaymentCommand(
         subscriptionId: $ulid,
         amount: 1500,
@@ -59,10 +55,7 @@ test('handler resumes automated generation when restart is requested', function 
     $repository = $this->createMock(SubscriptionRepository::class);
     $repository->expects($this->once())->method('find')->willReturn($subscription);
 
-    $entityManager = $this->createMock(EntityManagerInterface::class);
-    $entityManager->expects($this->once())->method('flush');
-
-    $handler = new CreatePaymentHandler($repository, $entityManager);
+    $handler = new CreatePaymentHandler($repository);
     $handler(new CreatePaymentCommand(
         subscriptionId: $ulid,
         amount: 1500,
@@ -81,9 +74,7 @@ test('handler throws when subscription not found', function (): void {
         ->willReturn(null)
     ;
 
-    $entityManager = $this->createMock(EntityManagerInterface::class);
-
-    $handler = new CreatePaymentHandler($repository, $entityManager);
+    $handler = new CreatePaymentHandler($repository);
 
     $handler(new CreatePaymentCommand(
         subscriptionId: $ulid,

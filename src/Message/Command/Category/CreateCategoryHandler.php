@@ -24,6 +24,5 @@ final readonly class CreateCategoryHandler
         $category = new Category(name: $command->name);
 
         $this->entityManager->persist($category);
-        $this->entityManager->flush();
     }
 }

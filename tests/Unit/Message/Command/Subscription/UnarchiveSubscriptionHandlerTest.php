@@ -1,7 +1,7 @@
 <?php
 
-// ABOUTME: Unit tests for UnarchiveSubscriptionHandler verifying subscription reactivation via Doctrine.
-// ABOUTME: Tests that handler finds subscription, calls unarchive, and flushes; throws on not found.
+// ABOUTME: Unit tests for UnarchiveSubscriptionHandler verifying subscription reactivation.
+// ABOUTME: Tests that handler finds subscription, calls unarchive, and announces the change; throws on not found.
 
 declare(strict_types=1);
 
@@ -10,7 +10,6 @@ use App\Message\Command\Subscription\UnarchiveSubscriptionCommand;
 use App\Message\Command\Subscription\UnarchiveSubscriptionHandler;
 use App\Repository\SubscriptionRepository;
 use App\Service\SubscriptionChangeNotifierInterface;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Uid\Ulid;
 
 test('handler unarchives subscription', function (): void {
@@ -25,13 +24,10 @@ test('handler unarchives subscription', function (): void {
         ->willReturn($subscription)
     ;
 
-    $entityManager = $this->createMock(EntityManagerInterface::class);
-    $entityManager->expects($this->once())->method('flush');
-
     $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
     $notifier->expects($this->once())->method('notifyChanged');
 
-    $handler = new UnarchiveSubscriptionHandler($repository, $entityManager, $notifier);
+    $handler = new UnarchiveSubscriptionHandler($repository, $notifier);
     $handler(new UnarchiveSubscriptionCommand(subscriptionId: $ulid));
 });
 
@@ -44,12 +40,10 @@ test('handler throws when subscription not found', function (): void {
         ->willReturn(null)
     ;
 
-    $entityManager = $this->createMock(EntityManagerInterface::class);
-
     $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
     $notifier->expects($this->never())->method('notifyChanged');
 
-    $handler = new UnarchiveSubscriptionHandler($repository, $entityManager, $notifier);
+    $handler = new UnarchiveSubscriptionHandler($repository, $notifier);
 
     $handler(new UnarchiveSubscriptionCommand(subscriptionId: $ulid));
 })->throws(InvalidArgumentException::class);

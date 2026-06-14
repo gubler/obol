@@ -1,14 +1,13 @@
 <?php
 
 // ABOUTME: Handler for AmendPaymentCommand that validates or adjusts a payment.
-// ABOUTME: Finds the payment, amends its amount and paid date (flipping it to Verified), and flushes.
+// ABOUTME: Finds the payment and amends its amount and paid date (flipping it to Verified); the command bus commits.
 
 declare(strict_types=1);
 
 namespace App\Message\Command\Payment;
 
 use App\Repository\PaymentRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(bus: 'command.bus', handles: AmendPaymentCommand::class)]
@@ -16,7 +15,6 @@ final readonly class AmendPaymentHandler
 {
     public function __construct(
         private PaymentRepository $paymentRepository,
-        private EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -29,7 +27,5 @@ final readonly class AmendPaymentHandler
         }
 
         $payment->amend(amount: $command->amount, paidDate: $command->paidDate);
-
-        $this->entityManager->flush();
     }
 }

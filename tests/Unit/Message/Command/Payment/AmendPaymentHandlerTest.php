@@ -1,7 +1,7 @@
 <?php
 
 // ABOUTME: Unit tests for AmendPaymentHandler verifying payment amendment via the entity.
-// ABOUTME: Tests the happy path (amend + flush) and the not-found branch.
+// ABOUTME: Tests the happy path (amend) and the not-found branch.
 
 declare(strict_types=1);
 
@@ -15,10 +15,9 @@ use App\Message\Command\Payment\AmendPaymentCommand;
 use App\Message\Command\Payment\AmendPaymentHandler;
 use App\Repository\PaymentRepository;
 use App\ValueObject\Money;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Uid\Ulid;
 
-test('amends the payment and flushes', function (): void {
+test('amends the payment', function (): void {
     $subscription = new Subscription(
         category: new Category(name: 'Test'),
         name: 'Netflix',
@@ -37,10 +36,7 @@ test('amends the payment and flushes', function (): void {
     $repository = $this->createMock(PaymentRepository::class);
     $repository->expects($this->once())->method('find')->willReturn($payment);
 
-    $entityManager = $this->createMock(EntityManagerInterface::class);
-    $entityManager->expects($this->once())->method('flush');
-
-    $handler = new AmendPaymentHandler($repository, $entityManager);
+    $handler = new AmendPaymentHandler($repository);
     $handler(new AmendPaymentCommand(
         paymentId: $payment->id,
         amount: 1200,
@@ -57,9 +53,7 @@ test('throws when payment not found', function (): void {
     $repository = $this->createMock(PaymentRepository::class);
     $repository->expects($this->once())->method('find')->willReturn(null);
 
-    $entityManager = $this->createMock(EntityManagerInterface::class);
-
-    $handler = new AmendPaymentHandler($repository, $entityManager);
+    $handler = new AmendPaymentHandler($repository);
 
     $handler(new AmendPaymentCommand(
         paymentId: new Ulid(),

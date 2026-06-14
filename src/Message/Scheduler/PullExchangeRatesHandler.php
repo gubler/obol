@@ -38,7 +38,5 @@ final readonly class PullExchangeRatesHandler
 
             $this->entityManager->persist(new ExchangeRate($currency, $rate, $snapshot->date));
         }
-
-        $this->entityManager->flush();
     }
 }

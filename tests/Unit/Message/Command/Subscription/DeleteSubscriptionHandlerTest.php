@@ -1,7 +1,7 @@
 <?php
 
 // ABOUTME: Unit tests for DeleteSubscriptionHandler verifying subscription removal via Doctrine.
-// ABOUTME: Tests that handler finds subscription, removes it, and flushes; throws on not found.
+// ABOUTME: Tests that handler finds subscription and removes it; throws on not found.
 
 declare(strict_types=1);
 
@@ -29,7 +29,8 @@ test('handler removes subscription', function (): void {
         ->method('remove')
         ->with($subscription)
     ;
-    $entityManager->expects($this->once())->method('flush');
+    // The command bus owns the transaction (doctrine_transaction middleware); the handler never flushes.
+    $entityManager->expects($this->never())->method('flush');
 
     $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
     $notifier->expects($this->once())->method('notifyChanged');

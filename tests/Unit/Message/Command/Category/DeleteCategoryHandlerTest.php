@@ -30,7 +30,8 @@ test('handler removes category with no subscriptions', function (): void {
         ->method('remove')
         ->with($category)
     ;
-    $entityManager->expects($this->once())->method('flush');
+    // The command bus owns the transaction (doctrine_transaction middleware); the handler never flushes.
+    $entityManager->expects($this->never())->method('flush');
 
     $handler = new DeleteCategoryHandler($repository, $entityManager);
     $handler(new DeleteCategoryCommand(categoryId: $ulid));

@@ -8,7 +8,6 @@ declare(strict_types=1);
 namespace App\Message\Command\Payment;
 
 use App\Repository\PaymentRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(bus: 'command.bus', handles: DeletePaymentCommand::class)]
@@ -16,7 +15,6 @@ final readonly class DeletePaymentHandler
 {
     public function __construct(
         private PaymentRepository $paymentRepository,
-        private EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -29,6 +27,5 @@ final readonly class DeletePaymentHandler
         }
 
         $payment->subscription->removeLatestPayment($payment);
-        $this->entityManager->flush();
     }
 }

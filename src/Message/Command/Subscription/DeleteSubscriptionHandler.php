@@ -31,7 +31,6 @@ final readonly class DeleteSubscriptionHandler
         }
 
         $this->entityManager->remove($subscription);
-        $this->entityManager->flush();
 
         $this->subscriptionChangeNotifier->notifyChanged();
     }

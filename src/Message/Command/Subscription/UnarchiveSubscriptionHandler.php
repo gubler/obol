@@ -1,7 +1,7 @@
 <?php
 
 // ABOUTME: Handler for UnarchiveSubscriptionCommand that unarchives subscription entities.
-// ABOUTME: Finds subscription by ID and marks it as active, flushing changes via Doctrine.
+// ABOUTME: Finds subscription by ID and marks it active; the command bus commits the change.
 
 declare(strict_types=1);
 
@@ -9,7 +9,6 @@ namespace App\Message\Command\Subscription;
 
 use App\Repository\SubscriptionRepository;
 use App\Service\SubscriptionChangeNotifierInterface;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(bus: 'command.bus', handles: UnarchiveSubscriptionCommand::class)]
@@ -17,7 +16,6 @@ final readonly class UnarchiveSubscriptionHandler
 {
     public function __construct(
         private SubscriptionRepository $subscriptionRepository,
-        private EntityManagerInterface $entityManager,
         private SubscriptionChangeNotifierInterface $subscriptionChangeNotifier,
     ) {
     }
@@ -31,8 +29,6 @@ final readonly class UnarchiveSubscriptionHandler
         }
 
         $subscription->unarchive();
-
-        $this->entityManager->flush();
 
         $this->subscriptionChangeNotifier->notifyChanged();
     }

@@ -15,7 +15,6 @@ use App\Message\Scheduler\GeneratePaymentsHandler;
 use App\Message\Scheduler\GeneratePaymentsMessage;
 use App\Repository\SubscriptionRepository;
 use App\ValueObject\Money;
-use Doctrine\ORM\EntityManagerInterface;
 
 function makeSubscription(PaymentPeriod $period, int $count, DateTimeImmutable $nextRenewal): Subscription
 {
@@ -34,10 +33,8 @@ test('generates a payment dated to the renewal when it has passed', function ():
 
     $repository = $this->createMock(SubscriptionRepository::class);
     $repository->method('findBy')->with(['archived' => false])->willReturn([$subscription]);
-    $entityManager = $this->createMock(EntityManagerInterface::class);
-    $entityManager->expects($this->once())->method('flush');
 
-    (new GeneratePaymentsHandler($repository, $entityManager))(new GeneratePaymentsMessage());
+    (new GeneratePaymentsHandler($repository))(new GeneratePaymentsMessage());
 
     expect($subscription->payments)->toHaveCount(1);
     /** @var Payment $payment */
@@ -54,9 +51,8 @@ test('skips a subscription whose renewal is in the future', function (): void {
 
     $repository = $this->createMock(SubscriptionRepository::class);
     $repository->method('findBy')->with(['archived' => false])->willReturn([$subscription]);
-    $entityManager = $this->createMock(EntityManagerInterface::class);
 
-    (new GeneratePaymentsHandler($repository, $entityManager))(new GeneratePaymentsMessage());
+    (new GeneratePaymentsHandler($repository))(new GeneratePaymentsMessage());
 
     expect($subscription->payments)->toHaveCount(0);
 });
@@ -67,9 +63,8 @@ test('skips a subscription set to manual payment generation even when its renewa
 
     $repository = $this->createMock(SubscriptionRepository::class);
     $repository->method('findBy')->with(['archived' => false])->willReturn([$subscription]);
-    $entityManager = $this->createMock(EntityManagerInterface::class);
 
-    (new GeneratePaymentsHandler($repository, $entityManager))(new GeneratePaymentsMessage());
+    (new GeneratePaymentsHandler($repository))(new GeneratePaymentsMessage());
 
     expect($subscription->payments)->toHaveCount(0)
         ->and($subscription->nextRenewal)->toEqual(new DateTimeImmutable('2020-01-01'))
@@ -81,9 +76,8 @@ test('advances the renewal anchor by the configured interval', function (Payment
 
     $repository = $this->createMock(SubscriptionRepository::class);
     $repository->method('findBy')->with(['archived' => false])->willReturn([$subscription]);
-    $entityManager = $this->createMock(EntityManagerInterface::class);
 
-    (new GeneratePaymentsHandler($repository, $entityManager))(new GeneratePaymentsMessage());
+    (new GeneratePaymentsHandler($repository))(new GeneratePaymentsMessage());
 
     expect($subscription->nextRenewal)->toEqual(new DateTimeImmutable($expected));
 })->with([
@@ -93,11 +87,10 @@ test('advances the renewal anchor by the configured interval', function (Payment
     'bi-weekly' => [PaymentPeriod::Week, 2, '2020-01-15'],
 ]);
 
-test('flushes even when no subscriptions exist', function (): void {
+test('queries active subscriptions and records nothing when none are due', function (): void {
     $repository = $this->createMock(SubscriptionRepository::class);
-    $repository->method('findBy')->with(['archived' => false])->willReturn([]);
-    $entityManager = $this->createMock(EntityManagerInterface::class);
-    $entityManager->expects($this->once())->method('flush');
+    // The handler fetches active subscriptions even when there are none; the bus owns the commit.
+    $repository->expects($this->once())->method('findBy')->with(['archived' => false])->willReturn([]);
 
-    (new GeneratePaymentsHandler($repository, $entityManager))(new GeneratePaymentsMessage());
+    (new GeneratePaymentsHandler($repository))(new GeneratePaymentsMessage());
 });

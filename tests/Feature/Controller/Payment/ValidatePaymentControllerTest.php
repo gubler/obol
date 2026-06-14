@@ -5,6 +5,8 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Feature\Controller\Payment;
+
 use App\Entity\Payment;
 use App\Enum\Currency;
 use App\Enum\PaymentType;
@@ -13,37 +15,42 @@ use App\Factory\PaymentFactory;
 use App\Factory\SubscriptionFactory;
 use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-test('post request validates a generated payment', function (): void {
-    $client = $this->createClient();
-    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-    $subscription = SubscriptionFactory::createOne(['category' => $category]);
-    $payment = PaymentFactory::createOne([
-        'subscription' => $subscription,
-        'type' => PaymentType::Generated,
-        'amount' => new Money(1599, Currency::USD),
-    ]);
+final class ValidatePaymentControllerTest extends WebTestCase
+{
+    public function testPostRequestValidatesAGeneratedPayment(): void
+    {
+        $client = self::createClient();
+        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+        $subscription = SubscriptionFactory::createOne(['category' => $category]);
+        $payment = PaymentFactory::createOne([
+            'subscription' => $subscription,
+            'type' => PaymentType::Generated,
+            'amount' => new Money(1599, Currency::USD),
+        ]);
 
-    $client->request(method: 'POST', uri: '/payments/' . $payment->id . '/validate');
+        $client->request(method: 'POST', uri: '/payments/' . $payment->id . '/validate');
 
-    $this->assertResponseRedirects(expectedLocation: '/subscriptions/' . $subscription->id);
+        self::assertResponseRedirects(expectedLocation: '/subscriptions/' . $subscription->id);
 
-    $container = $this->getContainer();
-    /** @var EntityManagerInterface $entityManager */
-    $entityManager = $container->get(id: EntityManagerInterface::class);
-    $entityManager->clear();
+        $container = self::getContainer();
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = $container->get(id: EntityManagerInterface::class);
+        $entityManager->clear();
 
-    $updated = $entityManager->getRepository(Payment::class)->find($payment->id);
-    expect($updated)->not->toBeNull();
-    expect($updated->type)->toBe(PaymentType::Verified)
-        ->and($updated->amount->minorAmount)->toBe(1599)
-    ;
-});
+        $updated = $entityManager->getRepository(Payment::class)->find($payment->id);
+        self::assertNotNull($updated);
+        self::assertSame(PaymentType::Verified, $updated->type);
+        self::assertSame(1599, $updated->amount->minorAmount);
+    }
 
-test('post request with invalid id returns 404', function (): void {
-    $client = $this->createClient();
+    public function testPostRequestWithInvalidIdReturns404(): void
+    {
+        $client = self::createClient();
 
-    $client->request(method: 'POST', uri: '/payments/01JKXXXXXXXXXXXXXXXXXXXXXXX/validate');
+        $client->request(method: 'POST', uri: '/payments/01JKXXXXXXXXXXXXXXXXXXXXXXX/validate');
 
-    $this->assertResponseStatusCodeSame(expectedCode: 404);
-});
+        self::assertResponseStatusCodeSame(expectedCode: 404);
+    }
+}

@@ -5,60 +5,72 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Feature\Controller\Report;
+
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
 use App\ValueObject\Money;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Uid\Ulid;
 
-test('the reports overview shows a per-category composition, excluding archived subscriptions', function (): void {
-    $client = $this->createClient();
+final class ReportsControllerTest extends WebTestCase
+{
+    public function testReportsOverviewShowsPerCategoryCompositionExcludingArchivedSubscriptions(): void
+    {
+        $client = self::createClient();
 
-    $streaming = CategoryFactory::createOne(['name' => 'Streaming']);
-    $software = CategoryFactory::createOne(['name' => 'Software']);
-    $defunct = CategoryFactory::createOne(['name' => 'Defunct']);
+        $streaming = CategoryFactory::createOne(['name' => 'Streaming']);
+        $software = CategoryFactory::createOne(['name' => 'Software']);
+        $defunct = CategoryFactory::createOne(['name' => 'Defunct']);
 
-    SubscriptionFactory::createOne(['category' => $streaming, 'name' => 'Netflix', 'cost' => new Money(4000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
-    SubscriptionFactory::createOne(['category' => $software, 'name' => 'JetBrains', 'cost' => new Money(1500, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
-    // Both of these are archived, so neither their category nor their cost should surface.
-    SubscriptionFactory::new()->archived()->create(['category' => $streaming, 'name' => 'Old Hulu', 'cost' => new Money(9900, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
-    SubscriptionFactory::new()->archived()->create(['category' => $defunct, 'name' => 'Dead App', 'cost' => new Money(5000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
+        SubscriptionFactory::createOne(['category' => $streaming, 'name' => 'Netflix', 'cost' => new Money(4000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
+        SubscriptionFactory::createOne(['category' => $software, 'name' => 'JetBrains', 'cost' => new Money(1500, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
+        // Both of these are archived, so neither their category nor their cost should surface.
+        SubscriptionFactory::new()->archived()->create(['category' => $streaming, 'name' => 'Old Hulu', 'cost' => new Money(9900, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
+        SubscriptionFactory::new()->archived()->create(['category' => $defunct, 'name' => 'Dead App', 'cost' => new Money(5000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
 
-    $crawler = $client->request(method: 'GET', uri: '/reports');
+        $crawler = $client->request(method: 'GET', uri: '/reports');
 
-    $this->assertResponseIsSuccessful();
-    $this->assertSelectorExists(selector: 'canvas');                                 // the pie is rendered
-    $this->assertSelectorTextContains(selector: '.report-total', text: '$55.00');    // 40 + 15, archived excluded
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists(selector: 'canvas');                                 // the pie is rendered
+        self::assertSelectorTextContains(selector: '.report-total', text: '$55.00');    // 40 + 15, archived excluded
 
-    $names = $crawler->filter('.report-category')->each(static fn ($node): string => $node->text());
-    expect($names)->toContain('Streaming')->toContain('Software')->not->toContain('Defunct');
+        $names = $crawler->filter('.report-category')->each(static fn ($node): string => $node->text());
+        self::assertContains('Streaming', $names);
+        self::assertContains('Software', $names);
+        self::assertNotContains('Defunct', $names);
 
-    // Each category links to its server-navigated drill-down (base32, as path() generates from a Ulid).
-    $this->assertSelectorExists(selector: sprintf('a[href="/reports/categories/%s"]', $streaming->id->toBase32()));
-});
+        // Each category links to its server-navigated drill-down (base32, as path() generates from a Ulid).
+        self::assertSelectorExists(selector: \sprintf('a[href="/reports/categories/%s"]', $streaming->id->toBase32()));
+    }
 
-test('a category drill-down shows that category subscriptions, excluding archived', function (): void {
-    $client = $this->createClient();
+    public function testCategoryDrillDownShowsThatCategorySubscriptionsExcludingArchived(): void
+    {
+        $client = self::createClient();
 
-    $streaming = CategoryFactory::createOne(['name' => 'Streaming']);
-    SubscriptionFactory::createOne(['category' => $streaming, 'name' => 'Netflix', 'cost' => new Money(4000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
-    SubscriptionFactory::new()->archived()->create(['category' => $streaming, 'name' => 'Old Hulu', 'cost' => new Money(9900, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
+        $streaming = CategoryFactory::createOne(['name' => 'Streaming']);
+        SubscriptionFactory::createOne(['category' => $streaming, 'name' => 'Netflix', 'cost' => new Money(4000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
+        SubscriptionFactory::new()->archived()->create(['category' => $streaming, 'name' => 'Old Hulu', 'cost' => new Money(9900, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
 
-    $crawler = $client->request(method: 'GET', uri: '/reports/categories/' . $streaming->id->toRfc4122());
+        $crawler = $client->request(method: 'GET', uri: '/reports/categories/' . $streaming->id->toRfc4122());
 
-    $this->assertResponseIsSuccessful();
-    $this->assertSelectorExists(selector: 'canvas');
-    $this->assertSelectorTextContains(selector: 'h1', text: 'Streaming');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists(selector: 'canvas');
+        self::assertSelectorTextContains(selector: 'h1', text: 'Streaming');
 
-    $names = $crawler->filter('.report-subscription')->each(static fn ($node): string => $node->text());
-    expect($names)->toContain('Netflix')->not->toContain('Old Hulu');
-});
+        $names = $crawler->filter('.report-subscription')->each(static fn ($node): string => $node->text());
+        self::assertContains('Netflix', $names);
+        self::assertNotContains('Old Hulu', $names);
+    }
 
-test('a drill-down for an unknown category is a 404', function (): void {
-    $client = $this->createClient();
+    public function testDrillDownForUnknownCategoryIs404(): void
+    {
+        $client = self::createClient();
 
-    $client->request(method: 'GET', uri: '/reports/categories/' . new Ulid()->toRfc4122());
+        $client->request(method: 'GET', uri: '/reports/categories/' . new Ulid()->toRfc4122());
 
-    $this->assertResponseStatusCodeSame(expectedCode: 404);
-});
+        self::assertResponseStatusCodeSame(expectedCode: 404);
+    }
+}

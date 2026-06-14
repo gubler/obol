@@ -5,33 +5,41 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Feature\Controller\Report;
+
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
 use App\ValueObject\Money;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-test('the reports page shows the obligation trend with a day/week/month toggle, monthly by default', function (): void {
-    $client = $this->createClient();
-    // Creating a subscription records an obligation snapshot, so the trend has data to plot.
-    $category = CategoryFactory::createOne(['name' => 'Streaming']);
-    SubscriptionFactory::createOne(['category' => $category, 'cost' => new Money(4000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
+final class ObligationTrendTest extends WebTestCase
+{
+    public function testReportsPageShowsObligationTrendWithDayWeekMonthToggleMonthlyByDefault(): void
+    {
+        $client = self::createClient();
+        // Creating a subscription records an obligation snapshot, so the trend has data to plot.
+        $category = CategoryFactory::createOne(['name' => 'Streaming']);
+        SubscriptionFactory::createOne(['category' => $category, 'cost' => new Money(4000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
 
-    $client->request(method: 'GET', uri: '/reports');
+        $client->request(method: 'GET', uri: '/reports');
 
-    $this->assertResponseIsSuccessful();
-    $this->assertSelectorExists(selector: '.obligation-trend canvas');                 // the line chart
-    $this->assertSelectorExists(selector: 'a[href="/reports?trend=day"]');
-    $this->assertSelectorExists(selector: 'a[href="/reports?trend=week"]');
-    $this->assertSelectorExists(selector: 'a[href="/reports?trend=month"]');
-    $this->assertSelectorTextContains(selector: '.obligation-trend [aria-current="page"]', text: 'Monthly');
-});
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists(selector: '.obligation-trend canvas');                 // the line chart
+        self::assertSelectorExists(selector: 'a[href="/reports?trend=day"]');
+        self::assertSelectorExists(selector: 'a[href="/reports?trend=week"]');
+        self::assertSelectorExists(selector: 'a[href="/reports?trend=month"]');
+        self::assertSelectorTextContains(selector: '.obligation-trend [aria-current="page"]', text: 'Monthly');
+    }
 
-test('selecting a trend granularity marks it active', function (): void {
-    $client = $this->createClient();
+    public function testSelectingTrendGranularityMarksItActive(): void
+    {
+        $client = self::createClient();
 
-    $client->request(method: 'GET', uri: '/reports?trend=week');
+        $client->request(method: 'GET', uri: '/reports?trend=week');
 
-    $this->assertResponseIsSuccessful();
-    $this->assertSelectorTextContains(selector: '.obligation-trend [aria-current="page"]', text: 'Weekly');
-});
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains(selector: '.obligation-trend [aria-current="page"]', text: 'Weekly');
+    }
+}

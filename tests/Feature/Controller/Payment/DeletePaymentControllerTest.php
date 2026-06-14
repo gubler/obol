@@ -5,6 +5,8 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Feature\Controller\Payment;
+
 use App\Entity\Subscription;
 use App\Enum\Currency;
 use App\Factory\CategoryFactory;
@@ -12,73 +14,81 @@ use App\Factory\PaymentFactory;
 use App\Factory\SubscriptionFactory;
 use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-test('deletes payment', function (): void {
-    $client = $this->createClient();
-    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-    $subscription = SubscriptionFactory::createOne([
-        'category' => $category,
-        'name' => 'Netflix',
-    ]);
-    $payment = PaymentFactory::createOne([
-        'subscription' => $subscription,
-        'amount' => new Money(1599, Currency::USD),
-    ]);
+final class DeletePaymentControllerTest extends WebTestCase
+{
+    public function testDeletesPayment(): void
+    {
+        $client = self::createClient();
+        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+        $subscription = SubscriptionFactory::createOne([
+            'category' => $category,
+            'name' => 'Netflix',
+        ]);
+        $payment = PaymentFactory::createOne([
+            'subscription' => $subscription,
+            'amount' => new Money(1599, Currency::USD),
+        ]);
 
-    $client->request('POST', '/payments/' . $payment->id . '/delete');
+        $client->request('POST', '/payments/' . $payment->id . '/delete');
 
-    $this->assertResponseRedirects('/subscriptions/' . $subscription->id);
+        self::assertResponseRedirects('/subscriptions/' . $subscription->id);
 
-    $container = $this->getContainer();
-    /** @var EntityManagerInterface $entityManager */
-    $entityManager = $container->get(EntityManagerInterface::class);
-    $repository = $entityManager->getRepository(Subscription::class);
-    $entityManager->clear();
+        $container = self::getContainer();
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = $container->get(EntityManagerInterface::class);
+        $repository = $entityManager->getRepository(Subscription::class);
+        $entityManager->clear();
 
-    $updatedSubscription = $repository->find($subscription->id);
-    expect($updatedSubscription)->not->toBeNull();
-    expect($updatedSubscription->payments)->toHaveCount(0);
-});
+        $updatedSubscription = $repository->find($subscription->id);
+        self::assertNotNull($updatedSubscription);
+        self::assertCount(0, $updatedSubscription->payments);
+    }
 
-test('shows success flash message', function (): void {
-    $client = $this->createClient();
-    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-    $subscription = SubscriptionFactory::createOne([
-        'category' => $category,
-        'name' => 'Netflix',
-    ]);
-    $payment = PaymentFactory::createOne([
-        'subscription' => $subscription,
-        'amount' => new Money(1599, Currency::USD),
-    ]);
+    public function testShowsSuccessFlashMessage(): void
+    {
+        $client = self::createClient();
+        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+        $subscription = SubscriptionFactory::createOne([
+            'category' => $category,
+            'name' => 'Netflix',
+        ]);
+        $payment = PaymentFactory::createOne([
+            'subscription' => $subscription,
+            'amount' => new Money(1599, Currency::USD),
+        ]);
 
-    $client->request('POST', '/payments/' . $payment->id . '/delete');
-    $client->followRedirect();
+        $client->request('POST', '/payments/' . $payment->id . '/delete');
+        $client->followRedirect();
 
-    $this->assertSelectorTextContains('.flash-success', 'Payment deleted successfully');
-});
+        self::assertSelectorTextContains('.flash-success', 'Payment deleted successfully');
+    }
 
-test('returns 404 for invalid payment id', function (): void {
-    $client = $this->createClient();
+    public function testReturns404ForInvalidPaymentId(): void
+    {
+        $client = self::createClient();
 
-    $client->request('POST', '/payments/01JKXXXXXXXXXXXXXXXXXXXXXXX/delete');
+        $client->request('POST', '/payments/01JKXXXXXXXXXXXXXXXXXXXXXXX/delete');
 
-    $this->assertResponseStatusCodeSame(404);
-});
+        self::assertResponseStatusCodeSame(404);
+    }
 
-test('only accepts post method', function (): void {
-    $client = $this->createClient();
-    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-    $subscription = SubscriptionFactory::createOne([
-        'category' => $category,
-        'name' => 'Netflix',
-    ]);
-    $payment = PaymentFactory::createOne([
-        'subscription' => $subscription,
-        'amount' => new Money(1599, Currency::USD),
-    ]);
+    public function testOnlyAcceptsPostMethod(): void
+    {
+        $client = self::createClient();
+        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+        $subscription = SubscriptionFactory::createOne([
+            'category' => $category,
+            'name' => 'Netflix',
+        ]);
+        $payment = PaymentFactory::createOne([
+            'subscription' => $subscription,
+            'amount' => new Money(1599, Currency::USD),
+        ]);
 
-    $client->request('GET', '/payments/' . $payment->id . '/delete');
+        $client->request('GET', '/payments/' . $payment->id . '/delete');
 
-    $this->assertResponseStatusCodeSame(405);
-});
+        self::assertResponseStatusCodeSame(405);
+    }
+}

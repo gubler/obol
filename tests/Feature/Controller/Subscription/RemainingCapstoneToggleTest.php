@@ -5,31 +5,38 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Feature\Controller\Subscription;
+
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
 use App\ValueObject\Money;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-test('the capstone defaults to Global Totals and toggles to Remaining', function (): void {
-    $client = $this->createClient();
-    $category = CategoryFactory::createOne(['name' => 'Software']);
-    SubscriptionFactory::createOne([
-        'category' => $category,
-        'cost' => new Money(5000, Currency::USD),
-        'paymentPeriod' => PaymentPeriod::Month,
-        'paymentPeriodCount' => 1,
-        'nextRenewal' => new DateTimeImmutable('first day of this month'),
-    ]);
+final class RemainingCapstoneToggleTest extends WebTestCase
+{
+    public function testTheCapstoneDefaultsToGlobalTotalsAndTogglesToRemaining(): void
+    {
+        $client = self::createClient();
+        $category = CategoryFactory::createOne(['name' => 'Software']);
+        SubscriptionFactory::createOne([
+            'category' => $category,
+            'cost' => new Money(5000, Currency::USD),
+            'paymentPeriod' => PaymentPeriod::Month,
+            'paymentPeriodCount' => 1,
+            'nextRenewal' => new \DateTimeImmutable('first day of this month'),
+        ]);
 
-    // Default capstone is Global Totals.
-    $client->request(method: 'GET', uri: '/');
-    $this->assertResponseIsSuccessful();
-    $this->assertSelectorExists(selector: '.global-total-monthly');
+        // Default capstone is Global Totals.
+        $client->request(method: 'GET', uri: '/');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists(selector: '.global-total-monthly');
 
-    // Toggle to Remaining: the single renewal due this month leaves $50.00 owed.
-    $client->request(method: 'GET', uri: '/?capstone=remaining');
-    $this->assertResponseIsSuccessful();
-    $this->assertSelectorTextContains(selector: '.remaining-total-monthly', text: '$50.00');
-    $this->assertSelectorTextContains(selector: '.remaining-total-monthly', text: 'this month');
-});
+        // Toggle to Remaining: the single renewal due this month leaves $50.00 owed.
+        $client->request(method: 'GET', uri: '/?capstone=remaining');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains(selector: '.remaining-total-monthly', text: '$50.00');
+        self::assertSelectorTextContains(selector: '.remaining-total-monthly', text: 'this month');
+    }
+}

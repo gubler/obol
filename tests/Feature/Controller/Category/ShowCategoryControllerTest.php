@@ -5,82 +5,94 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Feature\Controller\Category;
+
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Uid\Ulid;
 
-test('shows category details', function (): void {
-    $client = $this->createClient();
+final class ShowCategoryControllerTest extends WebTestCase
+{
+    public function testShowsCategoryDetails(): void
+    {
+        $client = self::createClient();
 
-    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-    $categoryId = $category->id;
+        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+        $categoryId = $category->id;
 
-    $client->request(method: 'GET', uri: '/categories/' . $categoryId);
+        $client->request(method: 'GET', uri: '/categories/' . $categoryId);
 
-    $this->assertResponseIsSuccessful();
-    $this->assertSelectorTextContains(selector: 'h1', text: 'Entertainment');
-});
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains(selector: 'h1', text: 'Entertainment');
+    }
 
-test('displays subscriptions in category', function (): void {
-    $client = $this->createClient();
+    public function testDisplaysSubscriptionsInCategory(): void
+    {
+        $client = self::createClient();
 
-    $category = CategoryFactory::createOne(['name' => 'Software']);
-    SubscriptionFactory::createOne(['category' => $category, 'name' => 'Netflix']);
-    SubscriptionFactory::createOne(['category' => $category, 'name' => 'Spotify']);
-    SubscriptionFactory::createOne(['category' => $category, 'name' => 'GitHub']);
+        $category = CategoryFactory::createOne(['name' => 'Software']);
+        SubscriptionFactory::createOne(['category' => $category, 'name' => 'Netflix']);
+        SubscriptionFactory::createOne(['category' => $category, 'name' => 'Spotify']);
+        SubscriptionFactory::createOne(['category' => $category, 'name' => 'GitHub']);
 
-    $categoryId = $category->id;
+        $categoryId = $category->id;
 
-    $client->request(method: 'GET', uri: '/categories/' . $categoryId);
+        $client->request(method: 'GET', uri: '/categories/' . $categoryId);
 
-    $this->assertResponseIsSuccessful();
-    $this->assertSelectorTextContains(selector: 'body', text: 'Netflix');
-    $this->assertSelectorTextContains(selector: 'body', text: 'Spotify');
-    $this->assertSelectorTextContains(selector: 'body', text: 'GitHub');
-});
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains(selector: 'body', text: 'Netflix');
+        self::assertSelectorTextContains(selector: 'body', text: 'Spotify');
+        self::assertSelectorTextContains(selector: 'body', text: 'GitHub');
+    }
 
-test('shows category details section', function (): void {
-    $client = $this->createClient();
+    public function testShowsCategoryDetailsSection(): void
+    {
+        $client = self::createClient();
 
-    $category = CategoryFactory::createOne(['name' => 'Test Category']);
-    $categoryId = $category->id;
+        $category = CategoryFactory::createOne(['name' => 'Test Category']);
+        $categoryId = $category->id;
 
-    $client->request(method: 'GET', uri: '/categories/' . $categoryId);
+        $client->request(method: 'GET', uri: '/categories/' . $categoryId);
 
-    $this->assertResponseIsSuccessful();
-    $this->assertSelectorTextContains(selector: 'h2', text: 'Category Details');
-});
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains(selector: 'h2', text: 'Category Details');
+    }
 
-test('shows back to list link', function (): void {
-    $client = $this->createClient();
+    public function testShowsBackToListLink(): void
+    {
+        $client = self::createClient();
 
-    $category = CategoryFactory::createOne(['name' => 'Test Category']);
-    $categoryId = $category->id;
+        $category = CategoryFactory::createOne(['name' => 'Test Category']);
+        $categoryId = $category->id;
 
-    $client->request(method: 'GET', uri: '/categories/' . $categoryId);
+        $client->request(method: 'GET', uri: '/categories/' . $categoryId);
 
-    $this->assertResponseIsSuccessful();
-    $this->assertSelectorExists(selector: 'a[href="/categories"]');
-});
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists(selector: 'a[href="/categories"]');
+    }
 
-test('returns 404 for non existent category', function (): void {
-    $client = $this->createClient();
+    public function testReturns404ForNonExistentCategory(): void
+    {
+        $client = self::createClient();
 
-    $nonExistentId = new Ulid();
+        $nonExistentId = new Ulid();
 
-    $client->request(method: 'GET', uri: '/categories/' . $nonExistentId);
+        $client->request(method: 'GET', uri: '/categories/' . $nonExistentId);
 
-    $this->assertResponseStatusCodeSame(expectedCode: 404);
-});
+        self::assertResponseStatusCodeSame(expectedCode: 404);
+    }
 
-test('shows empty state when category has no subscriptions', function (): void {
-    $client = $this->createClient();
+    public function testShowsEmptyStateWhenCategoryHasNoSubscriptions(): void
+    {
+        $client = self::createClient();
 
-    $category = CategoryFactory::createOne(['name' => 'Empty Category']);
-    $categoryId = $category->id;
+        $category = CategoryFactory::createOne(['name' => 'Empty Category']);
+        $categoryId = $category->id;
 
-    $client->request(method: 'GET', uri: '/categories/' . $categoryId);
+        $client->request(method: 'GET', uri: '/categories/' . $categoryId);
 
-    $this->assertResponseIsSuccessful();
-    $this->assertSelectorTextContains(selector: 'body', text: 'No subscriptions in this category');
-});
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains(selector: 'body', text: 'No subscriptions in this category');
+    }
+}

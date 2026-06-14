@@ -5,215 +5,230 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Feature\Controller\Subscription;
+
 use App\Entity\Subscription;
 use App\Enum\Currency;
 use App\Enum\TileColor;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-test('get request displays create form', function (): void {
-    $client = $this->createClient();
+final class CreateSubscriptionControllerTest extends WebTestCase
+{
+    public function testGetRequestDisplaysCreateForm(): void
+    {
+        $client = self::createClient();
 
-    $client->request(method: 'GET', uri: '/subscriptions/new');
+        $client->request(method: 'GET', uri: '/subscriptions/new');
 
-    $this->assertResponseIsSuccessful();
-    $this->assertSelectorTextContains(selector: 'h1', text: 'New Subscription');
-    $this->assertSelectorExists(selector: 'form');
-    $this->assertSelectorExists(selector: 'select[name="create_subscription[category]"]');
-    $this->assertSelectorExists(selector: 'input[name="create_subscription[name]"]');
-    $this->assertSelectorExists(selector: 'input[name="create_subscription[nextRenewal]"]');
-    $this->assertSelectorExists(selector: 'button[type="submit"]');
-});
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains(selector: 'h1', text: 'New Subscription');
+        self::assertSelectorExists(selector: 'form');
+        self::assertSelectorExists(selector: 'select[name="create_subscription[category]"]');
+        self::assertSelectorExists(selector: 'input[name="create_subscription[name]"]');
+        self::assertSelectorExists(selector: 'input[name="create_subscription[nextRenewal]"]');
+        self::assertSelectorExists(selector: 'button[type="submit"]');
+    }
 
-test('shows cancel link back to index', function (): void {
-    $client = $this->createClient();
+    public function testShowsCancelLinkBackToIndex(): void
+    {
+        $client = self::createClient();
 
-    $client->request(method: 'GET', uri: '/subscriptions/new');
+        $client->request(method: 'GET', uri: '/subscriptions/new');
 
-    $this->assertResponseIsSuccessful();
-    $this->assertSelectorExists(selector: 'a[href="/"]');
-});
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists(selector: 'a[href="/"]');
+    }
 
-test('post request with valid data creates subscription', function (): void {
-    $client = $this->createClient();
-    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    public function testPostRequestWithValidDataCreatesSubscription(): void
+    {
+        $client = self::createClient();
+        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
-    $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
+        $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
 
-    $form = $crawler->selectButton(value: 'Save')->form([
-        'create_subscription[category]' => $category->id->toBase32(),
-        'create_subscription[name]' => 'Netflix Premium',
-        'create_subscription[nextRenewal]' => '2026-01-15',
-        'create_subscription[paymentPeriod]' => 'month',
-        'create_subscription[paymentPeriodCount]' => '1',
-        'create_subscription[cost]' => '1999',
-        'create_subscription[description]' => 'Streaming service',
-        'create_subscription[link]' => 'https://netflix.com',
-        'create_subscription[color]' => 'blue',
-    ]);
+        $form = $crawler->selectButton(value: 'Save')->form([
+            'create_subscription[category]' => $category->id->toBase32(),
+            'create_subscription[name]' => 'Netflix Premium',
+            'create_subscription[nextRenewal]' => '2026-01-15',
+            'create_subscription[paymentPeriod]' => 'month',
+            'create_subscription[paymentPeriodCount]' => '1',
+            'create_subscription[cost]' => '1999',
+            'create_subscription[description]' => 'Streaming service',
+            'create_subscription[link]' => 'https://netflix.com',
+            'create_subscription[color]' => 'blue',
+        ]);
 
-    $client->submit(form: $form);
+        $client->submit(form: $form);
 
-    $this->assertResponseRedirects(expectedLocation: '/');
+        self::assertResponseRedirects(expectedLocation: '/');
 
-    $container = $this->getContainer();
-    /** @var EntityManagerInterface $entityManager */
-    $entityManager = $container->get(id: EntityManagerInterface::class);
-    $repository = $entityManager->getRepository(className: Subscription::class);
+        $container = self::getContainer();
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = $container->get(id: EntityManagerInterface::class);
+        $repository = $entityManager->getRepository(className: Subscription::class);
 
-    $subscription = $repository->findOneBy(criteria: ['name' => 'Netflix Premium']);
+        $subscription = $repository->findOneBy(criteria: ['name' => 'Netflix Premium']);
 
-    expect($subscription)->not->toBeNull();
-    expect($subscription->name)->toBe('Netflix Premium');
-    expect($subscription->cost->minorAmount)->toBe(1999);
-    expect($subscription->description)->toBe('Streaming service');
-    expect($subscription->link)->toBe('https://netflix.com');
-    expect($subscription->color)->toBe(TileColor::Blue);
-});
+        self::assertNotNull($subscription);
+        self::assertSame('Netflix Premium', $subscription->name);
+        self::assertSame(1999, $subscription->cost->minorAmount);
+        self::assertSame('Streaming service', $subscription->description);
+        self::assertSame('https://netflix.com', $subscription->link);
+        self::assertSame(TileColor::Blue, $subscription->color);
+    }
 
-test('post request creates a subscription in a chosen non-default currency', function (): void {
-    $client = $this->createClient();
-    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    public function testPostRequestCreatesASubscriptionInAChosenNonDefaultCurrency(): void
+    {
+        $client = self::createClient();
+        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
-    $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
+        $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
 
-    $form = $crawler->selectButton(value: 'Save')->form([
-        'create_subscription[category]' => $category->id->toBase32(),
-        'create_subscription[name]' => 'Manga Box',
-        'create_subscription[nextRenewal]' => '2026-01-15',
-        'create_subscription[paymentPeriod]' => 'month',
-        'create_subscription[paymentPeriodCount]' => '1',
-        'create_subscription[cost]' => '1500',
-        'create_subscription[currency]' => 'EUR',
-    ]);
+        $form = $crawler->selectButton(value: 'Save')->form([
+            'create_subscription[category]' => $category->id->toBase32(),
+            'create_subscription[name]' => 'Manga Box',
+            'create_subscription[nextRenewal]' => '2026-01-15',
+            'create_subscription[paymentPeriod]' => 'month',
+            'create_subscription[paymentPeriodCount]' => '1',
+            'create_subscription[cost]' => '1500',
+            'create_subscription[currency]' => 'EUR',
+        ]);
 
-    $client->submit(form: $form);
-    $this->assertResponseRedirects(expectedLocation: '/');
+        $client->submit(form: $form);
+        self::assertResponseRedirects(expectedLocation: '/');
 
-    $container = $this->getContainer();
-    /** @var EntityManagerInterface $entityManager */
-    $entityManager = $container->get(id: EntityManagerInterface::class);
-    $subscription = $entityManager->getRepository(Subscription::class)->findOneBy(['name' => 'Manga Box']);
+        $container = self::getContainer();
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = $container->get(id: EntityManagerInterface::class);
+        $subscription = $entityManager->getRepository(Subscription::class)->findOneBy(['name' => 'Manga Box']);
 
-    expect($subscription)->not->toBeNull();
-    expect($subscription->cost->currency)->toBe(Currency::EUR)
-        ->and($subscription->cost->minorAmount)->toBe(1500)
-    ;
+        self::assertNotNull($subscription);
+        self::assertSame(Currency::EUR, $subscription->cost->currency);
+        self::assertSame(1500, $subscription->cost->minorAmount);
 
-    // The chosen currency drives rendering on the detail page.
-    $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id);
-    $this->assertSelectorTextContains(selector: 'body', text: '€15.00');
-});
+        // The chosen currency drives rendering on the detail page.
+        $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id);
+        self::assertSelectorTextContains(selector: 'body', text: '€15.00');
+    }
 
-test('post request with valid data shows success flash message', function (): void {
-    $client = $this->createClient();
-    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    public function testPostRequestWithValidDataShowsSuccessFlashMessage(): void
+    {
+        $client = self::createClient();
+        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
-    $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
+        $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
 
-    $form = $crawler->selectButton(value: 'Save')->form([
-        'create_subscription[category]' => $category->id->toBase32(),
-        'create_subscription[name]' => 'Spotify',
-        'create_subscription[nextRenewal]' => '2026-01-01',
-        'create_subscription[paymentPeriod]' => 'month',
-        'create_subscription[paymentPeriodCount]' => '1',
-        'create_subscription[cost]' => '999',
-    ]);
+        $form = $crawler->selectButton(value: 'Save')->form([
+            'create_subscription[category]' => $category->id->toBase32(),
+            'create_subscription[name]' => 'Spotify',
+            'create_subscription[nextRenewal]' => '2026-01-01',
+            'create_subscription[paymentPeriod]' => 'month',
+            'create_subscription[paymentPeriodCount]' => '1',
+            'create_subscription[cost]' => '999',
+        ]);
 
-    $client->submit(form: $form);
-    $client->followRedirect();
+        $client->submit(form: $form);
+        $client->followRedirect();
 
-    $this->assertSelectorTextContains(selector: '.flash-success', text: 'Subscription created successfully');
-});
+        self::assertSelectorTextContains(selector: '.flash-success', text: 'Subscription created successfully');
+    }
 
-test('post request with empty name shows validation error', function (): void {
-    $client = $this->createClient();
-    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    public function testPostRequestWithEmptyNameShowsValidationError(): void
+    {
+        $client = self::createClient();
+        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
-    $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
+        $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
 
-    $form = $crawler->selectButton(value: 'Save')->form([
-        'create_subscription[category]' => $category->id->toBase32(),
-        'create_subscription[name]' => '',
-        'create_subscription[nextRenewal]' => '2026-01-01',
-        'create_subscription[paymentPeriod]' => 'month',
-        'create_subscription[paymentPeriodCount]' => '1',
-        'create_subscription[cost]' => '999',
-    ]);
+        $form = $crawler->selectButton(value: 'Save')->form([
+            'create_subscription[category]' => $category->id->toBase32(),
+            'create_subscription[name]' => '',
+            'create_subscription[nextRenewal]' => '2026-01-01',
+            'create_subscription[paymentPeriod]' => 'month',
+            'create_subscription[paymentPeriodCount]' => '1',
+            'create_subscription[cost]' => '999',
+        ]);
 
-    $client->submit(form: $form);
+        $client->submit(form: $form);
 
-    $this->assertResponseStatusCodeSame(expectedCode: 422);
-    $this->assertSelectorExists(selector: '.text-red-700');
-    $this->assertSelectorTextContains(selector: 'body', text: 'This value should not be blank');
-});
+        self::assertResponseStatusCodeSame(expectedCode: 422);
+        self::assertSelectorExists(selector: '.text-red-700');
+        self::assertSelectorTextContains(selector: 'body', text: 'This value should not be blank');
+    }
 
-test('post request without category shows validation error', function (): void {
-    $client = $this->createClient();
-    CategoryFactory::createOne(['name' => 'Entertainment']);
+    public function testPostRequestWithoutCategoryShowsValidationError(): void
+    {
+        $client = self::createClient();
+        CategoryFactory::createOne(['name' => 'Entertainment']);
 
-    $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
+        $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
 
-    $form = $crawler->selectButton(value: 'Save')->form([
-        'create_subscription[name]' => 'Test Sub',
-        'create_subscription[nextRenewal]' => '2026-01-01',
-        'create_subscription[paymentPeriod]' => 'month',
-        'create_subscription[paymentPeriodCount]' => '1',
-        'create_subscription[cost]' => '999',
-    ]);
-    $form['create_subscription[category]'] = '';
+        $form = $crawler->selectButton(value: 'Save')->form([
+            'create_subscription[name]' => 'Test Sub',
+            'create_subscription[nextRenewal]' => '2026-01-01',
+            'create_subscription[paymentPeriod]' => 'month',
+            'create_subscription[paymentPeriodCount]' => '1',
+            'create_subscription[cost]' => '999',
+        ]);
+        $form['create_subscription[category]'] = '';
 
-    $client->submit(form: $form);
+        $client->submit(form: $form);
 
-    $this->assertResponseStatusCodeSame(expectedCode: 422);
-    $this->assertSelectorExists(selector: '.text-red-700');
-});
+        self::assertResponseStatusCodeSame(expectedCode: 422);
+        self::assertSelectorExists(selector: '.text-red-700');
+    }
 
-test('post request without next renewal date shows validation error', function (): void {
-    $client = $this->createClient();
-    $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+    public function testPostRequestWithoutNextRenewalDateShowsValidationError(): void
+    {
+        $client = self::createClient();
+        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
-    $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
+        $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
 
-    $form = $crawler->selectButton(value: 'Save')->form([
-        'create_subscription[category]' => $category->id->toBase32(),
-        'create_subscription[name]' => 'Test Sub',
-        'create_subscription[paymentPeriod]' => 'month',
-        'create_subscription[paymentPeriodCount]' => '1',
-        'create_subscription[cost]' => '999',
-    ]);
-    $form['create_subscription[nextRenewal]'] = '';
+        $form = $crawler->selectButton(value: 'Save')->form([
+            'create_subscription[category]' => $category->id->toBase32(),
+            'create_subscription[name]' => 'Test Sub',
+            'create_subscription[paymentPeriod]' => 'month',
+            'create_subscription[paymentPeriodCount]' => '1',
+            'create_subscription[cost]' => '999',
+        ]);
+        $form['create_subscription[nextRenewal]'] = '';
 
-    $client->submit(form: $form);
+        $client->submit(form: $form);
 
-    $this->assertResponseStatusCodeSame(expectedCode: 422);
-    $this->assertSelectorExists(selector: '.text-red-700');
-});
+        self::assertResponseStatusCodeSame(expectedCode: 422);
+        self::assertSelectorExists(selector: '.text-red-700');
+    }
 
-test('form includes csrf protection', function (): void {
-    $client = $this->createClient();
+    public function testFormIncludesCsrfProtection(): void
+    {
+        $client = self::createClient();
 
-    $client->request(method: 'GET', uri: '/subscriptions/new');
+        $client->request(method: 'GET', uri: '/subscriptions/new');
 
-    $this->assertResponseIsSuccessful();
-    $this->assertSelectorExists(selector: 'input[name="create_subscription[_token]"]');
-});
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists(selector: 'input[name="create_subscription[_token]"]');
+    }
 
-test('post request does not create subscription when validation fails', function (): void {
-    $client = $this->createClient();
-    CategoryFactory::createOne(['name' => 'Entertainment']);
+    public function testPostRequestDoesNotCreateSubscriptionWhenValidationFails(): void
+    {
+        $client = self::createClient();
+        CategoryFactory::createOne(['name' => 'Entertainment']);
 
-    $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
+        $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
 
-    $initialCount = SubscriptionFactory::count();
+        $initialCount = SubscriptionFactory::count();
 
-    $form = $crawler->selectButton(value: 'Save')->form();
-    $form['create_subscription[name]'] = '';
+        $form = $crawler->selectButton(value: 'Save')->form();
+        $form['create_subscription[name]'] = '';
 
-    $client->submit(form: $form);
+        $client->submit(form: $form);
 
-    $finalCount = SubscriptionFactory::count();
+        $finalCount = SubscriptionFactory::count();
 
-    expect($finalCount)->toBe($initialCount);
-});
+        self::assertSame($initialCount, $finalCount);
+    }
+}

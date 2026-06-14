@@ -5,80 +5,92 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Feature\Controller\Category;
+
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-test('index page renders successfully', function (): void {
-    $client = $this->createClient();
+final class ListCategoriesControllerTest extends WebTestCase
+{
+    public function testIndexPageRendersSuccessfully(): void
+    {
+        $client = self::createClient();
 
-    $client->request(method: 'GET', uri: '/categories');
+        $client->request(method: 'GET', uri: '/categories');
 
-    $this->assertResponseIsSuccessful();
-    $this->assertSelectorTextContains(selector: 'h1', text: 'Categories');
-});
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains(selector: 'h1', text: 'Categories');
+    }
 
-test('shows empty state when no categories exist', function (): void {
-    $client = $this->createClient();
+    public function testShowsEmptyStateWhenNoCategoriesExist(): void
+    {
+        $client = self::createClient();
 
-    $client->request(method: 'GET', uri: '/categories');
+        $client->request(method: 'GET', uri: '/categories');
 
-    $this->assertResponseIsSuccessful();
-    $this->assertSelectorExists(selector: '.empty-state');
-    $this->assertSelectorTextContains(selector: '.empty-state', text: 'No categories found');
-});
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists(selector: '.empty-state');
+        self::assertSelectorTextContains(selector: '.empty-state', text: 'No categories found');
+    }
 
-test('displays list of categories', function (): void {
-    $client = $this->createClient();
+    public function testDisplaysListOfCategories(): void
+    {
+        $client = self::createClient();
 
-    CategoryFactory::createOne(['name' => 'Entertainment']);
-    CategoryFactory::createOne(['name' => 'Software']);
-    CategoryFactory::createOne(['name' => 'Utilities']);
+        CategoryFactory::createOne(['name' => 'Entertainment']);
+        CategoryFactory::createOne(['name' => 'Software']);
+        CategoryFactory::createOne(['name' => 'Utilities']);
 
-    $client->request(method: 'GET', uri: '/categories');
+        $client->request(method: 'GET', uri: '/categories');
 
-    $this->assertResponseIsSuccessful();
-    $this->assertSelectorTextContains(selector: 'body', text: 'Entertainment');
-    $this->assertSelectorTextContains(selector: 'body', text: 'Software');
-    $this->assertSelectorTextContains(selector: 'body', text: 'Utilities');
-});
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains(selector: 'body', text: 'Entertainment');
+        self::assertSelectorTextContains(selector: 'body', text: 'Software');
+        self::assertSelectorTextContains(selector: 'body', text: 'Utilities');
+    }
 
-test('displays subscription counts for categories', function (): void {
-    $client = $this->createClient();
+    public function testDisplaysSubscriptionCountsForCategories(): void
+    {
+        $client = self::createClient();
 
-    $entertainment = CategoryFactory::createOne(['name' => 'Entertainment']);
-    $software = CategoryFactory::createOne(['name' => 'Software']);
+        $entertainment = CategoryFactory::createOne(['name' => 'Entertainment']);
+        $software = CategoryFactory::createOne(['name' => 'Software']);
 
-    SubscriptionFactory::createMany(3, ['category' => $entertainment]);
-    SubscriptionFactory::createMany(5, ['category' => $software]);
+        SubscriptionFactory::createMany(3, ['category' => $entertainment]);
+        SubscriptionFactory::createMany(5, ['category' => $software]);
 
-    \Zenstruck\Foundry\Persistence\refresh($entertainment);
-    \Zenstruck\Foundry\Persistence\refresh($software);
+        \Zenstruck\Foundry\Persistence\refresh($entertainment);
+        \Zenstruck\Foundry\Persistence\refresh($software);
 
-    $client->request(method: 'GET', uri: '/categories');
+        $client->request(method: 'GET', uri: '/categories');
 
-    $this->assertResponseIsSuccessful();
-    $this->assertSelectorTextContains(selector: 'body', text: '3');
-    $this->assertSelectorTextContains(selector: 'body', text: '5');
-});
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains(selector: 'body', text: '3');
+        self::assertSelectorTextContains(selector: 'body', text: '5');
+    }
 
-test('shows new category button', function (): void {
-    $client = $this->createClient();
+    public function testShowsNewCategoryButton(): void
+    {
+        $client = self::createClient();
 
-    $client->request(method: 'GET', uri: '/categories');
+        $client->request(method: 'GET', uri: '/categories');
 
-    $this->assertResponseIsSuccessful();
-    $this->assertSelectorExists(selector: 'a[href="/categories/new"]');
-    $this->assertSelectorTextContains(selector: 'a[href="/categories/new"]', text: 'New Category');
-});
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists(selector: 'a[href="/categories/new"]');
+        self::assertSelectorTextContains(selector: 'a[href="/categories/new"]', text: 'New Category');
+    }
 
-test('shows view links for each category', function (): void {
-    $client = $this->createClient();
+    public function testShowsViewLinksForEachCategory(): void
+    {
+        $client = self::createClient();
 
-    $category = CategoryFactory::createOne(['name' => 'Test Category']);
-    $categoryId = $category->id;
+        $category = CategoryFactory::createOne(['name' => 'Test Category']);
+        $categoryId = $category->id;
 
-    $client->request(method: 'GET', uri: '/categories');
+        $client->request(method: 'GET', uri: '/categories');
 
-    $this->assertResponseIsSuccessful();
-    $this->assertSelectorExists(selector: 'a[href="/categories/' . $categoryId . '"]');
-});
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists(selector: 'a[href="/categories/' . $categoryId . '"]');
+    }
+}

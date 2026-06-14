@@ -59,6 +59,11 @@
     "require-dev": {
         "dama/doctrine-test-bundle": "^8.6",
         "friendsofphp/php-cs-fixer": "^3.95.3",
+        "helgesverre/toon": "^3.1",
+        "ineersa/database-extension": "^0.8.0",
+        "matesofmate/composer-extension": "^0.3.0",
+        "matesofmate/phpstan-extension": "^0.3.0",
+        "matesofmate/phpunit-extension": "^0.3.0",
         "phpstan/extension-installer": "^1.4.3",
         "phpstan/phpstan": "^2.2.1",
         "phpstan/phpstan-beberlei-assert": "^2.0.2",
@@ -69,6 +74,9 @@
         "phpunit/phpunit": "^13",
         "rector/rector": "^2.4.5",
         "spaze/phpstan-disallowed-calls": "^4.12.0",
+        "symfony/ai-mate": "^0.8.0",
+        "symfony/ai-monolog-mate-extension": "^0.8.0",
+        "symfony/ai-symfony-mate-extension": "^0.8.0",
         "symfony/browser-kit": "8.1.*",
         "symfony/css-selector": "8.1.*",
         "symfony/debug-bundle": "8.1.*",
@@ -85,7 +93,8 @@
             "php-http/discovery": true,
             "phpstan/extension-installer": true,
             "symfony/flex": true,
-            "symfony/runtime": true
+            "symfony/runtime": true,
+            "symfony/ai-mate-composer-plugin": false
         },
         "bump-after-update": true,
         "sort-packages": true
@@ -97,7 +106,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "App\\Tests\\": "tests/"
+            "App\\Tests\\": "tests/",
+            "App\\Mate\\": "mate/src/"
         }
     },
     "replace": {
@@ -134,6 +144,15 @@
             "allow-contrib": false,
             "require": "^8.1",
             "docker": true
+        },
+        "ai-mate": {
+            "extension": false,
+            "scan-dirs": [
+                "mate/src"
+            ],
+            "includes": [
+                "mate/config.php"
+            ]
         }
     }
 }

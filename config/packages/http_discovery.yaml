@@ -1,0 +1,20 @@
+# Added by the php-http/discovery Flex recipe, pulled in transitively by the
+# dev-only Symfony AI Mate stack (mcp/sdk -> php-http/discovery). The package is
+# require-dev, so it is absent from prod (`composer install --no-dev`); loading
+# these PSR-17 service definitions in prod would fail container compilation on the
+# missing Http\Discovery\Psr17Factory class. Scoped to dev+test, where the package
+# exists. Obol's own code does not use PSR-17 factories; this only satisfies the
+# recipe and any dev-time autowiring.
+when@dev: &http_discovery
+    services:
+        Psr\Http\Message\RequestFactoryInterface: '@http_discovery.psr17_factory'
+        Psr\Http\Message\ResponseFactoryInterface: '@http_discovery.psr17_factory'
+        Psr\Http\Message\ServerRequestFactoryInterface: '@http_discovery.psr17_factory'
+        Psr\Http\Message\StreamFactoryInterface: '@http_discovery.psr17_factory'
+        Psr\Http\Message\UploadedFileFactoryInterface: '@http_discovery.psr17_factory'
+        Psr\Http\Message\UriFactoryInterface: '@http_discovery.psr17_factory'
+
+        http_discovery.psr17_factory:
+            class: Http\Discovery\Psr17Factory
+
+when@test: *http_discovery

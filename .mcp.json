@@ -1,0 +1,8 @@
+{
+    "mcpServers": {
+        "mate": {
+            "command": "./bin/dc",
+            "args": ["exec", "-T", "php", "vendor/bin/mate", "serve", "--force-keep-alive"]
+        }
+    }
+}

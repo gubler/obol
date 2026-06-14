@@ -128,6 +128,24 @@ description = "Build Tailwind CSS assets"
 depends = ["_ensure-up"]
 run = ["$DC_EXEC php bin/console tailwind:build"]
 
+# Symfony AI Mate (#138) - dev-only MCP server, runs inside the php container. The
+# AI client launches `mate serve` itself via .mcp.json; these tasks are for manual
+# use and diagnostics. See docs/mate.md.
+[tasks.mate]
+description = "Start the Mate MCP server (stdio) in the php container"
+depends = ["_ensure-up"]
+run = ["$DC_EXEC php vendor/bin/mate serve --force-keep-alive"]
+
+[tasks."mate:tools"]
+description = "List the MCP tools Mate exposes (diagnostic)"
+depends = ["_ensure-up"]
+run = ["$DC_EXEC php vendor/bin/mate mcp:tools:list"]
+
+[tasks."mate:discover"]
+description = "Re-scan vendor for Mate extensions and refresh mate/extensions.php + AGENTS.md (run after adding/removing a Mate extension)"
+depends = ["_ensure-up"]
+run = ["$DC_EXEC php vendor/bin/mate discover"]
+
 # JS toolchain (#133) - runs host-side via npm (Node), never in the php container.
 # AssetMapper + importmap stay the runtime; this is dev/CI tooling only. Run
 # `npm ci` once after pulling. Mirrors the PHP sa/test/cs trio.

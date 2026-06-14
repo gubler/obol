@@ -1,26 +1,24 @@
 {
-  "permissions": {
-    "allow": [
-      "Bash(cat:*)",
-      "Bash(mise run test:*)",
-      "Bash(git add:*)",
-      "WebFetch(domain:gitea.com)",
-      "Read(//Users/dev88/.claude/**)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nchore: update Claude settings\n\nUpdate local Claude configuration settings.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(fd:*)",
-      "Bash(afplay:*)",
-      "Bash(mkdir:*)",
-      "Bash(mise run sa:*)",
-      "Bash(tea:*)",
-      "Bash(composer show:*)",
-      "WebSearch",
-      "WebFetch(domain:github.com)",
-      "WebFetch(domain:packagist.org)",
-      "Bash(php:*)",
-      "Bash(mise tasks:*)",
-      "Bash(mise config:*)"
-    ],
-    "deny": [],
-    "ask": []
-  }
+    "permissions": {
+        "allow": [
+            "Bash(cat:*)",
+            "Bash(mise run test:*)",
+            "Bash(git add:*)",
+            "WebFetch(domain:gitea.com)",
+            "Read(//Users/dev88/.claude/**)",
+            "Bash(fd:*)",
+            "Bash(mkdir:*)",
+            "Bash(mise run sa:*)",
+            "Bash(composer show:*)",
+            "WebSearch",
+            "WebFetch(domain:github.com)",
+            "WebFetch(domain:packagist.org)",
+            "Bash(php:*)",
+            "Bash(mise tasks:*)",
+            "Bash(mise config:*)",
+            "mcp__mate__*"
+        ],
+        "deny": [],
+        "ask": []
+    }
 }

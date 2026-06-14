@@ -35,6 +35,7 @@ nav:
       - Testing: development/testing.md
       - Git Hooks: development/git-hooks.md
       - Mise Tasks: development/mise-tasks.md
+      - AI Mate (MCP): mate.md
   - Operations:
       - Deploying Updates: operations/updates.md
 

@@ -28,10 +28,12 @@
 .github/
 .gitea/
 docs/
+mate/
 public/bundles/
 tests/
 var/
 vendor/
+.mcp.json
 .editorconfig
 .env.*.local
 .env.local

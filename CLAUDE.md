@@ -84,6 +84,18 @@ mise run seed:clear                            # drop + migrate (no fixtures)
 mise run dce -- php bin/console doctrine:migrations:migrate
 ```
 
+### AI Mate (dev-only MCP server)
+```bash
+mise run mate            # start the Mate MCP server (stdio) in the php container
+mise run mate:tools      # list the MCP tools Mate exposes (diagnostic)
+mise run mate:discover   # re-scan vendor after adding/removing a Mate extension
+```
+[Symfony AI Mate](https://symfony.com/doc/current/ai/components/mate.html) exposes live-app
+introspection + dev drivers (PHPUnit, PHPStan, database, logs, container, profiler, composer)
+to AI assistants as `mcp__mate__*` tools. It runs **inside the `php` container** and Claude Code
+auto-launches it via the committed `.mcp.json`; the stack must be up. Dev-only - never shipped to
+prod. Full reference: `docs/mate.md`.
+
 ### Documentation
 ```bash
 # Serve docs locally (requires mkdocs-material: pipx install mkdocs-material)

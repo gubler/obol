@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fc23794b138f07b0875e3454dd823cbf",
+    "content-hash": "a7dff8c0610643a7cd5926127a7de1dc",
     "packages": [
         {
             "name": "beberlei/assert",
@@ -4958,16 +4958,16 @@
         },
         {
             "name": "symfony/polyfill-deepclone",
-            "version": "v1.37.0",
+            "version": "v1.40.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-deepclone.git",
-                "reference": "2ca9e9e75ead5174f2b44613a646bdc9338b8eb4"
+                "reference": "dca4ccba5f360070b574414dce4c1e7a559844fa"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-deepclone/zipball/2ca9e9e75ead5174f2b44613a646bdc9338b8eb4",
-                "reference": "2ca9e9e75ead5174f2b44613a646bdc9338b8eb4",
+                "url": "https://api.github.com/repos/symfony/polyfill-deepclone/zipball/dca4ccba5f360070b574414dce4c1e7a559844fa",
+                "reference": "dca4ccba5f360070b574414dce4c1e7a559844fa",
                 "shasum": ""
             },
             "require": {
@@ -5021,7 +5021,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-deepclone/tree/v1.37.0"
+                "source": "https://github.com/symfony/polyfill-deepclone/tree/v1.40.0"
             },
             "funding": [
                 {
@@ -5041,7 +5041,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-04-26T13:03:27+00:00"
+            "time": "2026-06-12T07:27:17+00:00"
         },
         {
             "name": "symfony/polyfill-intl-grapheme",
@@ -5387,16 +5387,16 @@
         },
         {
             "name": "symfony/polyfill-mbstring",
-            "version": "v1.38.1",
+            "version": "v1.38.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-mbstring.git",
-                "reference": "14c5439eec4ccff081ac14eca2dc57feb2a66d92"
+                "reference": "d3d318bad5e7a1bfbd026009c8bfb8d8f99ae6b6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/14c5439eec4ccff081ac14eca2dc57feb2a66d92",
-                "reference": "14c5439eec4ccff081ac14eca2dc57feb2a66d92",
+                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/d3d318bad5e7a1bfbd026009c8bfb8d8f99ae6b6",
+                "reference": "d3d318bad5e7a1bfbd026009c8bfb8d8f99ae6b6",
                 "shasum": ""
             },
             "require": {
@@ -5448,7 +5448,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.38.1"
+                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.38.2"
             },
             "funding": [
                 {
@@ -5468,7 +5468,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-05-26T12:51:13+00:00"
+            "time": "2026-05-27T06:59:30+00:00"
         },
         {
             "name": "symfony/polyfill-php84",
@@ -9301,6 +9301,516 @@
             "time": "2026-05-29T20:35:26+00:00"
         },
         {
+            "name": "helgesverre/toon",
+            "version": "v3.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/HelgeSverre/toon-php.git",
+                "reference": "3744bbb34aeaf1e524eb6af5a4a19f15e4980c89"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/HelgeSverre/toon-php/zipball/3744bbb34aeaf1e524eb6af5a4a19f15e4980c89",
+                "reference": "3744bbb34aeaf1e524eb6af5a4a19f15e4980c89",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.10",
+                "phpbench/phpbench": "^1.4",
+                "phpstan/phpstan": "^1.10",
+                "phpunit/phpunit": "^10.0"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "src/helpers.php"
+                ],
+                "psr-4": {
+                    "HelgeSverre\\Toon\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Helge Sverre",
+                    "email": "helge.sverre@gmail.com"
+                }
+            ],
+            "description": "Token-Oriented Object Notation - A compact data format for reducing token consumption when sending structured data to LLMs",
+            "keywords": [
+                "ai",
+                "anthropic",
+                "claude",
+                "compression",
+                "cost-reduction",
+                "format",
+                "gpt",
+                "laravel",
+                "llm",
+                "openai",
+                "optimization",
+                "prompt",
+                "serialization",
+                "token"
+            ],
+            "support": {
+                "issues": "https://github.com/HelgeSverre/toon-php/issues",
+                "source": "https://github.com/HelgeSverre/toon-php/tree/v3.1.0"
+            },
+            "time": "2025-12-06T05:24:46+00:00"
+        },
+        {
+            "name": "ineersa/database-extension",
+            "version": "v0.8.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ineersa/database-extension.git",
+                "reference": "112f793b9be5983f5389e0eea6dafc0806a1a7fa"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ineersa/database-extension/zipball/112f793b9be5983f5389e0eea6dafc0806a1a7fa",
+                "reference": "112f793b9be5983f5389e0eea6dafc0806a1a7fa",
+                "shasum": ""
+            },
+            "require": {
+                "doctrine/dbal": "^4.0",
+                "ext-simplexml": "*",
+                "php": ">=8.2",
+                "symfony/ai-mate": "^0.3 || ^0.4 || ^0.5 || ^0.6 || ^0.7 || ^0.8"
+            },
+            "require-dev": {
+                "doctrine/doctrine-bundle": "^2.14",
+                "friendsofphp/php-cs-fixer": "^3.0",
+                "helgesverre/toon": "^1 || ^3.0",
+                "phpstan/phpstan": "^2.0",
+                "phpstan/phpstan-phpunit": "^2.0",
+                "phpunit/phpunit": "^10.0",
+                "rector/rector": "^2.0",
+                "symfony/framework-bundle": "^7.3 || ^8.0"
+            },
+            "suggest": {
+                "doctrine/doctrine-bundle": "Required for database capability exposure via DoctrineBundle DBAL connections (^2.14)"
+            },
+            "type": "symfony-ai-mate",
+            "extra": {
+                "ai-mate": {
+                    "includes": [
+                        "config/config.php"
+                    ],
+                    "scan-dirs": [
+                        "src/Capability"
+                    ],
+                    "instructions": "INSTRUCTIONS.md"
+                },
+                "branch-alias": {
+                    "dev-main": "0.6.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "MatesOfMate\\DatabaseExtension\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Illia Vasylevskyi",
+                    "email": "ineersa@gmail.com"
+                }
+            ],
+            "description": "Database extension for Symfony AI Mate - MCP tools and resources for database workflows",
+            "keywords": [
+                "ai",
+                "ai-assistant",
+                "mate",
+                "mcp",
+                "symfony"
+            ],
+            "support": {
+                "issues": "https://github.com/ineersa/database-extension/issues",
+                "source": "https://github.com/ineersa/database-extension/tree/v0.8.0"
+            },
+            "time": "2026-04-22T21:20:51+00:00"
+        },
+        {
+            "name": "matesofmate/common",
+            "version": "0.3.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/MatesOfMate/common.git",
+                "reference": "3536fb3302b2abf3b5ea623b25ebc51792abd635"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/MatesOfMate/common/zipball/3536fb3302b2abf3b5ea623b25ebc51792abd635",
+                "reference": "3536fb3302b2abf3b5ea623b25ebc51792abd635",
+                "shasum": ""
+            },
+            "require": {
+                "ext-simplexml": "*",
+                "php": ">=8.2",
+                "symfony/finder": "^5.4|^6.4|^7.3|^8.0",
+                "symfony/process": "^5.4|^6.4|^7.3|^8.0"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.0",
+                "phpstan/phpstan": "^2.0",
+                "phpstan/phpstan-phpunit": "^2.0",
+                "phpunit/phpunit": "^10.0",
+                "rector/rector": "^2.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "0.3.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "MatesOfMate\\Common\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Johannes Wachter",
+                    "email": "johannes@sulu.io"
+                }
+            ],
+            "description": "Common functionality shared across MatesOfMate extensions",
+            "keywords": [
+                "common",
+                "matesofmate",
+                "shared",
+                "utilities"
+            ],
+            "support": {
+                "issues": "https://github.com/MatesOfMate/common/issues",
+                "source": "https://github.com/MatesOfMate/common/tree/0.3.0"
+            },
+            "time": "2026-05-06T19:07:39+00:00"
+        },
+        {
+            "name": "matesofmate/composer-extension",
+            "version": "0.3.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/MatesOfMate/composer-extension.git",
+                "reference": "af7c8cee89f9fd535efcd695c98f105fb792859a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/MatesOfMate/composer-extension/zipball/af7c8cee89f9fd535efcd695c98f105fb792859a",
+                "reference": "af7c8cee89f9fd535efcd695c98f105fb792859a",
+                "shasum": ""
+            },
+            "require": {
+                "matesofmate/common": "^0.3",
+                "php": ">=8.2",
+                "symfony/ai-mate": "^0.8",
+                "symfony/finder": "^5.4|^6.4|^7.3|^8.0",
+                "symfony/process": "^5.4|^6.4|^7.3|^8.0"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.0",
+                "phpstan/phpstan": "^2.0",
+                "phpstan/phpstan-phpunit": "^2.0",
+                "phpunit/phpunit": "^10.0",
+                "rector/rector": "^2.0"
+            },
+            "suggest": {
+                "helgesverre/toon": "Install for TOON-encoded MCP responses; JSON remains the fallback when it is not available"
+            },
+            "type": "symfony-ai-mate",
+            "extra": {
+                "ai-mate": {
+                    "includes": [
+                        "config/config.php"
+                    ],
+                    "scan-dirs": [
+                        "src/Capability"
+                    ],
+                    "instructions": "INSTRUCTIONS.md"
+                },
+                "branch-alias": {
+                    "dev-main": "0.3.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "MatesOfMate\\ComposerExtension\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Johannes Wachter",
+                    "email": "johannes@sulu.io"
+                }
+            ],
+            "description": "MCP extension providing Composer dependency management tools for AI assistants",
+            "keywords": [
+                "ai",
+                "ai-mate",
+                "composer",
+                "dependency-management",
+                "mcp",
+                "symfony",
+                "toon"
+            ],
+            "support": {
+                "issues": "https://github.com/MatesOfMate/composer-extension/issues",
+                "source": "https://github.com/MatesOfMate/composer-extension/tree/0.3.0"
+            },
+            "time": "2026-05-06T19:07:39+00:00"
+        },
+        {
+            "name": "matesofmate/phpstan-extension",
+            "version": "0.3.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/MatesOfMate/phpstan-extension.git",
+                "reference": "7d9d731fe9f7096def7b7629c8c24280dd64689b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/MatesOfMate/phpstan-extension/zipball/7d9d731fe9f7096def7b7629c8c24280dd64689b",
+                "reference": "7d9d731fe9f7096def7b7629c8c24280dd64689b",
+                "shasum": ""
+            },
+            "require": {
+                "matesofmate/common": "^0.3",
+                "php": ">=8.2",
+                "phpstan/phpstan": "^2.0",
+                "symfony/ai-mate": "^0.8",
+                "symfony/process": "^6.4|^7.0|^8.0"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.0",
+                "phpstan/phpstan-phpunit": "^2.0",
+                "phpunit/phpunit": "^10.0",
+                "rector/rector": "^2.0"
+            },
+            "suggest": {
+                "helgesverre/toon": "Install for TOON-encoded MCP responses; JSON remains the fallback when it is not available"
+            },
+            "type": "symfony-ai-mate",
+            "extra": {
+                "ai-mate": {
+                    "includes": [
+                        "config/config.php"
+                    ],
+                    "scan-dirs": [
+                        "src/Capability"
+                    ],
+                    "instructions": "INSTRUCTIONS.md"
+                },
+                "branch-alias": {
+                    "dev-main": "0.3.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "MatesOfMate\\PhpStanExtension\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Johannes Wachter",
+                    "email": "johannes@sulu.io"
+                }
+            ],
+            "description": "PHPStan extension for Symfony AI Mate providing AI assistants with efficient static analysis tools",
+            "keywords": [
+                "PHPStan",
+                "ai",
+                "ai-assistant",
+                "mate",
+                "mcp",
+                "static-analysis",
+                "symfony"
+            ],
+            "support": {
+                "issues": "https://github.com/MatesOfMate/phpstan-extension/issues",
+                "source": "https://github.com/MatesOfMate/phpstan-extension/tree/0.3.0"
+            },
+            "time": "2026-05-06T19:07:39+00:00"
+        },
+        {
+            "name": "matesofmate/phpunit-extension",
+            "version": "0.3.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/MatesOfMate/phpunit-extension.git",
+                "reference": "4c2ec0e55fb6875a80a1cff6c767a38305515d17"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/MatesOfMate/phpunit-extension/zipball/4c2ec0e55fb6875a80a1cff6c767a38305515d17",
+                "reference": "4c2ec0e55fb6875a80a1cff6c767a38305515d17",
+                "shasum": ""
+            },
+            "require": {
+                "matesofmate/common": "^0.3",
+                "php": ">=8.2",
+                "symfony/ai-mate": "^0.8",
+                "symfony/finder": "^5.4|^6.4|^7.3|^8.0",
+                "symfony/process": "^5.4|^6.4|^7.3|^8.0"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.0",
+                "phpstan/phpstan": "^2.0",
+                "phpstan/phpstan-phpunit": "^2.0",
+                "phpunit/phpunit": "^10.0",
+                "rector/rector": "^2.0"
+            },
+            "suggest": {
+                "helgesverre/toon": "Install for TOON-encoded MCP responses; JSON remains the fallback when it is not available"
+            },
+            "type": "symfony-ai-mate",
+            "extra": {
+                "ai-mate": {
+                    "includes": [
+                        "config/config.php"
+                    ],
+                    "scan-dirs": [
+                        "src/Capability"
+                    ],
+                    "instructions": "INSTRUCTIONS.md"
+                },
+                "branch-alias": {
+                    "dev-main": "0.3.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "MatesOfMate\\PHPUnitExtension\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Johannes Wachter",
+                    "email": "johannes@sulu.io"
+                }
+            ],
+            "description": "PHPUnit extension for symfony/ai-mate providing token-optimized test execution tools",
+            "keywords": [
+                "ai",
+                "ai-mate",
+                "mcp",
+                "phpunit",
+                "symfony",
+                "test-automation",
+                "testing",
+                "toon"
+            ],
+            "support": {
+                "issues": "https://github.com/MatesOfMate/phpunit-extension/issues",
+                "source": "https://github.com/MatesOfMate/phpunit-extension/tree/0.3.0"
+            },
+            "time": "2026-05-06T19:07:39+00:00"
+        },
+        {
+            "name": "mcp/sdk",
+            "version": "v0.4.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/modelcontextprotocol/php-sdk.git",
+                "reference": "1f5f7e16a3af23dd43ec0a5c972d7aa8e8429024"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/modelcontextprotocol/php-sdk/zipball/1f5f7e16a3af23dd43ec0a5c972d7aa8e8429024",
+                "reference": "1f5f7e16a3af23dd43ec0a5c972d7aa8e8429024",
+                "shasum": ""
+            },
+            "require": {
+                "ext-fileinfo": "*",
+                "opis/json-schema": "^2.4",
+                "php": "^8.1",
+                "php-http/discovery": "^1.20",
+                "phpdocumentor/reflection-docblock": "^5.6",
+                "psr/clock": "^1.0",
+                "psr/container": "^1.0 || ^2.0",
+                "psr/event-dispatcher": "^1.0",
+                "psr/http-factory": "^1.1",
+                "psr/http-message": "^1.1 || ^2.0",
+                "psr/http-server-handler": "^1.0",
+                "psr/http-server-middleware": "^1.0",
+                "psr/log": "^1.0 || ^2.0 || ^3.0",
+                "symfony/finder": "^5.4 || ^6.4 || ^7.3 || ^8.0",
+                "symfony/uid": "^5.4 || ^6.4 || ^7.3 || ^8.0"
+            },
+            "require-dev": {
+                "laminas/laminas-httphandlerrunner": "^2.12",
+                "nyholm/psr7": "^1.8",
+                "nyholm/psr7-server": "^1.1",
+                "phar-io/composer-distributor": "^1.0.2",
+                "php-cs-fixer/shim": "^3.91",
+                "phpdocumentor/shim": "^3",
+                "phpstan/phpstan": "^2.1",
+                "phpunit/phpunit": "^10.5",
+                "psr/simple-cache": "^2.0 || ^3.0",
+                "symfony/cache": "^5.4 || ^6.4 || ^7.3 || ^8.0",
+                "symfony/console": "^5.4 || ^6.4 || ^7.3 || ^8.0",
+                "symfony/process": "^5.4 || ^6.4 || ^7.3 || ^8.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Mcp\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Christopher Hertel",
+                    "email": "mail@christopher-hertel.de"
+                },
+                {
+                    "name": "Kyrian Obikwelu",
+                    "email": "koshnawaza@gmail.com"
+                },
+                {
+                    "name": "Tobias Nyholm",
+                    "email": "tobias.nyholm@gmail.com"
+                }
+            ],
+            "description": "Model Context Protocol SDK for Client and Server applications in PHP",
+            "support": {
+                "issues": "https://github.com/modelcontextprotocol/php-sdk/issues",
+                "source": "https://github.com/modelcontextprotocol/php-sdk/tree/v0.4.0"
+            },
+            "time": "2026-02-23T21:42:54+00:00"
+        },
+        {
             "name": "myclabs/deep-copy",
             "version": "1.13.4",
             "source": {
@@ -9510,6 +10020,196 @@
             "time": "2025-12-06T11:56:16+00:00"
         },
         {
+            "name": "opis/json-schema",
+            "version": "2.6.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/opis/json-schema.git",
+                "reference": "8458763e0dd0b6baa310e04f1829fc73da4e8c8a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/opis/json-schema/zipball/8458763e0dd0b6baa310e04f1829fc73da4e8c8a",
+                "reference": "8458763e0dd0b6baa310e04f1829fc73da4e8c8a",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "opis/string": "^2.1",
+                "opis/uri": "^1.0",
+                "php": "^7.4 || ^8.0"
+            },
+            "require-dev": {
+                "ext-bcmath": "*",
+                "ext-intl": "*",
+                "phpunit/phpunit": "^9.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Opis\\JsonSchema\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Sorin Sarca",
+                    "email": "sarca_sorin@hotmail.com"
+                },
+                {
+                    "name": "Marius Sarca",
+                    "email": "marius.sarca@gmail.com"
+                }
+            ],
+            "description": "Json Schema Validator for PHP",
+            "homepage": "https://opis.io/json-schema",
+            "keywords": [
+                "json",
+                "json-schema",
+                "schema",
+                "validation",
+                "validator"
+            ],
+            "support": {
+                "issues": "https://github.com/opis/json-schema/issues",
+                "source": "https://github.com/opis/json-schema/tree/2.6.0"
+            },
+            "time": "2025-10-17T12:46:48+00:00"
+        },
+        {
+            "name": "opis/string",
+            "version": "2.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/opis/string.git",
+                "reference": "3e4d2aaff518ac518530b89bb26ed40f4503635e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/opis/string/zipball/3e4d2aaff518ac518530b89bb26ed40f4503635e",
+                "reference": "3e4d2aaff518ac518530b89bb26ed40f4503635e",
+                "shasum": ""
+            },
+            "require": {
+                "ext-iconv": "*",
+                "ext-json": "*",
+                "php": "^7.4 || ^8.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Opis\\String\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Marius Sarca",
+                    "email": "marius.sarca@gmail.com"
+                },
+                {
+                    "name": "Sorin Sarca",
+                    "email": "sarca_sorin@hotmail.com"
+                }
+            ],
+            "description": "Multibyte strings as objects",
+            "homepage": "https://opis.io/string",
+            "keywords": [
+                "multi-byte",
+                "opis",
+                "string",
+                "string manipulation",
+                "utf-8"
+            ],
+            "support": {
+                "issues": "https://github.com/opis/string/issues",
+                "source": "https://github.com/opis/string/tree/2.1.0"
+            },
+            "time": "2025-10-17T12:38:41+00:00"
+        },
+        {
+            "name": "opis/uri",
+            "version": "1.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/opis/uri.git",
+                "reference": "0f3ca49ab1a5e4a6681c286e0b2cc081b93a7d5a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/opis/uri/zipball/0f3ca49ab1a5e4a6681c286e0b2cc081b93a7d5a",
+                "reference": "0f3ca49ab1a5e4a6681c286e0b2cc081b93a7d5a",
+                "shasum": ""
+            },
+            "require": {
+                "opis/string": "^2.0",
+                "php": "^7.4 || ^8.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Opis\\Uri\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Marius Sarca",
+                    "email": "marius.sarca@gmail.com"
+                },
+                {
+                    "name": "Sorin Sarca",
+                    "email": "sarca_sorin@hotmail.com"
+                }
+            ],
+            "description": "Build, parse and validate URIs and URI-templates",
+            "homepage": "https://opis.io",
+            "keywords": [
+                "URI Template",
+                "parse url",
+                "punycode",
+                "uri",
+                "uri components",
+                "url",
+                "validate uri"
+            ],
+            "support": {
+                "issues": "https://github.com/opis/uri/issues",
+                "source": "https://github.com/opis/uri/tree/1.1.0"
+            },
+            "time": "2021-05-22T15:57:08+00:00"
+        },
+        {
             "name": "phar-io/manifest",
             "version": "2.0.4",
             "source": {
@@ -9628,6 +10328,85 @@
             "time": "2022-02-21T01:04:05+00:00"
         },
         {
+            "name": "php-http/discovery",
+            "version": "1.20.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-http/discovery.git",
+                "reference": "82fe4c73ef3363caed49ff8dd1539ba06044910d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-http/discovery/zipball/82fe4c73ef3363caed49ff8dd1539ba06044910d",
+                "reference": "82fe4c73ef3363caed49ff8dd1539ba06044910d",
+                "shasum": ""
+            },
+            "require": {
+                "composer-plugin-api": "^1.0|^2.0",
+                "php": "^7.1 || ^8.0"
+            },
+            "conflict": {
+                "nyholm/psr7": "<1.0",
+                "zendframework/zend-diactoros": "*"
+            },
+            "provide": {
+                "php-http/async-client-implementation": "*",
+                "php-http/client-implementation": "*",
+                "psr/http-client-implementation": "*",
+                "psr/http-factory-implementation": "*",
+                "psr/http-message-implementation": "*"
+            },
+            "require-dev": {
+                "composer/composer": "^1.0.2|^2.0",
+                "graham-campbell/phpspec-skip-example-extension": "^5.0",
+                "php-http/httplug": "^1.0 || ^2.0",
+                "php-http/message-factory": "^1.0",
+                "phpspec/phpspec": "^5.1 || ^6.1 || ^7.3",
+                "sebastian/comparator": "^3.0.5 || ^4.0.8",
+                "symfony/phpunit-bridge": "^6.4.4 || ^7.0.1"
+            },
+            "type": "composer-plugin",
+            "extra": {
+                "class": "Http\\Discovery\\Composer\\Plugin",
+                "plugin-optional": true
+            },
+            "autoload": {
+                "psr-4": {
+                    "Http\\Discovery\\": "src/"
+                },
+                "exclude-from-classmap": [
+                    "src/Composer/Plugin.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Márk Sági-Kazár",
+                    "email": "mark.sagikazar@gmail.com"
+                }
+            ],
+            "description": "Finds and installs PSR-7, PSR-17, PSR-18 and HTTPlug implementations",
+            "homepage": "http://php-http.org",
+            "keywords": [
+                "adapter",
+                "client",
+                "discovery",
+                "factory",
+                "http",
+                "message",
+                "psr17",
+                "psr7"
+            ],
+            "support": {
+                "issues": "https://github.com/php-http/discovery/issues",
+                "source": "https://github.com/php-http/discovery/tree/1.20.0"
+            },
+            "time": "2024-10-02T11:20:13+00:00"
+        },
+        {
             "name": "phpstan/extension-installer",
             "version": "1.4.3",
             "source": {
@@ -9677,11 +10456,11 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "2.2.1",
+            "version": "2.2.2",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/dea9c8f2d25cc849391042b71e429c1a4bf82660",
-                "reference": "dea9c8f2d25cc849391042b71e429c1a4bf82660",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/e5cc34d491a90e79c216d824f60fe21fd4d93bd6",
+                "reference": "e5cc34d491a90e79c216d824f60fe21fd4d93bd6",
                 "shasum": ""
             },
             "require": {
@@ -9737,7 +10516,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-05-28T14:44:12+00:00"
+            "time": "2026-06-05T09:00:01+00:00"
         },
         {
             "name": "phpstan/phpstan-beberlei-assert",
@@ -10518,6 +11297,227 @@
                 }
             ],
             "time": "2026-06-04T06:16:42+00:00"
+        },
+        {
+            "name": "psr/http-factory",
+            "version": "1.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/http-factory.git",
+                "reference": "2b4765fddfe3b508ac62f829e852b1501d3f6e8a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/http-factory/zipball/2b4765fddfe3b508ac62f829e852b1501d3f6e8a",
+                "reference": "2b4765fddfe3b508ac62f829e852b1501d3f6e8a",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.1",
+                "psr/http-message": "^1.0 || ^2.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Http\\Message\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "https://www.php-fig.org/"
+                }
+            ],
+            "description": "PSR-17: Common interfaces for PSR-7 HTTP message factories",
+            "keywords": [
+                "factory",
+                "http",
+                "message",
+                "psr",
+                "psr-17",
+                "psr-7",
+                "request",
+                "response"
+            ],
+            "support": {
+                "source": "https://github.com/php-fig/http-factory"
+            },
+            "time": "2024-04-15T12:06:14+00:00"
+        },
+        {
+            "name": "psr/http-message",
+            "version": "2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/http-message.git",
+                "reference": "402d35bcb92c70c026d1a6a9883f06b2ead23d71"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/http-message/zipball/402d35bcb92c70c026d1a6a9883f06b2ead23d71",
+                "reference": "402d35bcb92c70c026d1a6a9883f06b2ead23d71",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.2 || ^8.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Http\\Message\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "https://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interface for HTTP messages",
+            "homepage": "https://github.com/php-fig/http-message",
+            "keywords": [
+                "http",
+                "http-message",
+                "psr",
+                "psr-7",
+                "request",
+                "response"
+            ],
+            "support": {
+                "source": "https://github.com/php-fig/http-message/tree/2.0"
+            },
+            "time": "2023-04-04T09:54:51+00:00"
+        },
+        {
+            "name": "psr/http-server-handler",
+            "version": "1.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/http-server-handler.git",
+                "reference": "84c4fb66179be4caaf8e97bd239203245302e7d4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/http-server-handler/zipball/84c4fb66179be4caaf8e97bd239203245302e7d4",
+                "reference": "84c4fb66179be4caaf8e97bd239203245302e7d4",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.0",
+                "psr/http-message": "^1.0 || ^2.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Http\\Server\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "https://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interface for HTTP server-side request handler",
+            "keywords": [
+                "handler",
+                "http",
+                "http-interop",
+                "psr",
+                "psr-15",
+                "psr-7",
+                "request",
+                "response",
+                "server"
+            ],
+            "support": {
+                "source": "https://github.com/php-fig/http-server-handler/tree/1.0.2"
+            },
+            "time": "2023-04-10T20:06:20+00:00"
+        },
+        {
+            "name": "psr/http-server-middleware",
+            "version": "1.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/http-server-middleware.git",
+                "reference": "c1481f747daaa6a0782775cd6a8c26a1bf4a3829"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/http-server-middleware/zipball/c1481f747daaa6a0782775cd6a8c26a1bf4a3829",
+                "reference": "c1481f747daaa6a0782775cd6a8c26a1bf4a3829",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.0",
+                "psr/http-message": "^1.0 || ^2.0",
+                "psr/http-server-handler": "^1.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Http\\Server\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "https://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interface for HTTP server-side middleware",
+            "keywords": [
+                "http",
+                "http-interop",
+                "middleware",
+                "psr",
+                "psr-15",
+                "psr-7",
+                "request",
+                "response"
+            ],
+            "support": {
+                "issues": "https://github.com/php-fig/http-server-middleware/issues",
+                "source": "https://github.com/php-fig/http-server-middleware/tree/1.0.2"
+            },
+            "time": "2023-04-11T06:14:47+00:00"
         },
         {
             "name": "react/cache",
@@ -12261,6 +13261,408 @@
                 }
             ],
             "time": "2024-10-20T05:08:20+00:00"
+        },
+        {
+            "name": "symfony/ai-mate",
+            "version": "v0.8.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/ai-mate.git",
+                "reference": "b6f11958f250461b379ee7ccc276ddb86350a736"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/ai-mate/zipball/b6f11958f250461b379ee7ccc276ddb86350a736",
+                "reference": "b6f11958f250461b379ee7ccc276ddb86350a736",
+                "shasum": ""
+            },
+            "require": {
+                "mcp/sdk": "^0.4",
+                "php": ">=8.2",
+                "psr/log": "^2.0|^3.0",
+                "symfony/ai-mate-composer-plugin": "^0.8",
+                "symfony/config": "^5.4|^6.4|^7.3|^8.0",
+                "symfony/console": "^5.4|^6.4|^7.3|^8.0",
+                "symfony/dependency-injection": "^5.4|^6.4|^7.3|^8.0",
+                "symfony/finder": "^5.4|^6.4|^7.3|^8.0"
+            },
+            "require-dev": {
+                "ext-simplexml": "*",
+                "helgesverre/toon": "^3.1",
+                "phpstan/phpstan": "^2.1",
+                "phpstan/phpstan-phpunit": "^2.0",
+                "phpstan/phpstan-strict-rules": "^2.0",
+                "phpunit/phpunit": "^11.5.53",
+                "symfony/dotenv": "^5.4|^6.4|^7.3|^8.0"
+            },
+            "bin": [
+                "bin/mate"
+            ],
+            "type": "library",
+            "extra": {
+                "thanks": {
+                    "url": "https://github.com/symfony/ai",
+                    "name": "symfony/ai"
+                },
+                "ai-mate": {
+                    "scan-dirs": [
+                        "src/Capability"
+                    ],
+                    "instructions": "INSTRUCTIONS.md"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\AI\\Mate\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Johannes Wachter",
+                    "email": "johannes@sulu.io"
+                },
+                {
+                    "name": "Tobias Nyholm",
+                    "email": "tobias.nyholm@gmail.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "AI development assistant MCP server for Symfony projects",
+            "keywords": [
+                "ai",
+                "debug",
+                "dev",
+                "development",
+                "mcp",
+                "model-context-protocol",
+                "symfony"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/ai-mate/tree/v0.8.0"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2026-04-20T21:23:24+00:00"
+        },
+        {
+            "name": "symfony/ai-mate-composer-plugin",
+            "version": "v0.8.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/ai-mate-composer-plugin.git",
+                "reference": "51a06aec94f0c8f4bb11bfc16967fc6155e5e140"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/ai-mate-composer-plugin/zipball/51a06aec94f0c8f4bb11bfc16967fc6155e5e140",
+                "reference": "51a06aec94f0c8f4bb11bfc16967fc6155e5e140",
+                "shasum": ""
+            },
+            "require": {
+                "composer-plugin-api": "^2.1",
+                "php": ">=8.2"
+            },
+            "require-dev": {
+                "composer/composer": "^2.1",
+                "phpstan/phpstan": "^2.1",
+                "phpstan/phpstan-phpunit": "^2.0",
+                "phpstan/phpstan-strict-rules": "^2.0",
+                "phpunit/phpunit": "^11.5.53",
+                "symfony/ai-mate": "^0.8"
+            },
+            "type": "composer-plugin",
+            "extra": {
+                "class": "Symfony\\AI\\Mate\\ComposerPlugin\\MatePlugin",
+                "thanks": {
+                    "url": "https://github.com/symfony/ai",
+                    "name": "symfony/ai"
+                },
+                "plugin-optional": true
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\AI\\Mate\\ComposerPlugin\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Johannes Wachter",
+                    "email": "johannes@sulu.io"
+                },
+                {
+                    "name": "Tobias Nyholm",
+                    "email": "tobias.nyholm@gmail.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Composer plugin that automatically discovers AI Mate extensions on install/update",
+            "keywords": [
+                "ai",
+                "auto-discovery",
+                "composer-plugin",
+                "mate",
+                "mcp"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/ai-mate-composer-plugin/tree/v0.8.0"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2026-04-20T21:23:24+00:00"
+        },
+        {
+            "name": "symfony/ai-monolog-mate-extension",
+            "version": "v0.8.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/ai-monolog-mate-extension.git",
+                "reference": "c08fa5391f99542b994e79c399e7f06d98286bb6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/ai-monolog-mate-extension/zipball/c08fa5391f99542b994e79c399e7f06d98286bb6",
+                "reference": "c08fa5391f99542b994e79c399e7f06d98286bb6",
+                "shasum": ""
+            },
+            "require": {
+                "monolog/monolog": "^2.0|^3.0",
+                "php": ">=8.2",
+                "symfony/ai-mate": "^0.8"
+            },
+            "require-dev": {
+                "helgesverre/toon": "^3.1",
+                "phpstan/phpstan": "^2.1",
+                "phpstan/phpstan-phpunit": "^2.0",
+                "phpstan/phpstan-strict-rules": "^2.0",
+                "phpunit/phpunit": "^11.5.53"
+            },
+            "type": "symfony-ai-mate",
+            "extra": {
+                "thanks": {
+                    "url": "https://github.com/symfony/ai",
+                    "name": "symfony/ai"
+                },
+                "ai-mate": {
+                    "includes": [
+                        "config/config.php"
+                    ],
+                    "scan-dirs": [
+                        "Capability"
+                    ],
+                    "instructions": "INSTRUCTIONS.md"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\AI\\Mate\\Bridge\\Monolog\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Johannes Wachter",
+                    "email": "johannes@sulu.io"
+                },
+                {
+                    "name": "Tobias Nyholm",
+                    "email": "tobias.nyholm@gmail.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Monolog bridge for AI Mate - provides log search and analysis tools",
+            "keywords": [
+                "Bridge",
+                "ai",
+                "dev",
+                "logs",
+                "mcp",
+                "monolog"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/ai-monolog-mate-extension/tree/v0.8.0"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2026-04-20T21:23:24+00:00"
+        },
+        {
+            "name": "symfony/ai-symfony-mate-extension",
+            "version": "v0.8.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/ai-symfony-mate-extension.git",
+                "reference": "dec31a3fb89f0566b987744f27ba1c7b25f11ccc"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/ai-symfony-mate-extension/zipball/dec31a3fb89f0566b987744f27ba1c7b25f11ccc",
+                "reference": "dec31a3fb89f0566b987744f27ba1c7b25f11ccc",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.2",
+                "symfony/ai-mate": "^0.8",
+                "symfony/dependency-injection": "^7.3|^8.0"
+            },
+            "require-dev": {
+                "doctrine/doctrine-bundle": "^2.13|^3.0",
+                "helgesverre/toon": "^3.1",
+                "phpstan/phpstan": "^2.1",
+                "phpstan/phpstan-phpunit": "^2.0",
+                "phpstan/phpstan-strict-rules": "^2.0",
+                "phpunit/phpunit": "^11.5.53",
+                "symfony/http-kernel": "^7.3|^8.0",
+                "symfony/mailer": "^7.3|^8.0",
+                "symfony/translation": "^7.3|^8.0",
+                "symfony/var-dumper": "^7.3|^8.0",
+                "symfony/web-profiler-bundle": "^7.3|^8.0"
+            },
+            "suggest": {
+                "doctrine/doctrine-bundle": "Required for Doctrine database profiler formatter",
+                "symfony/http-kernel": "Required for profiler data access tools",
+                "symfony/mailer": "Required for mailer profiler formatter",
+                "symfony/translation": "Required for translation profiler collector formatter",
+                "symfony/web-profiler-bundle": "Required for profiler data access tools"
+            },
+            "type": "symfony-ai-mate",
+            "extra": {
+                "thanks": {
+                    "url": "https://github.com/symfony/ai",
+                    "name": "symfony/ai"
+                },
+                "ai-mate": {
+                    "includes": [
+                        "config/config.php"
+                    ],
+                    "scan-dirs": [
+                        "Capability"
+                    ],
+                    "instructions": "INSTRUCTIONS.md"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\AI\\Mate\\Bridge\\Symfony\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Tobias Nyholm",
+                    "email": "tobias.nyholm@gmail.com"
+                },
+                {
+                    "name": "Johannes Wachter",
+                    "email": "johannes@sulu.io"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony bridge for AI Mate - provides Symfony container introspection and optional profiler data access tools",
+            "keywords": [
+                "Bridge",
+                "ai",
+                "debug",
+                "dev",
+                "mcp",
+                "profiler",
+                "symfony"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/ai-symfony-mate-extension/tree/v0.8.0"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2026-04-20T21:23:24+00:00"
         },
         {
             "name": "symfony/browser-kit",

@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Symfony 8.1 application for managing subscriptions with payment tracking and event history. Built with PHP 8.5+, it uses Doctrine ORM for data persistence and follows strict type safety and code quality standards.
 
-The app runs inside Docker via FrankenPHP. Developer tooling (PHPStan, Pest, CS Fixer, Rector) executes **inside the `php` container** via the `./bin/dc exec -T php` wrapper — `mise` tasks delegate to it. Only `docs:*` and `lint:php` run on the host.
+The app runs inside Docker via FrankenPHP. Developer tooling (PHPStan, PHPUnit, CS Fixer, Rector) executes **inside the `php` container** via the `./bin/dc exec -T php` wrapper — `mise` tasks delegate to it. Only `docs:*` and `lint:php` run on the host.
 
 ## Local routing (Lolly)
 
@@ -278,19 +278,20 @@ This project enforces strict quality standards:
 - Use repository service injection
 
 ### Testing
-- Tests use Pest PHP (runs on top of PHPUnit)
+- Tests use PHPUnit (test classes namespaced under `App\Tests\`)
 - Zenstruck Foundry for fixtures
-- Architecture tests in `tests/Arch/` enforce structural rules
-- Test suites: Unit, Feature, Integration
+- Architecture tests in `tests/Arch/` enforce structural rules via reflection/source scans; the "no debug functions" rule lives in PHPStan (`ForbiddenFuncCallRule`)
+- Test suites: Unit, Feature, Integration, Arch
+- `tests/` has its own relaxed PHPStan profile (`mise run sa:tests`, `phpstan-tests.neon`), separate from the strict `src/` profile (`mise run sa`)
 
 ## Code Coverage
 
-Coverage is enforced at **70% minimum** via `--min=70` in both CI and `mise run coverage`. The threshold is intentionally set conservatively and should be manually ratcheted up over time:
+Coverage is enforced at **70% minimum** in both CI and `mise run coverage`. PHPUnit has no native threshold flag (Pest's `--min` did), so `bin/coverage-min.php` reads the Clover report and fails below the minimum. The threshold is intentionally set conservatively and should be manually ratcheted up over time:
 
 1. Run `mise run coverage` to see the current coverage percentage
-2. If coverage is consistently above the threshold (e.g., 85% actual vs 70% minimum), bump `--min=N` in:
+2. If coverage is consistently above the threshold (e.g., 90% actual vs 70% minimum), bump the minimum passed to `bin/coverage-min.php` in:
    - `mise.toml` (`tasks.coverage`)
-   - `.gitea/workflows/ci.yml` (Pest step)
+   - `.gitea/workflows/ci.yml` (PHPUnit step)
 3. Coverage reports can be generated locally with `mise run coverage:report` (output in `var/coverage/`)
 
 ## Notes

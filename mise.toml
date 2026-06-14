@@ -56,25 +56,31 @@ description = "Static Analysis via PHPStan"
 depends = ["_ensure-up"]
 run = ["$DC_EXEC php vendor/bin/phpstan --memory-limit=4G analyze"]
 
+[tasks."sa:tests"]
+description = "Static Analysis on tests/ via PHPStan (relaxed profile)"
+depends = ["_ensure-up"]
+run = ["$DC_EXEC php vendor/bin/phpstan --memory-limit=4G analyze -c phpstan-tests.neon"]
+
 [tasks.test]
-description = "Tests via Pest (compact output)"
+description = "Tests via PHPUnit"
 depends = ["_ensure-up", "tailwind"]
-run = ["$DC_EXEC php vendor/bin/pest --compact"]
+run = ["$DC_EXEC php vendor/bin/phpunit"]
 
 [tasks."test:v"]
-description = "Tests via Pest (verbose output)"
+description = "Tests via PHPUnit (testdox output)"
 depends = ["_ensure-up", "tailwind"]
-run = ["$DC_EXEC php vendor/bin/pest"]
+run = ["$DC_EXEC php vendor/bin/phpunit --testdox"]
 
 [tasks.coverage]
 description = "Run tests with coverage (min 70%)"
 depends = ["_ensure-up", "tailwind"]
-run = ["$DC_EXEC sh -c 'XDEBUG_MODE=coverage php vendor/bin/pest --compact --coverage --min=70'"]
+# PHPUnit has no native --min; bin/coverage-min.php enforces the threshold from the Clover report.
+run = ["$DC_EXEC sh -c 'XDEBUG_MODE=coverage php vendor/bin/phpunit --coverage-clover var/coverage.xml && php bin/coverage-min.php var/coverage.xml 70'"]
 
 [tasks."coverage:report"]
 description = "Generate HTML coverage report under var/coverage/"
 depends = ["_ensure-up", "tailwind"]
-run = ["$DC_EXEC sh -c 'XDEBUG_MODE=coverage php vendor/bin/pest --coverage --coverage-html=var/coverage'"]
+run = ["$DC_EXEC sh -c 'XDEBUG_MODE=coverage php vendor/bin/phpunit --coverage-html=var/coverage'"]
 
 [tasks.cs]
 description = "Code Style via PHP CS Fixer (fix)"
@@ -142,8 +148,8 @@ description = "JS code style + lint via Biome (check only)"
 run = ["npm run cs:check"]
 
 [tasks.check]
-description = "Run all checks: PHPStan, tests, CS Fixer, Twig CS, and the JS toolchain"
-depends = ["sa", "test", "cs", "cs:twig", "js:sa", "js:test", "js:cs"]
+description = "Run all checks: PHPStan (src + tests), tests, CS Fixer, Twig CS, and the JS toolchain"
+depends = ["sa", "sa:tests", "test", "cs", "cs:twig", "js:sa", "js:test", "js:cs"]
 
 [tasks."docs:serve"]
 description = "Serve MkDocs site locally (runs on host, needs mkdocs-material via pipx)"

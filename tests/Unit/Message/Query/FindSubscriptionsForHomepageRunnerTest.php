@@ -50,7 +50,7 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
      */
     private function homepageTotaller(array $rates = []): CurrencyTotaller
     {
-        $exchangeRateRepository = $this->createMock(ExchangeRateRepository::class);
+        $exchangeRateRepository = self::createStub(ExchangeRateRepository::class);
         $exchangeRateRepository->method('latestRate')
             ->willReturnCallback(static fn (Currency $currency): ?float => $rates[$currency->value] ?? null)
         ;
@@ -74,7 +74,7 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
      */
     private function runHomepage(array $subscriptions, FindSubscriptionsForHomepageQuery $query, array $rates = []): HomepageListing
     {
-        $repository = $this->createMock(SubscriptionRepository::class);
+        $repository = self::createStub(SubscriptionRepository::class);
         $repository->method('findForHomepage')->willReturn($subscriptions);
 
         return (new FindSubscriptionsForHomepageRunner($repository, $this->homepageTotaller($rates)))($query);

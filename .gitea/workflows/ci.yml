@@ -124,6 +124,11 @@ jobs:
               # The FrankenPHP image caps memory_limit at 128M; PHPStan needs more.
               run: vendor/bin/phpstan analyze --memory-limit=4G --no-progress --error-format=github
 
+            # Static analysis of tests/ (relaxed profile; lights up phpstan-phpunit).
+            - name: "PHPStan (tests)"
+              if: always() && steps.install.outcome == 'success'
+              run: vendor/bin/phpstan analyze -c phpstan-tests.neon --memory-limit=4G --no-progress --error-format=github
+
             # JS toolchain checks (#133) - Biome (style + lint), tsc --checkJs (static
             # analysis), Vitest (unit tests). Independent of the PHP stack above.
             - name: "Biome (JS code style + lint)"
@@ -153,9 +158,12 @@ jobs:
                   php bin/console tailwind:build
                   php bin/console asset-map:compile
 
-            - name: "Pest"
+            - name: "PHPUnit"
               if: always() && steps.install.outcome == 'success'
-              run: vendor/bin/pest --compact --coverage --min=70
+              # PHPUnit has no native --min; bin/coverage-min.php enforces 70% from the Clover report.
+              run: |
+                  vendor/bin/phpunit --coverage-clover var/coverage.xml
+                  php bin/coverage-min.php var/coverage.xml 70
 
     build:
         name: Build Docker Image

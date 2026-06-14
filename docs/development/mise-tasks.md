@@ -19,7 +19,8 @@ See [Local Setup](local-setup.md) for how solo and shared modes work.
 | Task | Description | Underlying Command |
 |------|-------------|-------------------|
 | `mise run lint:php` | PHP syntax check on changed files (host-side) | `php -l` on git-diffed `.php` files |
-| `mise run sa` | PHPStan static analysis (level 9) | `phpstan --memory-limit=4G analyze` |
+| `mise run sa` | PHPStan static analysis of `src/` (level 9) | `phpstan --memory-limit=4G analyze` |
+| `mise run sa:tests` | PHPStan static analysis of `tests/` (relaxed profile) | `phpstan analyze -c phpstan-tests.neon` |
 | `mise run cs` | PHP CS Fixer (auto-fix) | `php-cs-fixer fix` |
 | `mise run cs:check` | PHP CS Fixer (check only, no changes) | `php-cs-fixer check --diff` |
 | `mise run cs:twig` | Twig CS Fixer (auto-fix) | `twig-cs-fixer fix` |
@@ -28,7 +29,7 @@ See [Local Setup](local-setup.md) for how solo and shared modes work.
 | `mise run js:sa` | JS static analysis, `tsc --checkJs` (host-side) | `npm run sa` |
 | `mise run js:cs` | JS code style + lint via Biome, auto-fix (host-side) | `npm run cs` |
 | `mise run js:cs:check` | JS code style + lint via Biome, check only (host-side) | `npm run cs:check` |
-| `mise run check` | Run `sa`, `test`, `cs`, `cs:twig`, `js:sa`, `js:test`, `js:cs` in sequence | — |
+| `mise run check` | Run `sa`, `sa:tests`, `test`, `cs`, `cs:twig`, `js:sa`, `js:test`, `js:cs` in sequence | — |
 
 See [Frontend](../frontend.md#javascript-toolchain-dev-only) for what the JS toolchain covers.
 
@@ -36,10 +37,10 @@ See [Frontend](../frontend.md#javascript-toolchain-dev-only) for what the JS too
 
 | Task | Description | Underlying Command |
 |------|-------------|-------------------|
-| `mise run test` | All tests (compact output) | `pest --compact` |
-| `mise run test:v` | All tests (verbose output) | `pest` |
-| `mise run coverage` | Tests with coverage, min 70% | `XDEBUG_MODE=coverage pest --coverage --min=70` |
-| `mise run coverage:report` | HTML coverage report under `var/coverage/` | `XDEBUG_MODE=coverage pest --coverage-html=var/coverage` |
+| `mise run test` | All tests | `phpunit` |
+| `mise run test:v` | All tests (testdox output) | `phpunit --testdox` |
+| `mise run coverage` | Tests with coverage, min 70% | `XDEBUG_MODE=coverage phpunit --coverage-clover` + `bin/coverage-min.php` |
+| `mise run coverage:report` | HTML coverage report under `var/coverage/` | `XDEBUG_MODE=coverage phpunit --coverage-html=var/coverage` |
 | `mise run js:test` | JS unit tests via Vitest (host-side) | `npm run test` |
 
 ## Assets and Database

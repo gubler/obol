@@ -139,6 +139,8 @@ services:
                 - 'dd'
                 - 'dump'
                 - 'var_dump'
+                - 'print_r'
+                - 'ray'
                 - 'extract'
                 - 'curl_*'
                 - 'compact'

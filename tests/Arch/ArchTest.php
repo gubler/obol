@@ -1,41 +1,179 @@
 <?php
 
-// ABOUTME: Architecture tests enforced via Pest's arch plugin.
-// ABOUTME: Validates structural rules across the codebase.
+// ABOUTME: Architecture tests enforcing structural rules across src/ via reflection and source scans.
+// ABOUTME: Replaces the former Pest arch() plugin; the "no debug functions" rule moved to PHPStan
+// ABOUTME: (Symplify ForbiddenFuncCallRule in phpstan.dist.neon). See reference/adr/0006 and 0007.
 
 declare(strict_types=1);
 
-arch('controllers must end with Controller')
-    ->expect('App\Controller')
-    ->toHaveSuffix('Controller')
-;
+namespace App\Tests\Arch;
 
-arch('entities must not depend on controllers')
-    ->expect('App\Entity')
-    ->not->toUse('App\Controller')
-;
+use PHPUnit\Framework\TestCase;
 
-arch('no debugging functions in source code')
-    ->expect('App')
-    ->not->toUse(['dump', 'dd', 'var_dump', 'print_r', 'ray'])
-;
+final class ArchTest extends TestCase
+{
+    private const string SRC = __DIR__ . '/../../src';
 
-arch('enums must be backed')
-    ->expect('App\Enum')
-    ->toBeEnums()
-    ->toHaveSuffix('')
-;
+    public function testControllersAreSuffixedController(): void
+    {
+        foreach (self::classNamesUnder('App\Controller') as $class) {
+            self::assertStringEndsWith(
+                'Controller',
+                $class,
+                $class . ' is in App\Controller but is not suffixed "Controller"',
+            );
+        }
+    }
 
-arch('repositories must end with Repository')
-    ->expect('App\Repository')
-    ->toHaveSuffix('Repository')
-;
+    public function testRepositoriesAreSuffixedRepository(): void
+    {
+        foreach (self::classNamesUnder('App\Repository') as $class) {
+            self::assertStringEndsWith(
+                'Repository',
+                $class,
+                $class . ' is in App\Repository but is not suffixed "Repository"',
+            );
+        }
+    }
 
-arch('data access is confined to the handler layer')
-    ->expect(['App\Repository', Doctrine\ORM\EntityManagerInterface::class])
-    ->toOnlyBeUsedIn([
-        'App\Message',     // command handlers, query runners, scheduler handler
-        'App\Entity',      // repositoryClass metadata only
-        'App\Repository',  // repositories themselves
-    ])
-;
+    public function testEnumsAreBacked(): void
+    {
+        $enums = self::classNamesUnder('App\Enum');
+        self::assertNotEmpty($enums, 'expected at least one enum under App\Enum');
+
+        foreach ($enums as $enum) {
+            self::assertTrue(enum_exists($enum), $enum . ' in App\Enum is not an enum');
+            self::assertTrue(
+                (new \ReflectionEnum($enum))->isBacked(),
+                $enum . ' must be a backed enum',
+            );
+        }
+    }
+
+    public function testEntitiesDoNotDependOnControllers(): void
+    {
+        foreach (self::filesUnder('App\Entity') as $path) {
+            self::assertStringNotContainsString(
+                'App\Controller',
+                (string) file_get_contents($path),
+                basename($path) . ' (App\Entity) must not depend on App\Controller',
+            );
+        }
+    }
+
+    /**
+     * ADR-0006 / ADR-0007: data access (repositories + the EntityManager) is confined to the
+     * handler layer. The repositories and Doctrine\ORM\EntityManagerInterface may only be
+     * referenced from App\Message (handlers/runners/scheduler), App\Entity (repositoryClass
+     * metadata) and App\Repository itself.
+     */
+    public function testDataAccessIsConfinedToTheHandlerLayer(): void
+    {
+        $allowedPrefixes = ['App\Message', 'App\Entity', 'App\Repository'];
+
+        foreach (self::allSourceFiles() as $path) {
+            $namespace = self::namespaceOf($path);
+
+            foreach ($allowedPrefixes as $prefix) {
+                if (str_starts_with($namespace, $prefix)) {
+                    continue 2;
+                }
+            }
+
+            $source = (string) file_get_contents($path);
+
+            self::assertStringNotContainsString(
+                'EntityManagerInterface',
+                $source,
+                $namespace . '\\' . basename($path, '.php') . ' must not use the EntityManager (data access is confined to the handler layer; see ADR-0006/0007)',
+            );
+            self::assertStringNotContainsString(
+                'App\Repository\\',
+                $source,
+                $namespace . '\\' . basename($path, '.php') . ' must not use a repository (data access is confined to the handler layer; see ADR-0006/0007)',
+            );
+        }
+    }
+
+    /**
+     * Fully-qualified names of declared classes/enums whose namespace starts with the given prefix.
+     *
+     * @return list<class-string>
+     */
+    private static function classNamesUnder(string $namespacePrefix): array
+    {
+        $names = [];
+
+        foreach (self::allSourceFiles() as $path) {
+            $fqcn = self::fqcnOf($path);
+
+            if (!str_starts_with($fqcn, $namespacePrefix . '\\')) {
+                continue;
+            }
+
+            if (class_exists($fqcn) || enum_exists($fqcn) || interface_exists($fqcn) || trait_exists($fqcn)) {
+                $names[] = $fqcn;
+            }
+        }
+
+        return $names;
+    }
+
+    /**
+     * Absolute paths of source files whose namespace starts with the given prefix.
+     *
+     * @return list<string>
+     */
+    private static function filesUnder(string $namespacePrefix): array
+    {
+        $paths = [];
+
+        foreach (self::allSourceFiles() as $path) {
+            if (str_starts_with(self::namespaceOf($path), $namespacePrefix)) {
+                $paths[] = $path;
+            }
+        }
+
+        return $paths;
+    }
+
+    /** @return list<string> absolute paths to every .php file under src/ */
+    private static function allSourceFiles(): array
+    {
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator(self::srcRoot(), \FilesystemIterator::SKIP_DOTS),
+        );
+
+        $paths = [];
+
+        foreach ($iterator as $file) {
+            if ($file instanceof \SplFileInfo && $file->isFile() && 'php' === $file->getExtension()) {
+                $paths[] = $file->getPathname();
+            }
+        }
+
+        sort($paths);
+
+        return $paths;
+    }
+
+    private static function srcRoot(): string
+    {
+        return (string) realpath(self::SRC);
+    }
+
+    private static function fqcnOf(string $absolutePath): string
+    {
+        $relative = substr($absolutePath, \strlen(self::srcRoot()) + 1, -4);
+
+        return 'App\\' . str_replace('/', '\\', $relative);
+    }
+
+    private static function namespaceOf(string $absolutePath): string
+    {
+        $fqcn = self::fqcnOf($absolutePath);
+        $lastSeparator = strrpos($fqcn, '\\');
+
+        return false === $lastSeparator ? $fqcn : substr($fqcn, 0, $lastSeparator);
+    }
+}

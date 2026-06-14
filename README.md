@@ -38,7 +38,7 @@ mise run up
 All tooling runs inside the `php` container via `./bin/dc exec`. Tasks are defined in `mise.toml`.
 
 ```bash
-mise run test              # run tests (Pest)
+mise run test              # run tests (PHPUnit)
 mise run sa                # PHPStan static analysis (level 9)
 mise run cs                # PHP CS Fixer (fix)
 mise run cs:twig           # Twig CS Fixer (fix)

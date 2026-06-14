@@ -1,0 +1,30 @@
+# Relaxed PHPStan profile for tests/ (run via `mise run sa:tests`).
+# Separate from the strict src profile (phpstan.dist.neon, level 9 + 100% type coverage +
+# the Symplify complexity/naming rule sets), which would be noise on test code. This profile
+# lights up phpstan/phpstan-phpunit (inert until tests/ is analyzed). See #137.
+parameters:
+    level: 6
+    paths:
+        - tests
+    symfony:
+        containerXmlPath: var/cache/dev/App_KernelDevDebugContainer.xml
+    doctrine:
+        objectManagerLoader: tests/object-manager.php
+    # type_coverage (tomasvotruba/type-coverage, auto-loaded via extension-installer) defaults
+    # high; 100% typed providers/closures/fixtures is noise for tests, so disable it here.
+    type_coverage:
+        return: 0
+        param: 0
+        property: 0
+        constant: 0
+        declare: 0
+    # Test code churns; a guard-ignore going unmatched after an edit should not break the build.
+    reportUnmatchedIgnoredErrors: false
+    ignoreErrors:
+        # Guard assertions (assertInstanceOf / assertNotNull on a known type) are deliberate.
+        - identifier: staticMethod.alreadyNarrowedType
+        - identifier: staticMethod.impossibleType
+        # phpunit-phpunit stylistic nudge (count() in assertSame vs assertCount) - not a defect.
+        - identifier: phpunit.assertCount
+        # Deliberate defensive nullsafe access on a nullable test fixture.
+        - identifier: nullsafe.neverNull

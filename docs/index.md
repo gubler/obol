@@ -12,7 +12,7 @@ Obol is a subscription management application for tracking recurring payments, p
 | Web Server | FrankenPHP (Caddy + PHP in one binary) |
 | Frontend | Tailwind CSS v4, Hotwired Stimulus, Hotwired Turbo |
 | Asset Pipeline | Symfony AssetMapper (no build step) |
-| Testing | Pest PHP, Foundry, DAMA DoctrineTestBundle |
+| Testing | PHPUnit, Foundry, DAMA DoctrineTestBundle |
 | Static Analysis | PHPStan level 9 |
 | CI/CD | Gitea Actions |
 | Containerization | Docker (multi-stage build) |

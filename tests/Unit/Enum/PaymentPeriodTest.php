@@ -19,6 +19,9 @@ final class PaymentPeriodTest extends TestCase
         self::assertSame($expected, $period->monthsPerPeriod());
     }
 
+    /**
+     * @return iterable<string, array{PaymentPeriod, float}>
+     */
     public static function provideMonthsPerPeriodReflectsTheNormalizationCases(): iterable
     {
         return [

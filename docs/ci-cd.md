@@ -36,11 +36,12 @@ Runs on `ubuntu-latest` with PHP 8.5 and Xdebug (for coverage).
 | Lint Doctrine | Validate entity mapping (`doctrine:schema:validate --skip-sync`) |
 | Composer audit | Check for known security vulnerabilities in dependencies |
 | PHPStan | Static analysis at level 9 (`--error-format=github` for inline annotations) |
+| PHPStan (tests) | Static analysis of `tests/` (relaxed profile, `phpstan-tests.neon`) |
 | Biome | JS code style + lint (`npm run cs:check`) |
 | tsc --checkJs | JS static analysis (`npm run sa`) |
 | Vitest | JS unit tests (`npm run test`) |
 | Asset build | `importmap:install`, `tailwind:build`, `asset-map:compile` |
-| Pest | Run tests with coverage, minimum 70% threshold |
+| PHPUnit | Run tests with coverage; `bin/coverage-min.php` enforces the 70% threshold |
 
 The JS toolchain steps are gated on `steps.npm.outcome == 'success'` (the `npm ci` step), independent of the PHP `composer install`. See [Frontend](frontend.md#javascript-toolchain-dev-only) for what they cover.
 
@@ -79,9 +80,10 @@ The CI pipeline matches what you can run locally:
 | PHP-CS-Fixer | `mise run cs:check` |
 | Twig-CS-Fixer | `mise run cs:twig:check` |
 | PHPStan | `mise run sa` |
+| PHPStan (tests) | `mise run sa:tests` |
 | Biome | `mise run js:cs:check` |
 | tsc --checkJs | `mise run js:sa` |
 | Vitest | `mise run js:test` |
-| Pest with coverage | `mise run coverage` |
+| PHPUnit with coverage | `mise run coverage` |
 
 Running `mise run coverage` locally before pushing ensures CI will pass.

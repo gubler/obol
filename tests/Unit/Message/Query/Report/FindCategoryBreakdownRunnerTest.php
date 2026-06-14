@@ -46,16 +46,20 @@ final class FindCategoryBreakdownRunnerTest extends TestCase
     {
         $categoryId = $category?->id ?? new Ulid();
 
-        $categoryRepository = $this->createMock(CategoryRepository::class);
-        $categoryRepository->method('find')->with($categoryId)->willReturn($category);
+        $categoryRepository = self::createMock(CategoryRepository::class);
+        $categoryRepository->expects(self::once())->method('find')->with($categoryId)->willReturn($category);
 
-        $subscriptionRepository = $this->createMock(SubscriptionRepository::class);
+        // A stub (not a mock): the missing-category path returns early without querying, so
+        // findBy is called 0 or 1 times. willReturnMap keeps the active-in-category arg match
+        // without asserting a call count (any()/with()-without-expects are deprecated in PHPUnit 13).
+        $subscriptionRepository = self::createStub(SubscriptionRepository::class);
         $subscriptionRepository->method('findBy')
-            ->with(['archived' => false, 'category' => $category])
-            ->willReturn($subscriptions)
+            ->willReturnMap([
+                [['archived' => false, 'category' => $category], $subscriptions],
+            ])
         ;
 
-        $exchangeRateRepository = $this->createMock(ExchangeRateRepository::class);
+        $exchangeRateRepository = self::createStub(ExchangeRateRepository::class);
         $exchangeRateRepository->method('latestRate')
             ->willReturnCallback(static fn (Currency $currency): ?float => $rates[$currency->value] ?? null)
         ;

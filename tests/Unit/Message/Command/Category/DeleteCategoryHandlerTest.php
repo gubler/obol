@@ -53,7 +53,7 @@ final class DeleteCategoryHandlerTest extends TestCase
             ->willReturn(null)
         ;
 
-        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager = self::createStub(EntityManagerInterface::class);
 
         $handler = new DeleteCategoryHandler($repository, $entityManager);
 
@@ -77,7 +77,7 @@ final class DeleteCategoryHandlerTest extends TestCase
             ->willReturn($category)
         ;
 
-        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager = self::createStub(EntityManagerInterface::class);
 
         $handler = new DeleteCategoryHandler($repository, $entityManager);
 

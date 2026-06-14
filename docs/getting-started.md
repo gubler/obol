@@ -40,7 +40,7 @@ Installs the dev-only JS devDependencies (the `composer install` equivalent for 
 ## Verify the setup
 
 ```bash
-mise run test              # run the Pest suite in the container
+mise run test              # run the PHPUnit suite in the container
 mise run js:test           # run the Vitest suite (host-side)
 mise run dce -- php bin/console about   # Symfony info dump
 ```

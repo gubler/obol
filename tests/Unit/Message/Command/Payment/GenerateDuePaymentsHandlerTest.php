@@ -43,7 +43,7 @@ final class GenerateDuePaymentsHandlerTest extends TestCase
     private function runGenerateDuePayments(array $subscriptions): void
     {
         $repository = $this->createMock(SubscriptionRepository::class);
-        $repository->method('findBy')->with(['archived' => false])->willReturn($subscriptions);
+        $repository->expects(self::once())->method('findBy')->with(['archived' => false])->willReturn($subscriptions);
 
         (new GenerateDuePaymentsHandler($repository))(new GenerateDuePaymentsCommand());
     }
@@ -93,6 +93,9 @@ final class GenerateDuePaymentsHandlerTest extends TestCase
         self::assertSameInstant(new \DateTimeImmutable($expected), $subscription->nextRenewal);
     }
 
+    /**
+     * @return iterable<string, array{PaymentPeriod, int, string}>
+     */
     public static function provideAdvancesTheRenewalAnchorByTheConfiguredIntervalCases(): iterable
     {
         yield 'weekly' => [PaymentPeriod::Week, 1, '2020-01-08'];

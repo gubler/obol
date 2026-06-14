@@ -19,7 +19,7 @@ final class FindPaymentRunnerTest extends TestCase
     public function testReturnsPaymentWhenFound(): void
     {
         $ulid = new Ulid();
-        $payment = $this->createMock(Payment::class);
+        $payment = self::createStub(Payment::class);
 
         $repository = $this->createMock(PaymentRepository::class);
         $repository->expects(self::once())

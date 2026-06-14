@@ -38,10 +38,10 @@ final class FindObligationOverTimeRunnerTest extends TestCase
      */
     private function runTrend(array $snapshots, string $now, ObligationTrendPeriod $period = ObligationTrendPeriod::Month, array $rates = []): ObligationSeries
     {
-        $repository = $this->createMock(ObligationSnapshotRepository::class);
+        $repository = self::createStub(ObligationSnapshotRepository::class);
         $repository->method('findAllOrderedByRecordedAt')->willReturn($snapshots);
 
-        $exchangeRateRepository = $this->createMock(ExchangeRateRepository::class);
+        $exchangeRateRepository = self::createStub(ExchangeRateRepository::class);
         $exchangeRateRepository->method('latestRate')
             ->willReturnCallback(static fn (Currency $currency): ?float => $rates[$currency->value] ?? null)
         ;

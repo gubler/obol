@@ -16,7 +16,7 @@ final class ScheduleTest extends TestCase
 {
     public function testScheduleReturnsASymfonyScheduleInstance(): void
     {
-        $cache = $this->createMock(CacheInterface::class);
+        $cache = self::createStub(CacheInterface::class);
         $schedule = new Schedule($cache);
 
         $result = $schedule->getSchedule();
@@ -26,7 +26,7 @@ final class ScheduleTest extends TestCase
 
     public function testScheduleHasRecurringMessagesConfigured(): void
     {
-        $cache = $this->createMock(CacheInterface::class);
+        $cache = self::createStub(CacheInterface::class);
         $schedule = new Schedule($cache);
 
         $result = $schedule->getSchedule();

@@ -19,8 +19,9 @@ fast_checks() {
 # check has failed, nor the suites once PHPStan has. The JS toolchain (#133) runs host-side via
 # npm: lint/types join the fast sprint above, the JS unit tests join the test sprint below.
 full_checks() {
-    fast_checks      || return 1
-    mise run sa      || return 1
-    mise run test    || return 1
-    mise run js:test || return 1
+    fast_checks       || return 1
+    mise run sa       || return 1
+    mise run sa:tests || return 1
+    mise run test     || return 1
+    mise run js:test  || return 1
 }

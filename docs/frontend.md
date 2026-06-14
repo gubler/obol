@@ -62,7 +62,7 @@ The Stimulus controllers get the same three guard rails as the PHP code, mirrori
 | Layer | Tool | PHP analog | Config |
 |-------|------|-----------|--------|
 | Code style + lint | [Biome](https://biomejs.dev/) | PHP CS Fixer | `biome.json` |
-| Unit tests | [Vitest](https://vitest.dev/) + jsdom | Pest | `vitest.config.js` |
+| Unit tests | [Vitest](https://vitest.dev/) + jsdom | PHPUnit | `vitest.config.js` |
 | Static analysis | `tsc --checkJs` | PHPStan | `jsconfig.json` |
 
 Local commands (host-side, via npm):

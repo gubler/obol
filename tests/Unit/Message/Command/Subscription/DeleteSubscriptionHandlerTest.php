@@ -22,7 +22,7 @@ final class DeleteSubscriptionHandlerTest extends TestCase
     {
         $ulid = new Ulid();
 
-        $subscription = $this->createMock(Subscription::class);
+        $subscription = self::createStub(Subscription::class);
 
         $repository = $this->createMock(SubscriptionRepository::class);
         $repository->expects(self::once())
@@ -55,7 +55,7 @@ final class DeleteSubscriptionHandlerTest extends TestCase
             ->willReturn(null)
         ;
 
-        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager = self::createStub(EntityManagerInterface::class);
 
         $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
         $notifier->expects(self::never())->method('notifyChanged');

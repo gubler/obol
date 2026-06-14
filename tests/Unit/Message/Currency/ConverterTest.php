@@ -28,7 +28,7 @@ final class ConverterTest extends TestCase
     public function testConvertsDirectlyBetweenTwoCurrenciesViaTheEurPivot(): void
     {
         // 1 EUR = 1.08 USD; $10.80 is 10.00 EUR -> 1000 minor units.
-        $repository = $this->createMock(ExchangeRateRepository::class);
+        $repository = self::createStub(ExchangeRateRepository::class);
         $repository->method('latestRate')->willReturnMap([
             [Currency::USD, null, 1.08],
             [Currency::EUR, null, 1.0],
@@ -42,7 +42,7 @@ final class ConverterTest extends TestCase
     public function testCrossConvertsAPairNeitherOfWhichIsEur(): void
     {
         // 1 EUR = 1.08 USD = 162.0 JPY. $10.80 -> 10.00 EUR -> 1620 yen (JPY has no minor units).
-        $repository = $this->createMock(ExchangeRateRepository::class);
+        $repository = self::createStub(ExchangeRateRepository::class);
         $repository->method('latestRate')->willReturnMap([
             [Currency::USD, null, 1.08],
             [Currency::JPY, null, 162.0],
@@ -56,7 +56,7 @@ final class ConverterTest extends TestCase
     public function testPassesAnAsOfDateThroughToTheRateLookup(): void
     {
         $asOf = new \DateTimeImmutable('2024-01-01');
-        $repository = $this->createMock(ExchangeRateRepository::class);
+        $repository = self::createStub(ExchangeRateRepository::class);
         $repository->method('latestRate')->willReturnMap([
             [Currency::USD, $asOf, 1.08],
             [Currency::EUR, $asOf, 1.0],
@@ -69,7 +69,7 @@ final class ConverterTest extends TestCase
 
     public function testThrowsWhenARateIsMissingForEitherCurrency(): void
     {
-        $repository = $this->createMock(ExchangeRateRepository::class);
+        $repository = self::createStub(ExchangeRateRepository::class);
         $repository->method('latestRate')->willReturn(null);
 
         $this->expectException(\Assert\InvalidArgumentException::class);

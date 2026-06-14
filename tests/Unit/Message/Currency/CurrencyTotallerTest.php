@@ -24,7 +24,7 @@ final class CurrencyTotallerTest extends TestCase
      */
     private function totalAmounts(array $amounts, array $rates, string $displayCurrency = 'USD'): ConvertedTotal
     {
-        $exchangeRateRepository = $this->createMock(ExchangeRateRepository::class);
+        $exchangeRateRepository = self::createStub(ExchangeRateRepository::class);
         $exchangeRateRepository->method('latestRate')
             ->willReturnCallback(static fn (Currency $currency): ?float => $rates[$currency->value] ?? null)
         ;

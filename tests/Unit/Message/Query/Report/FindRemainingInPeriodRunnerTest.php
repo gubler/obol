@@ -44,10 +44,10 @@ final class FindRemainingInPeriodRunnerTest extends TestCase
      */
     private function runRemaining(array $subscriptions, string $now, array $rates = []): RemainingInPeriod
     {
-        $repository = $this->createMock(SubscriptionRepository::class);
-        $repository->method('findBy')->with(['archived' => false])->willReturn($subscriptions);
+        $repository = self::createMock(SubscriptionRepository::class);
+        $repository->expects(self::once())->method('findBy')->with(['archived' => false])->willReturn($subscriptions);
 
-        $exchangeRateRepository = $this->createMock(ExchangeRateRepository::class);
+        $exchangeRateRepository = self::createStub(ExchangeRateRepository::class);
         $exchangeRateRepository->method('latestRate')
             ->willReturnCallback(static fn (Currency $currency): ?float => $rates[$currency->value] ?? null)
         ;

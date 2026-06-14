@@ -32,7 +32,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
         $subscription->expects(self::once())->method('update');
         $subscription->expects(self::never())->method('automatePayments');
 
-        $category = $this->createMock(Category::class);
+        $category = self::createStub(Category::class);
 
         $subscriptionRepository = $this->createMock(SubscriptionRepository::class);
         $subscriptionRepository->expects(self::once())
@@ -76,7 +76,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
         $subscription->expects(self::once())->method('update');
         $subscription->expects(self::once())->method('automatePayments')->with($nextRenewal);
 
-        $category = $this->createMock(Category::class);
+        $category = self::createStub(Category::class);
 
         $subscriptionRepository = $this->createMock(SubscriptionRepository::class);
         $subscriptionRepository->expects(self::once())->method('find')->willReturn($subscription);
@@ -116,7 +116,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
             ->willReturn(null)
         ;
 
-        $categoryRepository = $this->createMock(CategoryRepository::class);
+        $categoryRepository = self::createStub(CategoryRepository::class);
         $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
         $notifier->expects(self::never())->method('notifyChanged');
 
@@ -144,7 +144,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
         $subscriptionUlid = new Ulid();
         $categoryUlid = new Ulid();
 
-        $subscription = $this->createMock(Subscription::class);
+        $subscription = self::createStub(Subscription::class);
 
         $subscriptionRepository = $this->createMock(SubscriptionRepository::class);
         $subscriptionRepository->expects(self::once())

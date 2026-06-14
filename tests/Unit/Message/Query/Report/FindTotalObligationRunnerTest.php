@@ -42,10 +42,10 @@ final class FindTotalObligationRunnerTest extends TestCase
      */
     private function runTotalObligation(array $subscriptions, array $rates, string $displayCurrency = 'USD'): TotalObligation
     {
-        $subscriptionRepository = $this->createMock(SubscriptionRepository::class);
-        $subscriptionRepository->method('findBy')->with(['archived' => false])->willReturn($subscriptions);
+        $subscriptionRepository = self::createMock(SubscriptionRepository::class);
+        $subscriptionRepository->expects(self::once())->method('findBy')->with(['archived' => false])->willReturn($subscriptions);
 
-        $exchangeRateRepository = $this->createMock(ExchangeRateRepository::class);
+        $exchangeRateRepository = self::createStub(ExchangeRateRepository::class);
         $exchangeRateRepository->method('latestRate')
             ->willReturnCallback(static fn (Currency $currency): ?float => $rates[$currency->value] ?? null)
         ;

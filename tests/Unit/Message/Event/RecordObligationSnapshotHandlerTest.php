@@ -44,8 +44,8 @@ final class RecordObligationSnapshotHandlerTest extends TestCase
         ];
 
         $subscriptionRepository = $this->createMock(SubscriptionRepository::class);
-        $subscriptionRepository->method('findBy')->with(['archived' => false])->willReturn($subscriptions);
-        $snapshotRepository = $this->createMock(ObligationSnapshotRepository::class);
+        $subscriptionRepository->expects(self::once())->method('findBy')->with(['archived' => false])->willReturn($subscriptions);
+        $snapshotRepository = self::createStub(ObligationSnapshotRepository::class);
         $snapshotRepository->method('findLatest')->willReturn(null);
 
         $captured = null;
@@ -58,7 +58,7 @@ final class RecordObligationSnapshotHandlerTest extends TestCase
         // The event bus owns the transaction (doctrine_transaction middleware); the handler never flushes.
         $entityManager->expects(self::never())->method('flush');
 
-        $handler = new RecordObligationSnapshotHandler($subscriptionRepository, $snapshotRepository, $entityManager, $this->createMock(LoggerInterface::class));
+        $handler = new RecordObligationSnapshotHandler($subscriptionRepository, $snapshotRepository, $entityManager, self::createStub(LoggerInterface::class));
         $handler(new SubscriptionsChanged());
 
         self::assertInstanceOf(ObligationSnapshot::class, $captured);
@@ -70,42 +70,42 @@ final class RecordObligationSnapshotHandlerTest extends TestCase
     public function testRecordsANewSnapshotWhenTheObligationDiffersFromTheLatest(): void
     {
         $subscriptionRepository = $this->createMock(SubscriptionRepository::class);
-        $subscriptionRepository->method('findBy')->with(['archived' => false])
+        $subscriptionRepository->expects(self::once())->method('findBy')->with(['archived' => false])
             ->willReturn([self::makeSubscriptionCosting(new Money(4000, Currency::USD), PaymentPeriod::Month, 1)])
         ;
-        $snapshotRepository = $this->createMock(ObligationSnapshotRepository::class);
+        $snapshotRepository = self::createStub(ObligationSnapshotRepository::class);
         $snapshotRepository->method('findLatest')->willReturn(new ObligationSnapshot(['USD' => 3000]));
 
         $entityManager = $this->createMock(EntityManagerInterface::class);
         $entityManager->expects(self::once())->method('persist');
 
-        $handler = new RecordObligationSnapshotHandler($subscriptionRepository, $snapshotRepository, $entityManager, $this->createMock(LoggerInterface::class));
+        $handler = new RecordObligationSnapshotHandler($subscriptionRepository, $snapshotRepository, $entityManager, self::createStub(LoggerInterface::class));
         $handler(new SubscriptionsChanged());
     }
 
     public function testRecordsNothingWhenTheObligationEqualsTheLatestSnapshot(): void
     {
         $subscriptionRepository = $this->createMock(SubscriptionRepository::class);
-        $subscriptionRepository->method('findBy')->with(['archived' => false])->willReturn([
+        $subscriptionRepository->expects(self::once())->method('findBy')->with(['archived' => false])->willReturn([
             self::makeSubscriptionCosting(new Money(4000, Currency::USD), PaymentPeriod::Month, 1),
             self::makeSubscriptionCosting(new Money(3000, Currency::EUR), PaymentPeriod::Month, 1),
         ]);
-        $snapshotRepository = $this->createMock(ObligationSnapshotRepository::class);
+        $snapshotRepository = self::createStub(ObligationSnapshotRepository::class);
         // Same totals, different key order - equality must be order-insensitive.
         $snapshotRepository->method('findLatest')->willReturn(new ObligationSnapshot(['EUR' => 3000, 'USD' => 4000]));
 
         $entityManager = $this->createMock(EntityManagerInterface::class);
         $entityManager->expects(self::never())->method('persist');
 
-        $handler = new RecordObligationSnapshotHandler($subscriptionRepository, $snapshotRepository, $entityManager, $this->createMock(LoggerInterface::class));
+        $handler = new RecordObligationSnapshotHandler($subscriptionRepository, $snapshotRepository, $entityManager, self::createStub(LoggerInterface::class));
         $handler(new SubscriptionsChanged());
     }
 
     public function testLogsAndSwallowsAFailureSoItNeverBreaksTheSubscriptionEditThatTriggeredIt(): void
     {
-        $subscriptionRepository = $this->createMock(SubscriptionRepository::class);
+        $subscriptionRepository = self::createStub(SubscriptionRepository::class);
         $subscriptionRepository->method('findBy')->willThrowException(new \RuntimeException('db is down'));
-        $snapshotRepository = $this->createMock(ObligationSnapshotRepository::class);
+        $snapshotRepository = self::createStub(ObligationSnapshotRepository::class);
 
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::once())->method('error');

@@ -102,6 +102,27 @@ php bin/console tailwind:watch
 
 **Production:** `php bin/console tailwind:build` generates the optimized CSS.
 
+## Branding and favicons
+
+The app's mark is a heraldic bee struck on a beaded gold coin (an obol). The single source of truth is the SVG:
+
+**`assets/icons/obol-coin.svg`** — served through AssetMapper as both the header logo and the SVG favicon (`<link rel="icon" type="image/svg+xml">` in `base.html.twig`).
+
+SVG favicons aren't honored everywhere (notably Safari and iOS), so a small PNG set lives at the web root for fallback and is wired up in `base.html.twig`:
+
+- `public/favicon-32.png`, `public/favicon-16.png` — PNG `rel="icon"` fallbacks
+- `public/apple-touch-icon.png` (180px) — iOS home screen / Safari
+
+Those PNGs are generated from the SVG, not drawn by hand:
+
+```bash
+mise run icons   # rasterize assets/icons/obol-coin.svg -> public/*.png
+```
+
+The task ([`bin/generate-icons.mjs`](../bin/generate-icons.mjs), host-side via `sharp`) renders the 180px tile from the full coin, and derives a flat-rim variant on the fly for the 16/32px icons — the beaded rim turns to noise that small. Re-run it after editing the SVG and commit the refreshed PNGs. It is intentionally **not** part of `mise run check`, the hooks, or CI: the outputs are committed artifacts, regenerated only when the mark changes.
+
+The same `obol-coin.svg` is the Dashy homelab tile (tracked in the homelab repo).
+
 ## Templates
 
 Twig templates live in `templates/` and extend `base.html.twig`, which provides:

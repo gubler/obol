@@ -177,6 +177,10 @@ run = ["npm run cs"]
 description = "JS code style + lint via Biome (check only)"
 run = ["npm run cs:check"]
 
+[tasks.icons]
+description = "Rasterize assets/icons/obol-coin.svg into the public/ PNG favicon set (host-side via sharp)"
+run = ["npm run icons"]
+
 [tasks.check]
 description = "Run all checks: PHPStan (src + tests), tests, CS Fixer, Twig CS, and the JS toolchain"
 depends = ["sa", "sa:tests", "test", "cs", "cs:twig", "js:sa", "js:test", "js:cs"]

@@ -21,6 +21,26 @@ final class LayoutTest extends WebTestCase
         self::assertSelectorExists(selector: 'head link[rel="icon"][type="image/svg+xml"]');
     }
 
+    public function testDeclaresPngFaviconFallback(): void
+    {
+        $client = self::createClient();
+
+        $client->request(method: 'GET', uri: '/');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists(selector: 'head link[rel="icon"][type="image/png"]');
+    }
+
+    public function testDeclaresAppleTouchIcon(): void
+    {
+        $client = self::createClient();
+
+        $client->request(method: 'GET', uri: '/');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists(selector: 'head link[rel="apple-touch-icon"]');
+    }
+
     public function testHeaderShowsObolLogo(): void
     {
         $client = self::createClient();

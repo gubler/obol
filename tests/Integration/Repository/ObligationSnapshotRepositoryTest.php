@@ -5,32 +5,40 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Integration\Repository;
+
 use App\Entity\ObligationSnapshot;
 use App\Repository\ObligationSnapshotRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-test('returns null when no snapshot has been recorded', function (): void {
-    $this->createClient();
-    /** @var EntityManagerInterface $entityManager */
-    $entityManager = $this->getContainer()->get(EntityManagerInterface::class);
-    /** @var ObligationSnapshotRepository $repository */
-    $repository = $entityManager->getRepository(ObligationSnapshot::class);
+final class ObligationSnapshotRepositoryTest extends WebTestCase
+{
+    public function testReturnsNullWhenNoSnapshotHasBeenRecorded(): void
+    {
+        self::createClient();
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        /** @var ObligationSnapshotRepository $repository */
+        $repository = $entityManager->getRepository(ObligationSnapshot::class);
 
-    expect($repository->findLatest())->toBeNull();
-});
+        self::assertNull($repository->findLatest());
+    }
 
-test('returns the most recently recorded snapshot', function (): void {
-    $this->createClient();
-    /** @var EntityManagerInterface $entityManager */
-    $entityManager = $this->getContainer()->get(EntityManagerInterface::class);
-    /** @var ObligationSnapshotRepository $repository */
-    $repository = $entityManager->getRepository(ObligationSnapshot::class);
+    public function testReturnsTheMostRecentlyRecordedSnapshot(): void
+    {
+        self::createClient();
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        /** @var ObligationSnapshotRepository $repository */
+        $repository = $entityManager->getRepository(ObligationSnapshot::class);
 
-    // Constructed in order, so the third carries the highest (newest) ULID id.
-    $entityManager->persist(new ObligationSnapshot(['USD' => 4000]));
-    $entityManager->persist(new ObligationSnapshot(['USD' => 4500]));
-    $entityManager->persist(new ObligationSnapshot(['USD' => 4500, 'EUR' => 3000]));
-    $entityManager->flush();
+        // Constructed in order, so the third carries the highest (newest) ULID id.
+        $entityManager->persist(new ObligationSnapshot(['USD' => 4000]));
+        $entityManager->persist(new ObligationSnapshot(['USD' => 4500]));
+        $entityManager->persist(new ObligationSnapshot(['USD' => 4500, 'EUR' => 3000]));
+        $entityManager->flush();
 
-    expect($repository->findLatest()?->obligationsByCurrency)->toEqual(['USD' => 4500, 'EUR' => 3000]);
-});
+        self::assertEqualsCanonicalizing(['USD' => 4500, 'EUR' => 3000], $repository->findLatest()?->obligationsByCurrency);
+    }
+}

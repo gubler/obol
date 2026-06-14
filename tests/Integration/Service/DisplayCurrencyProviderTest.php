@@ -4,14 +4,20 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Integration\Service;
+
 use App\Enum\Currency;
 use App\Service\DisplayCurrencyProvider;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-test('is wired from the app.display_currency parameter, defaulting to USD', function (): void {
-    $this->createClient();
-    $provider = $this->getContainer()->get(DisplayCurrencyProvider::class);
+final class DisplayCurrencyProviderTest extends WebTestCase
+{
+    public function testIsWiredFromTheAppDisplayCurrencyParameterDefaultingToUsd(): void
+    {
+        self::createClient();
+        $provider = self::getContainer()->get(DisplayCurrencyProvider::class);
 
-    expect($provider)->toBeInstanceOf(DisplayCurrencyProvider::class)
-        ->and($provider->get())->toBe(Currency::USD)
-    ;
-});
+        self::assertInstanceOf(DisplayCurrencyProvider::class, $provider);
+        self::assertSame(Currency::USD, $provider->get());
+    }
+}

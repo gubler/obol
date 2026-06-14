@@ -5,49 +5,55 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Integration\ValueObject;
+
 use App\Entity\Category;
+use App\Entity\Payment;
 use App\Entity\Subscription;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\PaymentType;
 use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-test('a subscription cost and its payment amounts round-trip as Money', function (): void {
-    $this->createClient();
+final class MoneyPersistenceTest extends WebTestCase
+{
+    public function testASubscriptionCostAndItsPaymentAmountsRoundTripAsMoney(): void
+    {
+        self::createClient();
 
-    $container = $this->getContainer();
-    /** @var EntityManagerInterface $entityManager */
-    $entityManager = $container->get(id: EntityManagerInterface::class);
+        $container = self::getContainer();
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = $container->get(id: EntityManagerInterface::class);
 
-    $category = new Category(name: 'Entertainment');
-    $subscription = new Subscription(
-        category: $category,
-        name: 'Manga Box',
-        nextRenewal: new DateTimeImmutable('2024-01-01'),
-        paymentPeriod: PaymentPeriod::Month,
-        paymentPeriodCount: 1,
-        cost: new Money(2000, Currency::JPY),
-    );
-    // A recorded payment inherits the subscription's currency.
-    $subscription->recordPayment(paidDate: new DateTimeImmutable('2024-01-01'), paymentType: PaymentType::Verified);
+        $category = new Category(name: 'Entertainment');
+        $subscription = new Subscription(
+            category: $category,
+            name: 'Manga Box',
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: new Money(2000, Currency::JPY),
+        );
+        // A recorded payment inherits the subscription's currency.
+        $subscription->recordPayment(paidDate: new \DateTimeImmutable('2024-01-01'), paymentType: PaymentType::Verified);
 
-    $entityManager->persist($category);
-    $entityManager->persist($subscription);
-    $entityManager->flush();
-    $subscriptionId = $subscription->id;
-    $entityManager->clear();
+        $entityManager->persist($category);
+        $entityManager->persist($subscription);
+        $entityManager->flush();
+        $subscriptionId = $subscription->id;
+        $entityManager->clear();
 
-    $reloaded = $entityManager->getRepository(Subscription::class)->find($subscriptionId);
-    expect($reloaded)->not->toBeNull();
-    expect($reloaded->cost)->toBeInstanceOf(Money::class)
-        ->and($reloaded->cost->equals(new Money(2000, Currency::JPY)))->toBeTrue()
-        ->and($reloaded->cost->format())->toBe('¥2,000')
-    ;
+        $reloaded = $entityManager->getRepository(Subscription::class)->find($subscriptionId);
+        self::assertNotNull($reloaded);
+        self::assertInstanceOf(Money::class, $reloaded->cost);
+        self::assertTrue($reloaded->cost->equals(new Money(2000, Currency::JPY)));
+        self::assertSame('¥2,000', $reloaded->cost->format());
 
-    /** @var App\Entity\Payment $payment */
-    $payment = $reloaded->payments->first();
-    expect($payment->amount)->toBeInstanceOf(Money::class)
-        ->and($payment->amount->equals(new Money(2000, Currency::JPY)))->toBeTrue()
-    ;
-});
+        /** @var Payment $payment */
+        $payment = $reloaded->payments->first();
+        self::assertInstanceOf(Money::class, $payment->amount);
+        self::assertTrue($payment->amount->equals(new Money(2000, Currency::JPY)));
+    }
+}

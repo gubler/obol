@@ -5,15 +5,23 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Integration;
+
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-test('the test environment runs against PostgreSQL', function (): void {
-    $container = $this->getContainer();
-    /** @var EntityManagerInterface $entityManager */
-    $entityManager = $container->get(id: EntityManagerInterface::class);
+final class DatabasePlatformTest extends WebTestCase
+{
+    public function testTheTestEnvironmentRunsAgainstPostgreSQL(): void
+    {
+        $container = self::getContainer();
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = $container->get(id: EntityManagerInterface::class);
 
-    expect($entityManager->getConnection()->getDatabasePlatform())
-        ->toBeInstanceOf(PostgreSQLPlatform::class)
-    ;
-});
+        self::assertInstanceOf(
+            PostgreSQLPlatform::class,
+            $entityManager->getConnection()->getDatabasePlatform(),
+        );
+    }
+}

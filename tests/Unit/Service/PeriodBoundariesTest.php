@@ -5,66 +5,108 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Service;
+
 use App\Enum\ObligationTrendPeriod;
 use App\Enum\PaymentPeriod;
 use App\Service\PeriodBoundaries;
+use App\Tests\Support\InstantAssertions;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
 
-test('end of month is the last day of the month at end of day', function (): void {
-    expect((new PeriodBoundaries(0))->endOfPeriod(PaymentPeriod::Month, new DateTimeImmutable('2026-02-10')))
-        ->toEqual(new DateTimeImmutable('2026-02-28 23:59:59'))
-    ;
-});
+final class PeriodBoundariesTest extends TestCase
+{
+    use InstantAssertions;
 
-test('end of year is December 31 at end of day', function (): void {
-    expect((new PeriodBoundaries(0))->endOfPeriod(PaymentPeriod::Year, new DateTimeImmutable('2026-06-12')))
-        ->toEqual(new DateTimeImmutable('2026-12-31 23:59:59'))
-    ;
-});
+    public function testEndOfMonthIsTheLastDayOfTheMonthAtEndOfDay(): void
+    {
+        self::assertSameInstant(
+            new \DateTimeImmutable('2026-02-28 23:59:59'),
+            (new PeriodBoundaries(0))->endOfPeriod(PaymentPeriod::Month, new \DateTimeImmutable('2026-02-10')),
+        );
+    }
 
-test('end of week is the current week Saturday at end of day (US Sunday-start)', function (string $asOf): void {
-    $end = (new PeriodBoundaries(0))->endOfPeriod(PaymentPeriod::Week, new DateTimeImmutable($asOf));
+    public function testEndOfYearIsDecember31AtEndOfDay(): void
+    {
+        self::assertSameInstant(
+            new \DateTimeImmutable('2026-12-31 23:59:59'),
+            (new PeriodBoundaries(0))->endOfPeriod(PaymentPeriod::Year, new \DateTimeImmutable('2026-06-12')),
+        );
+    }
 
-    expect($end->format('w'))->toBe('6')                  // Saturday - Sunday-start weeks end on Saturday
-        ->and($end->format('H:i:s'))->toBe('23:59:59')
-        ->and($end >= new DateTimeImmutable($asOf))->toBeTrue()
-        ->and($end->diff(new DateTimeImmutable($asOf))->days)->toBeLessThan(7)
-    ;
-})->with(['2026-06-14', '2026-06-15', '2026-06-18', '2026-06-20']);
+    #[DataProvider('provideEndOfWeekIsTheCurrentWeekSaturdayAtEndOfDayUsSundayStartCases')]
+    public function testEndOfWeekIsTheCurrentWeekSaturdayAtEndOfDayUsSundayStart(string $asOf): void
+    {
+        $end = (new PeriodBoundaries(0))->endOfPeriod(PaymentPeriod::Week, new \DateTimeImmutable($asOf));
 
-test('the week-start day is configurable: a Monday start ends the week on Sunday', function (): void {
-    $end = (new PeriodBoundaries(1))->endOfPeriod(PaymentPeriod::Week, new DateTimeImmutable('2026-06-15'));
+        self::assertSame('6', $end->format('w'));                  // Saturday - Sunday-start weeks end on Saturday
+        self::assertSame('23:59:59', $end->format('H:i:s'));
+        self::assertTrue($end >= new \DateTimeImmutable($asOf));
+        self::assertLessThan(7, $end->diff(new \DateTimeImmutable($asOf))->days);
+    }
 
-    expect($end->format('w'))->toBe('0')                  // Sunday - Monday-start (ISO) weeks end on Sunday
-        ->and($end->format('H:i:s'))->toBe('23:59:59')
-    ;
-});
+    /**
+     * @return iterable<array{string}>
+     */
+    public static function provideEndOfWeekIsTheCurrentWeekSaturdayAtEndOfDayUsSundayStartCases(): iterable
+    {
+        yield ['2026-06-14'];
+        yield ['2026-06-15'];
+        yield ['2026-06-18'];
+        yield ['2026-06-20'];
+    }
 
-test('start of day is midnight of the same day', function (): void {
-    expect((new PeriodBoundaries(0))->startOfPeriod(ObligationTrendPeriod::Day, new DateTimeImmutable('2026-06-13 15:30:45')))
-        ->toEqual(new DateTimeImmutable('2026-06-13 00:00:00'))
-    ;
-});
+    public function testTheWeekStartDayIsConfigurableAMondayStartEndsTheWeekOnSunday(): void
+    {
+        $end = (new PeriodBoundaries(1))->endOfPeriod(PaymentPeriod::Week, new \DateTimeImmutable('2026-06-15'));
 
-test('start of month is the first of the month at midnight', function (): void {
-    expect((new PeriodBoundaries(0))->startOfPeriod(ObligationTrendPeriod::Month, new DateTimeImmutable('2026-06-13 15:30:45')))
-        ->toEqual(new DateTimeImmutable('2026-06-01 00:00:00'))
-    ;
-});
+        self::assertSame('0', $end->format('w'));                  // Sunday - Monday-start (ISO) weeks end on Sunday
+        self::assertSame('23:59:59', $end->format('H:i:s'));
+    }
 
-test('start of week is the current week-start day at midnight (US Sunday-start)', function (string $asOf): void {
-    $start = (new PeriodBoundaries(0))->startOfPeriod(ObligationTrendPeriod::Week, new DateTimeImmutable($asOf));
+    public function testStartOfDayIsMidnightOfTheSameDay(): void
+    {
+        self::assertSameInstant(
+            new \DateTimeImmutable('2026-06-13 00:00:00'),
+            (new PeriodBoundaries(0))->startOfPeriod(ObligationTrendPeriod::Day, new \DateTimeImmutable('2026-06-13 15:30:45')),
+        );
+    }
 
-    expect($start->format('w'))->toBe('0')                // Sunday - the configured week start
-        ->and($start->format('H:i:s'))->toBe('00:00:00')
-        ->and($start <= new DateTimeImmutable($asOf))->toBeTrue()
-        ->and((new DateTimeImmutable($asOf))->diff($start)->days)->toBeLessThan(7)
-    ;
-})->with(['2026-06-14', '2026-06-15', '2026-06-18', '2026-06-20']);
+    public function testStartOfMonthIsTheFirstOfTheMonthAtMidnight(): void
+    {
+        self::assertSameInstant(
+            new \DateTimeImmutable('2026-06-01 00:00:00'),
+            (new PeriodBoundaries(0))->startOfPeriod(ObligationTrendPeriod::Month, new \DateTimeImmutable('2026-06-13 15:30:45')),
+        );
+    }
 
-test('start of week honors a configurable Monday start', function (): void {
-    $start = (new PeriodBoundaries(1))->startOfPeriod(ObligationTrendPeriod::Week, new DateTimeImmutable('2026-06-18 12:00:00'));
+    #[DataProvider('provideStartOfWeekIsTheCurrentWeekStartDayAtMidnightUsSundayStartCases')]
+    public function testStartOfWeekIsTheCurrentWeekStartDayAtMidnightUsSundayStart(string $asOf): void
+    {
+        $start = (new PeriodBoundaries(0))->startOfPeriod(ObligationTrendPeriod::Week, new \DateTimeImmutable($asOf));
 
-    expect($start->format('w'))->toBe('1')                // Monday - ISO week start
-        ->and($start->format('H:i:s'))->toBe('00:00:00')
-    ;
-});
+        self::assertSame('0', $start->format('w'));                // Sunday - the configured week start
+        self::assertSame('00:00:00', $start->format('H:i:s'));
+        self::assertTrue($start <= new \DateTimeImmutable($asOf));
+        self::assertLessThan(7, (new \DateTimeImmutable($asOf))->diff($start)->days);
+    }
+
+    /**
+     * @return iterable<array{string}>
+     */
+    public static function provideStartOfWeekIsTheCurrentWeekStartDayAtMidnightUsSundayStartCases(): iterable
+    {
+        yield ['2026-06-14'];
+        yield ['2026-06-15'];
+        yield ['2026-06-18'];
+        yield ['2026-06-20'];
+    }
+
+    public function testStartOfWeekHonorsAConfigurableMondayStart(): void
+    {
+        $start = (new PeriodBoundaries(1))->startOfPeriod(ObligationTrendPeriod::Week, new \DateTimeImmutable('2026-06-18 12:00:00'));
+
+        self::assertSame('1', $start->format('w'));                // Monday - ISO week start
+        self::assertSame('00:00:00', $start->format('H:i:s'));
+    }
+}

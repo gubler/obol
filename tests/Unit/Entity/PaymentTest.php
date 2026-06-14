@@ -5,121 +5,145 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Entity;
+
 use App\Entity\Category;
 use App\Entity\Payment;
 use App\Entity\Subscription;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\PaymentType;
+use App\Tests\Support\InstantAssertions;
 use App\ValueObject\Money;
+use PHPUnit\Framework\TestCase;
 
-beforeEach(function (): void {
-    $category = new Category(name: 'Test Category');
-    $this->subscription = new Subscription(
-        category: $category,
-        name: 'Test Subscription',
-        nextRenewal: new DateTimeImmutable(),
-        paymentPeriod: PaymentPeriod::Month,
-        paymentPeriodCount: 1,
-        cost: new Money(1000, Currency::USD),
-    );
-});
+final class PaymentTest extends TestCase
+{
+    use InstantAssertions;
 
-test('creates payment with valid data', function (): void {
-    $payment = new Payment(
-        subscription: $this->subscription,
-        type: PaymentType::Verified,
-        amount: new Money(1000, Currency::USD),
-    );
+    private Subscription $subscription;
 
-    expect($payment->subscription)->toBe($this->subscription)
-        ->and($payment->type)->toBe(PaymentType::Verified)
-        ->and($payment->amount->minorAmount)->toBe(1000)
-    ;
-});
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-test('stores the paid date', function (): void {
-    $paidDate = new DateTimeImmutable('2024-05-01');
-    $payment = new Payment(
-        subscription: $this->subscription,
-        type: PaymentType::Verified,
-        amount: new Money(1000, Currency::USD),
-        paidDate: $paidDate,
-    );
+        $category = new Category(name: 'Test Category');
+        $this->subscription = new Subscription(
+            category: $category,
+            name: 'Test Subscription',
+            nextRenewal: new \DateTimeImmutable(),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: new Money(1000, Currency::USD),
+        );
+    }
 
-    expect($payment->paidDate)->toBe($paidDate);
-});
+    public function testCreatesPaymentWithValidData(): void
+    {
+        $payment = new Payment(
+            subscription: $this->subscription,
+            type: PaymentType::Verified,
+            amount: new Money(1000, Currency::USD),
+        );
 
-test('sets created at to current time', function (): void {
-    $before = new DateTimeImmutable();
-    $payment = new Payment(
-        subscription: $this->subscription,
-        type: PaymentType::Generated,
-        amount: new Money(2000, Currency::USD),
-    );
-    $after = new DateTimeImmutable();
+        self::assertSame($this->subscription, $payment->subscription);
+        self::assertSame(PaymentType::Verified, $payment->type);
+        self::assertSame(1000, $payment->amount->minorAmount);
+    }
 
-    expect($payment->createdAt)->toBeGreaterThanOrEqual($before)
-        ->and($payment->createdAt)->toBeLessThanOrEqual($after)
-    ;
-});
+    public function testStoresThePaidDate(): void
+    {
+        $paidDate = new \DateTimeImmutable('2024-05-01');
+        $payment = new Payment(
+            subscription: $this->subscription,
+            type: PaymentType::Verified,
+            amount: new Money(1000, Currency::USD),
+            paidDate: $paidDate,
+        );
 
-test('accepts both payment types', function (): void {
-    $verifiedPayment = new Payment(
-        subscription: $this->subscription,
-        type: PaymentType::Verified,
-        amount: new Money(1000, Currency::USD),
-    );
+        self::assertSame($paidDate, $payment->paidDate);
+    }
 
-    $generatedPayment = new Payment(
-        subscription: $this->subscription,
-        type: PaymentType::Generated,
-        amount: new Money(1000, Currency::USD),
-    );
+    public function testSetsCreatedAtToCurrentTime(): void
+    {
+        $before = new \DateTimeImmutable();
+        $payment = new Payment(
+            subscription: $this->subscription,
+            type: PaymentType::Generated,
+            amount: new Money(2000, Currency::USD),
+        );
+        $after = new \DateTimeImmutable();
 
-    expect($verifiedPayment->type)->toBe(PaymentType::Verified)
-        ->and($generatedPayment->type)->toBe(PaymentType::Generated)
-    ;
-});
+        self::assertGreaterThanOrEqual($before, $payment->createdAt);
+        self::assertLessThanOrEqual($after, $payment->createdAt);
+    }
 
-test('amend updates amount and paid date and verifies the payment', function (): void {
-    $payment = new Payment(
-        subscription: $this->subscription,
-        type: PaymentType::Generated,
-        amount: new Money(1000, Currency::USD),
-        paidDate: new DateTimeImmutable('2024-01-01'),
-    );
+    public function testAcceptsBothPaymentTypes(): void
+    {
+        $verifiedPayment = new Payment(
+            subscription: $this->subscription,
+            type: PaymentType::Verified,
+            amount: new Money(1000, Currency::USD),
+        );
 
-    $payment->amend(amount: 1200, paidDate: new DateTimeImmutable('2024-01-05'));
+        $generatedPayment = new Payment(
+            subscription: $this->subscription,
+            type: PaymentType::Generated,
+            amount: new Money(1000, Currency::USD),
+        );
 
-    expect($payment->amount->minorAmount)->toBe(1200)
-        ->and($payment->paidDate)->toEqual(new DateTimeImmutable('2024-01-05'))
-        ->and($payment->type)->toBe(PaymentType::Verified)
-    ;
-});
+        self::assertSame(PaymentType::Verified, $verifiedPayment->type);
+        self::assertSame(PaymentType::Generated, $generatedPayment->type);
+    }
 
-test('amend rejects a non-positive amount', function (): void {
-    $payment = new Payment(
-        subscription: $this->subscription,
-        type: PaymentType::Generated,
-        amount: new Money(1000, Currency::USD),
-    );
+    public function testAmendUpdatesAmountAndPaidDateAndVerifiesThePayment(): void
+    {
+        $payment = new Payment(
+            subscription: $this->subscription,
+            type: PaymentType::Generated,
+            amount: new Money(1000, Currency::USD),
+            paidDate: new \DateTimeImmutable('2024-01-01'),
+        );
 
-    $payment->amend(amount: 0, paidDate: new DateTimeImmutable());
-})->throws(Assert\InvalidArgumentException::class);
+        $payment->amend(amount: 1200, paidDate: new \DateTimeImmutable('2024-01-05'));
 
-test('rejects zero amount', function (): void {
-    new Payment(
-        subscription: $this->subscription,
-        type: PaymentType::Verified,
-        amount: new Money(0, Currency::USD),
-    );
-})->throws(Assert\InvalidArgumentException::class);
+        self::assertSame(1200, $payment->amount->minorAmount);
+        self::assertSameInstant(new \DateTimeImmutable('2024-01-05'), $payment->paidDate);
+        self::assertSame(PaymentType::Verified, $payment->type);
+    }
 
-test('rejects negative amount', function (): void {
-    new Payment(
-        subscription: $this->subscription,
-        type: PaymentType::Verified,
-        amount: new Money(-100, Currency::USD),
-    );
-})->throws(Assert\InvalidArgumentException::class);
+    public function testAmendRejectsANonPositiveAmount(): void
+    {
+        $payment = new Payment(
+            subscription: $this->subscription,
+            type: PaymentType::Generated,
+            amount: new Money(1000, Currency::USD),
+        );
+
+        $this->expectException(\Assert\InvalidArgumentException::class);
+
+        $payment->amend(amount: 0, paidDate: new \DateTimeImmutable());
+    }
+
+    public function testRejectsZeroAmount(): void
+    {
+        $this->expectException(\Assert\InvalidArgumentException::class);
+
+        new Payment(
+            subscription: $this->subscription,
+            type: PaymentType::Verified,
+            amount: new Money(0, Currency::USD),
+        );
+    }
+
+    public function testRejectsNegativeAmount(): void
+    {
+        $this->expectException(\Assert\InvalidArgumentException::class);
+
+        new Payment(
+            subscription: $this->subscription,
+            type: PaymentType::Verified,
+            amount: new Money(-100, Currency::USD),
+        );
+    }
+}

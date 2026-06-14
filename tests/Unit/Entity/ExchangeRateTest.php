@@ -5,20 +5,32 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Entity;
+
 use App\Entity\ExchangeRate;
 use App\Enum\Currency;
+use App\Tests\Support\InstantAssertions;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
 
-test('stores a EUR-pivot rate for a currency on a date', function (): void {
-    $rate = new ExchangeRate(Currency::USD, 1.0732, new DateTimeImmutable('2024-06-10'));
+final class ExchangeRateTest extends TestCase
+{
+    use InstantAssertions;
 
-    expect($rate->currency)->toBe(Currency::USD)
-        ->and($rate->rate)->toBe(1.0732)
-        ->and($rate->asOf)->toEqual(new DateTimeImmutable('2024-06-10'))
-        ->and($rate->id)->toBeInstanceOf(Ulid::class)
-    ;
-});
+    public function testStoresAEurPivotRateForACurrencyOnADate(): void
+    {
+        $rate = new ExchangeRate(Currency::USD, 1.0732, new \DateTimeImmutable('2024-06-10'));
 
-test('rejects a non-positive rate', function (): void {
-    new ExchangeRate(Currency::USD, 0.0, new DateTimeImmutable('2024-06-10'));
-})->throws(Assert\InvalidArgumentException::class);
+        self::assertSame(Currency::USD, $rate->currency);
+        self::assertSame(1.0732, $rate->rate);
+        self::assertSameInstant(new \DateTimeImmutable('2024-06-10'), $rate->asOf);
+        self::assertInstanceOf(Ulid::class, $rate->id);
+    }
+
+    public function testRejectsANonPositiveRate(): void
+    {
+        $this->expectException(\Assert\InvalidArgumentException::class);
+
+        new ExchangeRate(Currency::USD, 0.0, new \DateTimeImmutable('2024-06-10'));
+    }
+}

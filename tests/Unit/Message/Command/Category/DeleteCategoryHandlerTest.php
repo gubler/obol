@@ -5,6 +5,8 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Message\Command\Category;
+
 use App\Entity\Category;
 use App\Exception\CategoryHasSubscriptionsException;
 use App\Message\Command\Category\DeleteCategoryCommand;
@@ -12,65 +14,74 @@ use App\Message\Command\Category\DeleteCategoryHandler;
 use App\Repository\CategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
 
-test('handler removes category with no subscriptions', function (): void {
-    $ulid = new Ulid();
+final class DeleteCategoryHandlerTest extends TestCase
+{
+    public function testHandlerRemovesCategoryWithNoSubscriptions(): void
+    {
+        $ulid = new Ulid();
 
-    $category = new Category(name: 'Test');
+        $category = new Category(name: 'Test');
 
-    $repository = $this->createMock(CategoryRepository::class);
-    $repository->expects($this->once())
-        ->method('find')
-        ->willReturn($category)
-    ;
+        $repository = $this->createMock(CategoryRepository::class);
+        $repository->expects(self::once())
+            ->method('find')
+            ->willReturn($category)
+        ;
 
-    $entityManager = $this->createMock(EntityManagerInterface::class);
-    $entityManager->expects($this->once())
-        ->method('remove')
-        ->with($category)
-    ;
-    // The command bus owns the transaction (doctrine_transaction middleware); the handler never flushes.
-    $entityManager->expects($this->never())->method('flush');
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects(self::once())
+            ->method('remove')
+            ->with($category)
+        ;
+        // The command bus owns the transaction (doctrine_transaction middleware); the handler never flushes.
+        $entityManager->expects(self::never())->method('flush');
 
-    $handler = new DeleteCategoryHandler($repository, $entityManager);
-    $handler(new DeleteCategoryCommand(categoryId: $ulid));
-});
+        $handler = new DeleteCategoryHandler($repository, $entityManager);
+        $handler(new DeleteCategoryCommand(categoryId: $ulid));
+    }
 
-test('handler throws when category not found', function (): void {
-    $ulid = new Ulid();
+    public function testHandlerThrowsWhenCategoryNotFound(): void
+    {
+        $ulid = new Ulid();
 
-    $repository = $this->createMock(CategoryRepository::class);
-    $repository->expects($this->once())
-        ->method('find')
-        ->willReturn(null)
-    ;
+        $repository = $this->createMock(CategoryRepository::class);
+        $repository->expects(self::once())
+            ->method('find')
+            ->willReturn(null)
+        ;
 
-    $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager = $this->createMock(EntityManagerInterface::class);
 
-    $handler = new DeleteCategoryHandler($repository, $entityManager);
+        $handler = new DeleteCategoryHandler($repository, $entityManager);
 
-    $handler(new DeleteCategoryCommand(categoryId: $ulid));
-})->throws(InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
+        $handler(new DeleteCategoryCommand(categoryId: $ulid));
+    }
 
-test('handler throws when category has subscriptions', function (): void {
-    $ulid = new Ulid();
+    public function testHandlerThrowsWhenCategoryHasSubscriptions(): void
+    {
+        $ulid = new Ulid();
 
-    $category = new Category(name: 'Test');
+        $category = new Category(name: 'Test');
 
-    // Use reflection to add items to the private(set) subscriptions collection
-    $reflection = new ReflectionProperty(Category::class, 'subscriptions');
-    $reflection->setValue($category, new ArrayCollection(['placeholder']));
+        // Use reflection to add items to the private(set) subscriptions collection
+        $reflection = new \ReflectionProperty(Category::class, 'subscriptions');
+        $reflection->setValue($category, new ArrayCollection(['placeholder']));
 
-    $repository = $this->createMock(CategoryRepository::class);
-    $repository->expects($this->once())
-        ->method('find')
-        ->willReturn($category)
-    ;
+        $repository = $this->createMock(CategoryRepository::class);
+        $repository->expects(self::once())
+            ->method('find')
+            ->willReturn($category)
+        ;
 
-    $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager = $this->createMock(EntityManagerInterface::class);
 
-    $handler = new DeleteCategoryHandler($repository, $entityManager);
+        $handler = new DeleteCategoryHandler($repository, $entityManager);
 
-    $handler(new DeleteCategoryCommand(categoryId: $ulid));
-})->throws(CategoryHasSubscriptionsException::class);
+        $this->expectException(CategoryHasSubscriptionsException::class);
+        $handler(new DeleteCategoryCommand(categoryId: $ulid));
+    }
+}

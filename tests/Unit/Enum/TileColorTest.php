@@ -5,42 +5,49 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Enum;
+
 use App\Enum\TileColor;
+use PHPUnit\Framework\TestCase;
 
-test('defines the full palette of eighteen swatches', function (): void {
-    expect(TileColor::cases())->toHaveCount(18);
-});
-
-test('is a string-backed enum', function (): void {
-    expect(TileColor::Blue->value)->toBe('blue')
-        ->and(TileColor::from('charcoal'))->toBe(TileColor::Charcoal)
-    ;
-});
-
-test('every swatch yields a well-formed top-to-bottom gradient', function (): void {
-    foreach (TileColor::cases() as $color) {
-        expect($color->gradientClasses())
-            ->toStartWith('bg-linear-to-b ')
-            ->toContain('from-')
-            ->toContain('to-')
-        ;
+final class TileColorTest extends TestCase
+{
+    public function testDefinesTheFullPaletteOfEighteenSwatches(): void
+    {
+        self::assertCount(18, TileColor::cases());
     }
-});
 
-test('maps swatches to their chosen Tailwind shades', function (): void {
-    expect(TileColor::Red->gradientClasses())->toBe('bg-linear-to-b from-red-600 to-red-950')
-        ->and(TileColor::Magenta->gradientClasses())->toBe('bg-linear-to-b from-fuchsia-500 to-fuchsia-950')
-        ->and(TileColor::Cyan->gradientClasses())->toBe('bg-linear-to-b from-sky-500 to-sky-950')
-        ->and(TileColor::Charcoal->gradientClasses())->toBe('bg-linear-to-b from-stone-800 to-stone-950')
-    ;
-});
+    public function testIsAStringBackedEnum(): void
+    {
+        self::assertSame('blue', TileColor::Blue->value);
+        self::assertSame(TileColor::Charcoal, TileColor::from('charcoal'));
+    }
 
-test('exposes a human label per swatch', function (): void {
-    expect(TileColor::Grey->label())->toBe('Grey')
-        ->and(TileColor::Magenta->label())->toBe('Magenta')
-    ;
-});
+    public function testEverySwatchYieldsAWellFormedTopToBottomGradient(): void
+    {
+        foreach (TileColor::cases() as $color) {
+            self::assertStringStartsWith('bg-linear-to-b ', $color->gradientClasses());
+            self::assertStringContainsString('from-', $color->gradientClasses());
+            self::assertStringContainsString('to-', $color->gradientClasses());
+        }
+    }
 
-test('random returns a palette member', function (): void {
-    expect(TileColor::cases())->toContain(TileColor::random());
-});
+    public function testMapsSwatchesToTheirChosenTailwindShades(): void
+    {
+        self::assertSame('bg-linear-to-b from-red-600 to-red-950', TileColor::Red->gradientClasses());
+        self::assertSame('bg-linear-to-b from-fuchsia-500 to-fuchsia-950', TileColor::Magenta->gradientClasses());
+        self::assertSame('bg-linear-to-b from-sky-500 to-sky-950', TileColor::Cyan->gradientClasses());
+        self::assertSame('bg-linear-to-b from-stone-800 to-stone-950', TileColor::Charcoal->gradientClasses());
+    }
+
+    public function testExposesAHumanLabelPerSwatch(): void
+    {
+        self::assertSame('Grey', TileColor::Grey->label());
+        self::assertSame('Magenta', TileColor::Magenta->label());
+    }
+
+    public function testRandomReturnsAPaletteMember(): void
+    {
+        self::assertContains(TileColor::random(), TileColor::cases());
+    }
+}

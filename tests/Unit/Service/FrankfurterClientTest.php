@@ -5,31 +5,40 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Service;
+
 use App\Service\FrankfurterClient;
+use App\Tests\Support\InstantAssertions;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 
-test('parses the latest rates, keeps supported currencies, and pins EUR to 1', function (): void {
-    $body = json_encode([
-        'amount' => 1.0,
-        'base' => 'EUR',
-        'date' => '2024-06-10',
-        // GBP/USD/JPY are supported; XYZ is not and must be dropped. EUR is absent from a
-        // base=EUR response and is added back as 1.0 by the client.
-        'rates' => ['USD' => 1.0732, 'JPY' => 169.45, 'GBP' => 0.8456, 'XYZ' => 9.99],
-    ], \JSON_THROW_ON_ERROR);
+final class FrankfurterClientTest extends TestCase
+{
+    use InstantAssertions;
 
-    $http = new MockHttpClient(new MockResponse($body, [
-        'response_headers' => ['content-type' => 'application/json'],
-    ]));
+    public function testParsesTheLatestRatesKeepsSupportedCurrenciesAndPinsEurToOne(): void
+    {
+        $body = json_encode([
+            'amount' => 1.0,
+            'base' => 'EUR',
+            'date' => '2024-06-10',
+            // GBP/USD/JPY are supported; XYZ is not and must be dropped. EUR is absent from a
+            // base=EUR response and is added back as 1.0 by the client.
+            'rates' => ['USD' => 1.0732, 'JPY' => 169.45, 'GBP' => 0.8456, 'XYZ' => 9.99],
+        ], \JSON_THROW_ON_ERROR);
 
-    $snapshot = (new FrankfurterClient($http))->fetchLatest();
+        $http = new MockHttpClient(new MockResponse($body, [
+            'response_headers' => ['content-type' => 'application/json'],
+        ]));
 
-    expect($snapshot->date)->toEqual(new DateTimeImmutable('2024-06-10'))
-        ->and($snapshot->rates['USD'])->toBe(1.0732)
-        ->and($snapshot->rates['JPY'])->toBe(169.45)
-        ->and($snapshot->rates['EUR'])->toBe(1.0)
-        ->and($snapshot->rates)->not->toHaveKey('XYZ')
-        ->and($snapshot->rates)->toHaveCount(4)
-    ;
-});
+        $snapshot = (new FrankfurterClient($http))->fetchLatest();
+
+        self::assertSameInstant(new \DateTimeImmutable('2024-06-10'), $snapshot->date);
+        self::assertSame(1.0732, $snapshot->rates['USD']);
+        self::assertSame(169.45, $snapshot->rates['JPY']);
+        self::assertSame(1.0, $snapshot->rates['EUR']);
+        self::assertArrayNotHasKey('XYZ', $snapshot->rates);
+        self::assertCount(4, $snapshot->rates);
+    }
+}

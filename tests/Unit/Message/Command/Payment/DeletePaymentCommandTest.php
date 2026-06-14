@@ -5,12 +5,19 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Message\Command\Payment;
+
 use App\Message\Command\Payment\DeletePaymentCommand;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
 
-test('command stores values', function (): void {
-    $paymentId = new Ulid();
-    $command = new DeletePaymentCommand(paymentId: $paymentId);
+final class DeletePaymentCommandTest extends TestCase
+{
+    public function testCommandStoresValues(): void
+    {
+        $paymentId = new Ulid();
+        $command = new DeletePaymentCommand(paymentId: $paymentId);
 
-    expect($command->paymentId)->toBe($paymentId);
-});
+        self::assertSame($paymentId, $command->paymentId);
+    }
+}

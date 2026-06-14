@@ -5,17 +5,25 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Message\Command;
+
 use App\Message\Command\Category\CreateCategoryCommand;
+use PHPUnit\Framework\TestCase;
 
-test('creates command with name', function (): void {
-    $command = new CreateCategoryCommand(name: 'Entertainment');
+final class CreateCategoryCommandTest extends TestCase
+{
+    public function testCreatesCommandWithName(): void
+    {
+        $command = new CreateCategoryCommand(name: 'Entertainment');
 
-    expect($command->name)->toBe('Entertainment');
-});
+        self::assertSame('Entertainment', $command->name);
+    }
 
-test('is readonly', function (): void {
-    $command = new CreateCategoryCommand(name: 'Utilities');
+    public function testIsReadonly(): void
+    {
+        $command = new CreateCategoryCommand(name: 'Utilities');
 
-    $reflection = new ReflectionClass($command);
-    expect($reflection->isReadOnly())->toBeTrue();
-});
+        $reflection = new \ReflectionClass($command);
+        self::assertTrue($reflection->isReadOnly());
+    }
+}

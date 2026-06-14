@@ -5,21 +5,29 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Message\Query;
+
 use App\Message\Query\Subscription\FindSubscriptionQuery;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
 
-test('creates query with subscription id', function (): void {
-    $subscriptionId = new Ulid();
-    $query = new FindSubscriptionQuery(subscriptionId: $subscriptionId);
+final class FindSubscriptionQueryTest extends TestCase
+{
+    public function testCreatesQueryWithSubscriptionId(): void
+    {
+        $subscriptionId = new Ulid();
+        $query = new FindSubscriptionQuery(subscriptionId: $subscriptionId);
 
-    expect($query->subscriptionId)->toBe($subscriptionId);
-});
+        self::assertSame($subscriptionId, $query->subscriptionId);
+    }
 
-test('is readonly', function (): void {
-    $query = new FindSubscriptionQuery(
-        subscriptionId: new Ulid()
-    );
+    public function testIsReadonly(): void
+    {
+        $query = new FindSubscriptionQuery(
+            subscriptionId: new Ulid()
+        );
 
-    $reflection = new ReflectionClass($query);
-    expect($reflection->isReadOnly())->toBeTrue();
-});
+        $reflection = new \ReflectionClass($query);
+        self::assertTrue($reflection->isReadOnly());
+    }
+}

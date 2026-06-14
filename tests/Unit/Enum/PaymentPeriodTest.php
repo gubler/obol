@@ -5,12 +5,26 @@
 
 declare(strict_types=1);
 
-use App\Enum\PaymentPeriod;
+namespace App\Tests\Unit\Enum;
 
-test('months per period reflects the normalization (year 12, month 1, week 12/52)', function (PaymentPeriod $period, float $expected): void {
-    expect($period->monthsPerPeriod())->toBe($expected);
-})->with([
-    'year' => [PaymentPeriod::Year, 12.0],
-    'month' => [PaymentPeriod::Month, 1.0],
-    'week' => [PaymentPeriod::Week, 12.0 / 52.0],
-]);
+use App\Enum\PaymentPeriod;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
+
+final class PaymentPeriodTest extends TestCase
+{
+    #[DataProvider('provideMonthsPerPeriodReflectsTheNormalizationCases')]
+    public function testMonthsPerPeriodReflectsTheNormalization(PaymentPeriod $period, float $expected): void
+    {
+        self::assertSame($expected, $period->monthsPerPeriod());
+    }
+
+    public static function provideMonthsPerPeriodReflectsTheNormalizationCases(): iterable
+    {
+        return [
+            'year' => [PaymentPeriod::Year, 12.0],
+            'month' => [PaymentPeriod::Month, 1.0],
+            'week' => [PaymentPeriod::Week, 12.0 / 52.0],
+        ];
+    }
+}

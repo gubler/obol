@@ -5,27 +5,34 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Message\Command;
+
 use App\Message\Command\Category\UpdateCategoryCommand;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
 
-test('creates command with category id and name', function (): void {
-    $categoryId = new Ulid();
-    $command = new UpdateCategoryCommand(
-        categoryId: $categoryId,
-        name: 'Updated Name'
-    );
+final class UpdateCategoryCommandTest extends TestCase
+{
+    public function testCreatesCommandWithCategoryIdAndName(): void
+    {
+        $categoryId = new Ulid();
+        $command = new UpdateCategoryCommand(
+            categoryId: $categoryId,
+            name: 'Updated Name'
+        );
 
-    expect($command->categoryId)->toBe($categoryId)
-        ->and($command->name)->toBe('Updated Name')
-    ;
-});
+        self::assertSame($categoryId, $command->categoryId);
+        self::assertSame('Updated Name', $command->name);
+    }
 
-test('is readonly', function (): void {
-    $command = new UpdateCategoryCommand(
-        categoryId: new Ulid(),
-        name: 'Software'
-    );
+    public function testIsReadonly(): void
+    {
+        $command = new UpdateCategoryCommand(
+            categoryId: new Ulid(),
+            name: 'Software'
+        );
 
-    $reflection = new ReflectionClass($command);
-    expect($reflection->isReadOnly())->toBeTrue();
-});
+        $reflection = new \ReflectionClass($command);
+        self::assertTrue($reflection->isReadOnly());
+    }
+}

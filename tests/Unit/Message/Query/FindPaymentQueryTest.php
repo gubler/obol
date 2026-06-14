@@ -5,21 +5,29 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Message\Query;
+
 use App\Message\Query\Payment\FindPaymentQuery;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
 
-test('creates query with payment id', function (): void {
-    $paymentId = new Ulid();
-    $query = new FindPaymentQuery(paymentId: $paymentId);
+final class FindPaymentQueryTest extends TestCase
+{
+    public function testCreatesQueryWithPaymentId(): void
+    {
+        $paymentId = new Ulid();
+        $query = new FindPaymentQuery(paymentId: $paymentId);
 
-    expect($query->paymentId)->toBe($paymentId);
-});
+        self::assertSame($paymentId, $query->paymentId);
+    }
 
-test('is readonly', function (): void {
-    $query = new FindPaymentQuery(
-        paymentId: new Ulid()
-    );
+    public function testIsReadonly(): void
+    {
+        $query = new FindPaymentQuery(
+            paymentId: new Ulid()
+        );
 
-    $reflection = new ReflectionClass($query);
-    expect($reflection->isReadOnly())->toBeTrue();
-});
+        $reflection = new \ReflectionClass($query);
+        self::assertTrue($reflection->isReadOnly());
+    }
+}

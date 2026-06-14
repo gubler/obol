@@ -5,21 +5,29 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Message\Query;
+
 use App\Message\Query\Category\FindCategoryQuery;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
 
-test('creates query with category id', function (): void {
-    $categoryId = new Ulid();
-    $query = new FindCategoryQuery(categoryId: $categoryId);
+final class FindCategoryQueryTest extends TestCase
+{
+    public function testCreatesQueryWithCategoryId(): void
+    {
+        $categoryId = new Ulid();
+        $query = new FindCategoryQuery(categoryId: $categoryId);
 
-    expect($query->categoryId)->toBe($categoryId);
-});
+        self::assertSame($categoryId, $query->categoryId);
+    }
 
-test('is readonly', function (): void {
-    $query = new FindCategoryQuery(
-        categoryId: new Ulid()
-    );
+    public function testIsReadonly(): void
+    {
+        $query = new FindCategoryQuery(
+            categoryId: new Ulid()
+        );
 
-    $reflection = new ReflectionClass($query);
-    expect($reflection->isReadOnly())->toBeTrue();
-});
+        $reflection = new \ReflectionClass($query);
+        self::assertTrue($reflection->isReadOnly());
+    }
+}

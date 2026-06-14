@@ -5,45 +5,54 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Message\Command\Subscription;
+
 use App\Entity\Subscription;
 use App\Message\Command\Subscription\UnarchiveSubscriptionCommand;
 use App\Message\Command\Subscription\UnarchiveSubscriptionHandler;
 use App\Repository\SubscriptionRepository;
 use App\Service\SubscriptionChangeNotifierInterface;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
 
-test('handler unarchives subscription', function (): void {
-    $ulid = new Ulid();
+final class UnarchiveSubscriptionHandlerTest extends TestCase
+{
+    public function testHandlerUnarchivesSubscription(): void
+    {
+        $ulid = new Ulid();
 
-    $subscription = $this->createMock(Subscription::class);
-    $subscription->expects($this->once())->method('unarchive');
+        $subscription = $this->createMock(Subscription::class);
+        $subscription->expects(self::once())->method('unarchive');
 
-    $repository = $this->createMock(SubscriptionRepository::class);
-    $repository->expects($this->once())
-        ->method('find')
-        ->willReturn($subscription)
-    ;
+        $repository = $this->createMock(SubscriptionRepository::class);
+        $repository->expects(self::once())
+            ->method('find')
+            ->willReturn($subscription)
+        ;
 
-    $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
-    $notifier->expects($this->once())->method('notifyChanged');
+        $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
+        $notifier->expects(self::once())->method('notifyChanged');
 
-    $handler = new UnarchiveSubscriptionHandler($repository, $notifier);
-    $handler(new UnarchiveSubscriptionCommand(subscriptionId: $ulid));
-});
+        $handler = new UnarchiveSubscriptionHandler($repository, $notifier);
+        $handler(new UnarchiveSubscriptionCommand(subscriptionId: $ulid));
+    }
 
-test('handler throws when subscription not found', function (): void {
-    $ulid = new Ulid();
+    public function testHandlerThrowsWhenSubscriptionNotFound(): void
+    {
+        $ulid = new Ulid();
 
-    $repository = $this->createMock(SubscriptionRepository::class);
-    $repository->expects($this->once())
-        ->method('find')
-        ->willReturn(null)
-    ;
+        $repository = $this->createMock(SubscriptionRepository::class);
+        $repository->expects(self::once())
+            ->method('find')
+            ->willReturn(null)
+        ;
 
-    $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
-    $notifier->expects($this->never())->method('notifyChanged');
+        $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
+        $notifier->expects(self::never())->method('notifyChanged');
 
-    $handler = new UnarchiveSubscriptionHandler($repository, $notifier);
+        $handler = new UnarchiveSubscriptionHandler($repository, $notifier);
 
-    $handler(new UnarchiveSubscriptionCommand(subscriptionId: $ulid));
-})->throws(InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
+        $handler(new UnarchiveSubscriptionCommand(subscriptionId: $ulid));
+    }
+}

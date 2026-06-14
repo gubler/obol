@@ -5,6 +5,8 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Entity;
+
 use App\Entity\Category;
 use App\Entity\Payment;
 use App\Entity\Subscription;
@@ -15,15 +17,26 @@ use App\Enum\PaymentPeriod;
 use App\Enum\PaymentType;
 use App\Enum\SubscriptionEventType;
 use App\Enum\TileColor;
+use App\Tests\Support\InstantAssertions;
 use App\ValueObject\Money;
+use PHPUnit\Framework\TestCase;
 
-beforeEach(function (): void {
-    $this->category = new Category(name: 'Entertainment');
-});
+final class SubscriptionTest extends TestCase
+{
+    use InstantAssertions;
 
-describe('creation', function (): void {
-    test('creates subscription with valid data', function (): void {
-        $nextRenewal = new DateTimeImmutable('2024-01-01');
+    private Category $category;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->category = new Category(name: 'Entertainment');
+    }
+
+    public function testCreatesSubscriptionWithValidData(): void
+    {
+        $nextRenewal = new \DateTimeImmutable('2024-01-01');
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
@@ -33,65 +46,66 @@ describe('creation', function (): void {
             cost: new Money(1500, Currency::USD),
         );
 
-        expect($subscription->category)->toBe($this->category)
-            ->and($subscription->name)->toBe('Netflix')
-            ->and($subscription->nextRenewal)->toBe($nextRenewal)
-            ->and($subscription->paymentPeriod)->toBe(PaymentPeriod::Month)
-            ->and($subscription->paymentPeriodCount)->toBe(1)
-            ->and($subscription->cost->minorAmount)->toBe(1500)
-        ;
-    });
+        self::assertSame($this->category, $subscription->category);
+        self::assertSame('Netflix', $subscription->name);
+        self::assertSame($nextRenewal, $subscription->nextRenewal);
+        self::assertSame(PaymentPeriod::Month, $subscription->paymentPeriod);
+        self::assertSame(1, $subscription->paymentPeriodCount);
+        self::assertSame(1500, $subscription->cost->minorAmount);
+    }
 
-    test('sets created at to current time', function (): void {
-        $before = new DateTimeImmutable();
+    public function testSetsCreatedAtToCurrentTime(): void
+    {
+        $before = new \DateTimeImmutable();
         $subscription = new Subscription(
             category: $this->category,
             name: 'Spotify',
-            nextRenewal: new DateTimeImmutable(),
+            nextRenewal: new \DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1000, Currency::USD),
         );
-        $after = new DateTimeImmutable();
+        $after = new \DateTimeImmutable();
 
-        expect($subscription->createdAt)->toBeGreaterThanOrEqual($before)
-            ->and($subscription->createdAt)->toBeLessThanOrEqual($after)
-        ;
-    });
+        self::assertGreaterThanOrEqual($before, $subscription->createdAt);
+        self::assertLessThanOrEqual($after, $subscription->createdAt);
+    }
 
-    test('initializes as not archived', function (): void {
+    public function testInitializesAsNotArchived(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Spotify',
-            nextRenewal: new DateTimeImmutable(),
-            paymentPeriod: PaymentPeriod::Month,
-            paymentPeriodCount: 1,
-            cost: new Money(1000, Currency::USD),
-        );
-
-        expect($subscription->archived)->toBeFalse();
-    });
-
-    test('initializes empty collections', function (): void {
-        $subscription = new Subscription(
-            category: $this->category,
-            name: 'Spotify',
-            nextRenewal: new DateTimeImmutable(),
+            nextRenewal: new \DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1000, Currency::USD),
         );
 
-        expect($subscription->payments)->toHaveCount(0)
-            ->and($subscription->subscriptionEvents)->toHaveCount(0)
-        ;
-    });
+        self::assertFalse($subscription->archived);
+    }
 
-    test('accepts optional fields', function (): void {
+    public function testInitializesEmptyCollections(): void
+    {
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Spotify',
+            nextRenewal: new \DateTimeImmutable(),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: new Money(1000, Currency::USD),
+        );
+
+        self::assertCount(0, $subscription->payments);
+        self::assertCount(0, $subscription->subscriptionEvents);
+    }
+
+    public function testAcceptsOptionalFields(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable(),
+            nextRenewal: new \DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
@@ -100,35 +114,33 @@ describe('creation', function (): void {
             logo: 'netflix.png',
         );
 
-        expect($subscription->description)->toBe('Streaming service')
-            ->and($subscription->link)->toBe('https://netflix.com')
-            ->and($subscription->logo)->toBe('netflix.png')
-        ;
-    });
+        self::assertSame('Streaming service', $subscription->description);
+        self::assertSame('https://netflix.com', $subscription->link);
+        self::assertSame('netflix.png', $subscription->logo);
+    }
 
-    test('defaults optional fields to empty', function (): void {
+    public function testDefaultsOptionalFieldsToEmpty(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Spotify',
-            nextRenewal: new DateTimeImmutable(),
+            nextRenewal: new \DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1000, Currency::USD),
         );
 
-        expect($subscription->description)->toBe('')
-            ->and($subscription->link)->toBe('')
-            ->and($subscription->logo)->toBe('')
-        ;
-    });
-});
+        self::assertSame('', $subscription->description);
+        self::assertSame('', $subscription->link);
+        self::assertSame('', $subscription->logo);
+    }
 
-describe('update', function (): void {
-    test('creates only update event when only general fields change', function (): void {
+    public function testCreatesOnlyUpdateEventWhenOnlyGeneralFieldsChange(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
@@ -138,7 +150,7 @@ describe('update', function (): void {
         $subscription->update(
             category: $newCategory,
             name: 'Netflix Premium',
-            nextRenewal: new DateTimeImmutable('2024-02-01'),
+            nextRenewal: new \DateTimeImmutable('2024-02-01'),
             description: 'Premium plan',
             link: 'https://netflix.com',
             logo: 'netflix.png',
@@ -148,18 +160,18 @@ describe('update', function (): void {
             color: $subscription->color,
         );
 
-        expect($subscription->subscriptionEvents)->toHaveCount(1);
+        self::assertCount(1, $subscription->subscriptionEvents);
         /** @var SubscriptionEvent $event */
         $event = $subscription->subscriptionEvents->first();
-        expect($event->type)->toBe(SubscriptionEventType::Update)
-            ->and($event->context)->toHaveKey('category')
-            ->and($event->context)->toHaveKey('name')
-            ->and($event->context)->not->toHaveKey('cost')
-        ;
-    });
+        self::assertSame(SubscriptionEventType::Update, $event->type);
+        self::assertArrayHasKey('category', $event->context);
+        self::assertArrayHasKey('name', $event->context);
+        self::assertArrayNotHasKey('cost', $event->context);
+    }
 
-    test('creates only cost change event when only cost fields change', function (): void {
-        $nextRenewal = new DateTimeImmutable('2024-01-01');
+    public function testCreatesOnlyCostChangeEventWhenOnlyCostFieldsChange(): void
+    {
+        $nextRenewal = new \DateTimeImmutable('2024-01-01');
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
@@ -182,17 +194,17 @@ describe('update', function (): void {
             color: $subscription->color,
         );
 
-        expect($subscription->subscriptionEvents)->toHaveCount(1);
+        self::assertCount(1, $subscription->subscriptionEvents);
         /** @var SubscriptionEvent $event */
         $event = $subscription->subscriptionEvents->first();
-        expect($event->type)->toBe(SubscriptionEventType::CostChange)
-            ->and($event->context)->toHaveKey('paymentPeriod')
-            ->and($event->context)->toHaveKey('cost')
-        ;
-    });
+        self::assertSame(SubscriptionEventType::CostChange, $event->type);
+        self::assertArrayHasKey('paymentPeriod', $event->context);
+        self::assertArrayHasKey('cost', $event->context);
+    }
 
-    test('records a period count change under the paymentPeriodCount key', function (): void {
-        $nextRenewal = new DateTimeImmutable('2024-01-01');
+    public function testRecordsAPeriodCountChangeUnderThePaymentPeriodCountKey(): void
+    {
+        $nextRenewal = new \DateTimeImmutable('2024-01-01');
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
@@ -215,21 +227,21 @@ describe('update', function (): void {
             color: $subscription->color,
         );
 
-        expect($subscription->subscriptionEvents)->toHaveCount(1);
+        self::assertCount(1, $subscription->subscriptionEvents);
         /** @var SubscriptionEvent $event */
         $event = $subscription->subscriptionEvents->first();
-        expect($event->type)->toBe(SubscriptionEventType::CostChange)
-            ->and($event->context)->toHaveKey('paymentPeriodCount')
-            ->and($event->context)->not->toHaveKey('paymentPeriodCost')
-            ->and($event->context['paymentPeriodCount'])->toBe(['old' => 1, 'new' => 3])
-        ;
-    });
+        self::assertSame(SubscriptionEventType::CostChange, $event->type);
+        self::assertArrayHasKey('paymentPeriodCount', $event->context);
+        self::assertArrayNotHasKey('paymentPeriodCost', $event->context);
+        self::assertSame(['old' => 1, 'new' => 3], $event->context['paymentPeriodCount']);
+    }
 
-    test('creates both events when both types of fields change', function (): void {
+    public function testCreatesBothEventsWhenBothTypesOfFieldsChange(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
@@ -238,7 +250,7 @@ describe('update', function (): void {
         $subscription->update(
             category: $this->category,
             name: 'Netflix Premium',
-            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -248,20 +260,20 @@ describe('update', function (): void {
             color: $subscription->color,
         );
 
-        expect($subscription->subscriptionEvents)->toHaveCount(2);
+        self::assertCount(2, $subscription->subscriptionEvents);
 
         /** @var SubscriptionEvent $updateEvent */
         $updateEvent = $subscription->subscriptionEvents[0];
         /** @var SubscriptionEvent $costChangeEvent */
         $costChangeEvent = $subscription->subscriptionEvents[1];
 
-        expect($updateEvent->type)->toBe(SubscriptionEventType::Update)
-            ->and($costChangeEvent->type)->toBe(SubscriptionEventType::CostChange)
-        ;
-    });
+        self::assertSame(SubscriptionEventType::Update, $updateEvent->type);
+        self::assertSame(SubscriptionEventType::CostChange, $costChangeEvent->type);
+    }
 
-    test('creates no events when no fields change', function (): void {
-        $nextRenewal = new DateTimeImmutable('2024-01-01');
+    public function testCreatesNoEventsWhenNoFieldsChange(): void
+    {
+        $nextRenewal = new \DateTimeImmutable('2024-01-01');
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
@@ -284,16 +296,15 @@ describe('update', function (): void {
             color: $subscription->color,
         );
 
-        expect($subscription->subscriptionEvents)->toHaveCount(0);
-    });
-});
+        self::assertCount(0, $subscription->subscriptionEvents);
+    }
 
-describe('record payment', function (): void {
-    test('advances next renewal by one interval from the anchor', function (): void {
+    public function testAdvancesNextRenewalByOneIntervalFromTheAnchor(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-02-01'),
+            nextRenewal: new \DateTimeImmutable('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
@@ -301,123 +312,124 @@ describe('record payment', function (): void {
 
         // Paying late (on the 6th) must not move the anchor off the fixed cadence.
         $subscription->recordPayment(
-            paidDate: new DateTimeImmutable('2024-02-06'),
+            paidDate: new \DateTimeImmutable('2024-02-06'),
             paymentType: PaymentType::Verified,
         );
 
-        expect($subscription->nextRenewal)->toEqual(new DateTimeImmutable('2024-03-01'));
-    });
+        self::assertSameInstant(new \DateTimeImmutable('2024-03-01'), $subscription->nextRenewal);
+    }
 
-    test('rolling back a removed payment pulls the renewal anchor back', function (): void {
+    public function testRollingBackARemovedPaymentPullsTheRenewalAnchorBack(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-02-01'),
+            nextRenewal: new \DateTimeImmutable('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
         );
 
         $subscription->recordPayment(
-            paidDate: new DateTimeImmutable('2024-02-01'),
+            paidDate: new \DateTimeImmutable('2024-02-01'),
             paymentType: PaymentType::Verified,
         );
         /** @var Payment $payment */
         $payment = $subscription->payments->first();
         $subscription->removePayment($payment);
 
-        expect($subscription->payments)->toHaveCount(0)
-            ->and($subscription->nextRenewal)->toEqual(new DateTimeImmutable('2024-02-01'))
-        ;
-    });
+        self::assertCount(0, $subscription->payments);
+        self::assertSameInstant(new \DateTimeImmutable('2024-02-01'), $subscription->nextRenewal);
+    }
 
-    test('adds payment to collection', function (): void {
+    public function testAddsPaymentToCollection(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
         );
 
         $subscription->recordPayment(
-            paidDate: new DateTimeImmutable('2024-02-01'),
+            paidDate: new \DateTimeImmutable('2024-02-01'),
             paymentType: PaymentType::Verified,
         );
 
-        expect($subscription->payments)->toHaveCount(1);
+        self::assertCount(1, $subscription->payments);
         /** @var Payment $payment */
         $payment = $subscription->payments->first();
-        expect($payment->type)->toBe(PaymentType::Verified)
-            ->and($payment->amount->minorAmount)->toBe(1500)
-        ;
-    });
+        self::assertSame(PaymentType::Verified, $payment->type);
+        self::assertSame(1500, $payment->amount->minorAmount);
+    }
 
-    test('uses subscription cost by default', function (): void {
+    public function testUsesSubscriptionCostByDefault(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
         );
 
         $subscription->recordPayment(
-            paidDate: new DateTimeImmutable('2024-02-01'),
+            paidDate: new \DateTimeImmutable('2024-02-01'),
             paymentType: PaymentType::Verified,
         );
 
         /** @var Payment $payment */
         $payment = $subscription->payments->first();
-        expect($payment->amount->minorAmount)->toBe(1500);
-    });
+        self::assertSame(1500, $payment->amount->minorAmount);
+    }
 
-    test('accepts custom amount', function (): void {
+    public function testAcceptsCustomAmount(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
         );
 
         $subscription->recordPayment(
-            paidDate: new DateTimeImmutable('2024-02-01'),
+            paidDate: new \DateTimeImmutable('2024-02-01'),
             paymentType: PaymentType::Verified,
             amount: 2000,
         );
 
-        expect($subscription->payments)->toHaveCount(1);
+        self::assertCount(1, $subscription->payments);
         /** @var Payment $payment */
         $payment = $subscription->payments->first();
-        expect($payment->amount->minorAmount)->toBe(2000);
-    });
-});
+        self::assertSame(2000, $payment->amount->minorAmount);
+    }
 
-describe('payment generation', function (): void {
-    test('defaults to automated', function (): void {
+    public function testDefaultsToAutomated(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-02-01'),
+            nextRenewal: new \DateTimeImmutable('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
         );
 
-        expect($subscription->paymentGeneration)->toBe(PaymentGeneration::Automated)
-            ->and($subscription->generatesPaymentsAutomatically())->toBeTrue()
-        ;
-    });
+        self::assertSame(PaymentGeneration::Automated, $subscription->paymentGeneration);
+        self::assertTrue($subscription->generatesPaymentsAutomatically());
+    }
 
-    test('switching to manual sets payment generation to manual', function (): void {
+    public function testSwitchingToManualSetsPaymentGenerationToManual(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-02-01'),
+            nextRenewal: new \DateTimeImmutable('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
@@ -425,16 +437,16 @@ describe('payment generation', function (): void {
 
         $subscription->switchToManualPayments();
 
-        expect($subscription->paymentGeneration)->toBe(PaymentGeneration::Manual)
-            ->and($subscription->generatesPaymentsAutomatically())->toBeFalse()
-        ;
-    });
+        self::assertSame(PaymentGeneration::Manual, $subscription->paymentGeneration);
+        self::assertFalse($subscription->generatesPaymentsAutomatically());
+    }
 
-    test('recording a payment under manual generation leaves the renewal anchor untouched', function (): void {
+    public function testRecordingAPaymentUnderManualGenerationLeavesTheRenewalAnchorUntouched(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-02-01'),
+            nextRenewal: new \DateTimeImmutable('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
@@ -442,27 +454,27 @@ describe('payment generation', function (): void {
         $subscription->switchToManualPayments();
 
         $subscription->recordPayment(
-            paidDate: new DateTimeImmutable('2024-02-01'),
+            paidDate: new \DateTimeImmutable('2024-02-01'),
             paymentType: PaymentType::Verified,
         );
 
-        expect($subscription->payments)->toHaveCount(1)
-            ->and($subscription->nextRenewal)->toEqual(new DateTimeImmutable('2024-02-01'))
-        ;
-    });
+        self::assertCount(1, $subscription->payments);
+        self::assertSameInstant(new \DateTimeImmutable('2024-02-01'), $subscription->nextRenewal);
+    }
 
-    test('removing a payment under manual generation leaves the renewal anchor untouched', function (): void {
+    public function testRemovingAPaymentUnderManualGenerationLeavesTheRenewalAnchorUntouched(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-02-01'),
+            nextRenewal: new \DateTimeImmutable('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
         );
         // Record while automated so the anchor advances to 2024-03-01, then switch to manual.
         $subscription->recordPayment(
-            paidDate: new DateTimeImmutable('2024-02-01'),
+            paidDate: new \DateTimeImmutable('2024-02-01'),
             paymentType: PaymentType::Verified,
         );
         $subscription->switchToManualPayments();
@@ -470,22 +482,22 @@ describe('payment generation', function (): void {
         $payment = $subscription->payments->first();
         $subscription->removePayment($payment);
 
-        expect($subscription->payments)->toHaveCount(0)
-            ->and($subscription->nextRenewal)->toEqual(new DateTimeImmutable('2024-03-01'))
-        ;
-    });
+        self::assertCount(0, $subscription->payments);
+        self::assertSameInstant(new \DateTimeImmutable('2024-03-01'), $subscription->nextRenewal);
+    }
 
-    test('removing the latest payment switches generation to manual and rolls back the anchor', function (): void {
+    public function testRemovingTheLatestPaymentSwitchesGenerationToManualAndRollsBackTheAnchor(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-02-01'),
+            nextRenewal: new \DateTimeImmutable('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
         );
         $subscription->recordPayment(
-            paidDate: new DateTimeImmutable('2024-02-01'),
+            paidDate: new \DateTimeImmutable('2024-02-01'),
             paymentType: PaymentType::Verified,
         );
         /** @var Payment $payment */
@@ -493,74 +505,80 @@ describe('payment generation', function (): void {
 
         $subscription->removeLatestPayment($payment);
 
-        expect($subscription->payments)->toHaveCount(0)
-            ->and($subscription->paymentGeneration)->toBe(PaymentGeneration::Manual)
-            ->and($subscription->nextRenewal)->toEqual(new DateTimeImmutable('2024-02-01'))
-        ;
-    });
+        self::assertCount(0, $subscription->payments);
+        self::assertSame(PaymentGeneration::Manual, $subscription->paymentGeneration);
+        self::assertSameInstant(new \DateTimeImmutable('2024-02-01'), $subscription->nextRenewal);
+    }
 
-    test('removing a payment that is not the latest is rejected', function (): void {
+    public function testRemovingAPaymentThatIsNotTheLatestIsRejected(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-02-01'),
+            nextRenewal: new \DateTimeImmutable('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
         );
         $subscription->recordPayment(
-            paidDate: new DateTimeImmutable('2024-01-01'),
+            paidDate: new \DateTimeImmutable('2024-01-01'),
             paymentType: PaymentType::Verified,
         );
         $subscription->recordPayment(
-            paidDate: new DateTimeImmutable('2024-02-01'),
+            paidDate: new \DateTimeImmutable('2024-02-01'),
             paymentType: PaymentType::Verified,
         );
         /** @var Payment $older */
         $older = $subscription->payments->first();
 
-        $subscription->removeLatestPayment($older);
-    })->throws(Assert\InvalidArgumentException::class);
+        $this->expectException(\Assert\InvalidArgumentException::class);
 
-    test('automating sets generation to automated and anchors the future renewal', function (): void {
+        $subscription->removeLatestPayment($older);
+    }
+
+    public function testAutomatingSetsGenerationToAutomatedAndAnchorsTheFutureRenewal(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-02-01'),
+            nextRenewal: new \DateTimeImmutable('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
         );
         $subscription->switchToManualPayments();
 
-        $future = new DateTimeImmutable('tomorrow');
+        $future = new \DateTimeImmutable('tomorrow');
         $subscription->automatePayments($future);
 
-        expect($subscription->paymentGeneration)->toBe(PaymentGeneration::Automated)
-            ->and($subscription->generatesPaymentsAutomatically())->toBeTrue()
-            ->and($subscription->nextRenewal)->toEqual($future)
-        ;
-    });
+        self::assertSame(PaymentGeneration::Automated, $subscription->paymentGeneration);
+        self::assertTrue($subscription->generatesPaymentsAutomatically());
+        self::assertSameInstant($future, $subscription->nextRenewal);
+    }
 
-    test('automating with a non-future renewal is rejected', function (): void {
+    public function testAutomatingWithANonFutureRenewalIsRejected(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-02-01'),
+            nextRenewal: new \DateTimeImmutable('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
         );
         $subscription->switchToManualPayments();
 
-        $subscription->automatePayments(new DateTimeImmutable('2020-01-01'));
-    })->throws(Assert\InvalidArgumentException::class);
+        $this->expectException(\Assert\InvalidArgumentException::class);
 
-    test('suggested resume renewal steps the cadence to the first date after today', function (): void {
+        $subscription->automatePayments(new \DateTimeImmutable('2020-01-01'));
+    }
+
+    public function testSuggestedResumeRenewalStepsTheCadenceToTheFirstDateAfterToday(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2020-01-15'),
+            nextRenewal: new \DateTimeImmutable('2020-01-15'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
@@ -569,13 +587,13 @@ describe('payment generation', function (): void {
         $suggested = $subscription->suggestedResumeRenewal();
 
         // Lands strictly after today and stays on the original day-of-cadence (the 15th).
-        expect($suggested > new DateTimeImmutable('today'))->toBeTrue()
-            ->and($suggested->format('d'))->toBe('15')
-        ;
-    });
+        self::assertGreaterThan(new \DateTimeImmutable('today'), $suggested);
+        self::assertSame('15', $suggested->format('d'));
+    }
 
-    test('suggested resume renewal keeps a renewal that is already in the future', function (): void {
-        $future = new DateTimeImmutable('+40 days');
+    public function testSuggestedResumeRenewalKeepsARenewalThatIsAlreadyInTheFuture(): void
+    {
+        $future = new \DateTimeImmutable('+40 days');
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
@@ -585,16 +603,15 @@ describe('payment generation', function (): void {
             cost: new Money(1500, Currency::USD),
         );
 
-        expect($subscription->suggestedResumeRenewal())->toEqual($future);
-    });
-});
+        self::assertSameInstant($future, $subscription->suggestedResumeRenewal());
+    }
 
-describe('archive', function (): void {
-    test('sets archived to true', function (): void {
+    public function testSetsArchivedToTrue(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
@@ -602,14 +619,15 @@ describe('archive', function (): void {
 
         $subscription->archive();
 
-        expect($subscription->archived)->toBeTrue();
-    });
+        self::assertTrue($subscription->archived);
+    }
 
-    test('creates archive event', function (): void {
+    public function testCreatesArchiveEvent(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
@@ -617,19 +635,19 @@ describe('archive', function (): void {
 
         $subscription->archive();
 
-        expect($subscription->subscriptionEvents)->toHaveCount(1);
+        self::assertCount(1, $subscription->subscriptionEvents);
         /** @var SubscriptionEvent $event */
         $event = $subscription->subscriptionEvents->first();
-        expect($event->type)->toBe(SubscriptionEventType::Archive)
-            ->and($event->context)->toBe([])
-        ;
-    });
+        self::assertSame(SubscriptionEventType::Archive, $event->type);
+        self::assertSame([], $event->context);
+    }
 
-    test('unarchive sets archived to false', function (): void {
+    public function testUnarchiveSetsArchivedToFalse(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
@@ -638,14 +656,15 @@ describe('archive', function (): void {
         $subscription->archive();
         $subscription->unarchive();
 
-        expect($subscription->archived)->toBeFalse();
-    });
+        self::assertFalse($subscription->archived);
+    }
 
-    test('unarchive creates unarchive event', function (): void {
+    public function testUnarchiveCreatesUnarchiveEvent(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
@@ -654,100 +673,118 @@ describe('archive', function (): void {
         $subscription->archive();
         $subscription->unarchive();
 
-        expect($subscription->subscriptionEvents)->toHaveCount(2);
+        self::assertCount(2, $subscription->subscriptionEvents);
         /** @var SubscriptionEvent $archiveEvent */
         $archiveEvent = $subscription->subscriptionEvents[0];
         /** @var SubscriptionEvent $unarchiveEvent */
         $unarchiveEvent = $subscription->subscriptionEvents[1];
 
-        expect($archiveEvent->type)->toBe(SubscriptionEventType::Archive)
-            ->and($unarchiveEvent->type)->toBe(SubscriptionEventType::Unarchive)
-            ->and($unarchiveEvent->context)->toBe([])
-        ;
-    });
-});
+        self::assertSame(SubscriptionEventType::Archive, $archiveEvent->type);
+        self::assertSame(SubscriptionEventType::Unarchive, $unarchiveEvent->type);
+        self::assertSame([], $unarchiveEvent->context);
+    }
 
-describe('validation', function (): void {
-    test('rejects empty name', function (): void {
+    public function testRejectsEmptyName(): void
+    {
+        $this->expectException(\Assert\InvalidArgumentException::class);
+
         new Subscription(
             category: $this->category,
             name: '',
-            nextRenewal: new DateTimeImmutable(),
+            nextRenewal: new \DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
         );
-    })->throws(Assert\InvalidArgumentException::class);
+    }
 
-    test('rejects whitespace name', function (): void {
+    public function testRejectsWhitespaceName(): void
+    {
+        $this->expectException(\Assert\InvalidArgumentException::class);
+
         new Subscription(
             category: $this->category,
             name: '   ',
-            nextRenewal: new DateTimeImmutable(),
+            nextRenewal: new \DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
         );
-    })->throws(Assert\InvalidArgumentException::class);
+    }
 
-    test('rejects zero cost', function (): void {
+    public function testRejectsZeroCost(): void
+    {
+        $this->expectException(\Assert\InvalidArgumentException::class);
+
         new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable(),
+            nextRenewal: new \DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(0, Currency::USD),
         );
-    })->throws(Assert\InvalidArgumentException::class);
+    }
 
-    test('rejects negative cost', function (): void {
+    public function testRejectsNegativeCost(): void
+    {
+        $this->expectException(\Assert\InvalidArgumentException::class);
+
         new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable(),
+            nextRenewal: new \DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(-100, Currency::USD),
         );
-    })->throws(Assert\InvalidArgumentException::class);
+    }
 
-    test('rejects zero period count', function (): void {
+    public function testRejectsZeroPeriodCount(): void
+    {
+        $this->expectException(\Assert\InvalidArgumentException::class);
+
         new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable(),
+            nextRenewal: new \DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 0,
             cost: new Money(1500, Currency::USD),
         );
-    })->throws(Assert\InvalidArgumentException::class);
+    }
 
-    test('rejects negative period count', function (): void {
+    public function testRejectsNegativePeriodCount(): void
+    {
+        $this->expectException(\Assert\InvalidArgumentException::class);
+
         new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable(),
+            nextRenewal: new \DateTimeImmutable(),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: -1,
             cost: new Money(1500, Currency::USD),
         );
-    })->throws(Assert\InvalidArgumentException::class);
+    }
 
-    test('update rejects empty name', function (): void {
+    public function testUpdateRejectsEmptyName(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
         );
+
+        $this->expectException(\Assert\InvalidArgumentException::class);
 
         $subscription->update(
             category: $this->category,
             name: '',
-            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -756,22 +793,25 @@ describe('validation', function (): void {
             cost: new Money(1500, Currency::USD),
             color: $subscription->color,
         );
-    })->throws(Assert\InvalidArgumentException::class);
+    }
 
-    test('update rejects whitespace name', function (): void {
+    public function testUpdateRejectsWhitespaceName(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
         );
+
+        $this->expectException(\Assert\InvalidArgumentException::class);
 
         $subscription->update(
             category: $this->category,
             name: '   ',
-            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -780,22 +820,25 @@ describe('validation', function (): void {
             cost: new Money(1500, Currency::USD),
             color: $subscription->color,
         );
-    })->throws(Assert\InvalidArgumentException::class);
+    }
 
-    test('update rejects zero cost', function (): void {
+    public function testUpdateRejectsZeroCost(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
         );
 
+        $this->expectException(\Assert\InvalidArgumentException::class);
+
         $subscription->update(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -804,22 +847,25 @@ describe('validation', function (): void {
             cost: new Money(0, Currency::USD),
             color: $subscription->color,
         );
-    })->throws(Assert\InvalidArgumentException::class);
+    }
 
-    test('update rejects negative cost', function (): void {
+    public function testUpdateRejectsNegativeCost(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
         );
 
+        $this->expectException(\Assert\InvalidArgumentException::class);
+
         $subscription->update(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -828,22 +874,25 @@ describe('validation', function (): void {
             cost: new Money(-100, Currency::USD),
             color: $subscription->color,
         );
-    })->throws(Assert\InvalidArgumentException::class);
+    }
 
-    test('update rejects zero period count', function (): void {
+    public function testUpdateRejectsZeroPeriodCount(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
         );
 
+        $this->expectException(\Assert\InvalidArgumentException::class);
+
         $subscription->update(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -852,22 +901,25 @@ describe('validation', function (): void {
             cost: new Money(1500, Currency::USD),
             color: $subscription->color,
         );
-    })->throws(Assert\InvalidArgumentException::class);
+    }
 
-    test('update rejects negative period count', function (): void {
+    public function testUpdateRejectsNegativePeriodCount(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
         );
 
+        $this->expectException(\Assert\InvalidArgumentException::class);
+
         $subscription->update(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -876,26 +928,28 @@ describe('validation', function (): void {
             cost: new Money(1500, Currency::USD),
             color: $subscription->color,
         );
-    })->throws(Assert\InvalidArgumentException::class);
+    }
 
-    test('trims name on creation', function (): void {
+    public function testTrimsNameOnCreation(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: '  Netflix  ',
-            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
         );
 
-        expect($subscription->name)->toBe('Netflix');
-    });
+        self::assertSame('Netflix', $subscription->name);
+    }
 
-    test('update trims name', function (): void {
+    public function testUpdateTrimsName(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
@@ -904,7 +958,7 @@ describe('validation', function (): void {
         $subscription->update(
             category: $this->category,
             name: '  Netflix Premium  ',
-            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -914,43 +968,44 @@ describe('validation', function (): void {
             color: $subscription->color,
         );
 
-        expect($subscription->name)->toBe('Netflix Premium');
-    });
-});
+        self::assertSame('Netflix Premium', $subscription->name);
+    }
 
-describe('color', function (): void {
-    test('assigns a random palette color when none is given', function (): void {
+    public function testAssignsARandomPaletteColorWhenNoneIsGiven(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
         );
 
-        expect($subscription->color)->toBeInstanceOf(TileColor::class);
-    });
+        self::assertInstanceOf(TileColor::class, $subscription->color);
+    }
 
-    test('accepts an explicit color', function (): void {
+    public function testAcceptsAnExplicitColor(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
             color: TileColor::Blue,
         );
 
-        expect($subscription->color)->toBe(TileColor::Blue);
-    });
+        self::assertSame(TileColor::Blue, $subscription->color);
+    }
 
-    test('records a color change as an update event', function (): void {
+    public function testRecordsAColorChangeAsAnUpdateEvent(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
@@ -960,7 +1015,7 @@ describe('color', function (): void {
         $subscription->update(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -970,22 +1025,21 @@ describe('color', function (): void {
             color: TileColor::Red,
         );
 
-        expect($subscription->color)->toBe(TileColor::Red)
-            ->and($subscription->subscriptionEvents)->toHaveCount(1)
-        ;
+        self::assertSame(TileColor::Red, $subscription->color);
+        self::assertCount(1, $subscription->subscriptionEvents);
         /** @var SubscriptionEvent $event */
         $event = $subscription->subscriptionEvents->first();
-        expect($event->type)->toBe(SubscriptionEventType::Update)
-            ->and($event->context)->toHaveKey('color')
-            ->and($event->context['color'])->toBe(['old' => 'blue', 'new' => 'red'])
-        ;
-    });
+        self::assertSame(SubscriptionEventType::Update, $event->type);
+        self::assertArrayHasKey('color', $event->context);
+        self::assertSame(['old' => 'blue', 'new' => 'red'], $event->context['color']);
+    }
 
-    test('records no event when the color is unchanged', function (): void {
+    public function testRecordsNoEventWhenTheColorIsUnchanged(): void
+    {
         $subscription = new Subscription(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
@@ -995,7 +1049,7 @@ describe('color', function (): void {
         $subscription->update(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new DateTimeImmutable('2024-01-01'),
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -1005,150 +1059,171 @@ describe('color', function (): void {
             color: TileColor::Blue,
         );
 
-        expect($subscription->subscriptionEvents)->toHaveCount(0);
-    });
-});
+        self::assertCount(0, $subscription->subscriptionEvents);
+    }
 
-describe('monthlyCost', function (): void {
-    $makeSubscription = function (PaymentPeriod $period, int $count, int $cost): Subscription {
-        return new Subscription(
-            category: new Category(name: 'Entertainment'),
-            name: 'Example',
-            nextRenewal: new DateTimeImmutable('2024-01-01'),
-            paymentPeriod: $period,
-            paymentPeriodCount: $count,
-            cost: new Money($cost, Currency::USD),
-        );
-    };
+    public function testReturnsTheCostItselfForAMonthlySubscription(): void
+    {
+        $subscription = $this->makeSubscription(PaymentPeriod::Month, 1, 1500);
 
-    test('returns the cost itself for a monthly subscription', function () use ($makeSubscription): void {
-        expect($makeSubscription(PaymentPeriod::Month, 1, 1500)->monthlyCost()->minorAmount)
-            ->toBeInt()
-            ->toBe(1500)
-        ;
-    });
+        self::assertSame(1500, $subscription->monthlyCost()->minorAmount);
+    }
 
-    test('divides by the period count for a multi-month subscription', function () use ($makeSubscription): void {
+    public function testDividesByThePeriodCountForAMultiMonthSubscription(): void
+    {
         // 3000 every 3 months is 1000 per month.
-        expect($makeSubscription(PaymentPeriod::Month, 3, 3000)->monthlyCost()->minorAmount)->toBe(1000);
-    });
+        $subscription = $this->makeSubscription(PaymentPeriod::Month, 3, 3000);
 
-    test('divides a yearly cost across twelve months', function () use ($makeSubscription): void {
+        self::assertSame(1000, $subscription->monthlyCost()->minorAmount);
+    }
+
+    public function testDividesAYearlyCostAcrossTwelveMonths(): void
+    {
         // 12000 per year is 1000 per month.
-        expect($makeSubscription(PaymentPeriod::Year, 1, 12000)->monthlyCost()->minorAmount)->toBe(1000);
-    });
+        $subscription = $this->makeSubscription(PaymentPeriod::Year, 1, 12000);
 
-    test('normalizes a multi-year subscription', function () use ($makeSubscription): void {
+        self::assertSame(1000, $subscription->monthlyCost()->minorAmount);
+    }
+
+    public function testNormalizesAMultiYearSubscription(): void
+    {
         // 4800 every 2 years is 200 per month.
-        expect($makeSubscription(PaymentPeriod::Year, 2, 4800)->monthlyCost()->minorAmount)->toBe(200);
-    });
+        $subscription = $this->makeSubscription(PaymentPeriod::Year, 2, 4800);
 
-    test('normalizes a weekly subscription using 52 weeks per year', function () use ($makeSubscription): void {
+        self::assertSame(200, $subscription->monthlyCost()->minorAmount);
+    }
+
+    public function testNormalizesAWeeklySubscriptionUsing52WeeksPerYear(): void
+    {
         // 1000 per week is 1000 * 52 / 12 = 4333.33 -> 4333 cents per month.
-        expect($makeSubscription(PaymentPeriod::Week, 1, 1000)->monthlyCost()->minorAmount)->toBe(4333);
-    });
+        $subscription = $this->makeSubscription(PaymentPeriod::Week, 1, 1000);
 
-    test('rounds to the nearest whole cent', function () use ($makeSubscription): void {
+        self::assertSame(4333, $subscription->monthlyCost()->minorAmount);
+    }
+
+    public function testRoundsToTheNearestWholeCent(): void
+    {
         // 1000 per year is 83.33 -> 83 cents per month.
-        expect($makeSubscription(PaymentPeriod::Year, 1, 1000)->monthlyCost()->minorAmount)->toBe(83);
-    });
-});
+        $subscription = $this->makeSubscription(PaymentPeriod::Year, 1, 1000);
 
-describe('savingsTarget', function (): void {
-    $makeSubscription = function (
-        PaymentPeriod $period,
-        int $count,
-        int $cost,
-        DateTimeImmutable $nextRenewal,
-    ): Subscription {
-        return new Subscription(
-            category: new Category(name: 'Entertainment'),
-            name: 'Example',
-            nextRenewal: $nextRenewal,
-            paymentPeriod: $period,
-            paymentPeriodCount: $count,
-            cost: new Money($cost, Currency::USD),
-        );
-    };
+        self::assertSame(83, $subscription->monthlyCost()->minorAmount);
+    }
 
-    test('ramps by one monthly cost per calendar month toward the renewal', function () use ($makeSubscription): void {
+    public function testRampsByOneMonthlyCostPerCalendarMonthTowardTheRenewal(): void
+    {
         // 1200 every 6 months -> 200/mo, due 2024-04-28. Funded by the 1st of March (a month ahead);
         // by 2024-01-15 four monthly allocations (Oct..Jan) have been made -> 800.
-        $subscription = $makeSubscription(PaymentPeriod::Month, 6, 1200, new DateTimeImmutable('2024-04-28'));
+        $subscription = $this->makeSubscription(PaymentPeriod::Month, 6, 1200, '2024-04-28');
 
-        expect($subscription->savingsTarget(new DateTimeImmutable('2024-01-15'))->minorAmount)
-            ->toBeInt()
-            ->toBe(800)
-        ;
-    });
+        self::assertSame(800, $subscription->savingsTarget(new \DateTimeImmutable('2024-01-15'))->minorAmount);
+    }
 
-    test('holds the funded cost and the next cycle together in the unpaid due month', function () use ($makeSubscription): void {
+    public function testHoldsTheFundedCostAndTheNextCycleTogetherInTheUnpaidDueMonth(): void
+    {
         // In April the 1200 for the 2024-04-28 bill is funded and held (not yet paid), while 200
         // toward the October renewal has already begun -> 1400.
-        $subscription = $makeSubscription(PaymentPeriod::Month, 6, 1200, new DateTimeImmutable('2024-04-28'));
+        $subscription = $this->makeSubscription(PaymentPeriod::Month, 6, 1200, '2024-04-28');
 
-        expect($subscription->savingsTarget(new DateTimeImmutable('2024-04-15'))->minorAmount)->toBe(1400);
-    });
+        self::assertSame(1400, $subscription->savingsTarget(new \DateTimeImmutable('2024-04-15'))->minorAmount);
+    }
 
-    test('drops to the next cycle once the renewal is recorded paid', function () use ($makeSubscription): void {
+    public function testDropsToTheNextCycleOnceTheRenewalIsRecordedPaid(): void
+    {
         // Recording the April payment advances nextRenewal to October; the held 1200 is released,
         // leaving the first 200 of the October cycle.
-        $subscription = $makeSubscription(PaymentPeriod::Month, 6, 1200, new DateTimeImmutable('2024-10-28'));
+        $subscription = $this->makeSubscription(PaymentPeriod::Month, 6, 1200, '2024-10-28');
 
-        expect($subscription->savingsTarget(new DateTimeImmutable('2024-04-28'))->minorAmount)->toBe(200);
-    });
+        self::assertSame(200, $subscription->savingsTarget(new \DateTimeImmutable('2024-04-28'))->minorAmount);
+    }
 
-    test('stacks this month and next for a monthly bill in its unpaid due month', function () use ($makeSubscription): void {
+    public function testStacksThisMonthAndNextForAMonthlyBillInItsUnpaidDueMonth(): void
+    {
         // 100 monthly due the 15th: on the 8th the bill due on the 15th is held (100) and next
         // month's allocation has begun (100) -> 200.
-        $subscription = $makeSubscription(PaymentPeriod::Month, 1, 100, new DateTimeImmutable('2024-04-15'));
+        $subscription = $this->makeSubscription(PaymentPeriod::Month, 1, 100, '2024-04-15');
 
-        expect($subscription->savingsTarget(new DateTimeImmutable('2024-04-08'))->minorAmount)->toBe(200);
-    });
+        self::assertSame(200, $subscription->savingsTarget(new \DateTimeImmutable('2024-04-08'))->minorAmount);
+    }
 
-    test('is one payment for a monthly bill the month before it is due', function () use ($makeSubscription): void {
+    public function testIsOnePaymentForAMonthlyBillTheMonthBeforeItIsDue(): void
+    {
         // 1500 monthly due 2024-02-01: in January only the funded February bill is held; saving for
         // the March bill has not begun -> 1500.
-        $subscription = $makeSubscription(PaymentPeriod::Month, 1, 1500, new DateTimeImmutable('2024-02-01'));
+        $subscription = $this->makeSubscription(PaymentPeriod::Month, 1, 1500, '2024-02-01');
 
-        expect($subscription->savingsTarget(new DateTimeImmutable('2024-01-15'))->minorAmount)->toBe(1500);
-    });
+        self::assertSame(1500, $subscription->savingsTarget(new \DateTimeImmutable('2024-01-15'))->minorAmount);
+    }
 
-    test('treats a weekly bill as one payment in hand', function () use ($makeSubscription): void {
+    public function testTreatsAWeeklyBillAsOnePaymentInHand(): void
+    {
         // By-month proration cannot split a weekly cadence; until by-week proration lands a weekly
         // bill is just one payment held.
-        $subscription = $makeSubscription(PaymentPeriod::Week, 1, 1000, new DateTimeImmutable('2024-01-08'));
+        $subscription = $this->makeSubscription(PaymentPeriod::Week, 1, 1000, '2024-01-08');
 
-        expect($subscription->savingsTarget(new DateTimeImmutable('2024-01-05'))->minorAmount)->toBe(1000);
-    });
+        self::assertSame(1000, $subscription->savingsTarget(new \DateTimeImmutable('2024-01-05'))->minorAmount);
+    }
 
-    test('is zero before the first cycle has begun', function () use ($makeSubscription): void {
+    public function testIsZeroBeforeTheFirstCycleHasBegun(): void
+    {
         // A future renewal whose funding window has not opened yet has nothing to set aside.
-        $subscription = $makeSubscription(PaymentPeriod::Year, 1, 12000, new DateTimeImmutable('2025-01-01'));
+        $subscription = $this->makeSubscription(PaymentPeriod::Year, 1, 12000, '2025-01-01');
 
-        expect($subscription->savingsTarget(new DateTimeImmutable('2023-12-01'))->minorAmount)->toBe(0);
-    });
+        self::assertSame(0, $subscription->savingsTarget(new \DateTimeImmutable('2023-12-01'))->minorAmount);
+    }
 
-    test('holds an overdue renewal in full on top of saving for the next', function () use ($makeSubscription): void {
+    public function testHoldsAnOverdueRenewalInFullOnTopOfSavingForTheNext(): void
+    {
         // 12000 yearly due 2024-01-01, still unpaid by March: the full 12000 is held while three
         // monthly allocations toward the 2025 renewal have been made -> 15000.
-        $subscription = $makeSubscription(PaymentPeriod::Year, 1, 12000, new DateTimeImmutable('2024-01-01'));
+        $subscription = $this->makeSubscription(PaymentPeriod::Year, 1, 12000, '2024-01-01');
 
-        expect($subscription->savingsTarget(new DateTimeImmutable('2024-03-01'))->minorAmount)->toBe(15000);
-    });
-});
+        self::assertSame(15000, $subscription->savingsTarget(new \DateTimeImmutable('2024-03-01'))->minorAmount);
+    }
 
-describe('currency', function (): void {
-    $makeSubscription = static fn (): Subscription => new Subscription(
-        category: new Category(name: 'Entertainment'),
-        name: 'Netflix',
-        nextRenewal: new DateTimeImmutable('2024-02-01'),
-        paymentPeriod: PaymentPeriod::Month,
-        paymentPeriodCount: 1,
-        cost: new Money(1500, Currency::USD),
-    );
+    public function testAllowsChangingTheCurrencyWhileThereAreNoPayments(): void
+    {
+        $subscription = $this->makeSubscription(PaymentPeriod::Month, 1, 1500, '2024-02-01');
 
-    $update = static function (Subscription $subscription, Money $cost): void {
+        $this->updateCost($subscription, new Money(1500, Currency::EUR));
+
+        self::assertSame(Currency::EUR, $subscription->cost->currency);
+    }
+
+    public function testRejectsChangingTheCurrencyOnceAPaymentHasBeenRecorded(): void
+    {
+        $subscription = $this->makeSubscription(PaymentPeriod::Month, 1, 1500, '2024-02-01');
+        $subscription->recordPayment(paidDate: new \DateTimeImmutable('2024-02-01'), paymentType: PaymentType::Verified);
+
+        $this->expectException(\Assert\InvalidArgumentException::class);
+
+        $this->updateCost($subscription, new Money(1500, Currency::EUR));
+    }
+
+    public function testAllowsASameCurrencyCostChangeAfterAPaymentExists(): void
+    {
+        $subscription = $this->makeSubscription(PaymentPeriod::Month, 1, 1500, '2024-02-01');
+        $subscription->recordPayment(paidDate: new \DateTimeImmutable('2024-02-01'), paymentType: PaymentType::Verified);
+
+        $this->updateCost($subscription, new Money(1999, Currency::USD));
+
+        self::assertSame(1999, $subscription->cost->minorAmount);
+        self::assertSame(Currency::USD, $subscription->cost->currency);
+    }
+
+    private function makeSubscription(PaymentPeriod $period, int $count, int $cost, string $nextRenewal = '2024-01-01'): Subscription
+    {
+        return new Subscription(
+            category: new Category(name: 'Entertainment'),
+            name: 'Example',
+            nextRenewal: new \DateTimeImmutable($nextRenewal),
+            paymentPeriod: $period,
+            paymentPeriodCount: $count,
+            cost: new Money($cost, Currency::USD),
+        );
+    }
+
+    private function updateCost(Subscription $subscription, Money $cost): void
+    {
         $subscription->update(
             category: $subscription->category,
             name: $subscription->name,
@@ -1161,31 +1236,5 @@ describe('currency', function (): void {
             cost: $cost,
             color: $subscription->color,
         );
-    };
-
-    test('allows changing the currency while there are no payments', function () use ($makeSubscription, $update): void {
-        $subscription = $makeSubscription();
-
-        $update($subscription, new Money(1500, Currency::EUR));
-
-        expect($subscription->cost->currency)->toBe(Currency::EUR);
-    });
-
-    test('rejects changing the currency once a payment has been recorded', function () use ($makeSubscription, $update): void {
-        $subscription = $makeSubscription();
-        $subscription->recordPayment(paidDate: new DateTimeImmutable('2024-02-01'), paymentType: PaymentType::Verified);
-
-        $update($subscription, new Money(1500, Currency::EUR));
-    })->throws(Assert\InvalidArgumentException::class);
-
-    test('allows a same-currency cost change after a payment exists', function () use ($makeSubscription, $update): void {
-        $subscription = $makeSubscription();
-        $subscription->recordPayment(paidDate: new DateTimeImmutable('2024-02-01'), paymentType: PaymentType::Verified);
-
-        $update($subscription, new Money(1999, Currency::USD));
-
-        expect($subscription->cost->minorAmount)->toBe(1999)
-            ->and($subscription->cost->currency)->toBe(Currency::USD)
-        ;
-    });
-});
+    }
+}

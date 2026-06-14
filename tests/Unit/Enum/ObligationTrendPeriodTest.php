@@ -5,20 +5,26 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Enum;
+
 use App\Enum\ObligationTrendPeriod;
+use PHPUnit\Framework\TestCase;
 
-test('resolves a query value, defaulting to Month for unknown or missing input', function (): void {
-    expect(ObligationTrendPeriod::fromQuery('day'))->toBe(ObligationTrendPeriod::Day)
-        ->and(ObligationTrendPeriod::fromQuery('week'))->toBe(ObligationTrendPeriod::Week)
-        ->and(ObligationTrendPeriod::fromQuery('month'))->toBe(ObligationTrendPeriod::Month)
-        ->and(ObligationTrendPeriod::fromQuery('nonsense'))->toBe(ObligationTrendPeriod::Month)
-        ->and(ObligationTrendPeriod::fromQuery(null))->toBe(ObligationTrendPeriod::Month)
-    ;
-});
+final class ObligationTrendPeriodTest extends TestCase
+{
+    public function testResolvesAQueryValueDefaultingToMonthForUnknownOrMissingInput(): void
+    {
+        self::assertSame(ObligationTrendPeriod::Day, ObligationTrendPeriod::fromQuery('day'));
+        self::assertSame(ObligationTrendPeriod::Week, ObligationTrendPeriod::fromQuery('week'));
+        self::assertSame(ObligationTrendPeriod::Month, ObligationTrendPeriod::fromQuery('month'));
+        self::assertSame(ObligationTrendPeriod::Month, ObligationTrendPeriod::fromQuery('nonsense'));
+        self::assertSame(ObligationTrendPeriod::Month, ObligationTrendPeriod::fromQuery(null));
+    }
 
-test('labels each granularity for the toggle', function (): void {
-    expect(ObligationTrendPeriod::Day->label())->toBe('Daily')
-        ->and(ObligationTrendPeriod::Week->label())->toBe('Weekly')
-        ->and(ObligationTrendPeriod::Month->label())->toBe('Monthly')
-    ;
-});
+    public function testLabelsEachGranularityForTheToggle(): void
+    {
+        self::assertSame('Daily', ObligationTrendPeriod::Day->label());
+        self::assertSame('Weekly', ObligationTrendPeriod::Week->label());
+        self::assertSame('Monthly', ObligationTrendPeriod::Month->label());
+    }
+}

@@ -5,49 +5,73 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Entity;
+
 use App\Entity\Category;
+use PHPUnit\Framework\TestCase;
 
-test('creates category with valid name', function (): void {
-    $category = new Category(name: 'Entertainment');
+final class CategoryTest extends TestCase
+{
+    public function testCreatesCategoryWithValidName(): void
+    {
+        $category = new Category(name: 'Entertainment');
 
-    expect($category->name)->toBe('Entertainment');
-});
+        self::assertSame('Entertainment', $category->name);
+    }
 
-test('initializes empty subscriptions collection', function (): void {
-    $category = new Category(name: 'Software');
+    public function testInitializesEmptySubscriptionsCollection(): void
+    {
+        $category = new Category(name: 'Software');
 
-    expect($category->subscriptions)->toHaveCount(0);
-});
+        self::assertCount(0, $category->subscriptions);
+    }
 
-test('allows setting name', function (): void {
-    $category = new Category(name: 'Original Name');
+    public function testAllowsSettingName(): void
+    {
+        $category = new Category(name: 'Original Name');
 
-    $category->setName('Updated Name');
+        $category->setName('Updated Name');
 
-    expect($category->name)->toBe('Updated Name');
-});
+        self::assertSame('Updated Name', $category->name);
+    }
 
-test('rejects empty name', function (): void {
-    new Category(name: '');
-})->throws(Assert\InvalidArgumentException::class);
+    public function testRejectsEmptyName(): void
+    {
+        $this->expectException(\Assert\InvalidArgumentException::class);
 
-test('rejects whitespace name', function (): void {
-    new Category(name: '   ');
-})->throws(Assert\InvalidArgumentException::class);
+        new Category(name: '');
+    }
 
-test('setName rejects empty name', function (): void {
-    $category = new Category(name: 'Valid');
-    $category->setName('');
-})->throws(Assert\InvalidArgumentException::class);
+    public function testRejectsWhitespaceName(): void
+    {
+        $this->expectException(\Assert\InvalidArgumentException::class);
 
-test('setName rejects whitespace name', function (): void {
-    $category = new Category(name: 'Valid');
-    $category->setName('   ');
-})->throws(Assert\InvalidArgumentException::class);
+        new Category(name: '   ');
+    }
 
-test('setName trims name', function (): void {
-    $category = new Category(name: 'Original');
-    $category->setName('  Updated  ');
+    public function testSetNameRejectsEmptyName(): void
+    {
+        $category = new Category(name: 'Valid');
 
-    expect($category->name)->toBe('Updated');
-});
+        $this->expectException(\Assert\InvalidArgumentException::class);
+
+        $category->setName('');
+    }
+
+    public function testSetNameRejectsWhitespaceName(): void
+    {
+        $category = new Category(name: 'Valid');
+
+        $this->expectException(\Assert\InvalidArgumentException::class);
+
+        $category->setName('   ');
+    }
+
+    public function testSetNameTrimsName(): void
+    {
+        $category = new Category(name: 'Original');
+        $category->setName('  Updated  ');
+
+        self::assertSame('Updated', $category->name);
+    }
+}

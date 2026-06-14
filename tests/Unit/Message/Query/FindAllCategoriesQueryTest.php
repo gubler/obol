@@ -5,11 +5,18 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Message\Query;
+
 use App\Message\Query\Category\FindAllCategoriesQuery;
+use PHPUnit\Framework\TestCase;
 
-test('is readonly', function (): void {
-    $query = new FindAllCategoriesQuery();
+final class FindAllCategoriesQueryTest extends TestCase
+{
+    public function testIsReadonly(): void
+    {
+        $query = new FindAllCategoriesQuery();
 
-    $reflection = new ReflectionClass($query);
-    expect($reflection->isReadOnly())->toBeTrue();
-});
+        $reflection = new \ReflectionClass($query);
+        self::assertTrue($reflection->isReadOnly());
+    }
+}

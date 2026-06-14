@@ -5,21 +5,29 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Message\Command;
+
 use App\Message\Command\Subscription\UnarchiveSubscriptionCommand;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
 
-test('creates command with subscription id', function (): void {
-    $subscriptionId = new Ulid();
-    $command = new UnarchiveSubscriptionCommand(subscriptionId: $subscriptionId);
+final class UnarchiveSubscriptionCommandTest extends TestCase
+{
+    public function testCreatesCommandWithSubscriptionId(): void
+    {
+        $subscriptionId = new Ulid();
+        $command = new UnarchiveSubscriptionCommand(subscriptionId: $subscriptionId);
 
-    expect($command->subscriptionId)->toBe($subscriptionId);
-});
+        self::assertSame($subscriptionId, $command->subscriptionId);
+    }
 
-test('is readonly', function (): void {
-    $command = new UnarchiveSubscriptionCommand(
-        subscriptionId: new Ulid()
-    );
+    public function testIsReadonly(): void
+    {
+        $command = new UnarchiveSubscriptionCommand(
+            subscriptionId: new Ulid()
+        );
 
-    $reflection = new ReflectionClass($command);
-    expect($reflection->isReadOnly())->toBeTrue();
-});
+        $reflection = new \ReflectionClass($command);
+        self::assertTrue($reflection->isReadOnly());
+    }
+}

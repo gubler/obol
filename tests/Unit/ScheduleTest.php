@@ -5,25 +5,34 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit;
+
 use App\Schedule;
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\Scheduler\Schedule as SymfonySchedule;
 use Symfony\Contracts\Cache\CacheInterface;
 
-test('schedule returns a Symfony Schedule instance', function (): void {
-    $cache = $this->createMock(CacheInterface::class);
-    $schedule = new Schedule($cache);
+final class ScheduleTest extends TestCase
+{
+    public function testScheduleReturnsASymfonyScheduleInstance(): void
+    {
+        $cache = $this->createMock(CacheInterface::class);
+        $schedule = new Schedule($cache);
 
-    $result = $schedule->getSchedule();
+        $result = $schedule->getSchedule();
 
-    expect($result)->toBeInstanceOf(Symfony\Component\Scheduler\Schedule::class);
-});
+        self::assertInstanceOf(SymfonySchedule::class, $result);
+    }
 
-test('schedule has recurring messages configured', function (): void {
-    $cache = $this->createMock(CacheInterface::class);
-    $schedule = new Schedule($cache);
+    public function testScheduleHasRecurringMessagesConfigured(): void
+    {
+        $cache = $this->createMock(CacheInterface::class);
+        $schedule = new Schedule($cache);
 
-    $result = $schedule->getSchedule();
-    $messages = $result->getRecurringMessages();
+        $result = $schedule->getSchedule();
+        $messages = $result->getRecurringMessages();
 
-    // Daily payment generation plus the daily exchange-rate pull.
-    expect($messages)->toHaveCount(2);
-});
+        // Daily payment generation plus the daily exchange-rate pull.
+        self::assertCount(2, $messages);
+    }
+}

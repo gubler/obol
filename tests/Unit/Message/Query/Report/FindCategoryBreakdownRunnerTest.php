@@ -5,6 +5,8 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Message\Query\Report;
+
 use App\Entity\Category;
 use App\Entity\Subscription;
 use App\Enum\Currency;
@@ -19,79 +21,84 @@ use App\Repository\ExchangeRateRepository;
 use App\Repository\SubscriptionRepository;
 use App\Service\DisplayCurrencyProvider;
 use App\ValueObject\Money;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
 
-function breakdownSubscription(Category $category, string $name, int $costMinor, Currency $currency = Currency::USD): Subscription
+final class FindCategoryBreakdownRunnerTest extends TestCase
 {
-    return new Subscription(
-        category: $category,
-        name: $name,
-        nextRenewal: new DateTimeImmutable('2026-01-01'),
-        paymentPeriod: PaymentPeriod::Month,
-        paymentPeriodCount: 1,
-        cost: new Money($costMinor, $currency),
-    );
+    private static function breakdownSubscription(Category $category, string $name, int $costMinor, Currency $currency = Currency::USD): Subscription
+    {
+        return new Subscription(
+            category: $category,
+            name: $name,
+            nextRenewal: new \DateTimeImmutable('2026-01-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: new Money($costMinor, $currency),
+        );
+    }
+
+    /**
+     * @param list<Subscription>   $subscriptions
+     * @param array<string, float> $rates
+     */
+    private function runBreakdown(?Category $category, array $subscriptions = [], array $rates = []): ?Composition
+    {
+        $categoryId = $category?->id ?? new Ulid();
+
+        $categoryRepository = $this->createMock(CategoryRepository::class);
+        $categoryRepository->method('find')->with($categoryId)->willReturn($category);
+
+        $subscriptionRepository = $this->createMock(SubscriptionRepository::class);
+        $subscriptionRepository->method('findBy')
+            ->with(['archived' => false, 'category' => $category])
+            ->willReturn($subscriptions)
+        ;
+
+        $exchangeRateRepository = $this->createMock(ExchangeRateRepository::class);
+        $exchangeRateRepository->method('latestRate')
+            ->willReturnCallback(static fn (Currency $currency): ?float => $rates[$currency->value] ?? null)
+        ;
+        $totaller = new CurrencyTotaller(new Converter($exchangeRateRepository), new DisplayCurrencyProvider('USD'));
+
+        $runner = new FindCategoryBreakdownRunner($categoryRepository, $subscriptionRepository, $totaller);
+
+        return $runner(new FindCategoryBreakdownQuery($categoryId));
+    }
+
+    public function testOneSlicePerSubscriptionSortedBySizeTitledWithTheCategoryName(): void
+    {
+        $streaming = new Category(name: 'Streaming');
+
+        $composition = $this->runBreakdown($streaming, [
+            self::breakdownSubscription($streaming, 'Netflix', 1599),
+            self::breakdownSubscription($streaming, 'Spotify', 1099),
+        ]);
+
+        self::assertInstanceOf(Composition::class, $composition);
+        self::assertSame('Streaming', $composition->title);
+        self::assertCount(2, $composition->slices);
+        self::assertSame('Netflix', $composition->slices[0]->label);   // 1599, largest first
+        self::assertSame(1599, $composition->slices[0]->converted->minorAmount);
+        self::assertNull($composition->slices[0]->id);                  // leaf slice, no deeper drill-down
+        self::assertSame('Spotify', $composition->slices[1]->label);
+        self::assertSame(2698, $composition->total->converted->minorAmount);
+    }
+
+    public function testReturnsNullWhenTheCategoryDoesNotExist(): void
+    {
+        self::assertNull($this->runBreakdown(null));
+    }
+
+    public function testIsAnEmptyZeroTotalPieForACategoryWithNoActiveSubscriptions(): void
+    {
+        $empty = new Category(name: 'Empty');
+
+        $composition = $this->runBreakdown($empty, []);
+
+        self::assertInstanceOf(Composition::class, $composition);
+        self::assertSame('Empty', $composition->title);
+        self::assertSame([], $composition->slices);
+        self::assertSame(0, $composition->total->converted->minorAmount);
+    }
 }
-
-/**
- * @param list<Subscription>   $subscriptions
- * @param array<string, float> $rates
- */
-function runBreakdown(?Category $category, array $subscriptions = [], array $rates = []): ?Composition
-{
-    $categoryId = $category?->id ?? new Ulid();
-
-    $categoryRepository = test()->createMock(CategoryRepository::class);
-    $categoryRepository->method('find')->with($categoryId)->willReturn($category);
-
-    $subscriptionRepository = test()->createMock(SubscriptionRepository::class);
-    $subscriptionRepository->method('findBy')
-        ->with(['archived' => false, 'category' => $category])
-        ->willReturn($subscriptions)
-    ;
-
-    $exchangeRateRepository = test()->createMock(ExchangeRateRepository::class);
-    $exchangeRateRepository->method('latestRate')
-        ->willReturnCallback(static fn (Currency $currency): ?float => $rates[$currency->value] ?? null)
-    ;
-    $totaller = new CurrencyTotaller(new Converter($exchangeRateRepository), new DisplayCurrencyProvider('USD'));
-
-    $runner = new FindCategoryBreakdownRunner($categoryRepository, $subscriptionRepository, $totaller);
-
-    return $runner(new FindCategoryBreakdownQuery($categoryId));
-}
-
-test('one slice per subscription, sorted by size, titled with the category name', function (): void {
-    $streaming = new Category(name: 'Streaming');
-
-    $composition = runBreakdown($streaming, [
-        breakdownSubscription($streaming, 'Netflix', 1599),
-        breakdownSubscription($streaming, 'Spotify', 1099),
-    ]);
-
-    expect($composition)->toBeInstanceOf(Composition::class)
-        ->and($composition->title)->toBe('Streaming')
-        ->and($composition->slices)->toHaveCount(2)
-        ->and($composition->slices[0]->label)->toBe('Netflix')   // 1599, largest first
-        ->and($composition->slices[0]->converted->minorAmount)->toBe(1599)
-        ->and($composition->slices[0]->id)->toBeNull()           // leaf slice, no deeper drill-down
-        ->and($composition->slices[1]->label)->toBe('Spotify')
-        ->and($composition->total->converted->minorAmount)->toBe(2698)
-    ;
-});
-
-test('returns null when the category does not exist', function (): void {
-    expect(runBreakdown(null))->toBeNull();
-});
-
-test('is an empty, zero-total pie for a category with no active subscriptions', function (): void {
-    $empty = new Category(name: 'Empty');
-
-    $composition = runBreakdown($empty, []);
-
-    expect($composition)->toBeInstanceOf(Composition::class)
-        ->and($composition->title)->toBe('Empty')
-        ->and($composition->slices)->toBe([])
-        ->and($composition->total->converted->minorAmount)->toBe(0)
-    ;
-});

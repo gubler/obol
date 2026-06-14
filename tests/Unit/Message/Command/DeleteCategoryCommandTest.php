@@ -5,21 +5,29 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Message\Command;
+
 use App\Message\Command\Category\DeleteCategoryCommand;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
 
-test('creates command with category id', function (): void {
-    $categoryId = new Ulid();
-    $command = new DeleteCategoryCommand(categoryId: $categoryId);
+final class DeleteCategoryCommandTest extends TestCase
+{
+    public function testCreatesCommandWithCategoryId(): void
+    {
+        $categoryId = new Ulid();
+        $command = new DeleteCategoryCommand(categoryId: $categoryId);
 
-    expect($command->categoryId)->toBe($categoryId);
-});
+        self::assertSame($categoryId, $command->categoryId);
+    }
 
-test('is readonly', function (): void {
-    $command = new DeleteCategoryCommand(
-        categoryId: new Ulid()
-    );
+    public function testIsReadonly(): void
+    {
+        $command = new DeleteCategoryCommand(
+            categoryId: new Ulid()
+        );
 
-    $reflection = new ReflectionClass($command);
-    expect($reflection->isReadOnly())->toBeTrue();
-});
+        $reflection = new \ReflectionClass($command);
+        self::assertTrue($reflection->isReadOnly());
+    }
+}

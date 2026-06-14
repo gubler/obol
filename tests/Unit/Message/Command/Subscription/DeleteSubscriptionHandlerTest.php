@@ -5,55 +5,64 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Message\Command\Subscription;
+
 use App\Entity\Subscription;
 use App\Message\Command\Subscription\DeleteSubscriptionCommand;
 use App\Message\Command\Subscription\DeleteSubscriptionHandler;
 use App\Repository\SubscriptionRepository;
 use App\Service\SubscriptionChangeNotifierInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
 
-test('handler removes subscription', function (): void {
-    $ulid = new Ulid();
+final class DeleteSubscriptionHandlerTest extends TestCase
+{
+    public function testHandlerRemovesSubscription(): void
+    {
+        $ulid = new Ulid();
 
-    $subscription = $this->createMock(Subscription::class);
+        $subscription = $this->createMock(Subscription::class);
 
-    $repository = $this->createMock(SubscriptionRepository::class);
-    $repository->expects($this->once())
-        ->method('find')
-        ->willReturn($subscription)
-    ;
+        $repository = $this->createMock(SubscriptionRepository::class);
+        $repository->expects(self::once())
+            ->method('find')
+            ->willReturn($subscription)
+        ;
 
-    $entityManager = $this->createMock(EntityManagerInterface::class);
-    $entityManager->expects($this->once())
-        ->method('remove')
-        ->with($subscription)
-    ;
-    // The command bus owns the transaction (doctrine_transaction middleware); the handler never flushes.
-    $entityManager->expects($this->never())->method('flush');
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects(self::once())
+            ->method('remove')
+            ->with($subscription)
+        ;
+        // The command bus owns the transaction (doctrine_transaction middleware); the handler never flushes.
+        $entityManager->expects(self::never())->method('flush');
 
-    $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
-    $notifier->expects($this->once())->method('notifyChanged');
+        $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
+        $notifier->expects(self::once())->method('notifyChanged');
 
-    $handler = new DeleteSubscriptionHandler($repository, $entityManager, $notifier);
-    $handler(new DeleteSubscriptionCommand(subscriptionId: $ulid));
-});
+        $handler = new DeleteSubscriptionHandler($repository, $entityManager, $notifier);
+        $handler(new DeleteSubscriptionCommand(subscriptionId: $ulid));
+    }
 
-test('handler throws when subscription not found', function (): void {
-    $ulid = new Ulid();
+    public function testHandlerThrowsWhenSubscriptionNotFound(): void
+    {
+        $ulid = new Ulid();
 
-    $repository = $this->createMock(SubscriptionRepository::class);
-    $repository->expects($this->once())
-        ->method('find')
-        ->willReturn(null)
-    ;
+        $repository = $this->createMock(SubscriptionRepository::class);
+        $repository->expects(self::once())
+            ->method('find')
+            ->willReturn(null)
+        ;
 
-    $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager = $this->createMock(EntityManagerInterface::class);
 
-    $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
-    $notifier->expects($this->never())->method('notifyChanged');
+        $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
+        $notifier->expects(self::never())->method('notifyChanged');
 
-    $handler = new DeleteSubscriptionHandler($repository, $entityManager, $notifier);
+        $handler = new DeleteSubscriptionHandler($repository, $entityManager, $notifier);
 
-    $handler(new DeleteSubscriptionCommand(subscriptionId: $ulid));
-})->throws(InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
+        $handler(new DeleteSubscriptionCommand(subscriptionId: $ulid));
+    }
+}

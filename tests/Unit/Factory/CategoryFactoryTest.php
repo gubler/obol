@@ -5,27 +5,33 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Factory;
+
 use App\Entity\Category;
 use App\Factory\CategoryFactory;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
-uses(KernelTestCase::class);
+final class CategoryFactoryTest extends KernelTestCase
+{
+    public function testCreatesCategoryWithGeneratedName(): void
+    {
+        $category = CategoryFactory::createOne();
 
-test('creates category with generated name', function (): void {
-    $category = CategoryFactory::createOne();
+        self::assertNotEmpty($category->name);
+    }
 
-    expect($category->name)->not->toBeEmpty();
-});
+    public function testCreatesMultipleCategoriesWithUniqueNames(): void
+    {
+        $categories = CategoryFactory::createMany(3);
 
-test('creates multiple categories with unique names', function (): void {
-    $categories = CategoryFactory::createMany(3);
+        $names = array_map(fn (Category $cat): string => $cat->name, $categories);
+        self::assertCount(3, array_unique($names));
+    }
 
-    $names = array_map(fn (Category $cat): string => $cat->name, $categories);
-    expect(array_unique($names))->toHaveCount(3);
-});
+    public function testAllowsCustomName(): void
+    {
+        $category = CategoryFactory::createOne(['name' => 'Custom Category']);
 
-test('allows custom name', function (): void {
-    $category = CategoryFactory::createOne(['name' => 'Custom Category']);
-
-    expect($category->name)->toBe('Custom Category');
-});
+        self::assertSame('Custom Category', $category->name);
+    }
+}

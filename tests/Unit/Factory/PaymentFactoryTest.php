@@ -5,34 +5,41 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Factory;
+
 use App\Enum\Currency;
 use App\Enum\PaymentType;
 use App\Factory\PaymentFactory;
 use App\ValueObject\Money;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
-uses(KernelTestCase::class);
+final class PaymentFactoryTest extends KernelTestCase
+{
+    public function testCreatesPaymentWithRequiredFields(): void
+    {
+        $payment = PaymentFactory::createOne();
 
-test('creates payment with required fields', function (): void {
-    $payment = PaymentFactory::createOne();
+        self::assertGreaterThan(0, $payment->amount->minorAmount);
+    }
 
-    expect($payment->amount->minorAmount)->toBeGreaterThan(0);
-});
+    public function testAllowsCustomAmount(): void
+    {
+        $payment = PaymentFactory::createOne(['amount' => new Money(1999, Currency::USD)]);
 
-test('allows custom amount', function (): void {
-    $payment = PaymentFactory::createOne(['amount' => new Money(1999, Currency::USD)]);
+        self::assertSame(1999, $payment->amount->minorAmount);
+    }
 
-    expect($payment->amount->minorAmount)->toBe(1999);
-});
+    public function testRegularCreatesVerifiedPayment(): void
+    {
+        $payment = PaymentFactory::new()->regular()->create();
 
-test('regular creates verified payment', function (): void {
-    $payment = PaymentFactory::new()->regular()->create();
+        self::assertSame(PaymentType::Verified, $payment->type);
+    }
 
-    expect($payment->type)->toBe(PaymentType::Verified);
-});
+    public function testGeneratedCreatesGeneratedPayment(): void
+    {
+        $payment = PaymentFactory::new()->generated()->create();
 
-test('generated creates generated payment', function (): void {
-    $payment = PaymentFactory::new()->generated()->create();
-
-    expect($payment->type)->toBe(PaymentType::Generated);
-});
+        self::assertSame(PaymentType::Generated, $payment->type);
+    }
+}

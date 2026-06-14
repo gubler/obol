@@ -5,21 +5,27 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Message\Command\Payment;
+
 use App\Message\Command\Payment\AmendPaymentCommand;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
 
-test('command stores values', function (): void {
-    $paymentId = new Ulid();
-    $paidDate = new DateTimeImmutable('2024-01-05');
+final class AmendPaymentCommandTest extends TestCase
+{
+    public function testCommandStoresValues(): void
+    {
+        $paymentId = new Ulid();
+        $paidDate = new \DateTimeImmutable('2024-01-05');
 
-    $command = new AmendPaymentCommand(
-        paymentId: $paymentId,
-        amount: 1200,
-        paidDate: $paidDate,
-    );
+        $command = new AmendPaymentCommand(
+            paymentId: $paymentId,
+            amount: 1200,
+            paidDate: $paidDate,
+        );
 
-    expect($command->paymentId)->toBe($paymentId)
-        ->and($command->amount)->toBe(1200)
-        ->and($command->paidDate)->toBe($paidDate)
-    ;
-});
+        self::assertSame($paymentId, $command->paymentId);
+        self::assertSame(1200, $command->amount);
+        self::assertSame($paidDate, $command->paidDate);
+    }
+}

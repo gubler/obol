@@ -5,80 +5,91 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Message\Command\Payment;
+
 use App\Entity\Subscription;
 use App\Enum\PaymentType;
 use App\Message\Command\Payment\CreatePaymentCommand;
 use App\Message\Command\Payment\CreatePaymentHandler;
 use App\Repository\SubscriptionRepository;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
 
-test('handler records payment on subscription', function (): void {
-    $ulid = new Ulid();
-    $paidDate = new DateTimeImmutable('2025-01-15');
+final class CreatePaymentHandlerTest extends TestCase
+{
+    public function testHandlerRecordsPaymentOnSubscription(): void
+    {
+        $ulid = new Ulid();
+        $paidDate = new \DateTimeImmutable('2025-01-15');
 
-    $subscription = $this->createMock(Subscription::class);
-    $subscription->expects($this->once())
-        ->method('recordPayment')
-        ->with($paidDate, PaymentType::Verified, 1500)
-    ;
-    $subscription->expects($this->never())->method('automatePayments');
+        $subscription = $this->createMock(Subscription::class);
+        $subscription->expects(self::once())
+            ->method('recordPayment')
+            ->with($paidDate, PaymentType::Verified, 1500)
+        ;
+        $subscription->expects(self::never())->method('automatePayments');
 
-    $repository = $this->createMock(SubscriptionRepository::class);
-    $repository->expects($this->once())
-        ->method('find')
-        ->willReturn($subscription)
-    ;
+        $repository = $this->createMock(SubscriptionRepository::class);
+        $repository->expects(self::once())
+            ->method('find')
+            ->willReturn($subscription)
+        ;
 
-    $handler = new CreatePaymentHandler($repository);
-    $handler(new CreatePaymentCommand(
-        subscriptionId: $ulid,
-        amount: 1500,
-        paidDate: $paidDate,
-    ));
-});
+        $handler = new CreatePaymentHandler($repository);
+        $handler(new CreatePaymentCommand(
+            subscriptionId: $ulid,
+            amount: 1500,
+            paidDate: $paidDate,
+        ));
+    }
 
-test('handler resumes automated generation when restart is requested', function (): void {
-    $ulid = new Ulid();
-    $paidDate = new DateTimeImmutable('2025-01-15');
-    $nextRenewal = new DateTimeImmutable('2025-03-01');
+    public function testHandlerResumesAutomatedGenerationWhenRestartIsRequested(): void
+    {
+        $ulid = new Ulid();
+        $paidDate = new \DateTimeImmutable('2025-01-15');
+        $nextRenewal = new \DateTimeImmutable('2025-03-01');
 
-    $subscription = $this->createMock(Subscription::class);
-    $subscription->expects($this->once())
-        ->method('recordPayment')
-        ->with($paidDate, PaymentType::Verified, 1500)
-    ;
-    $subscription->expects($this->once())
-        ->method('automatePayments')
-        ->with($nextRenewal)
-    ;
+        $subscription = $this->createMock(Subscription::class);
+        $subscription->expects(self::once())
+            ->method('recordPayment')
+            ->with($paidDate, PaymentType::Verified, 1500)
+        ;
+        $subscription->expects(self::once())
+            ->method('automatePayments')
+            ->with($nextRenewal)
+        ;
 
-    $repository = $this->createMock(SubscriptionRepository::class);
-    $repository->expects($this->once())->method('find')->willReturn($subscription);
+        $repository = $this->createMock(SubscriptionRepository::class);
+        $repository->expects(self::once())->method('find')->willReturn($subscription);
 
-    $handler = new CreatePaymentHandler($repository);
-    $handler(new CreatePaymentCommand(
-        subscriptionId: $ulid,
-        amount: 1500,
-        paidDate: $paidDate,
-        restartPaymentGeneration: true,
-        nextRenewal: $nextRenewal,
-    ));
-});
+        $handler = new CreatePaymentHandler($repository);
+        $handler(new CreatePaymentCommand(
+            subscriptionId: $ulid,
+            amount: 1500,
+            paidDate: $paidDate,
+            restartPaymentGeneration: true,
+            nextRenewal: $nextRenewal,
+        ));
+    }
 
-test('handler throws when subscription not found', function (): void {
-    $ulid = new Ulid();
+    public function testHandlerThrowsWhenSubscriptionNotFound(): void
+    {
+        $ulid = new Ulid();
 
-    $repository = $this->createMock(SubscriptionRepository::class);
-    $repository->expects($this->once())
-        ->method('find')
-        ->willReturn(null)
-    ;
+        $repository = $this->createMock(SubscriptionRepository::class);
+        $repository->expects(self::once())
+            ->method('find')
+            ->willReturn(null)
+        ;
 
-    $handler = new CreatePaymentHandler($repository);
+        $handler = new CreatePaymentHandler($repository);
 
-    $handler(new CreatePaymentCommand(
-        subscriptionId: $ulid,
-        amount: 1500,
-        paidDate: new DateTimeImmutable(),
-    ));
-})->throws(InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
+
+        $handler(new CreatePaymentCommand(
+            subscriptionId: $ulid,
+            amount: 1500,
+            paidDate: new \DateTimeImmutable(),
+        ));
+    }
+}

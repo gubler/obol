@@ -5,39 +5,47 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Factory;
+
 use App\Enum\SubscriptionEventType;
 use App\Factory\SubscriptionEventFactory;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
-uses(KernelTestCase::class);
+final class SubscriptionEventFactoryTest extends KernelTestCase
+{
+    public function testAllowsCustomContext(): void
+    {
+        $context = ['field' => ['old' => 'value1', 'new' => 'value2']];
+        $event = SubscriptionEventFactory::createOne(['type' => SubscriptionEventType::Update, 'context' => $context]);
 
-test('allows custom context', function (): void {
-    $context = ['field' => ['old' => 'value1', 'new' => 'value2']];
-    $event = SubscriptionEventFactory::createOne(['type' => SubscriptionEventType::Update, 'context' => $context]);
+        self::assertSame($context, $event->context);
+    }
 
-    expect($event->context)->toBe($context);
-});
+    public function testUpdateCreatesUpdateEventType(): void
+    {
+        $event = SubscriptionEventFactory::new()->update()->create();
 
-test('update creates update event type', function (): void {
-    $event = SubscriptionEventFactory::new()->update()->create();
+        self::assertSame(SubscriptionEventType::Update, $event->type);
+    }
 
-    expect($event->type)->toBe(SubscriptionEventType::Update);
-});
+    public function testCostChangeCreatesCostChangeEventType(): void
+    {
+        $event = SubscriptionEventFactory::new()->costChange()->create();
 
-test('cost change creates cost change event type', function (): void {
-    $event = SubscriptionEventFactory::new()->costChange()->create();
+        self::assertSame(SubscriptionEventType::CostChange, $event->type);
+    }
 
-    expect($event->type)->toBe(SubscriptionEventType::CostChange);
-});
+    public function testArchiveCreatesArchiveEventType(): void
+    {
+        $event = SubscriptionEventFactory::new()->archive()->create();
 
-test('archive creates archive event type', function (): void {
-    $event = SubscriptionEventFactory::new()->archive()->create();
+        self::assertSame(SubscriptionEventType::Archive, $event->type);
+    }
 
-    expect($event->type)->toBe(SubscriptionEventType::Archive);
-});
+    public function testUnarchiveCreatesUnarchiveEventType(): void
+    {
+        $event = SubscriptionEventFactory::new()->unarchive()->create();
 
-test('unarchive creates unarchive event type', function (): void {
-    $event = SubscriptionEventFactory::new()->unarchive()->create();
-
-    expect($event->type)->toBe(SubscriptionEventType::Unarchive);
-});
+        self::assertSame(SubscriptionEventType::Unarchive, $event->type);
+    }
+}

@@ -5,43 +5,51 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\ValueObject;
+
 use App\Enum\Currency;
 use App\ValueObject\Money;
+use PHPUnit\Framework\TestCase;
 
-test('exposes its minor amount and currency', function (): void {
-    $money = new Money(1599, Currency::USD);
+final class MoneyTest extends TestCase
+{
+    public function testExposesItsMinorAmountAndCurrency(): void
+    {
+        $money = new Money(1599, Currency::USD);
 
-    expect($money->minorAmount)->toBe(1599)
-        ->and($money->currency)->toBe(Currency::USD)
-    ;
-});
+        self::assertSame(1599, $money->minorAmount);
+        self::assertSame(Currency::USD, $money->currency);
+    }
 
-test('adds two amounts of the same currency without mutating the originals', function (): void {
-    $a = new Money(1599, Currency::USD);
-    $b = new Money(401, Currency::USD);
+    public function testAddsTwoAmountsOfTheSameCurrencyWithoutMutatingTheOriginals(): void
+    {
+        $a = new Money(1599, Currency::USD);
+        $b = new Money(401, Currency::USD);
 
-    $sum = $a->add($b);
+        $sum = $a->add($b);
 
-    expect($sum->minorAmount)->toBe(2000)
-        ->and($sum->currency)->toBe(Currency::USD)
-        ->and($a->minorAmount)->toBe(1599)
-    ;
-});
+        self::assertSame(2000, $sum->minorAmount);
+        self::assertSame(Currency::USD, $sum->currency);
+        self::assertSame(1599, $a->minorAmount);
+    }
 
-test('refuses to add across currencies', function (): void {
-    (new Money(1000, Currency::USD))->add(new Money(1000, Currency::EUR));
-})->throws(Assert\InvalidArgumentException::class);
+    public function testRefusesToAddAcrossCurrencies(): void
+    {
+        $this->expectException(\Assert\InvalidArgumentException::class);
+        (new Money(1000, Currency::USD))->add(new Money(1000, Currency::EUR));
+    }
 
-test('equality compares amount and currency', function (): void {
-    expect((new Money(1599, Currency::USD))->equals(new Money(1599, Currency::USD)))->toBeTrue()
-        ->and((new Money(1599, Currency::USD))->equals(new Money(1599, Currency::EUR)))->toBeFalse()
-        ->and((new Money(1599, Currency::USD))->equals(new Money(1600, Currency::USD)))->toBeFalse()
-    ;
-});
+    public function testEqualityComparesAmountAndCurrency(): void
+    {
+        self::assertTrue((new Money(1599, Currency::USD))->equals(new Money(1599, Currency::USD)));
+        self::assertFalse((new Money(1599, Currency::USD))->equals(new Money(1599, Currency::EUR)));
+        self::assertFalse((new Money(1599, Currency::USD))->equals(new Money(1600, Currency::USD)));
+    }
 
-test('formats with the currency symbol and its fraction digits', function (): void {
-    expect((new Money(1599, Currency::USD))->format())->toBe('$15.99')
-        ->and((new Money(2000, Currency::JPY))->format())->toBe('¥2,000')
-        ->and((new Money(1599, Currency::EUR))->format())->toBe('€15.99')
-    ;
-});
+    public function testFormatsWithTheCurrencySymbolAndItsFractionDigits(): void
+    {
+        self::assertSame('$15.99', (new Money(1599, Currency::USD))->format());
+        self::assertSame('¥2,000', (new Money(2000, Currency::JPY))->format());
+        self::assertSame('€15.99', (new Money(1599, Currency::EUR))->format());
+    }
+}

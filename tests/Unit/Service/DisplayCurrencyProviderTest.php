@@ -4,9 +4,16 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Service;
+
 use App\Enum\Currency;
 use App\Service\DisplayCurrencyProvider;
+use PHPUnit\Framework\TestCase;
 
-test('exposes the currency for its configured code', function (): void {
-    expect((new DisplayCurrencyProvider('JPY'))->get())->toBe(Currency::JPY);
-});
+final class DisplayCurrencyProviderTest extends TestCase
+{
+    public function testExposesTheCurrencyForItsConfiguredCode(): void
+    {
+        self::assertSame(Currency::JPY, (new DisplayCurrencyProvider('JPY'))->get());
+    }
+}

@@ -5,25 +5,33 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Enum;
+
 use App\Enum\SubscriptionSort;
+use PHPUnit\Framework\TestCase;
 
-test('parses a known sort value', function (): void {
-    expect(SubscriptionSort::fromQuery('renewal'))->toBe(SubscriptionSort::Renewal)
-        ->and(SubscriptionSort::fromQuery('monthly-cost'))->toBe(SubscriptionSort::MonthlyCost)
-        ->and(SubscriptionSort::fromQuery('cost'))->toBe(SubscriptionSort::Cost)
-        ->and(SubscriptionSort::fromQuery('name'))->toBe(SubscriptionSort::Name)
-    ;
-});
-
-test('falls back to name for an unknown or missing value', function (): void {
-    expect(SubscriptionSort::fromQuery(null))->toBe(SubscriptionSort::Name)
-        ->and(SubscriptionSort::fromQuery(''))->toBe(SubscriptionSort::Name)
-        ->and(SubscriptionSort::fromQuery('bogus'))->toBe(SubscriptionSort::Name)
-    ;
-});
-
-test('every case has a label', function (): void {
-    foreach (SubscriptionSort::cases() as $case) {
-        expect($case->label())->toBeString()->not->toBe('');
+final class SubscriptionSortTest extends TestCase
+{
+    public function testParsesAKnownSortValue(): void
+    {
+        self::assertSame(SubscriptionSort::Renewal, SubscriptionSort::fromQuery('renewal'));
+        self::assertSame(SubscriptionSort::MonthlyCost, SubscriptionSort::fromQuery('monthly-cost'));
+        self::assertSame(SubscriptionSort::Cost, SubscriptionSort::fromQuery('cost'));
+        self::assertSame(SubscriptionSort::Name, SubscriptionSort::fromQuery('name'));
     }
-});
+
+    public function testFallsBackToNameForAnUnknownOrMissingValue(): void
+    {
+        self::assertSame(SubscriptionSort::Name, SubscriptionSort::fromQuery(null));
+        self::assertSame(SubscriptionSort::Name, SubscriptionSort::fromQuery(''));
+        self::assertSame(SubscriptionSort::Name, SubscriptionSort::fromQuery('bogus'));
+    }
+
+    public function testEveryCaseHasALabel(): void
+    {
+        foreach (SubscriptionSort::cases() as $case) {
+            self::assertIsString($case->label());
+            self::assertNotSame('', $case->label());
+        }
+    }
+}

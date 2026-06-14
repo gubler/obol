@@ -5,36 +5,42 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Enum;
+
 use App\Enum\Currency;
+use PHPUnit\Framework\TestCase;
 
-test('is a string-backed enum of ISO 4217 codes', function (): void {
-    expect(Currency::USD->value)->toBe('USD')
-        ->and(Currency::from('JPY'))->toBe(Currency::JPY)
-    ;
-});
+final class CurrencyTest extends TestCase
+{
+    public function testIsAStringBackedEnumOfIso4217Codes(): void
+    {
+        self::assertSame('USD', Currency::USD->value);
+        self::assertSame(Currency::JPY, Currency::from('JPY'));
+    }
 
-test('covers the Frankfurter/ECB-quoted currency set and nothing more', function (): void {
-    expect(Currency::cases())->toHaveCount(30)
-        ->and(Currency::tryFrom('USD'))->not->toBeNull()
-        ->and(Currency::tryFrom('EUR'))->not->toBeNull()
-        ->and(Currency::tryFrom('JPY'))->not->toBeNull()
+    public function testCoversTheFrankfurterEcbQuotedCurrencySetAndNothingMore(): void
+    {
+        self::assertCount(30, Currency::cases());
+        self::assertNotNull(Currency::tryFrom('USD'));
+        self::assertNotNull(Currency::tryFrom('EUR'));
+        self::assertNotNull(Currency::tryFrom('JPY'));
         // Not all of ISO 4217: a currency we cannot get a rate for is intentionally absent.
-        ->and(Currency::tryFrom('XAU'))->toBeNull()
-        ->and(Currency::tryFrom('KWD'))->toBeNull()
-    ;
-});
+        self::assertNull(Currency::tryFrom('XAU'));
+        self::assertNull(Currency::tryFrom('KWD'));
+    }
 
-test('reports fraction digits per currency', function (): void {
-    expect(Currency::USD->fractionDigits())->toBe(2)
-        ->and(Currency::EUR->fractionDigits())->toBe(2)
-        ->and(Currency::JPY->fractionDigits())->toBe(0)
-    ;
-});
+    public function testReportsFractionDigitsPerCurrency(): void
+    {
+        self::assertSame(2, Currency::USD->fractionDigits());
+        self::assertSame(2, Currency::EUR->fractionDigits());
+        self::assertSame(0, Currency::JPY->fractionDigits());
+    }
 
-test('exposes a symbol and a human label', function (): void {
-    expect(Currency::USD->symbol())->toBe('$')
-        ->and(Currency::JPY->symbol())->toBe('¥')
-        ->and(Currency::GBP->symbol())->toBe('£')
-        ->and(Currency::USD->label())->toContain('Dollar')
-    ;
-});
+    public function testExposesASymbolAndAHumanLabel(): void
+    {
+        self::assertSame('$', Currency::USD->symbol());
+        self::assertSame('¥', Currency::JPY->symbol());
+        self::assertSame('£', Currency::GBP->symbol());
+        self::assertStringContainsString('Dollar', Currency::USD->label());
+    }
+}

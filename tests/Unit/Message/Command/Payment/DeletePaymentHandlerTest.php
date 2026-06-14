@@ -5,6 +5,8 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Message\Command\Payment;
+
 use App\Entity\Category;
 use App\Entity\Payment;
 use App\Entity\Subscription;
@@ -15,42 +17,52 @@ use App\Enum\PaymentType;
 use App\Message\Command\Payment\DeletePaymentCommand;
 use App\Message\Command\Payment\DeletePaymentHandler;
 use App\Repository\PaymentRepository;
+use App\Tests\Support\InstantAssertions;
 use App\ValueObject\Money;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
 
-test('removes the payment, rolls back the renewal anchor, and switches to manual generation', function (): void {
-    $subscription = new Subscription(
-        category: new Category(name: 'Test'),
-        name: 'Netflix',
-        nextRenewal: new DateTimeImmutable('2024-02-01'),
-        paymentPeriod: PaymentPeriod::Month,
-        paymentPeriodCount: 1,
-        cost: new Money(1500, Currency::USD),
-    );
-    $subscription->recordPayment(
-        paidDate: new DateTimeImmutable('2024-01-01'),
-        paymentType: PaymentType::Verified,
-    );
-    /** @var Payment $payment */
-    $payment = $subscription->payments->first();
+final class DeletePaymentHandlerTest extends TestCase
+{
+    use InstantAssertions;
 
-    $repository = $this->createMock(PaymentRepository::class);
-    $repository->expects($this->once())->method('find')->willReturn($payment);
+    public function testRemovesThePaymentRollsBackTheRenewalAnchorAndSwitchesToManualGeneration(): void
+    {
+        $subscription = new Subscription(
+            category: new Category(name: 'Test'),
+            name: 'Netflix',
+            nextRenewal: new \DateTimeImmutable('2024-02-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: new Money(1500, Currency::USD),
+        );
+        $subscription->recordPayment(
+            paidDate: new \DateTimeImmutable('2024-01-01'),
+            paymentType: PaymentType::Verified,
+        );
+        /** @var Payment $payment */
+        $payment = $subscription->payments->first();
 
-    $handler = new DeletePaymentHandler($repository);
-    $handler(new DeletePaymentCommand(paymentId: $payment->id));
+        $repository = $this->createMock(PaymentRepository::class);
+        $repository->expects(self::once())->method('find')->willReturn($payment);
 
-    expect($subscription->payments)->toHaveCount(0)
-        ->and($subscription->nextRenewal)->toEqual(new DateTimeImmutable('2024-02-01'))
-        ->and($subscription->paymentGeneration)->toBe(PaymentGeneration::Manual)
-    ;
-});
+        $handler = new DeletePaymentHandler($repository);
+        $handler(new DeletePaymentCommand(paymentId: $payment->id));
 
-test('throws when payment not found', function (): void {
-    $repository = $this->createMock(PaymentRepository::class);
-    $repository->expects($this->once())->method('find')->willReturn(null);
+        self::assertCount(0, $subscription->payments);
+        self::assertSameInstant(new \DateTimeImmutable('2024-02-01'), $subscription->nextRenewal);
+        self::assertSame(PaymentGeneration::Manual, $subscription->paymentGeneration);
+    }
 
-    $handler = new DeletePaymentHandler($repository);
+    public function testThrowsWhenPaymentNotFound(): void
+    {
+        $repository = $this->createMock(PaymentRepository::class);
+        $repository->expects(self::once())->method('find')->willReturn(null);
 
-    $handler(new DeletePaymentCommand(paymentId: new Ulid()));
-})->throws(InvalidArgumentException::class);
+        $handler = new DeletePaymentHandler($repository);
+
+        $this->expectException(\InvalidArgumentException::class);
+
+        $handler(new DeletePaymentCommand(paymentId: new Ulid()));
+    }
+}

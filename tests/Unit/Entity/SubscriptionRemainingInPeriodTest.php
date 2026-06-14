@@ -5,53 +5,61 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Entity;
+
 use App\Entity\Category;
 use App\Entity\Subscription;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\ValueObject\Money;
+use PHPUnit\Framework\TestCase;
 
-function makeRemainingSubscription(int $costMinor, PaymentPeriod $period, int $count, string $nextRenewal): Subscription
+final class SubscriptionRemainingInPeriodTest extends TestCase
 {
-    return new Subscription(
-        category: new Category(name: 'Test'),
-        name: 'Test',
-        nextRenewal: new DateTimeImmutable($nextRenewal),
-        paymentPeriod: $period,
-        paymentPeriodCount: $count,
-        cost: new Money($costMinor, Currency::USD),
-    );
-}
+    public function testSumsCostForEachRenewalUpToAndIncludingThePeriodEnd(): void
+    {
+        $subscription = $this->makeRemainingSubscription(10000, PaymentPeriod::Month, 1, '2026-06-01');
 
-test('sums cost for each renewal up to and including the period end', function (): void {
-    $subscription = makeRemainingSubscription(10000, PaymentPeriod::Month, 1, '2026-06-01');
-
-    // Only the June 1 renewal falls within June.
-    expect($subscription->remainingInPeriod(new DateTimeImmutable('2026-06-30 23:59:59'))->minorAmount)->toBe(10000)
+        // Only the June 1 renewal falls within June.
+        self::assertSame(10000, $subscription->remainingInPeriod(new \DateTimeImmutable('2026-06-30 23:59:59'))->minorAmount);
         // June, July, August renewals fall on or before Aug 31.
-        ->and($subscription->remainingInPeriod(new DateTimeImmutable('2026-08-31 23:59:59'))->minorAmount)->toBe(30000)
-    ;
-});
+        self::assertSame(30000, $subscription->remainingInPeriod(new \DateTimeImmutable('2026-08-31 23:59:59'))->minorAmount);
+    }
 
-test('counts overdue renewals from a next renewal already in the past', function (): void {
-    // $100/mo unpaid since April: nextRenewal is the next unpaid (April 1). By end of June: Apr, May, Jun.
-    $subscription = makeRemainingSubscription(10000, PaymentPeriod::Month, 1, '2026-04-01');
+    public function testCountsOverdueRenewalsFromANextRenewalAlreadyInThePast(): void
+    {
+        // $100/mo unpaid since April: nextRenewal is the next unpaid (April 1). By end of June: Apr, May, Jun.
+        $subscription = $this->makeRemainingSubscription(10000, PaymentPeriod::Month, 1, '2026-04-01');
 
-    expect($subscription->remainingInPeriod(new DateTimeImmutable('2026-06-30 23:59:59'))->minorAmount)->toBe(30000);
-});
+        self::assertSame(30000, $subscription->remainingInPeriod(new \DateTimeImmutable('2026-06-30 23:59:59'))->minorAmount);
+    }
 
-test('is zero in the subscription currency when the next renewal is after the period end', function (): void {
-    $subscription = makeRemainingSubscription(10000, PaymentPeriod::Month, 1, '2026-07-01');
+    public function testIsZeroInTheSubscriptionCurrencyWhenTheNextRenewalIsAfterThePeriodEnd(): void
+    {
+        $subscription = $this->makeRemainingSubscription(10000, PaymentPeriod::Month, 1, '2026-07-01');
 
-    $remaining = $subscription->remainingInPeriod(new DateTimeImmutable('2026-06-30 23:59:59'));
-    expect($remaining->minorAmount)->toBe(0)
-        ->and($remaining->currency)->toBe(Currency::USD)
-    ;
-});
+        $remaining = $subscription->remainingInPeriod(new \DateTimeImmutable('2026-06-30 23:59:59'));
+        self::assertSame(0, $remaining->minorAmount);
+        self::assertSame(Currency::USD, $remaining->currency);
+    }
 
-test('advances by the full billing interval, not a single period', function (): void {
-    // Every three months from Jan 1: renewals Jan, Apr, Jul, Oct fall within the year.
-    $subscription = makeRemainingSubscription(10000, PaymentPeriod::Month, 3, '2026-01-01');
+    public function testAdvancesByTheFullBillingIntervalNotASinglePeriod(): void
+    {
+        // Every three months from Jan 1: renewals Jan, Apr, Jul, Oct fall within the year.
+        $subscription = $this->makeRemainingSubscription(10000, PaymentPeriod::Month, 3, '2026-01-01');
 
-    expect($subscription->remainingInPeriod(new DateTimeImmutable('2026-12-31 23:59:59'))->minorAmount)->toBe(40000);
-});
+        self::assertSame(40000, $subscription->remainingInPeriod(new \DateTimeImmutable('2026-12-31 23:59:59'))->minorAmount);
+    }
+
+    private function makeRemainingSubscription(int $costMinor, PaymentPeriod $period, int $count, string $nextRenewal): Subscription
+    {
+        return new Subscription(
+            category: new Category(name: 'Test'),
+            name: 'Test',
+            nextRenewal: new \DateTimeImmutable($nextRenewal),
+            paymentPeriod: $period,
+            paymentPeriodCount: $count,
+            cost: new Money($costMinor, Currency::USD),
+        );
+    }
+}

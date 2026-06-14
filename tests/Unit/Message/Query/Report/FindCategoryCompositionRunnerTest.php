@@ -5,6 +5,8 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Message\Query\Report;
+
 use App\Entity\Category;
 use App\Entity\Subscription;
 use App\Enum\Currency;
@@ -18,87 +20,91 @@ use App\Repository\ExchangeRateRepository;
 use App\Repository\SubscriptionRepository;
 use App\Service\DisplayCurrencyProvider;
 use App\ValueObject\Money;
+use PHPUnit\Framework\TestCase;
 
-function compositionSubscription(Category $category, int $costMinor, Currency $currency = Currency::USD, PaymentPeriod $period = PaymentPeriod::Month, int $count = 1): Subscription
+final class FindCategoryCompositionRunnerTest extends TestCase
 {
-    return new Subscription(
-        category: $category,
-        name: 'Test',
-        nextRenewal: new DateTimeImmutable('2026-01-01'),
-        paymentPeriod: $period,
-        paymentPeriodCount: $count,
-        cost: new Money($costMinor, $currency),
-    );
+    private static function compositionSubscription(Category $category, int $costMinor, Currency $currency = Currency::USD, PaymentPeriod $period = PaymentPeriod::Month, int $count = 1): Subscription
+    {
+        return new Subscription(
+            category: $category,
+            name: 'Test',
+            nextRenewal: new \DateTimeImmutable('2026-01-01'),
+            paymentPeriod: $period,
+            paymentPeriodCount: $count,
+            cost: new Money($costMinor, $currency),
+        );
+    }
+
+    /**
+     * @param list<Subscription>   $subscriptions
+     * @param array<string, float> $rates
+     */
+    private function runComposition(array $subscriptions, array $rates = [], string $displayCurrency = 'USD'): Composition
+    {
+        $repository = $this->createMock(SubscriptionRepository::class);
+        $repository->method('findBy')->with(['archived' => false])->willReturn($subscriptions);
+
+        $exchangeRateRepository = $this->createMock(ExchangeRateRepository::class);
+        $exchangeRateRepository->method('latestRate')
+            ->willReturnCallback(static fn (Currency $currency): ?float => $rates[$currency->value] ?? null)
+        ;
+        $totaller = new CurrencyTotaller(new Converter($exchangeRateRepository), new DisplayCurrencyProvider($displayCurrency));
+
+        $runner = new FindCategoryCompositionRunner($repository, $totaller);
+
+        return $runner(new FindCategoryCompositionQuery());
+    }
+
+    public function testOneSlicePerCategorySortedByShareDescendingWithTheOverallTotal(): void
+    {
+        $streaming = new Category(name: 'Streaming');
+        $software = new Category(name: 'Software');
+
+        $composition = $this->runComposition([
+            self::compositionSubscription($streaming, 1000),
+            self::compositionSubscription($streaming, 500),
+            self::compositionSubscription($software, 4000),
+        ]);
+
+        self::assertInstanceOf(Composition::class, $composition);
+        self::assertCount(2, $composition->slices);
+        self::assertSame('Software', $composition->slices[0]->label);   // 4000, largest share first
+        self::assertSame(4000, $composition->slices[0]->converted->minorAmount);
+        self::assertSame($software->id, $composition->slices[0]->id);
+        self::assertSame('Streaming', $composition->slices[1]->label);  // 1500
+        self::assertSame(1500, $composition->slices[1]->converted->minorAmount);
+        self::assertSame(5500, $composition->total->converted->minorAmount);
+        self::assertFalse($composition->total->isApproximate);
+        self::assertNull($composition->title);
+    }
+
+    public function testConvertsAMixedCurrencyCategoryShareAndKeepsTheNativeBreakdown(): void
+    {
+        $mixed = new Category(name: 'Mixed');
+
+        $composition = $this->runComposition(
+            [
+                self::compositionSubscription($mixed, 10000),                   // 100 USD
+                self::compositionSubscription($mixed, 5000, Currency::EUR),     // 50 EUR -> 54 USD
+            ],
+            rates: ['EUR' => 1.0, 'USD' => 1.08],
+        );
+
+        self::assertCount(1, $composition->slices);
+        self::assertSame(15400, $composition->slices[0]->converted->minorAmount);  // 10000 + 5400
+        self::assertTrue($composition->slices[0]->isApproximate);
+        self::assertCount(2, $composition->slices[0]->breakdown);            // native USD + EUR
+        self::assertSame(15400, $composition->total->converted->minorAmount);
+        self::assertTrue($composition->total->isApproximate);
+    }
+
+    public function testIsEmptyWithAZeroTotalWhenThereAreNoActiveSubscriptions(): void
+    {
+        $composition = $this->runComposition([]);
+
+        self::assertSame([], $composition->slices);
+        self::assertSame(0, $composition->total->converted->minorAmount);
+        self::assertSame([], $composition->total->breakdown);
+    }
 }
-
-/**
- * @param list<Subscription>   $subscriptions
- * @param array<string, float> $rates
- */
-function runComposition(array $subscriptions, array $rates = [], string $displayCurrency = 'USD'): Composition
-{
-    $repository = test()->createMock(SubscriptionRepository::class);
-    $repository->method('findBy')->with(['archived' => false])->willReturn($subscriptions);
-
-    $exchangeRateRepository = test()->createMock(ExchangeRateRepository::class);
-    $exchangeRateRepository->method('latestRate')
-        ->willReturnCallback(static fn (Currency $currency): ?float => $rates[$currency->value] ?? null)
-    ;
-    $totaller = new CurrencyTotaller(new Converter($exchangeRateRepository), new DisplayCurrencyProvider($displayCurrency));
-
-    $runner = new FindCategoryCompositionRunner($repository, $totaller);
-
-    return $runner(new FindCategoryCompositionQuery());
-}
-
-test('one slice per category, sorted by share descending, with the overall total', function (): void {
-    $streaming = new Category(name: 'Streaming');
-    $software = new Category(name: 'Software');
-
-    $composition = runComposition([
-        compositionSubscription($streaming, 1000),
-        compositionSubscription($streaming, 500),
-        compositionSubscription($software, 4000),
-    ]);
-
-    expect($composition)->toBeInstanceOf(Composition::class)
-        ->and($composition->slices)->toHaveCount(2)
-        ->and($composition->slices[0]->label)->toBe('Software')   // 4000, largest share first
-        ->and($composition->slices[0]->converted->minorAmount)->toBe(4000)
-        ->and($composition->slices[0]->id)->toBe($software->id)
-        ->and($composition->slices[1]->label)->toBe('Streaming')  // 1500
-        ->and($composition->slices[1]->converted->minorAmount)->toBe(1500)
-        ->and($composition->total->converted->minorAmount)->toBe(5500)
-        ->and($composition->total->isApproximate)->toBeFalse()
-        ->and($composition->title)->toBeNull()
-    ;
-});
-
-test('converts a mixed-currency category share and keeps the native breakdown', function (): void {
-    $mixed = new Category(name: 'Mixed');
-
-    $composition = runComposition(
-        [
-            compositionSubscription($mixed, 10000),                   // 100 USD
-            compositionSubscription($mixed, 5000, Currency::EUR),     // 50 EUR -> 54 USD
-        ],
-        rates: ['EUR' => 1.0, 'USD' => 1.08],
-    );
-
-    expect($composition->slices)->toHaveCount(1)
-        ->and($composition->slices[0]->converted->minorAmount)->toBe(15400)  // 10000 + 5400
-        ->and($composition->slices[0]->isApproximate)->toBeTrue()
-        ->and($composition->slices[0]->breakdown)->toHaveCount(2)            // native USD + EUR
-        ->and($composition->total->converted->minorAmount)->toBe(15400)
-        ->and($composition->total->isApproximate)->toBeTrue()
-    ;
-});
-
-test('is empty with a zero total when there are no active subscriptions', function (): void {
-    $composition = runComposition([]);
-
-    expect($composition->slices)->toBe([])
-        ->and($composition->total->converted->minorAmount)->toBe(0)
-        ->and($composition->total->breakdown)->toBe([])
-    ;
-});

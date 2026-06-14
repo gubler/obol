@@ -5,39 +5,47 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Message\Query;
+
 use App\Entity\Payment;
 use App\Message\Query\Payment\FindPaymentQuery;
 use App\Message\Query\Payment\FindPaymentRunner;
 use App\Repository\PaymentRepository;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
 
-test('returns payment when found', function (): void {
-    $ulid = new Ulid();
-    $payment = $this->createMock(Payment::class);
+final class FindPaymentRunnerTest extends TestCase
+{
+    public function testReturnsPaymentWhenFound(): void
+    {
+        $ulid = new Ulid();
+        $payment = $this->createMock(Payment::class);
 
-    $repository = $this->createMock(PaymentRepository::class);
-    $repository->expects($this->once())
-        ->method('find')
-        ->willReturn($payment)
-    ;
+        $repository = $this->createMock(PaymentRepository::class);
+        $repository->expects(self::once())
+            ->method('find')
+            ->willReturn($payment)
+        ;
 
-    $runner = new FindPaymentRunner($repository);
-    $result = $runner(new FindPaymentQuery(paymentId: $ulid));
+        $runner = new FindPaymentRunner($repository);
+        $result = $runner(new FindPaymentQuery(paymentId: $ulid));
 
-    expect($result)->toBe($payment);
-});
+        self::assertSame($payment, $result);
+    }
 
-test('returns null when not found', function (): void {
-    $ulid = new Ulid();
+    public function testReturnsNullWhenNotFound(): void
+    {
+        $ulid = new Ulid();
 
-    $repository = $this->createMock(PaymentRepository::class);
-    $repository->expects($this->once())
-        ->method('find')
-        ->willReturn(null)
-    ;
+        $repository = $this->createMock(PaymentRepository::class);
+        $repository->expects(self::once())
+            ->method('find')
+            ->willReturn(null)
+        ;
 
-    $runner = new FindPaymentRunner($repository);
-    $result = $runner(new FindPaymentQuery(paymentId: $ulid));
+        $runner = new FindPaymentRunner($repository);
+        $result = $runner(new FindPaymentQuery(paymentId: $ulid));
 
-    expect($result)->toBeNull();
-});
+        self::assertNull($result);
+    }
+}

@@ -5,58 +5,64 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Service;
+
 use App\Enum\Currency;
 use App\Message\Currency\ConvertedTotal;
 use App\Message\Query\Report\Composition;
 use App\Message\Query\Report\CompositionSlice;
 use App\Service\CompositionChartFactory;
 use App\ValueObject\Money;
+use PHPUnit\Framework\TestCase;
 use Symfony\UX\Chartjs\Builder\ChartBuilder;
 use Symfony\UX\Chartjs\Model\Chart;
 
-function usd(int $minor): Money
+final class CompositionChartFactoryTest extends TestCase
 {
-    return new Money($minor, Currency::USD);
+    public function testBuildsAPieWithOneLabelledSlicePerCategoryAndDisplayCurrencyAmounts(): void
+    {
+        $factory = new CompositionChartFactory(new ChartBuilder());
+
+        $chart = $factory->pie(self::makeComposition(
+            new CompositionSlice('Software', self::usd(4000), [self::usd(4000)], false),
+            new CompositionSlice('Streaming', self::usd(1500), [self::usd(1500)], false),
+        ));
+
+        $data = $chart->getData();
+
+        self::assertSame(Chart::TYPE_PIE, $chart->getType());
+        self::assertSame(['Software', 'Streaming'], $data['labels']);
+        self::assertSame([4000, 1500], $data['datasets'][0]['data']);
+        self::assertSame(['$40.00', '$15.00'], $data['datasets'][0]['displayAmounts']);
+        self::assertCount(2, $data['datasets'][0]['backgroundColor']);
+    }
+
+    public function testCarriesTheNativeBreakdownOnlyForConvertedApproximateSlices(): void
+    {
+        $factory = new CompositionChartFactory(new ChartBuilder());
+
+        $chart = $factory->pie(self::makeComposition(
+            new CompositionSlice('Mixed', self::usd(15400), [self::usd(10000), new Money(5000, Currency::EUR)], true),
+            new CompositionSlice('Plain', self::usd(2000), [self::usd(2000)], false),
+        ));
+
+        $native = $chart->getData()['datasets'][0]['nativeBreakdown'];
+
+        self::assertSame(['$100.00', '€50.00'], $native[0]); // approximate: native lines for the tooltip
+        self::assertSame([], $native[1]);                    // not approximate: nothing extra to disclose
+    }
+
+    private static function usd(int $minor): Money
+    {
+        return new Money($minor, Currency::USD);
+    }
+
+    private static function makeComposition(CompositionSlice ...$slices): Composition
+    {
+        return new Composition(
+            slices: array_values($slices),
+            total: new ConvertedTotal(self::usd(0), [], false),
+            asOf: new \DateTimeImmutable('2026-06-13'),
+        );
+    }
 }
-
-function makeComposition(CompositionSlice ...$slices): Composition
-{
-    return new Composition(
-        slices: array_values($slices),
-        total: new ConvertedTotal(usd(0), [], false),
-        asOf: new DateTimeImmutable('2026-06-13'),
-    );
-}
-
-test('builds a pie with one labelled slice per category and display-currency amounts', function (): void {
-    $factory = new CompositionChartFactory(new ChartBuilder());
-
-    $chart = $factory->pie(makeComposition(
-        new CompositionSlice('Software', usd(4000), [usd(4000)], false),
-        new CompositionSlice('Streaming', usd(1500), [usd(1500)], false),
-    ));
-
-    $data = $chart->getData();
-
-    expect($chart->getType())->toBe(Chart::TYPE_PIE)
-        ->and($data['labels'])->toBe(['Software', 'Streaming'])
-        ->and($data['datasets'][0]['data'])->toBe([4000, 1500])
-        ->and($data['datasets'][0]['displayAmounts'])->toBe(['$40.00', '$15.00'])
-        ->and($data['datasets'][0]['backgroundColor'])->toHaveCount(2)
-    ;
-});
-
-test('carries the native breakdown only for converted (approximate) slices', function (): void {
-    $factory = new CompositionChartFactory(new ChartBuilder());
-
-    $chart = $factory->pie(makeComposition(
-        new CompositionSlice('Mixed', usd(15400), [usd(10000), new Money(5000, Currency::EUR)], true),
-        new CompositionSlice('Plain', usd(2000), [usd(2000)], false),
-    ));
-
-    $native = $chart->getData()['datasets'][0]['nativeBreakdown'];
-
-    expect($native[0])->toBe(['$100.00', '€50.00'])  // approximate: native lines for the tooltip
-        ->and($native[1])->toBe([])                  // not approximate: nothing extra to disclose
-    ;
-});

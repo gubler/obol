@@ -5,6 +5,8 @@
 
 declare(strict_types=1);
 
+namespace App\Tests\Unit\Message\Command\Payment;
+
 use App\Entity\Category;
 use App\Entity\Payment;
 use App\Entity\Subscription;
@@ -14,50 +16,60 @@ use App\Enum\PaymentType;
 use App\Message\Command\Payment\AmendPaymentCommand;
 use App\Message\Command\Payment\AmendPaymentHandler;
 use App\Repository\PaymentRepository;
+use App\Tests\Support\InstantAssertions;
 use App\ValueObject\Money;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
 
-test('amends the payment', function (): void {
-    $subscription = new Subscription(
-        category: new Category(name: 'Test'),
-        name: 'Netflix',
-        nextRenewal: new DateTimeImmutable('2024-02-01'),
-        paymentPeriod: PaymentPeriod::Month,
-        paymentPeriodCount: 1,
-        cost: new Money(1000, Currency::USD),
-    );
-    $payment = new Payment(
-        subscription: $subscription,
-        type: PaymentType::Generated,
-        amount: new Money(1000, Currency::USD),
-        paidDate: new DateTimeImmutable('2024-01-01'),
-    );
+final class AmendPaymentHandlerTest extends TestCase
+{
+    use InstantAssertions;
 
-    $repository = $this->createMock(PaymentRepository::class);
-    $repository->expects($this->once())->method('find')->willReturn($payment);
+    public function testAmendsThePayment(): void
+    {
+        $subscription = new Subscription(
+            category: new Category(name: 'Test'),
+            name: 'Netflix',
+            nextRenewal: new \DateTimeImmutable('2024-02-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: new Money(1000, Currency::USD),
+        );
+        $payment = new Payment(
+            subscription: $subscription,
+            type: PaymentType::Generated,
+            amount: new Money(1000, Currency::USD),
+            paidDate: new \DateTimeImmutable('2024-01-01'),
+        );
 
-    $handler = new AmendPaymentHandler($repository);
-    $handler(new AmendPaymentCommand(
-        paymentId: $payment->id,
-        amount: 1200,
-        paidDate: new DateTimeImmutable('2024-01-05'),
-    ));
+        $repository = $this->createMock(PaymentRepository::class);
+        $repository->expects(self::once())->method('find')->willReturn($payment);
 
-    expect($payment->amount->minorAmount)->toBe(1200)
-        ->and($payment->paidDate)->toEqual(new DateTimeImmutable('2024-01-05'))
-        ->and($payment->type)->toBe(PaymentType::Verified)
-    ;
-});
+        $handler = new AmendPaymentHandler($repository);
+        $handler(new AmendPaymentCommand(
+            paymentId: $payment->id,
+            amount: 1200,
+            paidDate: new \DateTimeImmutable('2024-01-05'),
+        ));
 
-test('throws when payment not found', function (): void {
-    $repository = $this->createMock(PaymentRepository::class);
-    $repository->expects($this->once())->method('find')->willReturn(null);
+        self::assertSame(1200, $payment->amount->minorAmount);
+        self::assertSameInstant(new \DateTimeImmutable('2024-01-05'), $payment->paidDate);
+        self::assertSame(PaymentType::Verified, $payment->type);
+    }
 
-    $handler = new AmendPaymentHandler($repository);
+    public function testThrowsWhenPaymentNotFound(): void
+    {
+        $repository = $this->createMock(PaymentRepository::class);
+        $repository->expects(self::once())->method('find')->willReturn(null);
 
-    $handler(new AmendPaymentCommand(
-        paymentId: new Ulid(),
-        amount: 1200,
-        paidDate: new DateTimeImmutable(),
-    ));
-})->throws(InvalidArgumentException::class);
+        $handler = new AmendPaymentHandler($repository);
+
+        $this->expectException(\InvalidArgumentException::class);
+
+        $handler(new AmendPaymentCommand(
+            paymentId: new Ulid(),
+            amount: 1200,
+            paidDate: new \DateTimeImmutable(),
+        ));
+    }
+}

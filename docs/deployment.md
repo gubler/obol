@@ -106,4 +106,6 @@ code.dev88.work/dev88/obol:latest
 code.dev88.work/dev88/obol:{short-sha}
 ```
 
-See [CI/CD](ci-cd.md) for details on the build pipeline.
+Each tag is a **multi-arch manifest** covering `linux/amd64` and `linux/arm64`, so the same tag pulls and runs on an x86_64 host (Hex) or an arm64 host (Mac/arm).
+
+See [CI/CD](ci-cd.md#multi-arch-builds) for details on the build pipeline and how the multi-arch image is produced.

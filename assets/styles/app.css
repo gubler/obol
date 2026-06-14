@@ -1,2 +1,17 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
+/*
+ * The tailwind_2_layout form theme only sets layout classes (mt-1 w-full) on inputs;
+ * the input chrome (border, ring, rounded, padding) comes from this plugin. Without it,
+ * Tailwind's Preflight strips inputs' native border and they render invisible. The
+ * standalone Tailwind binary bundles the first-party plugins, so no npm install is needed.
+ */
+@plugin "@tailwindcss/forms";
+
+/*
+ * Tailwind v4 auto-detects sources but skips vendor/ and gitignored paths, so the
+ * utility classes emitted by the Symfony form theme would be purged from the build,
+ * leaving form fields unstyled. Register the theme template explicitly so its
+ * classes survive. See https://symfony.com/doc/current/form/tailwindcss.html
+ */
+@source "../../vendor/symfony/twig-bridge/Resources/views/Form/tailwind_2_layout.html.twig";

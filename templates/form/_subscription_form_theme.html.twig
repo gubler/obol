@@ -1,5 +1,5 @@
-{# ABOUTME: Form theme rendering the TileColor field as a grid of selectable swatch chips. #}
-{# ABOUTME: Each swatch shows its actual Tailwind gradient; the checked one gets a ring. #}
+{# ABOUTME: Custom form theme blocks for the subscription forms. #}
+{# ABOUTME: Renders the TileColor field as selectable swatch chips and gives the file input a bordered box with a styled Browse button. #}
 {% block tile_color_widget %}
     <div class="grid grid-cols-6 gap-2 sm:grid-cols-9">
         {% for choice in form %}
@@ -13,4 +13,11 @@
             </div>
         {% endfor %}
     </div>
+{% endblock %}
+
+{# The @tailwindcss/forms plugin leaves file inputs borderless; give it the same bordered box as the text inputs, plus a styled Browse button via the file: pseudo-element. #}
+{% block file_widget %}
+    {# Mirror the @tailwindcss/forms defaults the other inputs get (square corners, gray-500 border, blue-600 focus, no shadow) so the box matches; the file: classes style the Browse button. #}
+    {% set widget_class = widget_class|default('mt-1 block w-full cursor-pointer border border-gray-500 text-sm text-gray-600 file:mr-3 file:cursor-pointer file:border-0 file:bg-gray-100 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-gray-700 hover:file:bg-gray-200 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600') %}
+    {{ block('form_widget_simple') }}
 {% endblock %}

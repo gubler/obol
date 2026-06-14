@@ -80,6 +80,16 @@ $subscription = SubscriptionFactory::createOne([
 - All enums must be backed
 - All classes in `App\Repository` must have `Repository` suffix
 
+## JavaScript (Stimulus) tests
+
+The Stimulus controllers are tested separately, with [Vitest](https://vitest.dev/) + jsdom rather than Pest - the JS analog of the PHP suite. Specs are named `*.test.js` and live next to the controller they cover (e.g. `assets/controllers/conditional_field_controller.test.js`). They mount the controller on a fixture element through a real Stimulus `Application` and assert behavior via the DOM, not by calling private methods.
+
+```bash
+mise run js:test   # Vitest, host-side via npm
+```
+
+This runs in `mise run check`, the git hooks, and CI alongside the PHP tests. See [Frontend](../frontend.md#javascript-toolchain-dev-only) for the full JS toolchain (Biome, Vitest, `tsc --checkJs`).
+
 ## Code Coverage
 
 Coverage is enforced at a **70% minimum** via `--min=70`:

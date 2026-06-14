@@ -122,9 +122,28 @@ description = "Build Tailwind CSS assets"
 depends = ["_ensure-up"]
 run = ["$DC_EXEC php bin/console tailwind:build"]
 
+# JS toolchain (#133) - runs host-side via npm (Node), never in the php container.
+# AssetMapper + importmap stay the runtime; this is dev/CI tooling only. Run
+# `npm ci` once after pulling. Mirrors the PHP sa/test/cs trio.
+[tasks."js:sa"]
+description = "JS static analysis via tsc --checkJs"
+run = ["npm run sa"]
+
+[tasks."js:test"]
+description = "JS unit tests via Vitest"
+run = ["npm run test"]
+
+[tasks."js:cs"]
+description = "JS code style + lint via Biome (fix)"
+run = ["npm run cs"]
+
+[tasks."js:cs:check"]
+description = "JS code style + lint via Biome (check only)"
+run = ["npm run cs:check"]
+
 [tasks.check]
-description = "Run all checks: PHPStan, tests, CS Fixer, Twig CS"
-depends = ["sa", "test", "cs", "cs:twig"]
+description = "Run all checks: PHPStan, tests, CS Fixer, Twig CS, and the JS toolchain"
+depends = ["sa", "test", "cs", "cs:twig", "js:sa", "js:test", "js:cs"]
 
 [tasks."docs:serve"]
 description = "Serve MkDocs site locally (runs on host, needs mkdocs-material via pipx)"

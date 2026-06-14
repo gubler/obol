@@ -6,10 +6,11 @@ This guide covers setting up Obol for local development.
 
 - **Docker** with the Compose plugin. Any compatible engine works; [OrbStack](https://orbstack.dev/) is recommended on macOS for its faster startup and volume mounts.
 - **[mise](https://mise.jdx.dev/)** for task shortcuts.
+- **Node.js 24+ with npm** for the dev-only JS toolchain (Biome + Vitest + `tsc --checkJs`). Needed to run the JS checks and the git hooks; not part of the app runtime.
 - **[Lolly](https://code.dev88.work/dev88/lolly)** — the shared local dev proxy. Optional but recommended; gives you `https://obol.lolly.localhost` with browser-trusted TLS.
 - **[MkDocs Material](https://squidfunk.github.io/mkdocs-material/)** (optional, for editing the docs site).
 
-No PHP, Composer, or Postgres install on the host is required — everything runs inside Docker.
+No PHP, Composer, or Postgres install on the host is required — everything PHP runs inside Docker. Node is the one host-side exception, used only by the dev/CI JS toolchain (see [Frontend](frontend.md#javascript-toolchain-dev-only)).
 
 ## Setup
 
@@ -28,10 +29,19 @@ mise run up
 
 Migrations run automatically inside the container on startup. No fixtures are loaded by default — run `mise run seed` if you want sample data.
 
+### 2. Install the JS toolchain
+
+```bash
+npm ci
+```
+
+Installs the dev-only JS devDependencies (the `composer install` equivalent for JS). Required for `mise run check`, the git hooks, and the `js:*` tasks. Nothing here is bundled or shipped to the browser.
+
 ## Verify the setup
 
 ```bash
 mise run test              # run the Pest suite in the container
+mise run js:test           # run the Vitest suite (host-side)
 mise run dce -- php bin/console about   # Symfony info dump
 ```
 

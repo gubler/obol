@@ -47,6 +47,18 @@ jobs:
             - name: "Checkout code"
               uses: actions/checkout@v5
 
+            # JS toolchain (#133). Node-only dev/CI tooling - nothing is bundled or
+            # shipped to the browser; AssetMapper + importmap remain the runtime.
+            - name: "Set up Node.js"
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 24
+                  cache: npm
+
+            - name: "Install JS dependencies"
+              id: npm
+              run: npm ci
+
             - name: "Install OS packages and PHP extensions"
               run: |
                   apt-get install -y --no-install-recommends file ca-certificates
@@ -102,6 +114,20 @@ jobs:
               if: always() && steps.install.outcome == 'success'
               # The FrankenPHP image caps memory_limit at 128M; PHPStan needs more.
               run: vendor/bin/phpstan analyze --memory-limit=4G --no-progress --error-format=github
+
+            # JS toolchain checks (#133) - Biome (style + lint), tsc --checkJs (static
+            # analysis), Vitest (unit tests). Independent of the PHP stack above.
+            - name: "Biome (JS code style + lint)"
+              if: always() && steps.npm.outcome == 'success'
+              run: npm run cs:check
+
+            - name: "tsc --checkJs (JS static analysis)"
+              if: always() && steps.npm.outcome == 'success'
+              run: npm run sa
+
+            - name: "Vitest (JS unit tests)"
+              if: always() && steps.npm.outcome == 'success'
+              run: npm run test
 
             # Refactor drift (non-blocking: surfaces Rector suggestions in PRs
             # without failing the build)

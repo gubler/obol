@@ -12,6 +12,10 @@
 /assets/vendor/
 ###< symfony/asset-mapper ###
 
+# JS toolchain (dev-only: Biome + Vitest + tsc). node_modules is never shipped -
+# AssetMapper + importmap remain the runtime; package-lock.json IS committed.
+/node_modules/
+
 ###> friendsofphp/php-cs-fixer ###
 /.php-cs-fixer.php
 /.php-cs-fixer.cache

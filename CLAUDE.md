@@ -65,8 +65,17 @@ mise run cs:check       # PHP CS Fixer (check only)
 mise run cs:twig        # Twig CS Fixer (fix)
 mise run rector         # Rector
 mise run lint:php       # syntax check on changed files (host-side)
-mise run check          # sa + test + cs + cs:twig in sequence
+mise run check          # sa + test + cs + cs:twig + the JS toolchain in sequence
 ```
+
+### JS toolchain (dev-only, host-side via npm; run `npm ci` once after pulling)
+```bash
+mise run js:cs          # Biome: code style + lint (fix)
+mise run js:cs:check    # Biome: check only
+mise run js:sa          # tsc --checkJs static analysis
+mise run js:test        # Vitest unit tests (Stimulus controllers)
+```
+Mirrors the PHP sa/cs/test trio for `assets/`; nothing is bundled or shipped (AssetMapper + importmap stay the runtime). See `docs/frontend.md`.
 
 ### Database / fixtures
 ```bash
@@ -182,9 +191,9 @@ directory). Nothing is copied into `.git/hooks/`. See `docs/development/git-hook
 | Hook | Trigger | What Runs |
 |------|---------|-----------|
 | `pre-commit` | Commit to `main` | **BLOCKED** - use a feature branch |
-| `pre-commit` | Commit to branch | Linters (`php -l`, cs-fixer, twig-cs-fixer) |
-| `pre-merge-commit` | Any merge | Linters + PHPStan + Tests |
-| `pre-push` | Push (any branch) | Linters + PHPStan + Tests |
+| `pre-commit` | Commit to branch | Linters (`php -l`, cs-fixer, twig-cs-fixer) + JS lint/types (Biome, `tsc`) |
+| `pre-merge-commit` | Any merge | Linters + PHPStan + Tests + JS (Biome, `tsc`, Vitest) |
+| `pre-push` | Push (any branch) | Linters + PHPStan + Tests + JS (Biome, `tsc`, Vitest) |
 
 Every hook runs its full check set and reports all failures at once (no fail-fast), so one run surfaces everything instead of a fix-and-rerun loop.
 
@@ -230,7 +239,8 @@ The core domain revolves around subscription management with the following entit
 Uses Symfony AssetMapper with:
 - Hotwired Stimulus for JavaScript
 - Hotwired Turbo for navigation
-- No build step (importmap-based)
+- No build step (importmap-based); no Node.js at runtime or build time
+- A dev-only JS toolchain (Biome + Vitest + `tsc --checkJs`) for the Stimulus controllers, mirroring the PHP sa/cs/test trio. Node tooling run at dev/CI time only; nothing is bundled or shipped. See `docs/frontend.md`.
 
 ## Code Quality Standards
 

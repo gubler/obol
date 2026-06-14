@@ -1,0 +1,20 @@
+{
+    "name": "obol-assets",
+    "private": true,
+    "type": "module",
+    "description": "Dev-only JS toolchain (Biome + Vitest + tsc --checkJs) for the Stimulus controllers. Nothing here is bundled or shipped to the browser — AssetMapper + importmap remain the runtime.",
+    "scripts": {
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "cs": "biome check --write assets",
+        "cs:check": "biome check assets",
+        "sa": "tsc -p jsconfig.json"
+    },
+    "devDependencies": {
+        "@biomejs/biome": "^2.2.0",
+        "@hotwired/stimulus": "3.2.2",
+        "jsdom": "^26.0.0",
+        "typescript": "^5.7.0",
+        "vitest": "^3.0.0"
+    }
+}

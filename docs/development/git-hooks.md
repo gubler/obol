@@ -9,9 +9,14 @@ nothing copied into `.git/hooks/`.
 | Hook | Trigger | What Runs |
 |------|---------|-----------|
 | `pre-commit` | Commit to `main` | **BLOCKED** - use a feature branch |
-| `pre-commit` | Commit to any branch | `lint:php`, `cs` (auto-fix), `cs:twig` (auto-fix) |
-| `pre-push` | Push (any branch) | `lint:php`, `cs:check`, `cs:twig:check`, `sa`, `test` |
-| `pre-merge-commit` | Any merge | `lint:php`, `cs`, `cs:twig`, `sa`, `test` |
+| `pre-commit` | Commit to any branch | Fast sprint: `lint:php`, `cs:check`, `cs:twig:check`, `js:cs:check`, `js:sa` |
+| `pre-push` | Push (any branch) | Full set: the fast sprint, then `sa`, then `test`, then `js:test` |
+| `pre-merge-commit` | Any merge | Full set (identical to `pre-push`) |
+
+The check sprints live in `.githooks/lib.sh` (`fast_checks` and `full_checks`) and are
+sourced by all three hooks, so the lists above stay in lockstep. The JS toolchain checks
+(`js:cs:check`, `js:sa`, `js:test`) run host-side via npm; see
+[Frontend](../frontend.md#javascript-toolchain-dev-only).
 
 ## How they are wired
 
@@ -44,25 +49,30 @@ git config --local core.hooksPath .githooks
 ### Pre-commit
 
 - **On `main`**: prints an error and exits non-zero. Direct commits to `main` are not allowed.
-- **On any other branch**: runs `lint:php` and the CS fixers in fix mode (`cs`, `cs:twig`),
-  keeping the codebase formatted on every commit.
+- **On any other branch**: runs the fast sprint (`lint:php`, `cs:check`, `cs:twig:check`,
+  `js:cs:check`, `js:sa`). Style runs in **check mode** for CI parity - the hook never
+  rewrites your commit. On a style failure, run `mise run cs` (or `cs:twig` / `js:cs`) to
+  fix, then re-stage.
 
 ### Pre-push
 
-Runs the full check set on every push, regardless of branch: `lint:php`, `cs:check`,
-`cs:twig:check`, PHPStan (`sa`), and the full test suite (`test`). This gates pushes on the
-same suite CI runs, catching failures before the server round-trip. (`main` is PR-only, so
-there is no branch-specific gating - every push gets the full set.)
+Runs the full check set on every push, regardless of branch: the fast sprint, then PHPStan
+(`sa`), then the PHP test suite (`test`), then the JS unit tests (`js:test`). This gates
+pushes on the same suite CI runs, catching failures before the server round-trip. (`main`
+is PR-only, so there is no branch-specific gating - every push gets the full set.)
 
 ### Pre-merge-commit
 
-Runs the full validation suite on every merge - linters, static analysis, and tests - so a
-merge commit (especially into `main`) cannot introduce broken code.
+Runs the same full set as `pre-push` on every merge - linters, static analysis, and both
+test suites - so a merge commit (especially into `main`) cannot introduce broken code.
 
-### Failure aggregation
+### Failure handling
 
-Every hook runs all of its checks and aggregates the results (`|| status=1`, no `set -e`),
-so a single run reports every failure at once rather than stopping at the first.
+The **fast sprint** aggregates its checks (`|| status=1`, no `set -e`), so one run surfaces
+every fast failure at once rather than stopping at the first. The **full set** is then
+fail-fast *across sprints*: there is no point running PHPStan or the test suites once a fast
+check has failed, nor the suites once PHPStan has, so each later sprint runs only if the
+previous one passed.
 
 ## Important Rules
 

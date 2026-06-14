@@ -2,7 +2,7 @@
 
 [mise](https://mise.jdx.dev/) provides task runner shortcuts. All tasks are defined in `mise.toml` at the repo root.
 
-Most tasks run **inside the `php` container** via `./bin/dc exec`. Only `lint:php` and the `docs:*` tasks run on the host (they need `git` and `mkdocs`, respectively).
+Most tasks run **inside the `php` container** via `./bin/dc exec`. The exceptions run on the host: `lint:php` (needs `git`), the `docs:*` tasks (need `mkdocs`), and the `js:*` tasks (need Node/npm - the JS toolchain is dev-only and never enters the container; run `npm ci` once after pulling).
 
 ## Stack control
 
@@ -25,7 +25,12 @@ See [Local Setup](local-setup.md) for how solo and shared modes work.
 | `mise run cs:twig` | Twig CS Fixer (auto-fix) | `twig-cs-fixer fix` |
 | `mise run cs:twig:check` | Twig CS Fixer (check only) | `twig-cs-fixer check` |
 | `mise run rector` | Rector automated refactoring | `rector` |
-| `mise run check` | Run `sa`, `test`, `cs`, `cs:twig` in sequence | — |
+| `mise run js:sa` | JS static analysis, `tsc --checkJs` (host-side) | `npm run sa` |
+| `mise run js:cs` | JS code style + lint via Biome, auto-fix (host-side) | `npm run cs` |
+| `mise run js:cs:check` | JS code style + lint via Biome, check only (host-side) | `npm run cs:check` |
+| `mise run check` | Run `sa`, `test`, `cs`, `cs:twig`, `js:sa`, `js:test`, `js:cs` in sequence | — |
+
+See [Frontend](../frontend.md#javascript-toolchain-dev-only) for what the JS toolchain covers.
 
 ## Testing
 
@@ -35,6 +40,7 @@ See [Local Setup](local-setup.md) for how solo and shared modes work.
 | `mise run test:v` | All tests (verbose output) | `pest` |
 | `mise run coverage` | Tests with coverage, min 70% | `XDEBUG_MODE=coverage pest --coverage --min=70` |
 | `mise run coverage:report` | HTML coverage report under `var/coverage/` | `XDEBUG_MODE=coverage pest --coverage-html=var/coverage` |
+| `mise run js:test` | JS unit tests via Vitest (host-side) | `npm run test` |
 
 ## Assets and Database
 

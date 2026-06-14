@@ -16,6 +16,7 @@ Runs on `ubuntu-latest` with PHP 8.5 and Xdebug (for coverage).
 | Step | What it does |
 |------|-------------|
 | Checkout | Clone the repository |
+| Node setup | `actions/setup-node` (Node 24, npm cache) + `npm ci` for the dev-only JS toolchain |
 | PHP setup | Install PHP 8.5 with `intl`, `mbstring`, `pdo_sqlite`, `zip` extensions |
 | Composer validate | `composer validate --no-check-publish --strict` |
 | Composer install | Install all dependencies |
@@ -29,8 +30,13 @@ Runs on `ubuntu-latest` with PHP 8.5 and Xdebug (for coverage).
 | Lint Doctrine | Validate entity mapping (`doctrine:schema:validate --skip-sync`) |
 | Composer audit | Check for known security vulnerabilities in dependencies |
 | PHPStan | Static analysis at level 9 (`--error-format=github` for inline annotations) |
+| Biome | JS code style + lint (`npm run cs:check`) |
+| tsc --checkJs | JS static analysis (`npm run sa`) |
+| Vitest | JS unit tests (`npm run test`) |
 | Asset build | `importmap:install`, `tailwind:build`, `asset-map:compile` |
 | Pest | Run tests with coverage, minimum 70% threshold |
+
+The JS toolchain steps are gated on `steps.npm.outcome == 'success'` (the `npm ci` step), independent of the PHP `composer install`. See [Frontend](frontend.md#javascript-toolchain-dev-only) for what they cover.
 
 All steps after `composer install` use the `if: always() && steps.install.outcome == 'success'` condition, so they all run even if earlier steps fail (as long as dependencies were installed). This means you see all failures in one run, not one at a time.
 
@@ -60,6 +66,9 @@ The CI pipeline matches what you can run locally:
 | PHP-CS-Fixer | `mise run cs:check` |
 | Twig-CS-Fixer | `mise run cs:twig:check` |
 | PHPStan | `mise run sa` |
+| Biome | `mise run js:cs:check` |
+| tsc --checkJs | `mise run js:sa` |
+| Vitest | `mise run js:test` |
 | Pest with coverage | `mise run coverage` |
 
 Running `mise run coverage` locally before pushing ensures CI will pass.

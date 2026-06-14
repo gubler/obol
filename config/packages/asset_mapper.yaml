@@ -3,6 +3,11 @@ framework:
         # The paths to make available to the asset mapper.
         paths:
             - assets/
+        # Vitest specs (#133) live next to the controllers they test but must never be
+        # mapped or compiled - they import 'vitest', which isn't in the importmap, so
+        # asset-map:compile would fail under missing_import_mode: strict.
+        excluded_patterns:
+            - '*.test.js'
         missing_import_mode: strict
 
 when@prod:

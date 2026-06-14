@@ -10,13 +10,17 @@ fast_checks() {
     mise run lint:php      || status=1
     mise run cs:check      || status=1
     mise run cs:twig:check || status=1
+    mise run js:cs:check   || status=1
+    mise run js:sa         || status=1
     return "$status"
 }
 
-# All three sprints, fail-fast: there is no point running PHPStan or the test suite once a fast
-# check has failed, nor the suite once PHPStan has. (JS lint/test would slot in as a future sprint.)
+# All four sprints, fail-fast: there is no point running PHPStan or the test suites once a fast
+# check has failed, nor the suites once PHPStan has. The JS toolchain (#133) runs host-side via
+# npm: lint/types join the fast sprint above, the JS unit tests join the test sprint below.
 full_checks() {
-    fast_checks   || return 1
-    mise run sa   || return 1
-    mise run test || return 1
+    fast_checks      || return 1
+    mise run sa      || return 1
+    mise run test    || return 1
+    mise run js:test || return 1
 }

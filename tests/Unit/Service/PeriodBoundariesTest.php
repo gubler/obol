@@ -5,6 +5,7 @@
 
 declare(strict_types=1);
 
+use App\Enum\ObligationTrendPeriod;
 use App\Enum\PaymentPeriod;
 use App\Service\PeriodBoundaries;
 
@@ -35,5 +36,35 @@ test('the week-start day is configurable: a Monday start ends the week on Sunday
 
     expect($end->format('w'))->toBe('0')                  // Sunday - Monday-start (ISO) weeks end on Sunday
         ->and($end->format('H:i:s'))->toBe('23:59:59')
+    ;
+});
+
+test('start of day is midnight of the same day', function (): void {
+    expect((new PeriodBoundaries(0))->startOfPeriod(ObligationTrendPeriod::Day, new DateTimeImmutable('2026-06-13 15:30:45')))
+        ->toEqual(new DateTimeImmutable('2026-06-13 00:00:00'))
+    ;
+});
+
+test('start of month is the first of the month at midnight', function (): void {
+    expect((new PeriodBoundaries(0))->startOfPeriod(ObligationTrendPeriod::Month, new DateTimeImmutable('2026-06-13 15:30:45')))
+        ->toEqual(new DateTimeImmutable('2026-06-01 00:00:00'))
+    ;
+});
+
+test('start of week is the current week-start day at midnight (US Sunday-start)', function (string $asOf): void {
+    $start = (new PeriodBoundaries(0))->startOfPeriod(ObligationTrendPeriod::Week, new DateTimeImmutable($asOf));
+
+    expect($start->format('w'))->toBe('0')                // Sunday - the configured week start
+        ->and($start->format('H:i:s'))->toBe('00:00:00')
+        ->and($start <= new DateTimeImmutable($asOf))->toBeTrue()
+        ->and((new DateTimeImmutable($asOf))->diff($start)->days)->toBeLessThan(7)
+    ;
+})->with(['2026-06-14', '2026-06-15', '2026-06-18', '2026-06-20']);
+
+test('start of week honors a configurable Monday start', function (): void {
+    $start = (new PeriodBoundaries(1))->startOfPeriod(ObligationTrendPeriod::Week, new DateTimeImmutable('2026-06-18 12:00:00'));
+
+    expect($start->format('w'))->toBe('1')                // Monday - ISO week start
+        ->and($start->format('H:i:s'))->toBe('00:00:00')
     ;
 });

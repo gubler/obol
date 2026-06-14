@@ -37,4 +37,19 @@ class ObligationSnapshotRepository extends ServiceEntityRepository
 
         return $snapshot;
     }
+
+    /**
+     * The whole series, oldest first. The ULID id is monotonic, so ordering by it is chronological even for
+     * several snapshots recorded on the same date. The obligation trend carries these forward by date.
+     *
+     * @return list<ObligationSnapshot>
+     */
+    public function findAllOrderedByRecordedAt(): array
+    {
+        return $this->createQueryBuilder('o')
+            ->orderBy('o.id', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
 }

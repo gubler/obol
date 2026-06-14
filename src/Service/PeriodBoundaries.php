@@ -1,12 +1,13 @@
 <?php
 
-// ABOUTME: Computes the inclusive end of the current calendar week / month / year for an as-of date.
-// ABOUTME: Used by remaining-in-period reports; the week-start day is injected (app.week_start_day).
+// ABOUTME: Computes the start or inclusive end of the current calendar day / week / month / year for an as-of date.
+// ABOUTME: Used by remaining-in-period and obligation-trend reports; the week-start day is injected (app.week_start_day).
 
 declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Enum\ObligationTrendPeriod;
 use App\Enum\PaymentPeriod;
 use Assert\Assertion;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -35,11 +36,31 @@ final readonly class PeriodBoundaries
         };
     }
 
+    /**
+     * The first moment of the calendar period containing `$asOf` (start of day on the first day). Week-start
+     * leans on the same swappable week definition as `endOfPeriod`. Used to anchor the obligation trend.
+     */
+    public function startOfPeriod(ObligationTrendPeriod $period, \DateTimeImmutable $asOf): \DateTimeImmutable
+    {
+        return match ($period) {
+            ObligationTrendPeriod::Day => $asOf->setTime(0, 0),
+            ObligationTrendPeriod::Week => $this->startOfWeek($asOf),
+            ObligationTrendPeriod::Month => $asOf->modify('first day of this month')->setTime(0, 0),
+        };
+    }
+
     private function endOfWeek(\DateTimeImmutable $asOf): \DateTimeImmutable
     {
         $lastDayOfWeek = ($this->weekStartDay + 6) % 7;
         $daysUntilEnd = ($lastDayOfWeek - (int) $asOf->format('w') + 7) % 7;
 
         return $asOf->modify(\sprintf('+%d days', $daysUntilEnd))->setTime(23, 59, 59);
+    }
+
+    private function startOfWeek(\DateTimeImmutable $asOf): \DateTimeImmutable
+    {
+        $daysSinceStart = ((int) $asOf->format('w') - $this->weekStartDay + 7) % 7;
+
+        return $asOf->modify(\sprintf('-%d days', $daysSinceStart))->setTime(0, 0);
     }
 }

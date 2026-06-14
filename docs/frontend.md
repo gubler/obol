@@ -44,8 +44,10 @@ These are run automatically in the Dockerfile builder stage and in CI.
 
 **Custom controllers** live in `assets/controllers/`:
 
-- `csrf_protection_controller.js` — CSRF token handling
-- `hello_controller.js` — boilerplate example
+- `composition_pie_controller.js` — enriches a ux-chartjs pie tooltip with the display amount and native split
+- `conditional_field_controller.js` — reveals a dependent field only while a trigger checkbox is checked (progressive enhancement)
+- `obligation_trend_controller.js` — formats the obligation-trend line chart's y-axis and tooltip as money
+- `csrf_protection_controller.js` — CSRF token handling (recipe-shipped by Symfony)
 
 **Controller registration** is configured in `assets/controllers.json`, which also enables the Turbo UX bundle controller.
 

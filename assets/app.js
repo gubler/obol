@@ -1,9 +1,4 @@
-import './bootstrap.js';
+// ABOUTME: Application JS entrypoint, loaded via importmap() in base.html.twig.
+// ABOUTME: Boots Stimulus by importing bootstrap.js; global front-end wiring goes here.
 
-/*
- * Welcome to your app's main JavaScript file!
- *
- * This file will be included onto the page via the importmap() Twig function,
- * which should already be in your base.html.twig.
- */
-console.log('This log comes from assets/app.js - welcome to AssetMapper! 🎉');
+import './bootstrap.js';

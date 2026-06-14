@@ -1,7 +1,7 @@
 <?php
 
-// ABOUTME: Marker message class for the payment generation scheduler.
-// ABOUTME: Dispatched on a recurring schedule to trigger automatic payment generation.
+// ABOUTME: Marker trigger for the daily payment generation, dispatched on a recurring schedule.
+// ABOUTME: Its handler is a thin adapter that dispatches GenerateDuePaymentsCommand to do the work.
 
 declare(strict_types=1);
 

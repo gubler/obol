@@ -1,39 +1,24 @@
 <?php
 
-// ABOUTME: Unit tests for PullExchangeRatesHandler storing the day's EUR-pivot rates.
-// ABOUTME: Verifies one row per supported currency and idempotency (skips rates already stored).
+// ABOUTME: Unit test for the PullExchangeRatesHandler scheduler adapter - it dispatches the work command.
+// ABOUTME: The fetch-and-store work itself lives in RefreshExchangeRatesHandler (tested separately).
 
 declare(strict_types=1);
 
-use App\Entity\ExchangeRate;
-use App\Enum\Currency;
+use App\Lib\Bus\CommandBus;
+use App\Message\Command\ExchangeRate\RefreshExchangeRatesCommand;
 use App\Message\Scheduler\PullExchangeRatesHandler;
 use App\Message\Scheduler\PullExchangeRatesMessage;
-use App\Repository\ExchangeRateRepository;
-use App\Service\ExchangeRateProviderInterface;
-use App\Service\RateSnapshot;
-use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\MessageBusInterface;
 
-test('stores a rate per supported currency, skipping any already stored for the day', function (): void {
-    $date = new DateTimeImmutable('2024-06-10');
-    $snapshot = new RateSnapshot($date, ['EUR' => 1.0, 'USD' => 1.07, 'JPY' => 169.4]);
-
-    $provider = $this->createMock(ExchangeRateProviderInterface::class);
-    $provider->method('fetchLatest')->willReturn($snapshot);
-
-    $repository = $this->createMock(ExchangeRateRepository::class);
-    // USD is already stored for the day; EUR and JPY are new.
-    $repository->method('hasRateFor')->willReturnCallback(
-        static fn (Currency $currency, DateTimeImmutable $asOf): bool => Currency::USD === $currency,
-    );
-
-    $entityManager = $this->createMock(EntityManagerInterface::class);
-    $entityManager->expects($this->exactly(2))
-        ->method('persist')
-        ->with($this->isInstanceOf(ExchangeRate::class))
+test('dispatches the refresh-exchange-rates command and touches no data itself', function (): void {
+    $messageBus = $this->createMock(MessageBusInterface::class);
+    $messageBus->expects($this->once())
+        ->method('dispatch')
+        ->with($this->isInstanceOf(RefreshExchangeRatesCommand::class))
+        ->willReturn(new Envelope(new RefreshExchangeRatesCommand()))
     ;
-    // The command bus owns the transaction (doctrine_transaction middleware); the handler never flushes.
-    $entityManager->expects($this->never())->method('flush');
 
-    (new PullExchangeRatesHandler($provider, $repository, $entityManager))(new PullExchangeRatesMessage());
+    (new PullExchangeRatesHandler(new CommandBus($messageBus)))(new PullExchangeRatesMessage());
 });

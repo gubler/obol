@@ -1,14 +1,14 @@
 <?php
 
 // ABOUTME: Console command to pull the latest exchange rates now (initial backfill / manual refresh).
-// ABOUTME: Dispatches the same PullExchangeRatesMessage the daily scheduler uses.
+// ABOUTME: Dispatches RefreshExchangeRatesCommand - the same work the daily scheduler triggers.
 
 declare(strict_types=1);
 
 namespace App\Command;
 
 use App\Lib\Bus\CommandBus;
-use App\Message\Scheduler\PullExchangeRatesMessage;
+use App\Message\Command\ExchangeRate\RefreshExchangeRatesCommand;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -28,7 +28,7 @@ final class PullExchangeRatesCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->commandBus->dispatch(command: new PullExchangeRatesMessage());
+        $this->commandBus->dispatch(command: new RefreshExchangeRatesCommand());
 
         new SymfonyStyle($input, $output)->success('Exchange rates pulled.');
 

@@ -1,7 +1,7 @@
 <?php
 
-// ABOUTME: Marker message for the daily exchange-rate pull.
-// ABOUTME: Dispatched on a recurring schedule (and by the backfill command) to fetch ECB rates.
+// ABOUTME: Marker trigger for the daily exchange-rate pull, dispatched on a recurring schedule.
+// ABOUTME: Its handler is a thin adapter that dispatches RefreshExchangeRatesCommand to do the work.
 
 declare(strict_types=1);
 

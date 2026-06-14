@@ -3,6 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <title>{% block title %}Welcome!{% endblock %}</title>
+        <link rel="icon" type="image/svg+xml" href="{{ asset('icons/obol-coin.svg') }}">
         {% block stylesheets %}
             <link rel="stylesheet" href="{{ asset('styles/app.css') }}">
         {% endblock %}
@@ -20,7 +21,9 @@
                         <div class="flex h-16 items-center justify-between px-4 sm:px-0">
                             <div class="flex items-center">
                                 <div class="shrink-0">
-                                    <img src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500" alt="Your Company" class="size-8" />
+                                    <a href="{{ path('subscription_index') }}">
+                                        <img src="{{ asset('icons/obol-coin.svg') }}" alt="Obol" class="size-8" />
+                                    </a>
                                 </div>
                                 <div class="hidden md:block">
                                     <div class="ml-10 flex items-baseline space-x-4">

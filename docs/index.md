@@ -8,7 +8,7 @@ Obol is a subscription management application for tracking recurring payments, p
 |-----------|-----------|
 | Language | PHP 8.5+ |
 | Framework | Symfony 8.0 |
-| Database | SQLite (dev/test), PostgreSQL 16 (production) |
+| Database | PostgreSQL 16 (dev, test, and production) |
 | Web Server | FrankenPHP (Caddy + PHP in one binary) |
 | Frontend | Tailwind CSS v4, Hotwired Stimulus, Hotwired Turbo |
 | Asset Pipeline | Symfony AssetMapper (no build step) |

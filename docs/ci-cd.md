@@ -23,7 +23,7 @@ Runs on `ubuntu-latest` with PHP 8.5 and Xdebug (for coverage).
 |------|-------------|
 | Checkout | Clone the repository |
 | Node setup | `actions/setup-node` (Node 24, npm cache) + `npm ci` for the dev-only JS toolchain |
-| PHP setup | Install PHP 8.5 with `intl`, `mbstring`, `pdo_sqlite`, `zip` extensions |
+| PHP setup | Install PHP 8.5 with `intl`, `mbstring`, `zip`, `pdo_pgsql`, `pcov` (the coverage driver) extensions |
 | Composer validate | `composer validate --no-check-publish --strict` |
 | Composer install | Install all dependencies |
 | PHP-CS-Fixer | Check code style (no auto-fix in CI) |

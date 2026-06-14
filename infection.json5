@@ -1,0 +1,24 @@
+{
+  // ABOUTME: Infection (mutation testing) config. On-demand only via `mise run
+  // ABOUTME: infection` - never part of `mise run check` or CI. See docs/development/testing.md.
+  $schema: 'vendor/infection/infection/resources/schema.json',
+  source: {
+    directories: ['src'],
+  },
+  // Logs land under the gitignored var/ tree.
+  logs: {
+    text: 'var/infection/infection.log',
+    html: 'var/infection/infection.html',
+    summary: 'var/infection/summary.log',
+  },
+  mutators: {
+    '@default': true,
+  },
+  // Per-mutant wall-clock ceiling (seconds) so an infinite-loop mutant can't hang the run.
+  timeout: 30,
+  // Baseline over the Unit suite is ~79-81% MSI (516/637 killed; runs vary a couple
+  // of points). Thresholds sit a safe margin under so an honest run never spuriously
+  // fails; ratchet up as coverage improves.
+  minMsi: 75,
+  minCoveredMsi: 75,
+}

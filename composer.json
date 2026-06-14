@@ -61,6 +61,7 @@
         "friendsofphp/php-cs-fixer": "^3.95.3",
         "helgesverre/toon": "^3.1",
         "ineersa/database-extension": "^0.8.0",
+        "infection/infection": "^0.33.2",
         "matesofmate/composer-extension": "^0.3.0",
         "matesofmate/phpstan-extension": "^0.3.0",
         "matesofmate/phpunit-extension": "^0.3.0",
@@ -91,6 +92,7 @@
     "config": {
         "allow-plugins": {
             "php-http/discovery": true,
+            "infection/extension-installer": true,
             "phpstan/extension-installer": true,
             "symfony/flex": true,
             "symfony/runtime": true,

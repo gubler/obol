@@ -104,6 +104,29 @@ mise run coverage:report  # Generate HTML report in var/coverage/
 
 The threshold is set conservatively and should be ratcheted up over time. To increase it, update the minimum passed to `bin/coverage-min.php` in both `mise.toml` (the `coverage` task) and `.gitea/workflows/ci.yml` (the PHPUnit step).
 
+## Mutation Testing
+
+Coverage measures which lines run; mutation testing measures whether the tests would actually _catch a bug_ in those lines. [Infection](https://infection.github.io/) systematically mutates `src/` (flips conditionals, swaps operators, removes return values) and re-runs the tests against each mutant. A mutant the tests still pass on is "escaped" — a hole in the suite. The Mutation Score Indicator (MSI) is the percentage of mutants the tests killed.
+
+```bash
+mise run infection                            # Mutation test the Unit suite
+mise run infection -- --filter=Subscription.php   # One source file
+```
+
+Configuration lives in [`infection.json5`](https://code.dev88.work/dev88/obol/src/branch/main/infection.json5). Reports are written to the gitignored `var/infection/` (text, HTML, and a summary log).
+
+**On-demand only.** Infection is deliberately absent from `mise run check`, the git hooks, and CI — it is a periodic rigor check, not a gate. A run takes ~90 seconds. The task targets the **Unit suite**: Feature and Integration are slow and DB/HTTP-bound, and the unit-tested domain logic (entities, enums, value objects) is the meaningful mutation target.
+
+The baseline is **~79-81% MSI** (runs vary a couple of points). `minMsi` / `minCoveredMsi` are pinned at **75** in `infection.json5`, a safe margin under the baseline so an honest run never spuriously fails; ratchet them up as the suite improves.
+
+Three non-default knobs are baked into the `mise run infection` task, each needed for a green run on this image:
+
+- **`XDEBUG_MODE=coverage`** — the image ships Xdebug, not pcov; without a coverage driver Infection aborts.
+- **`php -d memory_limit=-1`** — mutation analysis itself succeeds, but the post-run temp-file cleanup walks thousands of files through Symfony Finder and OOMs on the 128M CLI default.
+- **`--threads=4`** — `--threads=max` exhausts the container file-descriptor limit under coverage and dies mid-run with "Too many open files"; 4 is the stable ceiling.
+
+Infection 0.33 sits cleanly alongside PHPUnit 13 — it does not constrain `phpunit/phpunit`; its adapter detects the version at runtime.
+
 ## Test Output
 
 Tests must produce clean output. `phpunit.dist.xml` is configured with:

@@ -55,7 +55,10 @@ mise run test -- tests/Unit/SomeTest.php
 mise run test -- --filter="subscription"
 mise run coverage                      # tests + coverage (min 70%)
 mise run coverage:report               # HTML report in var/coverage/
+mise run infection                     # mutation testing (Unit suite; on-demand, not in check/CI)
 ```
+
+Infection (mutation testing) is **on-demand only** - never part of `mise run check`, the git hooks, or CI. It targets the Unit suite; baseline is ~79-81% MSI with the threshold pinned just under in `infection.json5`. Three stack-specific knobs (Xdebug coverage driver, unbounded CLI memory, `--threads=4`) are baked into the task. See `docs/development/testing.md` (Mutation Testing).
 
 ### Code Quality
 ```bash

@@ -71,6 +71,18 @@ description = "Tests via PHPUnit (testdox output)"
 depends = ["_ensure-up", "tailwind"]
 run = ["$DC_EXEC php vendor/bin/phpunit --testdox"]
 
+[tasks.infection]
+description = "Mutation testing via Infection (on-demand; NOT in `check` or CI). Defaults to the Unit suite."
+depends = ["_ensure-up"]
+# XDEBUG_MODE=coverage supplies the coverage driver Infection needs (no pcov in
+# the image). memory_limit=-1 keeps the post-run temp-file cleanup from OOMing on
+# the 128M CLI default. --threads is capped at 4 on purpose: --threads=max
+# exhausts the container file-descriptor limit under coverage and aborts the run.
+# Mutation testing targets the Unit suite - Feature/Integration are slow, DB/HTTP
+# bound, and unit-tested domain logic is the meaningful target. Pass extra flags
+# through with `--`, e.g. `mise run infection -- --filter=Subscription.php`.
+run = ["$DC exec -T -e XDEBUG_MODE=coverage php php -d memory_limit=-1 vendor/bin/infection --threads=4 --test-framework-options=--testsuite=Unit"]
+
 [tasks.coverage]
 description = "Run tests with coverage (min 70%)"
 depends = ["_ensure-up", "tailwind"]

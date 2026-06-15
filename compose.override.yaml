@@ -12,6 +12,10 @@ services:
       - ./:/app
       - ./frankenphp/Caddyfile:/etc/frankenphp/Caddyfile:ro
       - ./frankenphp/conf.d/20-app.dev.ini:/usr/local/etc/php/app.conf.d/20-app.dev.ini:ro
+      # Share the compiled Tailwind CSS with the watcher sidecar (#188). The image declares
+      # VOLUME /app/var, so without an explicit shared volume each container gets its own
+      # var/tailwind and php would never see the sidecar's builds.
+      - tailwind_build:/app/var/tailwind
       # Solo mode publishes plain HTTP on loopback; browser-trusted TLS comes
       # from Lolly in shared mode. No per-app cert mount needed.
       # If you develop on Mac or Windows you can remove the vendor/ directory
@@ -38,6 +42,30 @@ services:
       - ./:/app
     environment:
       APP_ENV: "${APP_ENV:-dev}"
+
+  # Dev-only Tailwind watcher (#188): same dev image as php, source bind-mounted so it sees
+  # template/CSS edits, sharing the tailwind_build volume with php so the var/tailwind/app.built.css
+  # it writes is the file php serves. --poll because Docker Desktop filesystem events do not cross the
+  # bind mount reliably on macOS. Waits for php healthy so vendor is installed first (like the worker).
+  # Dev-only - never present in compose.prod.yaml.
+  tailwind:
+    image: ${IMAGES_PREFIX:-}obol-php-dev
+    # Skip the app entrypoint's DB-wait + migrations (docker-entrypoint.sh runs them for any
+    # php/bin/console command). This is a CSS builder that never touches the database; run straight
+    # through the base PHP entrypoint to the watch command.
+    entrypoint: ["docker-php-entrypoint"]
+    command: php bin/console tailwind:build --watch
+    # The image healthcheck probes Caddy's admin endpoint, which this command does not serve.
+    healthcheck:
+      disable: true
+    volumes:
+      - ./:/app
+      - tailwind_build:/app/var/tailwind
+    environment:
+      APP_ENV: "${APP_ENV:-dev}"
+    depends_on:
+      php:
+        condition: service_healthy
 ###> symfony/mercure-bundle ###
 ###< symfony/mercure-bundle ###
 ###> doctrine/doctrine-bundle ###
@@ -48,3 +76,8 @@ services:
     ports:
       - "${POSTGRES_HOST_PORT:-5432}:5432"
 ###< doctrine/doctrine-bundle ###
+
+# Named volume shared between php and the tailwind watcher so the compiled CSS the sidecar writes
+# (var/tailwind/app.built.css) is the file php serves (#188).
+volumes:
+  tailwind_build:

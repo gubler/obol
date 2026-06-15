@@ -94,13 +94,20 @@ Tailwind is managed by `symfonycasts/tailwind-bundle`, which ships a standalone 
 
 **CSS entry point:** `assets/styles/app.css`
 
-**Local development:** Tailwind compiles CSS on-the-fly. No watch process needed unless you want faster recompilation:
+**Local development:** a dev-only `tailwind` sidecar container (defined in `compose.override.yaml`)
+runs `tailwind:build --watch --poll` against the shared `tailwind_build` volume, so the compiled CSS
+rebuilds automatically when `mise run up` brings the stack up and on every template or CSS edit - no
+manual build step. `--poll` is required because Docker Desktop filesystem events do not cross the bind
+mount reliably on macOS. The sidecar shares `var/tailwind` with the `php` container so the
+`app.built.css` it writes is the file the app serves.
 
-```bash
-php bin/console tailwind:watch
-```
+- `mise run tailwind:restart` - restart the watcher (e.g. after changing its config); reports a
+  friendly message if the stack is not up.
+- `mise run tailwind` - one-shot rebuild, kept for CI and scripted builds.
 
-**Production:** `php bin/console tailwind:build` generates the optimized CSS.
+**Production:** `php bin/console tailwind:build --minify` generates the optimized CSS in the image
+builder stage; `asset-map:compile` then bakes content-hashed copies into `public/assets/`. No watcher
+runs in prod.
 
 **Form field styling.** Form fields are rendered by Symfony's `tailwind_2_layout.html.twig`
 theme (wired in `config/packages/twig.yaml`). Two things in `assets/styles/app.css` make them

@@ -140,6 +140,15 @@ description = "Build Tailwind CSS assets"
 depends = ["_ensure-up"]
 run = ["$DC_EXEC php bin/console tailwind:build"]
 
+[tasks."tailwind:restart"]
+description = "Restart the dev Tailwind watch sidecar"
+run = [
+    """
+    $DC ps --status running --services 2>/dev/null | grep -q '^tailwind$' || { echo 'Tailwind watcher is not running. Start the stack first: mise run up' >&2; exit 0; }
+    $DC restart tailwind
+    """,
+]
+
 # Symfony AI Mate (#138) - dev-only MCP server, runs inside the php container. The
 # AI client launches `mate serve` itself via .mcp.json; these tasks are for manual
 # use and diagnostics. See docs/mate.md.

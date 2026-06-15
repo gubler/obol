@@ -109,9 +109,11 @@ mount reliably on macOS. The sidecar shares `var/tailwind` with the `php` contai
 builder stage; `asset-map:compile` then bakes content-hashed copies into `public/assets/`. No watcher
 runs in prod.
 
-**Form field styling.** Form fields are rendered by Symfony's `tailwind_2_layout.html.twig`
-theme (wired in `config/packages/twig.yaml`). Two things in `assets/styles/app.css` make them
-look like fields, and both are required:
+**Form field styling.** Forms use `templates/form/obol_layout.html.twig` (wired in
+`config/packages/twig.yaml`), a thin theme that `{% use %}`s Symfony's `tailwind_2_layout`
+and recolors the label, help-text, and error blocks with the tokens (`text-fg`,
+`text-fg-muted`, `text-danger`) - the vendor theme hardcodes gray/red there. Two things in
+`assets/styles/app.css` make the inputs themselves look like fields, and both are required:
 
 - `@plugin "@tailwindcss/forms"` supplies the input chrome (border, ring, rounded corners,
   padding). The theme itself only puts layout classes (`mt-1 w-full`) on inputs; without the
@@ -122,11 +124,19 @@ look like fields, and both are required:
   v4's automatic source detection skips, so any Tailwind classes that appear only inside
   `vendor/` need an explicit `@source`.
 
+The forms plugin paints controls with hardcoded gray/blue, which would not follow the
+theme. An unlayered block in `app.css` re-colors inputs, selects, textareas, checkboxes,
+and radios with the design tokens (`--obol-surface` / `--obol-line` / `--obol-fg`, brand
+focus ring) so form fields track light/dark like everything else; it is unlayered so it
+wins over the plugin's base-layer rules. `:root` / `.dark` also set `color-scheme` so native
+controls (the date picker, scrollbars) match the active scheme.
+
 The forms plugin leaves `input[type=file]` borderless, so the subscription form theme
 (`templates/form/_subscription_form_theme.html.twig`) overrides `file_widget` to give it a
-bordered box and a styled Browse button. That override delegates with
-`{{ block('form_widget_simple') }}` rather than `{{ parent() }}` - a standalone form theme
-file does not `{% use %}` a base template, so `parent()` would throw.
+bordered box and a styled Browse button, and `tile_color_widget` to render the color choice
+as swatch chips with a brand ring on the selected one. Both are token-styled. The `file_widget`
+override delegates with `{{ block('form_widget_simple') }}` rather than `{{ parent() }}` - a
+standalone form theme file does not `{% use %}` a base template, so `parent()` would throw.
 
 The compiled CSS is written to `var/tailwind/app.built.css` **inside the container**; that path
 is a container-only volume, so its host-side copy is stale and not what gets served. To inspect

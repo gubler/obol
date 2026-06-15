@@ -49,6 +49,7 @@
 
 :root {
     /* Light - warm parchment */
+    color-scheme: light;
     --obol-page: #f7f1e3;
     --obol-surface: #fffdf8;
     --obol-surface-2: #f1e9d6;
@@ -75,6 +76,7 @@
 
 .dark {
     /* Dark - minted espresso (becomes the default in #185) */
+    color-scheme: dark;
     --obol-page: #14100a;
     --obol-surface: #1f1810;
     --obol-surface-2: #2a2114;
@@ -94,4 +96,38 @@
     --obol-danger-surface: #2a1816;
     --obol-info: #5aa9b5;
     --obol-info-surface: #16262a;
+}
+
+/*
+ * Form controls (#190). The @tailwindcss/forms plugin paints inputs with hardcoded
+ * gray/blue that does not follow the theme. Re-color them with the tokens so fields
+ * track light/dark like the rest of the UI. Unlayered so these win over the plugin's
+ * base-layer rules; checkboxes, radios, and file inputs get their own rules.
+ */
+input:not([type='checkbox']):not([type='radio']):not([type='file']),
+select,
+textarea {
+    background-color: var(--obol-surface-2);
+    border-color: var(--obol-line);
+    color: var(--obol-fg);
+}
+input:not([type='checkbox']):not([type='radio']):not([type='file']):focus,
+select:focus,
+textarea:focus {
+    border-color: var(--obol-brand);
+    --tw-ring-color: var(--obol-brand);
+}
+input::placeholder,
+textarea::placeholder {
+    color: var(--obol-fg-muted);
+}
+[type='checkbox'],
+[type='radio'] {
+    background-color: var(--obol-surface-2);
+    border-color: var(--obol-line);
+    color: var(--obol-brand);
+}
+[type='checkbox']:focus,
+[type='radio']:focus {
+    --tw-ring-color: var(--obol-brand);
 }

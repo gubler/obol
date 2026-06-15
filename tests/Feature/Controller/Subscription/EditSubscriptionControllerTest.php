@@ -258,7 +258,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
         $client->submit(form: $form);
 
         self::assertResponseStatusCodeSame(expectedCode: 422);
-        self::assertSelectorExists(selector: '.text-red-700');
+        self::assertSelectorExists(selector: '.text-danger');
         self::assertSelectorTextContains(selector: 'body', text: 'This value should not be blank');
     }
 

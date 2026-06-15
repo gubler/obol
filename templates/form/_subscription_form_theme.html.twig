@@ -7,7 +7,7 @@
                 {{ form_widget(choice, {attr: {class: 'sr-only peer'}}) }}
                 <label for="{{ choice.vars.id }}"
                        title="{{ choice.vars.label }}"
-                       class="block h-9 w-full cursor-pointer rounded-lg {{ choice.vars.attr['data-gradient'] }} ring-2 ring-transparent ring-offset-2 transition peer-checked:ring-neutral-900 peer-focus-visible:ring-neutral-500">
+                       class="block h-9 w-full cursor-pointer rounded-lg {{ choice.vars.attr['data-gradient'] }} ring-2 ring-transparent ring-offset-2 ring-offset-surface transition peer-checked:ring-brand peer-focus-visible:ring-brand-strong">
                     <span class="sr-only">{{ choice.vars.label }}</span>
                 </label>
             </div>
@@ -17,7 +17,7 @@
 
 {# The @tailwindcss/forms plugin leaves file inputs borderless; give it the same bordered box as the text inputs, plus a styled Browse button via the file: pseudo-element. #}
 {% block file_widget %}
-    {# Mirror the @tailwindcss/forms defaults the other inputs get (square corners, gray-500 border, blue-600 focus, no shadow) so the box matches; the file: classes style the Browse button. #}
-    {% set widget_class = widget_class|default('mt-1 block w-full cursor-pointer border border-gray-500 text-sm text-gray-600 file:mr-3 file:cursor-pointer file:border-0 file:bg-gray-100 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-gray-700 hover:file:bg-gray-200 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600') %}
+    {# Match the token-themed text inputs (square corners, line border, brand focus) so the box fits; the file: classes style the Browse button against the tokens. #}
+    {% set widget_class = widget_class|default('mt-1 block w-full cursor-pointer border border-line bg-surface-2 text-sm text-fg-muted file:mr-3 file:cursor-pointer file:border-0 file:bg-surface-2 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-fg hover:file:bg-line focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand') %}
     {{ block('form_widget_simple') }}
 {% endblock %}

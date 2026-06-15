@@ -99,7 +99,7 @@ final class CreatePaymentControllerTest extends WebTestCase
         ]);
 
         self::assertResponseStatusCodeSame(422);
-        self::assertSelectorExists('.text-red-700');
+        self::assertSelectorExists('.text-danger');
     }
 
     public function testDoesNotOfferTheRestartControlForAnAutomatedSubscription(): void

@@ -15,3 +15,83 @@
  * classes survive. See https://symfony.com/doc/current/form/tailwindcss.html
  */
 @source "../../vendor/symfony/twig-bridge/Resources/views/Form/tailwind_2_layout.html.twig";
+
+/*
+ * Obol design tokens (#189). A bespoke palette drawn from the gold-coin logo: warm espresso
+ * surfaces, parchment text, gold as the single accent. Semantic tokens are CSS variables set on
+ * :root (light) and .dark (dark) and exposed to Tailwind via `@theme inline`, so utilities like
+ * `bg-surface` / `text-fg` follow the active scheme. The `.dark` class is applied by the dark-mode
+ * toggle (#185); until that lands the app renders light.
+ */
+@theme inline {
+    --color-page: var(--obol-page);
+    --color-surface: var(--obol-surface);
+    --color-surface-2: var(--obol-surface-2);
+    --color-line: var(--obol-line);
+    --color-line-strong: var(--obol-line-strong);
+    --color-fg: var(--obol-fg);
+    --color-fg-muted: var(--obol-fg-muted);
+    --color-brand: var(--obol-brand);
+    --color-brand-strong: var(--obol-brand-strong);
+    --color-on-brand: var(--obol-on-brand);
+    --color-header: var(--obol-header);
+    --color-header-fg: var(--obol-header-fg);
+    --color-header-muted: var(--obol-header-muted);
+    --color-success: var(--obol-success);
+    --color-success-surface: var(--obol-success-surface);
+    --color-warning: var(--obol-warning);
+    --color-warning-surface: var(--obol-warning-surface);
+    --color-danger: var(--obol-danger);
+    --color-danger-surface: var(--obol-danger-surface);
+    --color-info: var(--obol-info);
+    --color-info-surface: var(--obol-info-surface);
+}
+
+:root {
+    /* Light - warm parchment */
+    --obol-page: #f7f1e3;
+    --obol-surface: #fffdf8;
+    --obol-surface-2: #f1e9d6;
+    --obol-line: #e4d9bf;
+    --obol-line-strong: #d4c39e;
+    --obol-fg: #2a2012;
+    --obol-fg-muted: #6b5d44;
+    --obol-brand: #9c7320;
+    --obol-brand-strong: #8a6418;
+    --obol-on-brand: #fff8e8;
+    /* The header band stays a deep coin-brown in both schemes; its text is always light. */
+    --obol-header: #26190a;
+    --obol-header-fg: #f5ecd8;
+    --obol-header-muted: #b8a988;
+    --obol-success: #3e8e5c;
+    --obol-success-surface: #d4e6d2;
+    --obol-warning: #b5701e;
+    --obol-warning-surface: #efddb8;
+    --obol-danger: #c0392b;
+    --obol-danger-surface: #f2d6cf;
+    --obol-info: #2f7e8a;
+    --obol-info-surface: #cfe4e7;
+}
+
+.dark {
+    /* Dark - minted espresso (becomes the default in #185) */
+    --obol-page: #14100a;
+    --obol-surface: #1f1810;
+    --obol-surface-2: #2a2114;
+    --obol-line: #3a2f1d;
+    --obol-line-strong: #4d3f28;
+    --obol-fg: #f5ecd8;
+    --obol-fg-muted: #b8a988;
+    --obol-brand: #e0ae3a;
+    --obol-brand-strong: #c8962b;
+    --obol-on-brand: #1a1206;
+    --obol-header: #14100a;
+    --obol-success: #5fb07a;
+    --obol-success-surface: #1c2a20;
+    --obol-warning: #e0903a;
+    --obol-warning-surface: #2a2113;
+    --obol-danger: #d9594f;
+    --obol-danger-surface: #2a1816;
+    --obol-info: #5aa9b5;
+    --obol-info-surface: #16262a;
+}

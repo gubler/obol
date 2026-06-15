@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-gray-100">
+<html lang="en" class="h-full bg-page text-fg">
     <head>
         <meta charset="UTF-8">
         <title>{% block title %}Welcome!{% endblock %}</title>
@@ -17,8 +17,8 @@
     </head>
     <body class="h-full">
     <div class="min-h-full">
-        <div class="relative bg-gray-800 pb-32">
-            <nav class="bg-gray-800">
+        <div class="relative bg-header pb-32">
+            <nav class="bg-header">
                 <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div class="border-b border-white/10">
                         <div class="flex h-16 items-center justify-between px-4 sm:px-0">
@@ -30,9 +30,9 @@
                                 </div>
                                 <div class="hidden md:block">
                                     <div class="ml-10 flex items-baseline space-x-4">
-                                        <a href="{{ path('subscription_index') }}" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white">Subscriptions</a>
-                                        <a href="{{ path('category_index') }}" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white">Categories</a>
-                                        <a href="{{ path('reports_index') }}" class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white">Reports</a>
+                                        <a href="{{ path('subscription_index') }}" class="rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">Subscriptions</a>
+                                        <a href="{{ path('category_index') }}" class="rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">Categories</a>
+                                        <a href="{{ path('reports_index') }}" class="rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">Reports</a>
                                     </div>
                                 </div>
                             </div>
@@ -40,7 +40,7 @@
                             </div>
                             <div class="-mr-2 flex md:hidden">
                                 <!-- Mobile menu button -->
-                                <button type="button" command="--toggle" commandfor="mobile-menu" class="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-white/5 hover:text-white focus:outline-2 focus:outline-offset-2 focus:outline-indigo-500">
+                                <button type="button" command="--toggle" commandfor="mobile-menu" class="relative inline-flex items-center justify-center rounded-md p-2 text-header-muted hover:bg-white/5 hover:text-header-fg focus:outline-2 focus:outline-offset-2 focus:outline-brand">
                                     <span class="absolute -inset-0.5"></span>
                                     <span class="sr-only">Open main menu</span>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 in-aria-expanded:hidden">
@@ -57,9 +57,9 @@
 
                 <el-disclosure id="mobile-menu" hidden class="block border-b border-white/10 md:hidden">
                     <div class="space-y-1 px-2 py-3 sm:px-3">
-                        <a href="{{ path('subscription_index') }}" class="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-white/5 hover:text-white">Subscriptions</a>
-                        <a href="{{ path('category_index') }}" class="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-white/5 hover:text-white">Categories</a>
-                        <a href="{{ path('reports_index') }}" class="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-white/5 hover:text-white">Reports</a>
+                        <a href="{{ path('subscription_index') }}" class="block rounded-md px-3 py-2 text-base font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">Subscriptions</a>
+                        <a href="{{ path('category_index') }}" class="block rounded-md px-3 py-2 text-base font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">Categories</a>
+                        <a href="{{ path('reports_index') }}" class="block rounded-md px-3 py-2 text-base font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">Reports</a>
                     </div>
                 </el-disclosure>
             </nav>
@@ -72,7 +72,7 @@
 
         <main class="relative -mt-32">
             <div class="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
-                <div class="rounded-lg bg-white px-5 py-6 shadow-sm sm:px-6">
+                <div class="rounded-lg bg-surface px-5 py-6 shadow-sm sm:px-6">
                     {% block body %}{% endblock %}
                 </div>
             </div>

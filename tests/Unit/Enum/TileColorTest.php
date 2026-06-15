@@ -32,12 +32,21 @@ final class TileColorTest extends TestCase
         }
     }
 
+    public function testEverySwatchHoldsItsLighterToneWithAGradientStop(): void
+    {
+        // The distribution fix (#191): a `from-<pct>%` stop keeps the lighter tone
+        // dominant so small tiles are not visually swamped by the dark bottom end.
+        foreach (TileColor::cases() as $color) {
+            self::assertMatchesRegularExpression('/\bfrom-\d+%/', $color->gradientClasses());
+        }
+    }
+
     public function testMapsSwatchesToTheirChosenTailwindShades(): void
     {
-        self::assertSame('bg-linear-to-b from-red-600 to-red-950', TileColor::Red->gradientClasses());
-        self::assertSame('bg-linear-to-b from-fuchsia-500 to-fuchsia-950', TileColor::Magenta->gradientClasses());
-        self::assertSame('bg-linear-to-b from-sky-500 to-sky-950', TileColor::Cyan->gradientClasses());
-        self::assertSame('bg-linear-to-b from-stone-800 to-stone-950', TileColor::Charcoal->gradientClasses());
+        self::assertSame('bg-linear-to-b from-red-500 from-45% to-red-900', TileColor::Red->gradientClasses());
+        self::assertSame('bg-linear-to-b from-fuchsia-600 from-45% to-fuchsia-900', TileColor::Magenta->gradientClasses());
+        self::assertSame('bg-linear-to-b from-sky-600 from-45% to-sky-900', TileColor::Cyan->gradientClasses());
+        self::assertSame('bg-linear-to-b from-stone-600 from-45% to-stone-900', TileColor::Charcoal->gradientClasses());
     }
 
     public function testExposesAHumanLabelPerSwatch(): void

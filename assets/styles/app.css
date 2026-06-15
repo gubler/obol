@@ -16,12 +16,16 @@
  */
 @source "../../vendor/symfony/twig-bridge/Resources/views/Form/tailwind_2_layout.html.twig";
 
+/* Drive the `dark:` variant off the `.dark` class (set by the theme toggle), not the media query. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /*
  * Obol design tokens (#189). A bespoke palette drawn from the gold-coin logo: warm espresso
  * surfaces, parchment text, gold as the single accent. Semantic tokens are CSS variables set on
  * :root (light) and .dark (dark) and exposed to Tailwind via `@theme inline`, so utilities like
- * `bg-surface` / `text-fg` follow the active scheme. The `.dark` class is applied by the dark-mode
- * toggle (#185); until that lands the app renders light.
+ * `bg-surface` / `text-fg` follow the active scheme. The `.dark` class is set before paint by the
+ * inline no-flash script in base.html.twig and flipped by the theme toggle (#185); the default is
+ * dark unless a light choice is stored or the OS prefers light.
  */
 @theme inline {
     --color-page: var(--obol-page);

@@ -143,6 +143,26 @@ is a container-only volume, so its host-side copy is stale and not what gets ser
 the real output, read it from the container (`bin/dc exec -T php cat var/tailwind/app.built.css`)
 or fetch the served asset over HTTP.
 
+## Dark mode
+
+The app defaults to dark. The active scheme is the `dark` class on `<html>`, which the design
+tokens key off (`:root` light values, `.dark` dark values), and `@custom-variant dark` makes
+Tailwind's `dark:` utilities class-based rather than media-query based.
+
+Three pieces (kept in sync):
+
+- An inline no-flash script in `base.html.twig`'s `<head>` resolves the scheme before paint and
+  sets the class, so there is no light flash: dark unless a `light` choice is stored in
+  `localStorage` or the OS prefers light.
+- `theme_controller.js` (Stimulus) backs the toggle button in the nav: it flips the `dark` class,
+  persists the choice to `localStorage`, and reflects state in `aria-pressed`. Its `resolveTheme`
+  helper mirrors the inline script's logic.
+- The toggle button swaps a moon/sun icon purely in CSS via `dark:hidden` / `dark:block`.
+
+Tested in `assets/controllers/theme_controller.test.js` (resolution + toggle + persistence through
+a real Stimulus `Application`) and `tests/Feature/DarkModeTest.php` (the toggle and no-flash script
+are wired into the shell). End-to-end browser coverage (Panther) is not set up yet.
+
 ## Branding and favicons
 
 The app's mark is a heraldic bee struck on a beaded gold coin (an obol). The single source of truth is the SVG:

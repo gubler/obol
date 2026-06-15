@@ -28,6 +28,8 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  */
 final class CreateSubscriptionFormType extends AbstractType
 {
+    use MoneyCostFieldTrait;
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
@@ -53,9 +55,12 @@ final class CreateSubscriptionFormType extends AbstractType
             ->add(child: 'paymentPeriodCount', type: NumberType::class, options: [
                 'label' => 'Payment Period Count',
             ])
-            ->add(child: 'cost', type: NumberType::class, options: [
-                'label' => 'Cost',
-            ])
+        ;
+
+        // Cost is entered in major units and scales by the chosen currency's fraction digits.
+        $this->addCostField($builder);
+
+        $builder
             ->add(child: 'currency', type: EnumType::class, options: [
                 'class' => Currency::class,
                 'label' => 'Currency',

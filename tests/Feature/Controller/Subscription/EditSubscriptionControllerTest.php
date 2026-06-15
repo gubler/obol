@@ -65,7 +65,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
             'edit_subscription[nextRenewal]' => '2026-02-01',
             'edit_subscription[paymentPeriod]' => 'year',
             'edit_subscription[paymentPeriodCount]' => '1',
-            'edit_subscription[cost]' => '1999',
+            'edit_subscription[cost]' => '19.99',
             'edit_subscription[description]' => 'Updated description',
             'edit_subscription[link]' => 'https://netflix.com/premium',
             'edit_subscription[color]' => 'teal',
@@ -166,7 +166,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
             'edit_subscription[nextRenewal]' => $future,
             'edit_subscription[paymentPeriod]' => 'month',
             'edit_subscription[paymentPeriodCount]' => '1',
-            'edit_subscription[cost]' => '1599',
+            'edit_subscription[cost]' => '15.99',
             'edit_subscription[color]' => 'teal',
             'edit_subscription[restartPaymentGeneration]' => '1',
         ]);
@@ -202,7 +202,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
             'edit_subscription[nextRenewal]' => '2020-01-01',
             'edit_subscription[paymentPeriod]' => 'month',
             'edit_subscription[paymentPeriodCount]' => '1',
-            'edit_subscription[cost]' => '1599',
+            'edit_subscription[cost]' => '15.99',
             'edit_subscription[color]' => 'teal',
             'edit_subscription[restartPaymentGeneration]' => '1',
         ]);
@@ -317,7 +317,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
 
         $form = $crawler->selectButton(value: 'Save')->form([
             'edit_subscription[name]' => 'Netflix Premium',
-            'edit_subscription[cost]' => '1999',
+            'edit_subscription[cost]' => '19.99',
         ]);
 
         $client->submit(form: $form);

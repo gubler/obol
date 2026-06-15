@@ -40,6 +40,7 @@ final class CreatePaymentController extends AbstractBaseController
 
         $form = $this->createForm(type: CreatePaymentFormType::class, data: $dto, options: [
             'offer_restart' => $offerRestart,
+            'fraction_digits' => $subscription->cost->currency->fractionDigits(),
         ]);
 
         $form->handleRequest(request: $request);

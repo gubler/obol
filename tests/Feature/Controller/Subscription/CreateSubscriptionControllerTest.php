@@ -55,7 +55,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
             'create_subscription[nextRenewal]' => '2026-01-15',
             'create_subscription[paymentPeriod]' => 'month',
             'create_subscription[paymentPeriodCount]' => '1',
-            'create_subscription[cost]' => '1999',
+            'create_subscription[cost]' => '19.99',
             'create_subscription[description]' => 'Streaming service',
             'create_subscription[link]' => 'https://netflix.com',
             'create_subscription[color]' => 'blue',
@@ -80,6 +80,100 @@ final class CreateSubscriptionControllerTest extends WebTestCase
         self::assertSame(TileColor::Blue, $subscription->color);
     }
 
+    /**
+     * @return array<string, string>
+     */
+    private function validSubscriptionForm(string $categoryId, string $name, string $cost): array
+    {
+        return [
+            'create_subscription[category]' => $categoryId,
+            'create_subscription[name]' => $name,
+            'create_subscription[nextRenewal]' => '2026-01-15',
+            'create_subscription[paymentPeriod]' => 'month',
+            'create_subscription[paymentPeriodCount]' => '1',
+            'create_subscription[cost]' => $cost,
+        ];
+    }
+
+    private function storedSubscription(string $name): ?Subscription
+    {
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = self::getContainer()->get(id: EntityManagerInterface::class);
+
+        return $entityManager->getRepository(Subscription::class)->findOneBy(['name' => $name]);
+    }
+
+    public function testStoresTheReportedDecimalCostInMinorUnits(): void
+    {
+        // The bug report: a cost of 35.50 was saved as 35 and rendered as $0.35.
+        $client = self::createClient();
+        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+        $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
+
+        $form = $crawler->selectButton(value: 'Save')->form(
+            $this->validSubscriptionForm($category->id->toBase32(), 'Disney Plus', '35.50'),
+        );
+        $client->submit(form: $form);
+
+        self::assertResponseRedirects(expectedLocation: '/');
+        $subscription = $this->storedSubscription('Disney Plus');
+        self::assertNotNull($subscription);
+        self::assertSame(3550, $subscription->cost->minorAmount);
+    }
+
+    public function testParsesAGroupedDecimalCostIntoMinorUnits(): void
+    {
+        $client = self::createClient();
+        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+        $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
+
+        // A thousands separator must not trip validation, and the decimal must scale to minor units.
+        $form = $crawler->selectButton(value: 'Save')->form(
+            $this->validSubscriptionForm($category->id->toBase32(), 'Big Plan', '1,234.56'),
+        );
+        $client->submit(form: $form);
+
+        self::assertResponseRedirects(expectedLocation: '/');
+        $subscription = $this->storedSubscription('Big Plan');
+        self::assertNotNull($subscription);
+        self::assertSame(123456, $subscription->cost->minorAmount);
+    }
+
+    public function testStoresACostInAZeroDecimalCurrencyWithoutScaling(): void
+    {
+        $client = self::createClient();
+        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+        $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
+
+        // Yen has no minor unit: 2,000 yen is 2000 minor, not 200000.
+        $fields = $this->validSubscriptionForm($category->id->toBase32(), 'Manga Box JP', '2,000');
+        $fields['create_subscription[currency]'] = 'JPY';
+        $form = $crawler->selectButton(value: 'Save')->form($fields);
+        $client->submit(form: $form);
+
+        self::assertResponseRedirects(expectedLocation: '/');
+        $subscription = $this->storedSubscription('Manga Box JP');
+        self::assertNotNull($subscription);
+        self::assertSame(Currency::JPY, $subscription->cost->currency);
+        self::assertSame(2000, $subscription->cost->minorAmount);
+    }
+
+    public function testRejectsANonNumericCostWithoutCreatingASubscription(): void
+    {
+        $client = self::createClient();
+        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+        $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
+
+        $form = $crawler->selectButton(value: 'Save')->form(
+            $this->validSubscriptionForm($category->id->toBase32(), 'Bogus', 'not money'),
+        );
+        $client->submit(form: $form);
+
+        self::assertResponseStatusCodeSame(expectedCode: 422);
+        self::assertSelectorExists(selector: '.text-danger');
+        self::assertNull($this->storedSubscription('Bogus'));
+    }
+
     public function testPostRequestCreatesASubscriptionInAChosenNonDefaultCurrency(): void
     {
         $client = self::createClient();
@@ -93,7 +187,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
             'create_subscription[nextRenewal]' => '2026-01-15',
             'create_subscription[paymentPeriod]' => 'month',
             'create_subscription[paymentPeriodCount]' => '1',
-            'create_subscription[cost]' => '1500',
+            'create_subscription[cost]' => '15.00',
             'create_subscription[currency]' => 'EUR',
         ]);
 
@@ -127,7 +221,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
             'create_subscription[nextRenewal]' => '2026-01-01',
             'create_subscription[paymentPeriod]' => 'month',
             'create_subscription[paymentPeriodCount]' => '1',
-            'create_subscription[cost]' => '999',
+            'create_subscription[cost]' => '9.99',
         ]);
 
         $client->submit(form: $form);
@@ -149,7 +243,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
             'create_subscription[nextRenewal]' => '2026-01-01',
             'create_subscription[paymentPeriod]' => 'month',
             'create_subscription[paymentPeriodCount]' => '1',
-            'create_subscription[cost]' => '999',
+            'create_subscription[cost]' => '9.99',
         ]);
 
         $client->submit(form: $form);
@@ -171,7 +265,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
             'create_subscription[nextRenewal]' => '2026-01-01',
             'create_subscription[paymentPeriod]' => 'month',
             'create_subscription[paymentPeriodCount]' => '1',
-            'create_subscription[cost]' => '999',
+            'create_subscription[cost]' => '9.99',
         ]);
         $form['create_subscription[category]'] = '';
 
@@ -193,7 +287,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
             'create_subscription[name]' => 'Test Sub',
             'create_subscription[paymentPeriod]' => 'month',
             'create_subscription[paymentPeriodCount]' => '1',
-            'create_subscription[cost]' => '999',
+            'create_subscription[cost]' => '9.99',
         ]);
         $form['create_subscription[nextRenewal]'] = '';
 

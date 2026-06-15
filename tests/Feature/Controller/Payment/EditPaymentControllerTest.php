@@ -34,7 +34,7 @@ final class EditPaymentControllerTest extends WebTestCase
         $client->request(method: 'GET', uri: '/payments/' . $payment->id . '/edit');
 
         self::assertResponseIsSuccessful();
-        self::assertSelectorExists(selector: 'input[name="amend_payment[amount]"][value="1599"]');
+        self::assertSelectorExists(selector: 'input[name="amend_payment[amount]"][value="15.99"]');
     }
 
     public function testPostRequestAmendsThePaymentAndVerifiesIt(): void
@@ -51,7 +51,7 @@ final class EditPaymentControllerTest extends WebTestCase
 
         $crawler = $client->request(method: 'GET', uri: '/payments/' . $payment->id . '/edit');
         $form = $crawler->selectButton(value: 'Save')->form([
-            'amend_payment[amount]' => '1299',
+            'amend_payment[amount]' => '12.99',
             'amend_payment[paidDate]' => '2024-01-05',
         ]);
         $client->submit(form: $form);

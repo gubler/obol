@@ -36,7 +36,7 @@ final class PaymentCrudWorkflowTest extends WebTestCase
 
         // Submit payment form
         $client->submitForm('Save', [
-            'create_payment[amount]' => '1599',
+            'create_payment[amount]' => '15.99',
             'create_payment[paidDate]' => '2025-01-15',
         ]);
         self::assertResponseRedirects('/subscriptions/' . $subscription->id);

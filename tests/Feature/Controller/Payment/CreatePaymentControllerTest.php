@@ -47,7 +47,7 @@ final class CreatePaymentControllerTest extends WebTestCase
 
         $client->request('GET', '/subscriptions/' . $subscription->id . '/payments/new');
         $client->submitForm('Save', [
-            'create_payment[amount]' => '1599',
+            'create_payment[amount]' => '15.99',
             'create_payment[paidDate]' => '2025-01-15',
         ]);
 
@@ -75,7 +75,7 @@ final class CreatePaymentControllerTest extends WebTestCase
 
         $client->request('GET', '/subscriptions/' . $subscription->id . '/payments/new');
         $client->submitForm('Save', [
-            'create_payment[amount]' => '1599',
+            'create_payment[amount]' => '15.99',
             'create_payment[paidDate]' => '2025-01-15',
         ]);
         $client->followRedirect();
@@ -138,7 +138,7 @@ final class CreatePaymentControllerTest extends WebTestCase
 
         $client->request('GET', '/subscriptions/' . $subscription->id . '/payments/new');
         $client->submitForm('Save', [
-            'create_payment[amount]' => '1599',
+            'create_payment[amount]' => '15.99',
             'create_payment[paidDate]' => '2025-01-15',
             'create_payment[restartPaymentGeneration]' => '1',
             'create_payment[nextRenewal]' => $future,
@@ -167,7 +167,7 @@ final class CreatePaymentControllerTest extends WebTestCase
 
         $client->request('GET', '/subscriptions/' . $subscription->id . '/payments/new');
         $client->submitForm('Save', [
-            'create_payment[amount]' => '1599',
+            'create_payment[amount]' => '15.99',
             'create_payment[paidDate]' => '2025-01-15',
         ]);
 

@@ -32,7 +32,7 @@ final class SubscriptionCrudWorkflowTest extends WebTestCase
             'create_subscription[nextRenewal]' => '2026-01-15',
             'create_subscription[paymentPeriod]' => 'month',
             'create_subscription[paymentPeriodCount]' => '1',
-            'create_subscription[cost]' => '1599',
+            'create_subscription[cost]' => '15.99',
             'create_subscription[description]' => 'Test description',
             'create_subscription[link]' => 'https://example.com',
         ]);
@@ -59,7 +59,7 @@ final class SubscriptionCrudWorkflowTest extends WebTestCase
         $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscriptionId . '/edit');
         $form = $crawler->selectButton(value: 'Save')->form([
             'edit_subscription[name]' => 'Updated Workflow Subscription',
-            'edit_subscription[cost]' => '1999',
+            'edit_subscription[cost]' => '19.99',
         ]);
         $client->submit(form: $form);
 
@@ -98,7 +98,7 @@ final class SubscriptionCrudWorkflowTest extends WebTestCase
         $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
         $form = $crawler->selectButton(value: 'Save')->form([
             'edit_subscription[name]' => 'Netflix Premium',
-            'edit_subscription[cost]' => '1999',
+            'edit_subscription[cost]' => '19.99',
         ]);
         $client->submit(form: $form);
 
@@ -139,7 +139,7 @@ final class SubscriptionCrudWorkflowTest extends WebTestCase
                 'create_subscription[nextRenewal]' => '2026-01-01',
                 'create_subscription[paymentPeriod]' => 'month',
                 'create_subscription[paymentPeriodCount]' => '1',
-                'create_subscription[cost]' => '999',
+                'create_subscription[cost]' => '9.99',
             ]);
             $client->submit(form: $form);
             $client->followRedirect();

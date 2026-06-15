@@ -33,7 +33,9 @@ final class EditPaymentController extends AbstractBaseController
         \assert($payment instanceof Payment);
 
         $dto = new AmendPaymentDto(payment: $payment);
-        $form = $this->createForm(type: AmendPaymentFormType::class, data: $dto);
+        $form = $this->createForm(type: AmendPaymentFormType::class, data: $dto, options: [
+            'fraction_digits' => $payment->amount->currency->fractionDigits(),
+        ]);
 
         $form->handleRequest(request: $request);
 

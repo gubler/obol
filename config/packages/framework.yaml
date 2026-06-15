@@ -8,6 +8,17 @@ framework:
     #esi: true
     #fragments: true
 
+when@dev:
+    framework:
+        # Behind the Lolly dev proxy, TLS is terminated at the proxy and the app is reached over
+        # HTTP, so Symfony saw the request as insecure and built the web debug toolbar's
+        # X-Debug-Token-Link as http:// - which the https:// page blocked as mixed content, leaving
+        # the toolbar stuck on "Loading". Trust the proxy (it sits on a private network) and honour
+        # its X-Forwarded-* headers so the original https scheme is detected. Dev-only; prod has no
+        # such proxy in front of FrankenPHP.
+        trusted_proxies: 'private_ranges'
+        trusted_headers: ['x-forwarded-for', 'x-forwarded-host', 'x-forwarded-proto', 'x-forwarded-port', 'x-forwarded-prefix']
+
 when@test:
     framework:
         test: true

@@ -1,6 +1,6 @@
 {# Global Totals figures (the total obligation, week/month/year). Expects: totals (TotalObligation). #}
 <div class="flex flex-wrap items-baseline gap-x-6 gap-y-2">
-    <div class="global-total-monthly text-2xl font-semibold text-gray-900">
+    <div class="global-total-monthly text-2xl font-semibold text-fg">
         {{ include('components/money_disclosure.html.twig', {
             amount: totals.monthly,
             label: '/ mo',
@@ -9,10 +9,10 @@
             approximate: totals.isApproximate,
         }) }}
     </div>
-    <div class="global-total-weekly text-sm text-gray-500">
+    <div class="global-total-weekly text-sm text-fg-muted">
         {{ include('components/money_disclosure.html.twig', {amount: totals.weekly, label: '/ wk', approximate: totals.isApproximate}) }}
     </div>
-    <div class="global-total-yearly text-sm text-gray-500">
+    <div class="global-total-yearly text-sm text-fg-muted">
         {{ include('components/money_disclosure.html.twig', {amount: totals.yearly, label: '/ yr', approximate: totals.isApproximate}) }}
     </div>
 </div>

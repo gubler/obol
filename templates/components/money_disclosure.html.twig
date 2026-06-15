@@ -14,7 +14,7 @@
         <summary class="money-disclosure-summary cursor-pointer list-none">
             {{- prefix }}{{ amount.format() }}{% if label is defined and label %} {{ label }}{% endif -%}
         </summary>
-        <div class="money-disclosure-breakdown mt-1 text-sm font-normal text-gray-500">
+        <div class="money-disclosure-breakdown mt-1 text-sm font-normal text-fg-muted">
             {%- if asOf is defined and asOf %}
                 <div class="money-disclosure-asof">as of {{ asOf|date('M j, Y') }}</div>
             {%- endif %}

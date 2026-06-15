@@ -1,7 +1,7 @@
 {# Remaining-in-period figures (what is still owed this week/month/year). Expects: remaining (RemainingInPeriod).
    Each period is its own ConvertedTotal - a distinct set of renewals - so each carries its own disclosure. #}
 <div class="flex flex-wrap items-baseline gap-x-6 gap-y-2">
-    <div class="remaining-total-monthly text-2xl font-semibold text-gray-900">
+    <div class="remaining-total-monthly text-2xl font-semibold text-fg">
         {{ include('components/money_disclosure.html.twig', {
             amount: remaining.monthly.converted,
             label: 'this month',
@@ -10,7 +10,7 @@
             approximate: remaining.monthly.isApproximate,
         }) }}
     </div>
-    <div class="remaining-total-weekly text-sm text-gray-500">
+    <div class="remaining-total-weekly text-sm text-fg-muted">
         {{ include('components/money_disclosure.html.twig', {
             amount: remaining.weekly.converted,
             label: 'this week',
@@ -19,7 +19,7 @@
             approximate: remaining.weekly.isApproximate,
         }) }}
     </div>
-    <div class="remaining-total-yearly text-sm text-gray-500">
+    <div class="remaining-total-yearly text-sm text-fg-muted">
         {{ include('components/money_disclosure.html.twig', {
             amount: remaining.yearly.converted,
             label: 'this year',

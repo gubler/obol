@@ -3,18 +3,18 @@
 {% block title %}Reports{% endblock %}
 
 {% block header %}
-    <h1 class="text-3xl font-bold tracking-tight text-white">Reports</h1>
+    <h1 class="text-3xl font-bold tracking-tight text-header-fg">Reports</h1>
 {% endblock %}
 
 {% block body %}
     {% set toggle_link = 'rounded-md px-3 py-2 text-sm font-medium transition' %}
-    {% set toggle_on = 'bg-gray-800 text-white' %}
-    {% set toggle_off = 'bg-gray-100 text-gray-700 hover:bg-gray-200' %}
+    {% set toggle_on = 'bg-brand text-on-brand' %}
+    {% set toggle_off = 'text-fg-muted hover:bg-surface-2' %}
 
     <section class="reports-composition">
-        <div class="mb-4 flex flex-wrap items-baseline justify-between gap-2 border-b border-gray-200 pb-3">
-            <h2 class="text-lg font-semibold text-gray-900">Monthly obligation by category</h2>
-            <div class="report-total text-2xl font-semibold text-gray-900">
+        <div class="mb-4 flex flex-wrap items-baseline justify-between gap-2 border-b border-line pb-3">
+            <h2 class="text-lg font-semibold text-fg">Monthly obligation by category</h2>
+            <div class="report-total text-2xl font-semibold text-fg">
                 {{ include('components/money_disclosure.html.twig', {
                     amount: composition.total.converted,
                     label: '/ mo',
@@ -26,21 +26,21 @@
         </div>
 
         {% if composition.slices is empty %}
-            <div class="empty-state rounded-lg border border-gray-300 bg-gray-100 px-6 py-12 text-center">
-                <p class="text-lg text-gray-600">Nothing to report yet</p>
-                <p class="mt-2 text-gray-500">Add an active subscription to see it broken down here.</p>
+            <div class="empty-state rounded-lg border border-line bg-surface-2 px-6 py-12 text-center">
+                <p class="text-lg text-fg-muted">Nothing to report yet</p>
+                <p class="mt-2 text-fg-muted">Add an active subscription to see it broken down here.</p>
             </div>
         {% else %}
             <div class="grid items-center gap-8 md:grid-cols-2">
                 {{ include('reports/_pie.html.twig', {chart: chart}) }}
 
-                <ul class="report-category-list divide-y divide-gray-100">
+                <ul class="report-category-list divide-y divide-line">
                     {% for slice in composition.slices %}
                         <li>
                             <a href="{{ path('reports_category', {id: slice.id}) }}"
-                               class="report-category-link flex items-baseline justify-between gap-4 py-2 text-gray-900 hover:bg-gray-50">
+                               class="report-category-link flex items-baseline justify-between gap-4 py-2 text-fg hover:bg-surface-2">
                                 <span class="report-category font-medium">{{ slice.label }}</span>
-                                <span class="report-category-amount text-sm text-gray-500">
+                                <span class="report-category-amount text-sm text-fg-muted">
                                     {{ include('components/money_disclosure.html.twig', {amount: slice.converted, label: '/ mo', approximate: slice.isApproximate}) }}
                                 </span>
                             </a>
@@ -52,9 +52,9 @@
     </section>
 
     <section class="obligation-trend mt-10">
-        <div class="mb-4 flex flex-wrap items-baseline justify-between gap-2 border-b border-gray-200 pb-3">
-            <h2 class="text-lg font-semibold text-gray-900">Obligation over time</h2>
-            <div class="inline-flex rounded-md bg-gray-100 p-1">
+        <div class="mb-4 flex flex-wrap items-baseline justify-between gap-2 border-b border-line pb-3">
+            <h2 class="text-lg font-semibold text-fg">Obligation over time</h2>
+            <div class="inline-flex rounded-md bg-surface-2 p-1">
                 {% for option in trendOptions %}
                     <a href="{{ path('reports_index', {trend: option.value}) }}"
                        class="{{ toggle_link }} {{ option == trendPeriod ? toggle_on : toggle_off }}"

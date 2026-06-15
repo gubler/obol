@@ -4,17 +4,17 @@
 
 {% block header %}
     <div class="flex items-center justify-between">
-        <h1 class="text-3xl font-bold tracking-tight text-white">{{ composition.title }}</h1>
+        <h1 class="text-3xl font-bold tracking-tight text-header-fg">{{ composition.title }}</h1>
         <a href="{{ path('reports_index') }}"
-           class="report-back rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white">Back to reports</a>
+           class="report-back rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">Back to reports</a>
     </div>
 {% endblock %}
 
 {% block body %}
     <section class="reports-composition">
-        <div class="mb-4 flex flex-wrap items-baseline justify-between gap-2 border-b border-gray-200 pb-3">
-            <h2 class="text-lg font-semibold text-gray-900">Monthly obligation by subscription</h2>
-            <div class="report-total text-2xl font-semibold text-gray-900">
+        <div class="mb-4 flex flex-wrap items-baseline justify-between gap-2 border-b border-line pb-3">
+            <h2 class="text-lg font-semibold text-fg">Monthly obligation by subscription</h2>
+            <div class="report-total text-2xl font-semibold text-fg">
                 {{ include('components/money_disclosure.html.twig', {
                     amount: composition.total.converted,
                     label: '/ mo',
@@ -26,18 +26,18 @@
         </div>
 
         {% if composition.slices is empty %}
-            <div class="empty-state rounded-lg border border-gray-300 bg-gray-100 px-6 py-12 text-center">
-                <p class="text-lg text-gray-600">No active subscriptions in this category</p>
+            <div class="empty-state rounded-lg border border-line bg-surface-2 px-6 py-12 text-center">
+                <p class="text-lg text-fg-muted">No active subscriptions in this category</p>
             </div>
         {% else %}
             <div class="grid items-center gap-8 md:grid-cols-2">
                 {{ include('reports/_pie.html.twig', {chart: chart}) }}
 
-                <ul class="report-subscription-list divide-y divide-gray-100">
+                <ul class="report-subscription-list divide-y divide-line">
                     {% for slice in composition.slices %}
-                        <li class="flex items-baseline justify-between gap-4 py-2 text-gray-900">
+                        <li class="flex items-baseline justify-between gap-4 py-2 text-fg">
                             <span class="report-subscription font-medium">{{ slice.label }}</span>
-                            <span class="report-subscription-amount text-sm text-gray-500">
+                            <span class="report-subscription-amount text-sm text-fg-muted">
                                 {{ include('components/money_disclosure.html.twig', {amount: slice.converted, label: '/ mo', approximate: slice.isApproximate}) }}
                             </span>
                         </li>

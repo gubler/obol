@@ -4,10 +4,10 @@
 
 {% block header %}
     <div class="flex justify-between items-center">
-        <h1 class="text-3xl font-bold tracking-tight text-white">
+        <h1 class="text-3xl font-bold tracking-tight text-header-fg">
             Subscriptions
         </h1>
-        <a href="{{ path('subscription_new') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        <a href="{{ path('subscription_new') }}" class="bg-brand hover:bg-brand-strong text-on-brand font-bold py-2 px-4 rounded">
             New subscription
         </a>
     </div>
@@ -15,7 +15,7 @@
 
 {% block body %}
     {% for message in app.flashes('success') %}
-        <div class="flash-success bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+        <div class="flash-success bg-success-surface border border-success text-success px-4 py-3 rounded mb-4">
             {{ message }}
         </div>
     {% endfor %}
@@ -23,19 +23,19 @@
     {% set subscription_count = listing.subscriptions|length %}
 
     {% if subscription_count == 0 %}
-        <div class="empty-state bg-gray-100 border border-gray-300 rounded-lg px-6 py-12 text-center">
-            <p class="text-gray-600 text-lg">No subscriptions found</p>
-            <p class="text-gray-500 mt-2">Get started by creating your first subscription</p>
+        <div class="empty-state bg-surface-2 border border-line rounded-lg px-6 py-12 text-center">
+            <p class="text-fg-muted text-lg">No subscriptions found</p>
+            <p class="text-fg-muted mt-2">Get started by creating your first subscription</p>
         </div>
     {% else %}
         {% set toggle_link = 'rounded-md px-3 py-2 text-sm font-medium transition' %}
-        {% set toggle_on = 'bg-gray-800 text-white' %}
-        {% set toggle_off = 'bg-gray-100 text-gray-700 hover:bg-gray-200' %}
+        {% set toggle_on = 'bg-brand text-on-brand' %}
+        {% set toggle_off = 'text-fg-muted hover:bg-surface-2' %}
 
         {% set base_params = {view: view, group: grouped ? '1' : '0', archived: includeArchived ? '1' : '0', sort: sort.value, capstone: capstoneMode} %}
 
-        <section class="global-totals mb-6 rounded-lg border border-gray-200 bg-white p-4">
-            <div class="mb-3 inline-flex rounded-md bg-gray-100 p-1">
+        <section class="global-totals mb-6 rounded-lg border border-line bg-surface p-4">
+            <div class="mb-3 inline-flex rounded-md bg-surface-2 p-1">
                 <a href="{{ path('subscription_index', base_params|merge({capstone: 'totals'})) }}"
                    class="{{ toggle_link }} {{ capstoneMode == 'totals' ? toggle_on : toggle_off }}">Global totals</a>
                 <a href="{{ path('subscription_index', base_params|merge({capstone: 'remaining'})) }}"
@@ -49,7 +49,7 @@
         </section>
 
         <div class="mb-6 flex flex-wrap items-center gap-2">
-            <div class="inline-flex rounded-md bg-gray-100 p-1">
+            <div class="inline-flex rounded-md bg-surface-2 p-1">
                 <a href="{{ path('subscription_index', base_params|merge({view: 'tiles'})) }}"
                    class="{{ toggle_link }} {{ view == 'tiles' ? toggle_on : toggle_off }}">Tiles</a>
                 <a href="{{ path('subscription_index', base_params|merge({view: 'list'})) }}"
@@ -63,8 +63,8 @@
                class="{{ toggle_link }} {{ includeArchived ? toggle_on : toggle_off }}">{{ includeArchived ? 'Showing archived' : 'Show archived' }}</a>
 
             <div class="sort-controls inline-flex items-center gap-2">
-                <span class="text-sm font-medium text-gray-500">Sort</span>
-                <div class="inline-flex rounded-md bg-gray-100 p-1">
+                <span class="text-sm font-medium text-fg-muted">Sort</span>
+                <div class="inline-flex rounded-md bg-surface-2 p-1">
                     {% for option in sortOptions %}
                         <a href="{{ path('subscription_index', base_params|merge({sort: option.value})) }}"
                            class="{{ toggle_link }} {{ sort == option ? toggle_on : toggle_off }}">{{ option.label }}</a>
@@ -76,9 +76,9 @@
         {% if grouped %}
             {% for group in listing.groups %}
                 <section class="category-group mb-8">
-                    <h2 class="category-header mb-3 flex items-baseline justify-between border-b border-gray-200 pb-2">
-                        <span class="text-lg font-semibold text-gray-900">{{ group.category.name }}</span>
-                        <span class="flex items-baseline gap-3 text-sm font-medium text-gray-500">
+                    <h2 class="category-header mb-3 flex items-baseline justify-between border-b border-line pb-2">
+                        <span class="text-lg font-semibold text-fg">{{ group.category.name }}</span>
+                        <span class="flex items-baseline gap-3 text-sm font-medium text-fg-muted">
                             {% if group.savingsTotal.converted.minorAmount > 0 %}
                                 <span class="category-savings-total">
                                     {{ include('components/money_disclosure.html.twig', {

@@ -5,20 +5,20 @@
 {% block body %}
     <div class="container mx-auto px-4 py-8">
         <div class="mb-6">
-            <a href="{{ path('subscription_show', {id: subscription.id}) }}" class="text-blue-600 hover:text-blue-900 mb-4 inline-block">&larr; Back to {{ subscription.name }}</a>
+            <a href="{{ path('subscription_show', {id: subscription.id}) }}" class="text-brand hover:text-brand-strong mb-4 inline-block">&larr; Back to {{ subscription.name }}</a>
             <h1 class="text-3xl font-bold">Record Payment</h1>
-            <p class="text-gray-600 mt-1">for {{ subscription.name }}</p>
+            <p class="text-fg-muted mt-1">for {{ subscription.name }}</p>
         </div>
 
-        <div class="bg-white shadow-md rounded p-6 max-w-2xl">
+        <div class="bg-surface shadow-md rounded p-6 max-w-2xl">
             {{ form_start(form, {attr: {class: 'space-y-6'}}) }}
 
             {{ form_row(form.amount) }}
             {{ form_row(form.paidDate) }}
 
             {% if form.restartPaymentGeneration is defined %}
-                <div class="border-t border-gray-200 pt-4 space-y-3" data-controller="conditional-field">
-                    <p class="text-sm text-gray-600">Automatic payment generation is paused for this subscription.</p>
+                <div class="border-t border-line pt-4 space-y-3" data-controller="conditional-field">
+                    <p class="text-sm text-fg-muted">Automatic payment generation is paused for this subscription.</p>
                     {{ form_row(form.restartPaymentGeneration, {attr: {
                         'data-conditional-field-target': 'trigger',
                         'data-action': 'conditional-field#toggle',
@@ -30,10 +30,10 @@
             {% endif %}
 
             <div class="flex justify-end space-x-3">
-                <a href="{{ path('subscription_show', {id: subscription.id}) }}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">
+                <a href="{{ path('subscription_show', {id: subscription.id}) }}" class="bg-surface-2 hover:bg-line text-fg font-bold py-2 px-4 rounded">
                     Cancel
                 </a>
-                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                <button type="submit" class="bg-brand hover:bg-brand-strong text-on-brand font-bold py-2 px-4 rounded">
                     Save
                 </button>
             </div>

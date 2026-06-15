@@ -1,6 +1,6 @@
 <?php
 
-// ABOUTME: Feature tests for the obligations-over-time trend on /reports and its day/week/month toggle.
+// ABOUTME: Feature tests for the obligations-over-time trend on /reports and its week/month/year toggle.
 // ABOUTME: Verifies the trend section renders its own line chart and that the selected granularity is marked active.
 
 declare(strict_types=1);
@@ -16,7 +16,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class ObligationTrendTest extends WebTestCase
 {
-    public function testReportsPageShowsObligationTrendWithDayWeekMonthToggleMonthlyByDefault(): void
+    public function testReportsPageShowsObligationTrendWithWeekMonthYearToggleMonthlyByDefault(): void
     {
         $client = self::createClient();
         // Creating a subscription records an obligation snapshot, so the trend has data to plot.
@@ -27,9 +27,9 @@ final class ObligationTrendTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: '.obligation-trend canvas');                 // the line chart
-        self::assertSelectorExists(selector: 'a[href="/reports?trend=day"]');
         self::assertSelectorExists(selector: 'a[href="/reports?trend=week"]');
         self::assertSelectorExists(selector: 'a[href="/reports?trend=month"]');
+        self::assertSelectorExists(selector: 'a[href="/reports?trend=year"]');
         self::assertSelectorTextContains(selector: '.obligation-trend [aria-current="page"]', text: 'Monthly');
     }
 

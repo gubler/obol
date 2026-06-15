@@ -1,6 +1,6 @@
 <?php
 
-// ABOUTME: Query for the obligations-over-time trend at a chosen day/week/month granularity.
+// ABOUTME: Query for the obligations-over-time trend at a chosen week/month/year granularity.
 // ABOUTME: Dispatched via query.bus and handled by FindObligationOverTimeRunner.
 
 declare(strict_types=1);

@@ -1,6 +1,6 @@
 <?php
 
-// ABOUTME: Computes the start or inclusive end of the current calendar day / week / month / year for an as-of date.
+// ABOUTME: Computes the start or inclusive end of the current calendar week / month / year for an as-of date.
 // ABOUTME: Used by remaining-in-period and obligation-trend reports; the week-start day is injected (app.week_start_day).
 
 declare(strict_types=1);
@@ -43,9 +43,9 @@ final readonly class PeriodBoundaries
     public function startOfPeriod(ObligationTrendPeriod $period, \DateTimeImmutable $asOf): \DateTimeImmutable
     {
         return match ($period) {
-            ObligationTrendPeriod::Day => $asOf->setTime(0, 0),
             ObligationTrendPeriod::Week => $this->startOfWeek($asOf),
             ObligationTrendPeriod::Month => $asOf->modify('first day of this month')->setTime(0, 0),
+            ObligationTrendPeriod::Year => $asOf->setDate((int) $asOf->format('Y'), 1, 1)->setTime(0, 0),
         };
     }
 

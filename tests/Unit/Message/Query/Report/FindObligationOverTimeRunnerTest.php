@@ -52,36 +52,50 @@ final class FindObligationOverTimeRunnerTest extends TestCase
         return $runner(new FindObligationOverTimeQuery($period));
     }
 
+    /**
+     * @return array<string, int> bucket label => obligation in display-currency minor units
+     */
+    private static function byLabel(ObligationSeries $series): array
+    {
+        $byLabel = [];
+        foreach ($series->points as $point) {
+            $byLabel[$point->label] = $point->amount->minorAmount;
+        }
+
+        return $byLabel;
+    }
+
     public function testCarriesEachMonthStartObligationForwardFromTheLatestSnapshotOnOrBeforeIt(): void
     {
-        // One snapshot mid-March; "now" is mid-June, so the trend spans Jan..Jun.
+        // One snapshot mid-March 2026; "now" is mid-June 2026, within the 24-month window.
         $series = $this->runTrend([self::trendSnapshot(['USD' => 5000], '2026-03-15')], now: '2026-06-13');
-
-        $values = array_map(static fn ($point): int => $point->amount->minorAmount, $series->points);
-        $labels = array_map(static fn ($point): string => $point->label, $series->points);
+        $byLabel = self::byLabel($series);
 
         self::assertInstanceOf(ObligationSeries::class, $series);
-        self::assertCount(6, $series->points);                       // Month lookback
-        self::assertSame([0, 0, 0, 5000, 5000, 5000], $values);      // nothing before Mar 15; carried forward after
-        self::assertSame(['Jan 2026', 'Feb 2026', 'Mar 2026', 'Apr 2026', 'May 2026', 'Jun 2026'], $labels);
-        self::assertFalse($series->isApproximate);
+        self::assertCount(24, $series->points);                   // Month lookback
         self::assertSame(ObligationTrendPeriod::Month, $series->period);
+        self::assertSame(0, $byLabel['Jan 2026']);                // before the snapshot
+        self::assertSame(0, $byLabel['Mar 2026']);                // Mar 15 snapshot is after the Mar 1 anchor
+        self::assertSame(5000, $byLabel['Apr 2026']);             // carried forward from Mar 15
+        self::assertSame(5000, $byLabel['Jun 2026']);
+        self::assertFalse($series->isApproximate);
     }
 
     public function testABucketCarriesTheLatestSnapshotWhenSeveralPrecedeItsStart(): void
     {
         $series = $this->runTrend(
             [
-                self::trendSnapshot(['USD' => 5000], '2026-03-01'),  // <= every bucket from April on
+                self::trendSnapshot(['USD' => 5000], '2026-03-01'),  // <= every bucket from March on
                 self::trendSnapshot(['USD' => 8000], '2026-05-10'),  // after May 1, before June 1
             ],
             now: '2026-06-13',
         );
+        $byLabel = self::byLabel($series);
 
-        $values = array_map(static fn ($point): int => $point->amount->minorAmount, $series->points);
-
-        // Jan, Feb: nothing yet. Mar 1: snapshot is same-day, counts. Apr, May 1: still 5000 (8000 is May 10). Jun 1: 8000.
-        self::assertSame([0, 0, 5000, 5000, 5000, 8000], $values);
+        self::assertSame(0, $byLabel['Feb 2026']);     // nothing yet
+        self::assertSame(5000, $byLabel['Mar 2026']);  // Mar 1 snapshot is same-day, counts
+        self::assertSame(5000, $byLabel['May 2026']);  // 8000 is May 10, after the May 1 anchor
+        self::assertSame(8000, $byLabel['Jun 2026']);  // Jun 1 anchor now sees the May 10 snapshot
     }
 
     public function testIsAFlatZeroLineWhenThereIsNoSnapshotHistory(): void
@@ -90,7 +104,8 @@ final class FindObligationOverTimeRunnerTest extends TestCase
 
         $values = array_map(static fn ($point): int => $point->amount->minorAmount, $series->points);
 
-        self::assertSame([0, 0, 0, 0, 0, 0], $values);
+        self::assertCount(24, $series->points);
+        self::assertSame([0], array_values(array_unique($values)));
         self::assertFalse($series->isApproximate);
     }
 
@@ -101,19 +116,27 @@ final class FindObligationOverTimeRunnerTest extends TestCase
             now: '2026-06-13',
             rates: ['EUR' => 1.0, 'USD' => 1.08],
         );
+        $byLabel = self::byLabel($series);
 
-        $values = array_map(static fn ($point): int => $point->amount->minorAmount, $series->points);
-
-        // 10000 USD + (5000 EUR -> 5400 USD) = 15400, carried across every bucket (snapshot predates them all).
-        self::assertSame([15400, 15400, 15400, 15400, 15400, 15400], $values);
+        // 10000 USD + (5000 EUR -> 5400 USD) = 15400, carried across every bucket from January 2026 on.
+        self::assertSame(15400, $byLabel['Jan 2026']);
+        self::assertSame(15400, $byLabel['Jun 2026']);
         self::assertTrue($series->isApproximate);
     }
 
-    public function testAWeeklyTrendLooksBackOverEightWeekStartBuckets(): void
+    public function testAWeeklyTrendLooksBackOver52WeekStartBuckets(): void
     {
         $series = $this->runTrend([], now: '2026-06-13', period: ObligationTrendPeriod::Week);
 
-        self::assertCount(8, $series->points);
+        self::assertCount(52, $series->points);
         self::assertSame(ObligationTrendPeriod::Week, $series->period);
+    }
+
+    public function testAYearlyTrendLooksBackOver10YearStartBuckets(): void
+    {
+        $series = $this->runTrend([], now: '2026-06-13', period: ObligationTrendPeriod::Year);
+
+        self::assertCount(10, $series->points);
+        self::assertSame(ObligationTrendPeriod::Year, $series->period);
     }
 }

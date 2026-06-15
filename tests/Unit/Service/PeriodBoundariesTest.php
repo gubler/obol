@@ -64,11 +64,11 @@ final class PeriodBoundariesTest extends TestCase
         self::assertSame('23:59:59', $end->format('H:i:s'));
     }
 
-    public function testStartOfDayIsMidnightOfTheSameDay(): void
+    public function testStartOfYearIsJanuaryFirstAtMidnight(): void
     {
         self::assertSameInstant(
-            new \DateTimeImmutable('2026-06-13 00:00:00'),
-            (new PeriodBoundaries(0))->startOfPeriod(ObligationTrendPeriod::Day, new \DateTimeImmutable('2026-06-13 15:30:45')),
+            new \DateTimeImmutable('2026-01-01 00:00:00'),
+            (new PeriodBoundaries(0))->startOfPeriod(ObligationTrendPeriod::Year, new \DateTimeImmutable('2026-06-13 15:30:45')),
         );
     }
 

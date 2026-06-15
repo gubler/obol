@@ -1,6 +1,6 @@
 <?php
 
-// ABOUTME: The obligations-over-time trend: ordered points (oldest first) at one day/week/month granularity.
+// ABOUTME: The obligations-over-time trend: ordered points (oldest first) at one week/month/year granularity.
 // ABOUTME: asOf is the rate-read date (today); isApproximate is true when any point needed conversion.
 
 declare(strict_types=1);

@@ -26,7 +26,9 @@ nav:
       - CQRS & Message Bus: architecture/cqrs.md
       - Controllers: architecture/controllers.md
       - Forms & DTOs: architecture/forms-and-dtos.md
-  - Frontend: frontend.md
+  - Frontend:
+      - frontend.md
+      - Palette Reference: palette.md
   - Deployment: deployment.md
   - CI/CD: ci-cd.md
   - Development:

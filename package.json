@@ -9,7 +9,8 @@
         "cs": "biome check --write assets",
         "cs:check": "biome check assets",
         "sa": "tsc -p jsconfig.json",
-        "icons": "node bin/generate-icons.mjs"
+        "icons": "node bin/generate-icons.mjs",
+        "palette": "node bin/generate-palette-doc.mjs"
     },
     "devDependencies": {
         "@biomejs/biome": "^2.2.0",

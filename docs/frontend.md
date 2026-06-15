@@ -95,11 +95,10 @@ Tailwind is managed by `symfonycasts/tailwind-bundle`, which ships a standalone 
 **CSS entry point:** `assets/styles/app.css`
 
 **Local development:** a dev-only `tailwind` sidecar container (defined in `compose.override.yaml`)
-runs `tailwind:build --watch --poll` against the shared `tailwind_build` volume, so the compiled CSS
+runs `tailwind:build --watch` against the shared `tailwind_build` volume, so the compiled CSS
 rebuilds automatically when `mise run up` brings the stack up and on every template or CSS edit - no
-manual build step. `--poll` is required because Docker Desktop filesystem events do not cross the bind
-mount reliably on macOS. The sidecar shares `var/tailwind` with the `php` container so the
-`app.built.css` it writes is the file the app serves.
+manual build step. (The standalone Tailwind v4 binary has no `--poll` flag.) The sidecar shares
+`var/tailwind` with the `php` container so the `app.built.css` it writes is the file the app serves.
 
 - `mise run tailwind:restart` - restart the watcher (e.g. after changing its config); reports a
   friendly message if the stack is not up.
@@ -148,6 +147,11 @@ or fetch the served asset over HTTP.
 The app defaults to dark. The active scheme is the `dark` class on `<html>`, which the design
 tokens key off (`:root` light values, `.dark` dark values), and `@custom-variant dark` makes
 Tailwind's `dark:` utilities class-based rather than media-query based.
+
+See the [Palette reference](palette.md) for every semantic token as a light and dark swatch with
+both hexes and the utility it generates. That page is generated from `assets/styles/app.css` by
+`mise run palette`, so it never drifts from the tokens - re-run it and commit the refreshed page
+after changing the palette.
 
 Three pieces (kept in sync):
 

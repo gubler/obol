@@ -45,8 +45,8 @@ services:
 
   # Dev-only Tailwind watcher (#188): same dev image as php, source bind-mounted so it sees
   # template/CSS edits, sharing the tailwind_build volume with php so the var/tailwind/app.built.css
-  # it writes is the file php serves. --poll because Docker Desktop filesystem events do not cross the
-  # bind mount reliably on macOS. Waits for php healthy so vendor is installed first (like the worker).
+  # it writes is the file php serves. Runs `tailwind:build --watch`; the standalone Tailwind v4 binary
+  # has no `--poll` flag. Waits for php healthy so vendor is installed first (like the worker).
   # Dev-only - never present in compose.prod.yaml.
   tailwind:
     image: ${IMAGES_PREFIX:-}obol-php-dev

@@ -8,6 +8,8 @@ declare(strict_types=1);
 namespace App\Tests\Feature\Controller\Subscription;
 
 use App\Enum\Currency;
+use App\Enum\PaymentPeriod;
+use App\Enum\PaymentType;
 use App\Factory\CategoryFactory;
 use App\Factory\PaymentFactory;
 use App\Factory\SubscriptionFactory;
@@ -60,6 +62,55 @@ final class ShowSubscriptionControllerTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'form[action="/subscriptions/' . $subscription->id . '/delete"]');
+    }
+
+    public function testPaymentDeleteConfirmationStatesTheRollbackAndManualSwitch(): void
+    {
+        $client = self::createClient();
+        $subscription = SubscriptionFactory::createOne([
+            'name' => 'Netflix',
+            'nextRenewal' => new \DateTimeImmutable('2024-03-01'),
+            'paymentPeriod' => PaymentPeriod::Month,
+            'paymentPeriodCount' => 1,
+        ]);
+        // A generated payment that advanced the anchor: deleting it both rolls back and goes manual.
+        PaymentFactory::createOne([
+            'subscription' => $subscription,
+            'type' => PaymentType::Generated,
+            'paidDate' => new \DateTimeImmutable('2024-02-15'),
+            'advancedRenewal' => true,
+        ]);
+
+        $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id);
+
+        self::assertResponseIsSuccessful();
+        $confirm = $crawler->filter('.payment-delete-form')->attr('data-turbo-confirm');
+        self::assertStringContainsString('rolls the next renewal back from 2024-03-01 to 2024-02-01', (string) $confirm);
+        self::assertStringContainsString('switches this subscription to manual payments', (string) $confirm);
+    }
+
+    public function testPaymentDeleteConfirmationIsPlainWhenRemovalHasNoConsequence(): void
+    {
+        $client = self::createClient();
+        $subscription = SubscriptionFactory::createOne([
+            'name' => 'Netflix',
+            'nextRenewal' => new \DateTimeImmutable('2024-03-01'),
+            'paymentPeriod' => PaymentPeriod::Month,
+            'paymentPeriodCount' => 1,
+        ]);
+        // A backfilled verified payment that did not advance the anchor: deletion changes nothing.
+        PaymentFactory::createOne([
+            'subscription' => $subscription,
+            'type' => PaymentType::Verified,
+            'paidDate' => new \DateTimeImmutable('2023-11-01'),
+            'advancedRenewal' => false,
+        ]);
+
+        $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id);
+
+        self::assertResponseIsSuccessful();
+        $confirm = $crawler->filter('.payment-delete-form')->attr('data-turbo-confirm');
+        self::assertSame('Delete this payment?', (string) $confirm);
     }
 
     public function testShowsBackToListLink(): void

@@ -202,17 +202,23 @@ class Subscription
         // figure in that same currency, and the default is the full subscription cost.
         $money = null !== $amount ? new Money($amount, $this->cost->currency) : $this->cost;
 
+        // A payment advances the anchor only when generation is automated and the payment falls in
+        // the current open period (paid early-within-period, on time, or late) - not when it backfills
+        // a prior period. The flag records that fact so removal can undo exactly this advance.
+        $advancesRenewal = $this->generatesPaymentsAutomatically()
+            && $paidDate > $this->nextRenewal->sub($this->renewalInterval());
+
         $this->payments->add(
             new Payment(
                 subscription: $this,
                 type: $paymentType,
                 amount: $money,
                 paidDate: $paidDate,
+                advancedRenewal: $advancesRenewal,
             )
         );
 
-        // Under manual generation the user owns the anchor; recording a payment must not shift it.
-        if ($this->generatesPaymentsAutomatically()) {
+        if ($advancesRenewal) {
             $this->nextRenewal = $this->nextRenewal->add($this->renewalInterval());
         }
     }
@@ -221,17 +227,17 @@ class Subscription
     {
         $this->payments->removeElement($payment);
 
-        // Under manual generation the user owns the anchor; removing a payment must not shift it.
-        if ($this->generatesPaymentsAutomatically()) {
+        if ($this->removalRollsBackAnchor($payment)) {
             $this->nextRenewal = $this->nextRenewal->sub($this->renewalInterval());
         }
     }
 
     /**
-     * Deletes the most recent payment, the only one a user may remove. Deletion means "this was not
-     * paid", so it hands generation to the user (`Manual`) - which also stops the scheduler from
-     * recreating it next run. The first such delete still rolls the anchor back (it happens while
-     * generation is still automated); once manual, the anchor stays put. See ADR-0008.
+     * Deletes the most recent payment, the only one a user may remove. Removing a payment that
+     * advanced the anchor rolls it back (see `removalRollsBackAnchor`). Deleting a `Generated`
+     * payment means "the scheduler was wrong, I did not pay this", so it hands generation to the
+     * user (`Manual`); deleting a `Verified` payment is data correction and leaves generation alone.
+     * See ADR-0008.
      */
     public function removeLatestPayment(Payment $payment): void
     {
@@ -241,8 +247,43 @@ class Subscription
             'Only the latest payment can be deleted',
         );
 
+        $switchesToManual = $this->removalSwitchesToManual($payment);
+
         $this->removePayment($payment);
-        $this->switchToManualPayments();
+
+        if ($switchesToManual) {
+            $this->switchToManualPayments();
+        }
+    }
+
+    /**
+     * Whether removing the given payment would roll the renewal anchor back one interval: it does so
+     * only for an advancing payment while generation is still automated. Drives both the actual
+     * rollback and the consequence shown in the delete confirmation.
+     */
+    public function removalRollsBackAnchor(Payment $payment): bool
+    {
+        return $this->generatesPaymentsAutomatically() && $payment->advancedRenewal;
+    }
+
+    /**
+     * The renewal anchor that would result from removing the given payment, for the delete
+     * confirmation. Returns the unchanged anchor when removal would not shift it.
+     */
+    public function renewalAfterRemoving(Payment $payment): \DateTimeImmutable
+    {
+        return $this->removalRollsBackAnchor($payment)
+            ? $this->nextRenewal->sub($this->renewalInterval())
+            : $this->nextRenewal;
+    }
+
+    /**
+     * Whether removing the given payment would switch the subscription to manual generation: only a
+     * `Generated` payment does. Used by the delete confirmation.
+     */
+    public function removalSwitchesToManual(Payment $payment): bool
+    {
+        return PaymentType::Generated === $payment->type;
     }
 
     /**

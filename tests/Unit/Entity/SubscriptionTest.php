@@ -486,7 +486,127 @@ final class SubscriptionTest extends TestCase
         self::assertSameInstant(new \DateTimeImmutable('2024-03-01'), $subscription->nextRenewal);
     }
 
-    public function testRemovingTheLatestPaymentSwitchesGenerationToManualAndRollsBackTheAnchor(): void
+    public function testRemovingTheLatestGeneratedPaymentSwitchesToManualAndRollsBackTheAnchor(): void
+    {
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: new \DateTimeImmutable('2024-02-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: new Money(1500, Currency::USD),
+        );
+        // The scheduler records the due payment as Generated, which advances the anchor to 2024-03-01.
+        $subscription->recordPayment(
+            paidDate: new \DateTimeImmutable('2024-02-01'),
+            paymentType: PaymentType::Generated,
+        );
+        /** @var Payment $payment */
+        $payment = $subscription->payments->first();
+
+        $subscription->removeLatestPayment($payment);
+
+        self::assertCount(0, $subscription->payments);
+        // Deleting a generated payment means "I did not pay this", so generation passes to the user.
+        self::assertSame(PaymentGeneration::Manual, $subscription->paymentGeneration);
+        self::assertSameInstant(new \DateTimeImmutable('2024-02-01'), $subscription->nextRenewal);
+    }
+
+    public function testRemovingTheLatestVerifiedPaymentRollsBackButLeavesGenerationAutomated(): void
+    {
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: new \DateTimeImmutable('2024-02-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: new Money(1500, Currency::USD),
+        );
+        // A user-recorded current-period payment advances the anchor to 2024-03-01.
+        $subscription->recordPayment(
+            paidDate: new \DateTimeImmutable('2024-01-15'),
+            paymentType: PaymentType::Verified,
+        );
+        /** @var Payment $payment */
+        $payment = $subscription->payments->first();
+
+        $subscription->removeLatestPayment($payment);
+
+        self::assertCount(0, $subscription->payments);
+        // Deleting a verified payment is data correction, so generation stays automated.
+        self::assertSame(PaymentGeneration::Automated, $subscription->paymentGeneration);
+        self::assertSameInstant(new \DateTimeImmutable('2024-02-01'), $subscription->nextRenewal);
+    }
+
+    public function testBackfillingAHistoricalPaymentDoesNotAdvanceTheAnchor(): void
+    {
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: new \DateTimeImmutable('2024-02-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: new Money(1500, Currency::USD),
+        );
+
+        // A payment for a prior period (well before the current period that ends on the anchor).
+        $subscription->recordPayment(
+            paidDate: new \DateTimeImmutable('2023-12-15'),
+            paymentType: PaymentType::Verified,
+        );
+        /** @var Payment $payment */
+        $payment = $subscription->payments->first();
+
+        self::assertFalse($payment->advancedRenewal);
+        self::assertSameInstant(new \DateTimeImmutable('2024-02-01'), $subscription->nextRenewal);
+    }
+
+    public function testAPaymentOnThePeriodBoundaryDoesNotAdvanceTheAnchor(): void
+    {
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: new \DateTimeImmutable('2024-02-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: new Money(1500, Currency::USD),
+        );
+
+        // The boundary (anchor minus one interval) belongs to the prior period: not strictly greater.
+        $subscription->recordPayment(
+            paidDate: new \DateTimeImmutable('2024-01-01'),
+            paymentType: PaymentType::Verified,
+        );
+        /** @var Payment $payment */
+        $payment = $subscription->payments->first();
+
+        self::assertFalse($payment->advancedRenewal);
+        self::assertSameInstant(new \DateTimeImmutable('2024-02-01'), $subscription->nextRenewal);
+    }
+
+    public function testAnInPeriodPaymentAdvancesTheAnchorAndIsFlagged(): void
+    {
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: new \DateTimeImmutable('2024-02-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: new Money(1500, Currency::USD),
+        );
+
+        $subscription->recordPayment(
+            paidDate: new \DateTimeImmutable('2024-01-15'),
+            paymentType: PaymentType::Verified,
+        );
+        /** @var Payment $payment */
+        $payment = $subscription->payments->first();
+
+        self::assertTrue($payment->advancedRenewal);
+        self::assertSameInstant(new \DateTimeImmutable('2024-03-01'), $subscription->nextRenewal);
+    }
+
+    public function testRemovingABackfilledPaymentDoesNotRollBackTheAnchor(): void
     {
         $subscription = new Subscription(
             category: $this->category,
@@ -497,17 +617,60 @@ final class SubscriptionTest extends TestCase
             cost: new Money(1500, Currency::USD),
         );
         $subscription->recordPayment(
-            paidDate: new \DateTimeImmutable('2024-02-01'),
+            paidDate: new \DateTimeImmutable('2023-12-15'),
             paymentType: PaymentType::Verified,
         );
         /** @var Payment $payment */
         $payment = $subscription->payments->first();
 
-        $subscription->removeLatestPayment($payment);
+        $subscription->removePayment($payment);
 
         self::assertCount(0, $subscription->payments);
-        self::assertSame(PaymentGeneration::Manual, $subscription->paymentGeneration);
         self::assertSameInstant(new \DateTimeImmutable('2024-02-01'), $subscription->nextRenewal);
+    }
+
+    public function testProjectsTheRolledBackAnchorWhenRemovingAnAdvancingPayment(): void
+    {
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: new \DateTimeImmutable('2024-02-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: new Money(1500, Currency::USD),
+        );
+        $subscription->recordPayment(
+            paidDate: new \DateTimeImmutable('2024-01-15'),
+            paymentType: PaymentType::Generated,
+        );
+        /** @var Payment $payment */
+        $payment = $subscription->payments->first();
+
+        self::assertTrue($subscription->removalRollsBackAnchor($payment));
+        self::assertSameInstant(new \DateTimeImmutable('2024-02-01'), $subscription->renewalAfterRemoving($payment));
+        self::assertTrue($subscription->removalSwitchesToManual($payment));
+    }
+
+    public function testProjectsNoConsequenceWhenRemovingABackfilledVerifiedPayment(): void
+    {
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: new \DateTimeImmutable('2024-02-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: new Money(1500, Currency::USD),
+        );
+        $subscription->recordPayment(
+            paidDate: new \DateTimeImmutable('2023-12-15'),
+            paymentType: PaymentType::Verified,
+        );
+        /** @var Payment $payment */
+        $payment = $subscription->payments->first();
+
+        self::assertFalse($subscription->removalRollsBackAnchor($payment));
+        self::assertSameInstant(new \DateTimeImmutable('2024-02-01'), $subscription->renewalAfterRemoving($payment));
+        self::assertFalse($subscription->removalSwitchesToManual($payment));
     }
 
     public function testRemovingAPaymentThatIsNotTheLatestIsRejected(): void

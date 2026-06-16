@@ -90,3 +90,38 @@ We deliberately do **not** infer the user's finances (e.g. "they recorded enough
 payments, so they must be current"); pausing and resuming are explicit user actions. This
 respects that someone may choose to run a subscription entirely by hand for the life of their
 account. Supersedes the delete-recreate accepted edge above; implemented in #124.
+
+## Amendment (2026-06-16): backfill-aware advancement and type-aware deletion (#208)
+
+Entering historical payments to seed a subscription exposed two flaws in the rules above:
+recording *any* payment advanced `nextRenewal`, so backfilling old payments shoved the anchor
+a cycle into the future each time; and deleting the latest payment *always* flipped the
+subscription to `Manual`, even when the deletion was a correction of hand-entered history.
+
+**Conditional advancement.** Recording a payment advances `nextRenewal` only when generation is
+`Automated` *and* the payment falls in the current open period - `paidDate > nextRenewal -
+interval` (strict, so the period's opening boundary belongs to the prior period). There is no
+upper bound, so a genuinely late payment for the current period still advances. A payment that
+backfills a prior period leaves the anchor untouched.
+
+**An advance is recorded on the payment, not re-derived.** A `Payment` carries an
+`advancedRenewal` boolean, set true only when recording it advanced the anchor. Removal undoes
+*exactly* that: `removePayment` rolls `nextRenewal` back one interval only when the payment's
+`advancedRenewal` is set and generation is still `Automated`. Reconstructing "did this advance?"
+from dates at delete time was rejected - an early-but-on-time payment is dated before the period
+it pays for, so window math misclassifies it. Accepted edge: amending a payment's `paidDate`
+across the period boundary leaves `advancedRenewal` stale; amend is rare and anchor-neutral, so
+this is documented rather than engineered around.
+
+**Type-aware deletion.** Deleting the latest payment switches to `Manual` only when that payment
+is `Generated` - the scheduler's guess that the user is rejecting ("I did not pay this"). Deleting
+a `Verified` payment is data correction and leaves the generation mode alone. This narrows the
+2026-06-11 amendment's "deleting the latest payment switches to Manual", which flipped on every
+deletion regardless of type.
+
+**Delete confirmation.** The delete action states the computed consequence before confirming:
+whether it rolls the next renewal back (and between which dates) and whether it switches the
+subscription to manual payments. Implemented in #208.
+
+Existing payments at migration time backfill to `advancedRenewal = false` (the safe default: a
+payment of unknown provenance does not roll the anchor back on deletion).

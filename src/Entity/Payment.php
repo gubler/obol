@@ -33,6 +33,10 @@ class Payment
         public private(set) \DateTimeImmutable $paidDate = new \DateTimeImmutable(),
         #[ORM\Column]
         public private(set) \DateTimeImmutable $createdAt = new \DateTimeImmutable(),
+        // True when recording this payment advanced the subscription's renewal anchor, so removing
+        // it rolls the anchor back. A historical backfill payment leaves the anchor (and this) alone.
+        #[ORM\Column]
+        public private(set) bool $advancedRenewal = false,
     ) {
         Assertion::greaterThan(value: $amount->minorAmount, limit: 0, message: 'Payment amount must be greater than zero');
 

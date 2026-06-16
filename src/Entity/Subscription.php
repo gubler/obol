@@ -59,6 +59,7 @@ class Subscription
      * @var Collection<int, Payment>
      */
     #[ORM\OneToMany(targetEntity: Payment::class, mappedBy: 'subscription', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(value: ['paidDate' => 'DESC', 'createdAt' => 'DESC'])]
     public private(set) Collection $payments;
 
     /**

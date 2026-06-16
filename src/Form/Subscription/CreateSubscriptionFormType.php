@@ -9,7 +9,6 @@ namespace App\Form\Subscription;
 
 use App\Dto\Subscription\CreateSubscriptionDto;
 use App\Entity\Category;
-use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\TileColor;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
@@ -28,6 +27,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  */
 final class CreateSubscriptionFormType extends AbstractType
 {
+    use CurrencyFieldTrait;
     use MoneyCostFieldTrait;
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -57,6 +57,8 @@ final class CreateSubscriptionFormType extends AbstractType
             ->add(child: 'paymentPeriod', type: EnumType::class, options: [
                 'class' => PaymentPeriod::class,
                 'label' => 'Payment Period',
+                // The singular noun the billing-cycle controller pluralizes against the count.
+                'choice_attr' => static fn (PaymentPeriod $period): array => ['data-singular' => ucfirst($period->value)],
             ])
             ->add(child: 'paymentPeriodCount', type: NumberType::class, options: [
                 'label' => 'Payment Period Count',
@@ -65,13 +67,10 @@ final class CreateSubscriptionFormType extends AbstractType
 
         // Cost is entered in major units and scales by the chosen currency's fraction digits.
         $this->addCostField($builder);
+        // Currency renders inline with the cost, as "<symbol> <ISO>" choices.
+        $this->addCurrencyField($builder);
 
         $builder
-            ->add(child: 'currency', type: EnumType::class, options: [
-                'class' => Currency::class,
-                'label' => 'Currency',
-                'choice_label' => static fn (Currency $currency): string => $currency->value . ' - ' . $currency->label(),
-            ])
             ->add(child: 'description', type: TextareaType::class, options: [
                 'label' => 'Description',
                 'required' => false,

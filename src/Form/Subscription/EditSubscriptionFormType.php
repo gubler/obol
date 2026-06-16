@@ -9,7 +9,6 @@ namespace App\Form\Subscription;
 
 use App\Dto\Subscription\UpdateSubscriptionDto;
 use App\Entity\Category;
-use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\TileColor;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
@@ -29,6 +28,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  */
 final class EditSubscriptionFormType extends AbstractType
 {
+    use CurrencyFieldTrait;
     use MoneyCostFieldTrait;
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -59,6 +59,8 @@ final class EditSubscriptionFormType extends AbstractType
             ->add(child: 'paymentPeriod', type: EnumType::class, options: [
                 'class' => PaymentPeriod::class,
                 'label' => 'Payment Period',
+                // The singular noun the billing-cycle controller pluralizes against the count.
+                'choice_attr' => static fn (PaymentPeriod $period): array => ['data-singular' => ucfirst($period->value)],
             ])
             ->add(child: 'paymentPeriodCount', type: NumberType::class, options: [
                 'label' => 'Payment Period Count',
@@ -67,16 +69,10 @@ final class EditSubscriptionFormType extends AbstractType
 
         // Cost is entered in major units and scales by the chosen currency's fraction digits.
         $this->addCostField($builder);
+        // Currency renders inline with the cost; locked once a payment exists.
+        $this->addCurrencyField($builder, true === $options['lock_currency']);
 
         $builder
-            ->add(child: 'currency', type: EnumType::class, options: [
-                'class' => Currency::class,
-                'label' => 'Currency',
-                'choice_label' => static fn (Currency $currency): string => $currency->value . ' - ' . $currency->label(),
-                // Locked once a payment exists: a disabled field is never bound from the request,
-                // so the subscription keeps its currency regardless of what is submitted.
-                'disabled' => true === $options['lock_currency'],
-            ])
             ->add(child: 'description', type: TextareaType::class, options: [
                 'label' => 'Description',
                 'required' => false,

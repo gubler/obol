@@ -26,8 +26,10 @@ class SubscriptionRepository extends ServiceEntityRepository
      */
     public function findForHomepage(bool $includeArchived): array
     {
+        // Left join so uncategorized subscriptions (no category) are included; the runner orders the
+        // uncategorized group last regardless of this base ordering.
         $qb = $this->createQueryBuilder('s')
-            ->join('s.category', 'c')
+            ->leftJoin('s.category', 'c')
             ->orderBy('c.name', 'ASC')
             ->addOrderBy('s.name', 'ASC')
         ;

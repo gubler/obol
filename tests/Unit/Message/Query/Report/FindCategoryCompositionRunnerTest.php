@@ -24,7 +24,7 @@ use PHPUnit\Framework\TestCase;
 
 final class FindCategoryCompositionRunnerTest extends TestCase
 {
-    private static function compositionSubscription(Category $category, int $costMinor, Currency $currency = Currency::USD, PaymentPeriod $period = PaymentPeriod::Month, int $count = 1): Subscription
+    private static function compositionSubscription(?Category $category, int $costMinor, Currency $currency = Currency::USD, PaymentPeriod $period = PaymentPeriod::Month, int $count = 1): Subscription
     {
         return new Subscription(
             category: $category,
@@ -77,6 +77,26 @@ final class FindCategoryCompositionRunnerTest extends TestCase
         self::assertSame(5500, $composition->total->converted->minorAmount);
         self::assertFalse($composition->total->isApproximate);
         self::assertNull($composition->title);
+    }
+
+    public function testCollectsUncategorizedSubscriptionsIntoASingleUncategorizedSlice(): void
+    {
+        $software = new Category(name: 'Software');
+
+        $composition = $this->runComposition([
+            self::compositionSubscription($software, 1000),
+            self::compositionSubscription(null, 4000),
+            self::compositionSubscription(null, 500),
+        ]);
+
+        self::assertCount(2, $composition->slices);
+        // The 4500 uncategorized share is the largest, so it sorts first.
+        self::assertSame('Uncategorized', $composition->slices[0]->label);
+        self::assertSame(4500, $composition->slices[0]->converted->minorAmount);
+        self::assertTrue($composition->slices[0]->uncategorized);
+        self::assertNull($composition->slices[0]->id);
+        self::assertSame('Software', $composition->slices[1]->label);
+        self::assertFalse($composition->slices[1]->uncategorized);
     }
 
     public function testConvertsAMixedCurrencyCategoryShareAndKeepsTheNativeBreakdown(): void

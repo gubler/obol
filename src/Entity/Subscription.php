@@ -82,8 +82,8 @@ class Subscription
 
     public function __construct(
         #[ORM\ManyToOne(inversedBy: 'subscriptions')]
-        #[ORM\JoinColumn(nullable: false)]
-        public private(set) Category $category,
+        #[ORM\JoinColumn(nullable: true)]
+        public private(set) ?Category $category,
         string $name,
         #[ORM\Column]
         public private(set) \DateTimeImmutable $nextRenewal,
@@ -312,7 +312,7 @@ class Subscription
     }
 
     public function update(
-        Category $category,
+        ?Category $category,
         string $name,
         \DateTimeImmutable $nextRenewal,
         string $description,
@@ -335,7 +335,8 @@ class Subscription
 
         $updateGenerator = new ChangeContextGenerator(
             changes: [
-                new Change(field: 'category', current: $this->category->name, new: $category->name),
+                // A subscription may have no category; the audit reads the absence as "Uncategorized".
+                new Change(field: 'category', current: null !== $this->category ? $this->category->name : 'Uncategorized', new: null !== $category ? $category->name : 'Uncategorized'),
                 new Change(field: 'name', current: $this->name, new: $name),
                 new Change(field: 'nextRenewal', current: $this->nextRenewal->format(format: 'c'), new: $nextRenewal->format(format: 'c')),
                 new Change(field: 'description', current: $this->description, new: $description),

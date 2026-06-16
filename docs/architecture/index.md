@@ -25,7 +25,7 @@ Four entities form the domain model. All use ULID primary keys and PHP 8.4's `pu
 
 | Entity | Purpose | Key Relationships |
 |--------|---------|-------------------|
-| [Subscription](domain-model.md#subscription) | Core entity tracking a recurring payment | Has many Payments, SubscriptionEvents; belongs to Category |
+| [Subscription](domain-model.md#subscription) | Core entity tracking a recurring payment | Has many Payments, SubscriptionEvents; optionally belongs to a Category |
 | [Payment](domain-model.md#payment) | Records an individual payment transaction | Belongs to Subscription |
 | [Category](domain-model.md#category) | Groups subscriptions | Has many Subscriptions |
 | [SubscriptionEvent](domain-model.md#subscriptionevent) | Audit trail for subscription changes | Belongs to Subscription |

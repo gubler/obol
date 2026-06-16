@@ -2,6 +2,7 @@
 
 // ABOUTME: One wedge of a composition pie: a label, its converted share, and the native per-currency split.
 // ABOUTME: id is the entity the slice stands for (a category, for linking to its drill-down); null when there is none.
+// ABOUTME: uncategorized marks the bucket of subscriptions with no category, which links to its own drill-down.
 
 declare(strict_types=1);
 
@@ -21,6 +22,7 @@ final readonly class CompositionSlice
         public array $breakdown,
         public bool $isApproximate,
         public ?Ulid $id = null,
+        public bool $uncategorized = false,
     ) {
     }
 }

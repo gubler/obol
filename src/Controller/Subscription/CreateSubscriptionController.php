@@ -11,6 +11,7 @@ use App\Controller\AbstractBaseController;
 use App\Dto\Subscription\CreateSubscriptionDto;
 use App\Form\Subscription\CreateSubscriptionFormType;
 use App\Message\Command\Subscription\CreateSubscriptionCommand;
+use App\Message\Query\Category\FindAllCategoriesQuery;
 use App\Service\DisplayCurrencyProvider;
 use App\Service\FileUploader;
 use Symfony\Component\HttpFoundation\Request;
@@ -31,7 +32,13 @@ final class CreateSubscriptionController extends AbstractBaseController
         $dto = new CreateSubscriptionDto();
         // Pre-select the display currency; the user can still pick another before the first payment.
         $dto->currency = $this->displayCurrencyProvider->get();
-        $form = $this->createForm(type: CreateSubscriptionFormType::class, data: $dto);
+
+        $categories = $this->queryBus->query(query: new FindAllCategoriesQuery());
+        \assert(\is_array($categories));
+
+        $form = $this->createForm(type: CreateSubscriptionFormType::class, data: $dto, options: [
+            'has_categories' => [] !== $categories,
+        ]);
 
         $form->handleRequest(request: $request);
 
@@ -39,7 +46,6 @@ final class CreateSubscriptionController extends AbstractBaseController
             /** @var CreateSubscriptionDto $data */
             $data = $form->getData();
 
-            \assert(null !== $data->category);
             \assert(null !== $data->nextRenewal);
 
             $logo = null !== $data->logo
@@ -47,7 +53,7 @@ final class CreateSubscriptionController extends AbstractBaseController
                 : '';
 
             $this->commandBus->dispatch(command: new CreateSubscriptionCommand(
-                categoryId: $data->category->id,
+                categoryId: $data->category?->id,
                 name: $data->name,
                 nextRenewal: $data->nextRenewal,
                 paymentPeriod: $data->paymentPeriod,

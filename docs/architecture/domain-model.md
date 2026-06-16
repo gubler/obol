@@ -18,7 +18,7 @@ The core entity. Tracks a recurring payment with its cost, billing period, and m
 | `id` | `Ulid` | Generated in constructor |
 | `archived` | `bool` | Default `false` |
 | `createdAt` | `DateTimeImmutable` | Set in constructor |
-| `category` | `Category` | Required, ManyToOne |
+| `category` | `?Category` | Optional, ManyToOne (null = uncategorized) |
 | `name` | `string` | Non-empty (validated) |
 | `lastPaidDate` | `DateTimeImmutable` | When last payment occurred |
 | `paymentPeriod` | `PaymentPeriod` | Year, Month, or Week |
@@ -129,7 +129,7 @@ Used by `Subscription::update()` to build event context without manual compariso
 
 ```mermaid
 erDiagram
-    Category ||--o{ Subscription : "has many"
+    Category |o--o{ Subscription : "has many"
     Subscription ||--o{ Payment : "has many"
     Subscription ||--o{ SubscriptionEvent : "has many"
 ```

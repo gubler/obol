@@ -32,13 +32,19 @@ final class CreateSubscriptionFormType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder
-            ->add(child: 'category', type: EntityType::class, options: [
+        // The category picker is only offered when categories exist; without one the subscription is
+        // created uncategorized. The controller passes the flag so the form needs no database access.
+        if (true === $options['has_categories']) {
+            $builder->add(child: 'category', type: EntityType::class, options: [
                 'class' => Category::class,
                 'label' => 'Category',
                 'choice_label' => 'name',
-                'placeholder' => 'Select a category',
-            ])
+                'placeholder' => 'Uncategorized',
+                'required' => false,
+            ]);
+        }
+
+        $builder
             ->add(child: 'name', type: TextType::class, options: [
                 'label' => 'Subscription Name',
                 'empty_data' => '',
@@ -96,7 +102,9 @@ final class CreateSubscriptionFormType extends AbstractType
     {
         $resolver->setDefaults(defaults: [
             'data_class' => CreateSubscriptionDto::class,
+            'has_categories' => true,
         ]);
+        $resolver->setAllowedTypes(option: 'has_categories', allowedTypes: 'bool');
     }
 
     #[\Override]

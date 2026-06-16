@@ -65,6 +65,43 @@ final class ReportsControllerTest extends WebTestCase
         self::assertNotContains('Old Hulu', $names);
     }
 
+    public function testReportsOverviewShowsAnUncategorizedSliceLinkedToItsDrillDown(): void
+    {
+        $client = self::createClient();
+
+        $streaming = CategoryFactory::createOne(['name' => 'Streaming']);
+        SubscriptionFactory::createOne(['category' => $streaming, 'name' => 'Netflix', 'cost' => new Money(4000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
+        SubscriptionFactory::createOne(['category' => null, 'name' => 'Orphan', 'cost' => new Money(1000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
+
+        $crawler = $client->request(method: 'GET', uri: '/reports');
+
+        self::assertResponseIsSuccessful();
+        $names = $crawler->filter('.report-category')->each(static fn ($node): string => $node->text());
+        self::assertContains('Uncategorized', $names);
+        self::assertSelectorExists(selector: 'a[href="/reports/categories/uncategorized"]');
+    }
+
+    public function testUncategorizedDrillDownShowsSubscriptionsWithNoCategoryExcludingArchived(): void
+    {
+        $client = self::createClient();
+
+        $streaming = CategoryFactory::createOne(['name' => 'Streaming']);
+        SubscriptionFactory::createOne(['category' => $streaming, 'name' => 'Netflix', 'cost' => new Money(4000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
+        SubscriptionFactory::createOne(['category' => null, 'name' => 'Orphan', 'cost' => new Money(1000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
+        SubscriptionFactory::new()->archived()->create(['category' => null, 'name' => 'Dead Orphan', 'cost' => new Money(5000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
+
+        $crawler = $client->request(method: 'GET', uri: '/reports/categories/uncategorized');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists(selector: 'canvas');
+        self::assertSelectorTextContains(selector: 'h1', text: 'Uncategorized');
+
+        $names = $crawler->filter('.report-subscription')->each(static fn ($node): string => $node->text());
+        self::assertContains('Orphan', $names);
+        self::assertNotContains('Netflix', $names);
+        self::assertNotContains('Dead Orphan', $names);
+    }
+
     public function testDrillDownForUnknownCategoryIs404(): void
     {
         $client = self::createClient();

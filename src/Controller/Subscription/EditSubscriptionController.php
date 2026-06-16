@@ -12,6 +12,7 @@ use App\Dto\Subscription\UpdateSubscriptionDto;
 use App\Entity\Subscription;
 use App\Form\Subscription\EditSubscriptionFormType;
 use App\Message\Command\Subscription\UpdateSubscriptionCommand;
+use App\Message\Query\Category\FindAllCategoriesQuery;
 use App\Message\Query\Subscription\FindSubscriptionQuery;
 use App\Service\FileUploader;
 use Symfony\Component\HttpFoundation\Request;
@@ -39,10 +40,14 @@ final class EditSubscriptionController extends AbstractBaseController
 
         $dto = new UpdateSubscriptionDto(subscription: $subscription);
 
+        $categories = $this->queryBus->query(query: new FindAllCategoriesQuery());
+        \assert(\is_array($categories));
+
         $form = $this->createForm(type: EditSubscriptionFormType::class, data: $dto, options: [
             'offer_restart' => !$subscription->generatesPaymentsAutomatically(),
             // The currency is fixed once any payment exists; disable the picker so it cannot change.
             'lock_currency' => !$subscription->payments->isEmpty(),
+            'has_categories' => [] !== $categories,
         ]);
 
         $form->handleRequest(request: $request);
@@ -57,7 +62,7 @@ final class EditSubscriptionController extends AbstractBaseController
 
             $this->commandBus->dispatch(command: new UpdateSubscriptionCommand(
                 subscriptionId: $id,
-                categoryId: $data->category->id,
+                categoryId: $data->category?->id,
                 name: $data->name,
                 nextRenewal: $data->nextRenewal,
                 description: $data->description,

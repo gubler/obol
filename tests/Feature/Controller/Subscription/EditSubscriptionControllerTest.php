@@ -93,6 +93,41 @@ final class EditSubscriptionControllerTest extends WebTestCase
         self::assertTrue($newCategory->id->equals($subscription->category->id));
     }
 
+    public function testClearingTheCategoryLeavesTheSubscriptionUncategorized(): void
+    {
+        $client = self::createClient();
+        $category = CategoryFactory::createOne(['name' => 'Entertainment']);
+        $subscription = SubscriptionFactory::createOne([
+            'category' => $category,
+            'name' => 'Netflix',
+            'cost' => new Money(1599, Currency::USD),
+        ]);
+
+        $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+
+        $form = $crawler->selectButton(value: 'Save')->form([
+            'edit_subscription[name]' => 'Netflix',
+            'edit_subscription[nextRenewal]' => '2026-02-01',
+            'edit_subscription[paymentPeriod]' => 'year',
+            'edit_subscription[paymentPeriodCount]' => '1',
+            'edit_subscription[cost]' => '15.99',
+            'edit_subscription[color]' => 'teal',
+        ]);
+        $form['edit_subscription[category]'] = '';
+
+        $client->submit(form: $form);
+
+        self::assertResponseRedirects(expectedLocation: '/subscriptions/' . $subscription->id);
+
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = self::getContainer()->get(id: EntityManagerInterface::class);
+        $entityManager->clear();
+
+        $subscription = $entityManager->getRepository(Subscription::class)->find($subscription->id);
+        self::assertNotNull($subscription);
+        self::assertNull($subscription->category);
+    }
+
     public function testChangesTheCurrencyWhileTheSubscriptionHasNoPayments(): void
     {
         $client = self::createClient();

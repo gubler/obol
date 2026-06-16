@@ -24,7 +24,8 @@ use Symfony\Component\Validator\Constraints\When;
 
 final class UpdateSubscriptionDto
 {
-    public Category $category;
+    // A category is optional; a subscription may be left uncategorized.
+    public ?Category $category;
 
     #[NotBlank]
     public string $name;

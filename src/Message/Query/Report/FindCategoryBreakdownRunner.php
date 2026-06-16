@@ -26,13 +26,22 @@ final readonly class FindCategoryBreakdownRunner
 
     public function __invoke(FindCategoryBreakdownQuery $query): ?Composition
     {
-        $category = $this->categoryRepository->find($query->categoryId);
-        if (null === $category) {
-            return null;
+        // A null category id is the uncategorized drill-down: the subscriptions with no category.
+        if (null === $query->categoryId) {
+            $title = 'Uncategorized';
+            $filter = ['archived' => false, 'category' => null];
+        } else {
+            $category = $this->categoryRepository->find($query->categoryId);
+            if (null === $category) {
+                return null;
+            }
+
+            $title = $category->name;
+            $filter = ['archived' => false, 'category' => $category];
         }
 
         $asOf = new \DateTimeImmutable();
-        $subscriptions = $this->subscriptionRepository->findBy(['archived' => false, 'category' => $category]);
+        $subscriptions = $this->subscriptionRepository->findBy($filter);
 
         $slices = array_map(
             function (Subscription $subscription) use ($asOf): CompositionSlice {
@@ -58,6 +67,6 @@ final readonly class FindCategoryBreakdownRunner
             $asOf,
         );
 
-        return new Composition(slices: $slices, total: $total, asOf: $asOf, title: $category->name);
+        return new Composition(slices: $slices, total: $total, asOf: $asOf, title: $title);
     }
 }

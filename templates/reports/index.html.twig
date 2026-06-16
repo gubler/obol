@@ -37,7 +37,7 @@
                 <ul class="report-category-list divide-y divide-line">
                     {% for slice in composition.slices %}
                         <li>
-                            <a href="{{ path('reports_category', {id: slice.id}) }}"
+                            <a href="{{ slice.uncategorized ? path('reports_uncategorized') : path('reports_category', {id: slice.id}) }}"
                                class="report-category-link flex items-baseline justify-between gap-4 py-2 text-fg hover:bg-surface-2">
                                 <span class="report-category font-medium">{{ slice.label }}</span>
                                 <span class="report-category-amount text-sm text-fg-muted">

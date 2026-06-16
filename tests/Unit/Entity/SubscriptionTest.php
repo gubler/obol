@@ -54,6 +54,83 @@ final class SubscriptionTest extends TestCase
         self::assertSame(1500, $subscription->cost->minorAmount);
     }
 
+    public function testCreatesSubscriptionWithoutACategory(): void
+    {
+        $subscription = new Subscription(
+            category: null,
+            name: 'Netflix',
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: new Money(1500, Currency::USD),
+        );
+
+        self::assertNull($subscription->category);
+    }
+
+    public function testRemovesACategoryByUpdatingToNull(): void
+    {
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: new Money(1500, Currency::USD),
+        );
+
+        $subscription->update(
+            category: null,
+            name: 'Netflix',
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            description: '',
+            link: '',
+            logo: '',
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: new Money(1500, Currency::USD),
+            color: $subscription->color,
+        );
+
+        self::assertNull($subscription->category);
+        self::assertCount(1, $subscription->subscriptionEvents);
+        /** @var SubscriptionEvent $event */
+        $event = $subscription->subscriptionEvents->first();
+        self::assertSame(SubscriptionEventType::Update, $event->type);
+        self::assertArrayHasKey('category', $event->context);
+    }
+
+    public function testAddsACategoryByUpdatingFromNull(): void
+    {
+        $subscription = new Subscription(
+            category: null,
+            name: 'Netflix',
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: new Money(1500, Currency::USD),
+        );
+
+        $subscription->update(
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            description: '',
+            link: '',
+            logo: '',
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: new Money(1500, Currency::USD),
+            color: $subscription->color,
+        );
+
+        self::assertSame($this->category, $subscription->category);
+        self::assertCount(1, $subscription->subscriptionEvents);
+        /** @var SubscriptionEvent $event */
+        $event = $subscription->subscriptionEvents->first();
+        self::assertArrayHasKey('category', $event->context);
+    }
+
     public function testSetsCreatedAtToCurrentTime(): void
     {
         $before = new \DateTimeImmutable();

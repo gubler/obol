@@ -26,8 +26,13 @@ older docs.
   Its `type` is `Update`, `CostChange`, `Archive`, or `Unarchive`. Its `context` is a
   map of `field -> {old, new}`. Invariant: `Archive`/`Unarchive` carry empty context;
   `Update`/`CostChange` carry non-empty context.
-- **Category** - a named grouping of subscriptions. A category cannot be deleted while it
-  still holds subscriptions (`CategoryHasSubscriptionsException`).
+- **Category** - a named grouping of subscriptions. Optional: a subscription may have no
+  category. A category cannot be deleted while it still holds subscriptions
+  (`CategoryHasSubscriptionsException`).
+- **Uncategorized** - a subscription with no category (a null `category`, not a real Category
+  row). Modeled as null end to end; the homepage groups these under an "Uncategorized" bucket
+  sorted last, the reports pie shows them as one "Uncategorized" slice, and their drill-down is
+  the reserved `/reports/categories/uncategorized` route.
 - **PaymentPeriod** - the billing cadence enum. The only cases are **`Year`**, **`Month`**,
   and **`Week`**. (There is no `Day` case, despite what older docs claimed.)
 - **paymentPeriodCount** - the multiplier on the period, e.g. `paymentPeriodCount: 3` with

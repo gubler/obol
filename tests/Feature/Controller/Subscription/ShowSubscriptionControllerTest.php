@@ -34,6 +34,21 @@ final class ShowSubscriptionControllerTest extends WebTestCase
         self::assertResponseIsSuccessful();
     }
 
+    public function testShowsUncategorizedForASubscriptionWithoutACategory(): void
+    {
+        $client = self::createClient();
+        $subscription = SubscriptionFactory::createOne([
+            'category' => null,
+            'name' => 'Orphan',
+            'cost' => new Money(1999, Currency::USD),
+        ]);
+
+        $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id);
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains(selector: 'body', text: 'Uncategorized');
+    }
+
     public function testShowsEditLink(): void
     {
         $client = self::createClient();

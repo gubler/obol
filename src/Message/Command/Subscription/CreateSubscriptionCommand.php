@@ -15,7 +15,7 @@ use Symfony\Component\Uid\Ulid;
 final readonly class CreateSubscriptionCommand
 {
     public function __construct(
-        public Ulid $categoryId,
+        public ?Ulid $categoryId,
         public string $name,
         public \DateTimeImmutable $nextRenewal,
         public PaymentPeriod $paymentPeriod,

@@ -17,7 +17,8 @@ final readonly class CategoryGroup
      * @param list<Subscription> $subscriptions
      */
     public function __construct(
-        public Category $category,
+        // Null is the uncategorized bucket: subscriptions with no category.
+        public ?Category $category,
         public array $subscriptions,
         public ConvertedTotal $monthlyTotal,
         public ConvertedTotal $savingsTotal,

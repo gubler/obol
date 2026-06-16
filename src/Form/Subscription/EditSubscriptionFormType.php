@@ -33,12 +33,20 @@ final class EditSubscriptionFormType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder
-            ->add(child: 'category', type: EntityType::class, options: [
+        // The category picker is only offered when categories exist; clearing it (or having none)
+        // leaves the subscription uncategorized. The controller passes the flag so the form needs no
+        // database access.
+        if (true === $options['has_categories']) {
+            $builder->add(child: 'category', type: EntityType::class, options: [
                 'class' => Category::class,
                 'label' => 'Category',
                 'choice_label' => 'name',
-            ])
+                'placeholder' => 'Uncategorized',
+                'required' => false,
+            ]);
+        }
+
+        $builder
             ->add(child: 'name', type: TextType::class, options: [
                 'label' => 'Subscription Name',
                 'empty_data' => '',
@@ -110,9 +118,11 @@ final class EditSubscriptionFormType extends AbstractType
             'data_class' => UpdateSubscriptionDto::class,
             'offer_restart' => false,
             'lock_currency' => false,
+            'has_categories' => true,
         ]);
         $resolver->setAllowedTypes(option: 'offer_restart', allowedTypes: 'bool');
         $resolver->setAllowedTypes(option: 'lock_currency', allowedTypes: 'bool');
+        $resolver->setAllowedTypes(option: 'has_categories', allowedTypes: 'bool');
     }
 
     #[\Override]

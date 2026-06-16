@@ -26,7 +26,7 @@ use Symfony\Component\Uid\Ulid;
 
 final class FindCategoryBreakdownRunnerTest extends TestCase
 {
-    private static function breakdownSubscription(Category $category, string $name, int $costMinor, Currency $currency = Currency::USD): Subscription
+    private static function breakdownSubscription(?Category $category, string $name, int $costMinor, Currency $currency = Currency::USD): Subscription
     {
         return new Subscription(
             category: $category,
@@ -86,6 +86,38 @@ final class FindCategoryBreakdownRunnerTest extends TestCase
         self::assertSame(1599, $composition->slices[0]->converted->minorAmount);
         self::assertNull($composition->slices[0]->id);                  // leaf slice, no deeper drill-down
         self::assertSame('Spotify', $composition->slices[1]->label);
+        self::assertSame(2698, $composition->total->converted->minorAmount);
+    }
+
+    public function testBuildsAnUncategorizedBreakdownTitledUncategorizedWhenCategoryIdIsNull(): void
+    {
+        $subscriptions = [
+            self::breakdownSubscription(null, 'Orphan', 1599),
+            self::breakdownSubscription(null, 'Stray', 1099),
+        ];
+
+        // No category is resolved for the uncategorized drill-down; it filters on a null category.
+        $categoryRepository = $this->createMock(CategoryRepository::class);
+        $categoryRepository->expects(self::never())->method('find');
+
+        $subscriptionRepository = self::createStub(SubscriptionRepository::class);
+        $subscriptionRepository->method('findBy')
+            ->willReturnMap([
+                [['archived' => false, 'category' => null], $subscriptions],
+            ])
+        ;
+
+        $exchangeRateRepository = self::createStub(ExchangeRateRepository::class);
+        $exchangeRateRepository->method('latestRate')->willReturn(null);
+        $totaller = new CurrencyTotaller(new Converter($exchangeRateRepository), new DisplayCurrencyProvider('USD'));
+
+        $runner = new FindCategoryBreakdownRunner($categoryRepository, $subscriptionRepository, $totaller);
+        $composition = $runner(new FindCategoryBreakdownQuery(null));
+
+        self::assertInstanceOf(Composition::class, $composition);
+        self::assertSame('Uncategorized', $composition->title);
+        self::assertCount(2, $composition->slices);
+        self::assertSame('Orphan', $composition->slices[0]->label);   // 1599, largest first
         self::assertSame(2698, $composition->total->converted->minorAmount);
     }
 

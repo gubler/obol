@@ -18,6 +18,12 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 #[AsMessageHandler(bus: 'query.bus', handles: FindSubscriptionsForHomepageQuery::class)]
 final readonly class FindSubscriptionsForHomepageRunner
 {
+    /**
+     * Bucket key for subscriptions with no category. The empty string never collides with a
+     * category's RFC 4122 id.
+     */
+    private const string UNCATEGORIZED_KEY = '';
+
     public function __construct(
         private SubscriptionRepository $subscriptionRepository,
         private CurrencyTotaller $currencyTotaller,
@@ -47,17 +53,25 @@ final readonly class FindSubscriptionsForHomepageRunner
      */
     private function group(array $subscriptions, \DateTimeImmutable $asOf): array
     {
-        /** @var array<string, array{category: Category, subscriptions: list<Subscription>}> $grouped */
+        /** @var array<string, array{category: ?Category, subscriptions: list<Subscription>}> $grouped */
         $grouped = [];
         foreach ($subscriptions as $subscription) {
-            $key = $subscription->category->id->toRfc4122();
+            // Subscriptions with no category collapse into a single uncategorized bucket.
+            $key = $subscription->category?->id->toRfc4122() ?? self::UNCATEGORIZED_KEY;
             $grouped[$key] ??= ['category' => $subscription->category, 'subscriptions' => []];
             $grouped[$key]['subscriptions'][] = $subscription;
         }
 
         usort(
             $grouped,
-            static fn (array $a, array $b): int => strcasecmp($a['category']->name, $b['category']->name),
+            static function (array $a, array $b): int {
+                // The uncategorized bucket always sorts after the named categories.
+                if (null === $a['category'] || null === $b['category']) {
+                    return (null === $a['category'] ? 1 : 0) <=> (null === $b['category'] ? 1 : 0);
+                }
+
+                return strcasecmp($a['category']->name, $b['category']->name);
+            },
         );
 
         return array_map(

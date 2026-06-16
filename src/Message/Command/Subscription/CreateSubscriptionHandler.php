@@ -26,10 +26,14 @@ final readonly class CreateSubscriptionHandler
 
     public function __invoke(CreateSubscriptionCommand $command): void
     {
-        $category = $this->categoryRepository->find($command->categoryId);
+        // A subscription may be uncategorized; only a given-but-missing category is an error.
+        $category = null;
+        if (null !== $command->categoryId) {
+            $category = $this->categoryRepository->find($command->categoryId);
 
-        if (null === $category) {
-            throw new \InvalidArgumentException(\sprintf('Category with ID "%s" not found.', $command->categoryId));
+            if (null === $category) {
+                throw new \InvalidArgumentException(\sprintf('Category with ID "%s" not found.', $command->categoryId));
+            }
         }
 
         $subscription = new Subscription(

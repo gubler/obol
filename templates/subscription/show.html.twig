@@ -59,7 +59,7 @@
             <dl class="mt-4 space-y-2">
                 <div>
                     <dt class="text-sm font-medium text-fg-muted">Category</dt>
-                    <dd class="text-lg text-fg">{{ subscription.category.name }}</dd>
+                    <dd class="text-lg text-fg">{{ subscription.category ? subscription.category.name : 'Uncategorized' }}</dd>
                 </div>
                 <div>
                     <dt class="text-sm font-medium text-fg-muted">Cost</dt>

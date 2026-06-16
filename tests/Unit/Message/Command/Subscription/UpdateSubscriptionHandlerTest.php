@@ -66,6 +66,37 @@ final class UpdateSubscriptionHandlerTest extends TestCase
         ));
     }
 
+    public function testHandlerUpdatesToAnUncategorizedSubscriptionWhenCategoryIdIsNull(): void
+    {
+        $subscription = $this->createMock(Subscription::class);
+        $subscription->expects(self::once())->method('update');
+
+        $subscriptionRepository = $this->createMock(SubscriptionRepository::class);
+        $subscriptionRepository->expects(self::once())->method('find')->willReturn($subscription);
+
+        $categoryRepository = $this->createMock(CategoryRepository::class);
+        $categoryRepository->expects(self::never())->method('find');
+
+        $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
+        $notifier->expects(self::once())->method('notifyChanged');
+
+        $handler = new UpdateSubscriptionHandler($subscriptionRepository, $categoryRepository, $notifier);
+        $handler(new UpdateSubscriptionCommand(
+            subscriptionId: new Ulid(),
+            categoryId: null,
+            name: 'Netflix',
+            nextRenewal: new \DateTimeImmutable('2025-01-15'),
+            description: '',
+            link: '',
+            logo: '',
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 1999,
+            currency: Currency::USD,
+            color: TileColor::Blue,
+        ));
+    }
+
     public function testHandlerResumesAutomatedGenerationWhenRestartIsRequested(): void
     {
         $subscriptionUlid = new Ulid();

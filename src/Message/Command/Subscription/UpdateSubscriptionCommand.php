@@ -16,7 +16,7 @@ final readonly class UpdateSubscriptionCommand
 {
     public function __construct(
         public Ulid $subscriptionId,
-        public Ulid $categoryId,
+        public ?Ulid $categoryId,
         public string $name,
         public \DateTimeImmutable $nextRenewal,
         public string $description,

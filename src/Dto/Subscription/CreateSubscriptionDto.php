@@ -22,7 +22,7 @@ use Symfony\Component\Validator\Constraints\Url;
 
 final class CreateSubscriptionDto
 {
-    #[NotNull]
+    // A category is optional; a subscription may be left uncategorized.
     public ?Category $category = null;
 
     #[NotBlank]

@@ -27,7 +27,7 @@ use PHPUnit\Framework\TestCase;
 final class FindSubscriptionsForHomepageRunnerTest extends TestCase
 {
     private static function makeHomepageSubscription(
-        Category $category,
+        ?Category $category,
         string $name,
         int $cost,
         PaymentPeriod $period = PaymentPeriod::Month,
@@ -101,6 +101,24 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
         self::assertSame(['Apple', 'Mango'], self::names($listing->groups[0]->subscriptions));
         self::assertSame($beta, $listing->groups[1]->category);
         self::assertSame(['Pear'], self::names($listing->groups[1]->subscriptions));
+    }
+
+    public function testGroupsUncategorizedSubscriptionsIntoANullGroupSortedLast(): void
+    {
+        $zoo = new Category(name: 'Zoo');
+
+        $subscriptions = [
+            self::makeHomepageSubscription(null, 'Orphan', 1000),
+            self::makeHomepageSubscription($zoo, 'Penguin', 2000),
+        ];
+
+        $listing = $this->runHomepage($subscriptions, new FindSubscriptionsForHomepageQuery());
+
+        self::assertCount(2, $listing->groups);
+        // The named category sorts ahead of the uncategorized bucket, which always comes last.
+        self::assertSame($zoo, $listing->groups[0]->category);
+        self::assertNull($listing->groups[1]->category);
+        self::assertSame(['Orphan'], self::names($listing->groups[1]->subscriptions));
     }
 
     public function testReturnsAFlatListSortedByNameByDefault(): void

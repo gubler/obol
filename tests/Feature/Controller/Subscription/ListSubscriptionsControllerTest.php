@@ -234,6 +234,24 @@ final class ListSubscriptionsControllerTest extends WebTestCase
         self::assertSelectorTextContains(selector: 'body', text: 'Utilities');
     }
 
+    public function testGroupsSubscriptionsWithNoCategoryUnderAnUncategorizedHeaderLast(): void
+    {
+        $client = self::createClient();
+        $entertainment = CategoryFactory::createOne(['name' => 'Entertainment']);
+
+        SubscriptionFactory::createOne(['category' => $entertainment, 'name' => 'Netflix']);
+        SubscriptionFactory::createOne(['category' => null, 'name' => 'Orphan']);
+
+        $crawler = $client->request(method: 'GET', uri: '/');
+
+        self::assertResponseIsSuccessful();
+        $headers = $crawler->filter('.category-header')->each(static fn (Crawler $node): string => $node->text());
+        self::assertCount(2, $headers);
+        // The uncategorized group always renders after the named categories.
+        self::assertStringContainsString('Entertainment', $headers[0]);
+        self::assertStringContainsString('Uncategorized', $headers[1]);
+    }
+
     public function testDropsCategoryHeadersInTheUngroupedView(): void
     {
         $client = self::createClient();

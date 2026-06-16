@@ -31,10 +31,14 @@ final readonly class UpdateSubscriptionHandler
             throw new \InvalidArgumentException(\sprintf('Subscription with ID "%s" not found.', $command->subscriptionId));
         }
 
-        $category = $this->categoryRepository->find($command->categoryId);
+        // A subscription may be uncategorized; only a given-but-missing category is an error.
+        $category = null;
+        if (null !== $command->categoryId) {
+            $category = $this->categoryRepository->find($command->categoryId);
 
-        if (null === $category) {
-            throw new \InvalidArgumentException(\sprintf('Category with ID "%s" not found.', $command->categoryId));
+            if (null === $category) {
+                throw new \InvalidArgumentException(\sprintf('Category with ID "%s" not found.', $command->categoryId));
+            }
         }
 
         $subscription->update(

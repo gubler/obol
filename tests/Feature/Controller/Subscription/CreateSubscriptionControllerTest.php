@@ -20,6 +20,8 @@ final class CreateSubscriptionControllerTest extends WebTestCase
     public function testGetRequestDisplaysCreateForm(): void
     {
         $client = self::createClient();
+        // The category picker only appears when at least one category exists.
+        CategoryFactory::createOne(['name' => 'Entertainment']);
 
         $client->request(method: 'GET', uri: '/subscriptions/new');
 
@@ -30,6 +32,16 @@ final class CreateSubscriptionControllerTest extends WebTestCase
         self::assertSelectorExists(selector: 'input[name="create_subscription[name]"]');
         self::assertSelectorExists(selector: 'input[name="create_subscription[nextRenewal]"]');
         self::assertSelectorExists(selector: 'button[type="submit"]');
+    }
+
+    public function testHidesTheCategoryPickerWhenNoCategoriesExist(): void
+    {
+        $client = self::createClient();
+
+        $client->request(method: 'GET', uri: '/subscriptions/new');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists(selector: 'select[name="create_subscription[category]"]');
     }
 
     public function testShowsCancelLinkBackToIndex(): void
@@ -253,7 +265,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
         self::assertSelectorTextContains(selector: 'body', text: 'This value should not be blank');
     }
 
-    public function testPostRequestWithoutCategoryShowsValidationError(): void
+    public function testPostRequestWithoutACategoryCreatesAnUncategorizedSubscription(): void
     {
         $client = self::createClient();
         CategoryFactory::createOne(['name' => 'Entertainment']);
@@ -267,12 +279,15 @@ final class CreateSubscriptionControllerTest extends WebTestCase
             'create_subscription[paymentPeriodCount]' => '1',
             'create_subscription[cost]' => '9.99',
         ]);
+        // Leaving the category unselected is allowed: the subscription is created uncategorized.
         $form['create_subscription[category]'] = '';
 
         $client->submit(form: $form);
 
-        self::assertResponseStatusCodeSame(expectedCode: 422);
-        self::assertSelectorExists(selector: '.text-danger');
+        self::assertResponseRedirects(expectedLocation: '/');
+        $subscription = $this->storedSubscription('Test Sub');
+        self::assertNotNull($subscription);
+        self::assertNull($subscription->category);
     }
 
     public function testPostRequestWithoutNextRenewalDateShowsValidationError(): void

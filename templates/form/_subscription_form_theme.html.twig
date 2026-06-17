@@ -6,9 +6,9 @@
             <div class="relative">
                 {{ form_widget(choice, {attr: {class: 'sr-only peer'}}) }}
                 <label for="{{ choice.vars.id }}"
-                       title="{{ choice.vars.label }}"
+                       title="{{ choice.vars.label|trans }}"
                        class="block h-9 w-full cursor-pointer rounded-lg {{ choice.vars.attr['data-gradient'] }} ring-2 ring-transparent ring-offset-2 ring-offset-surface transition peer-checked:ring-brand peer-focus-visible:ring-brand-strong">
-                    <span class="sr-only">{{ choice.vars.label }}</span>
+                    <span class="sr-only">{{ choice.vars.label|trans }}</span>
                 </label>
             </div>
         {% endfor %}

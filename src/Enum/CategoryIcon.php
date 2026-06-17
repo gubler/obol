@@ -51,12 +51,13 @@ enum CategoryIcon: string
     }
 
     /**
-     * A human label (for the picker's accessible name), derived from the Lucide name -
-     * e.g. "book-open" -> "Book Open".
+     * Translation key for the picker's accessible name, resolved in the `messages` catalog
+     * (see ADR-0012). Hyphenated values become underscored key segments - e.g. "book-open"
+     * -> "enum.category_icon.book_open".
      */
     public function label(): string
     {
-        return ucwords(str_replace('-', ' ', $this->value));
+        return 'enum.category_icon.' . str_replace('-', '_', $this->value);
     }
 
     public static function random(): self

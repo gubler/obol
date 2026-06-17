@@ -24,11 +24,12 @@ enum SubscriptionSort: string
 
     public function label(): string
     {
+        // Translation keys resolved in the `messages` catalog; see ADR-0012.
         return match ($this) {
-            self::Name => 'Name',
-            self::Renewal => 'Renewal',
-            self::MonthlyCost => 'Monthly cost',
-            self::Cost => 'Cost',
+            self::Name => 'enum.subscription_sort.name',
+            self::Renewal => 'enum.subscription_sort.renewal',
+            self::MonthlyCost => 'enum.subscription_sort.monthly_cost',
+            self::Cost => 'enum.subscription_sort.cost',
         };
     }
 }

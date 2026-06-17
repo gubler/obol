@@ -23,10 +23,11 @@ enum ObligationTrendPeriod: string
 
     public function label(): string
     {
+        // Translation keys resolved in the `messages` catalog; see ADR-0012.
         return match ($this) {
-            self::Week => 'Weekly',
-            self::Month => 'Monthly',
-            self::Year => 'Yearly',
+            self::Week => 'enum.obligation_trend_period.week',
+            self::Month => 'enum.obligation_trend_period.month',
+            self::Year => 'enum.obligation_trend_period.year',
         };
     }
 

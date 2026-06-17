@@ -67,7 +67,7 @@
                 <div class="inline-flex rounded-md bg-surface-2 p-1">
                     {% for option in sortOptions %}
                         <a href="{{ path('subscription_index', base_params|merge({sort: option.value})) }}"
-                           class="{{ toggle_link }} {{ sort == option ? toggle_on : toggle_off }}">{{ option.label }}</a>
+                           class="{{ toggle_link }} {{ sort == option ? toggle_on : toggle_off }}">{{ option.label|trans }}</a>
                     {% endfor %}
                 </div>
             </div>

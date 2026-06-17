@@ -12,3 +12,65 @@ common:
         open: Open main menu
     title:
         default: Welcome!
+
+enum:
+    tile_color:
+        red: Red
+        magenta: Magenta
+        pink: Pink
+        orange: Orange
+        brown: Brown
+        gold: Gold
+        lime: Lime
+        green: Green
+        emerald: Emerald
+        teal: Teal
+        cyan: Cyan
+        blue: Blue
+        indigo: Indigo
+        violet: Violet
+        purple: Purple
+        slate: Slate
+        grey: Grey
+        charcoal: Charcoal
+    category_icon:
+        tag: Tag
+        tv: Tv
+        film: Film
+        music: Music
+        headphones: Headphones
+        gamepad_2: Gamepad 2
+        book_open: Book Open
+        newspaper: Newspaper
+        graduation_cap: Graduation Cap
+        cloud: Cloud
+        server: Server
+        code: Code
+        shield: Shield
+        wifi: Wifi
+        zap: Zap
+        dumbbell: Dumbbell
+        heart_pulse: Heart Pulse
+        briefcase: Briefcase
+        shopping_cart: Shopping Cart
+        utensils: Utensils
+        coffee: Coffee
+        car: Car
+        plane: Plane
+        house: House
+        phone: Phone
+        mail: Mail
+        camera: Camera
+        credit_card: Credit Card
+        gift: Gift
+        package: Package
+        globe: Globe
+    obligation_trend_period:
+        week: Weekly
+        month: Monthly
+        year: Yearly
+    subscription_sort:
+        name: Name
+        renewal: Renewal
+        monthly_cost: Monthly cost
+        cost: Cost

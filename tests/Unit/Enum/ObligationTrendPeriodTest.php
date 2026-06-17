@@ -22,11 +22,11 @@ final class ObligationTrendPeriodTest extends TestCase
         self::assertSame(ObligationTrendPeriod::Month, ObligationTrendPeriod::fromQuery(null));
     }
 
-    public function testLabelsEachGranularityForTheToggle(): void
+    public function testLabelKeysEachGranularityForTheToggle(): void
     {
-        self::assertSame('Weekly', ObligationTrendPeriod::Week->label());
-        self::assertSame('Monthly', ObligationTrendPeriod::Month->label());
-        self::assertSame('Yearly', ObligationTrendPeriod::Year->label());
+        self::assertSame('enum.obligation_trend_period.week', ObligationTrendPeriod::Week->label());
+        self::assertSame('enum.obligation_trend_period.month', ObligationTrendPeriod::Month->label());
+        self::assertSame('enum.obligation_trend_period.year', ObligationTrendPeriod::Year->label());
     }
 
     public function testLooksBackOver52Weeks24MonthsOr10Years(): void

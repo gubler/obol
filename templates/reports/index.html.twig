@@ -61,7 +61,7 @@
                 {% for option in trendOptions %}
                     <a href="{{ path('reports_index', {trend: option.value}) }}"
                        class="{{ toggle_link }} {{ option == trendPeriod ? toggle_on : toggle_off }}"
-                       {%- if option == trendPeriod %} aria-current="page"{% endif %}>{{ option.label }}</a>
+                       {%- if option == trendPeriod %} aria-current="page"{% endif %}>{{ option.label|trans }}</a>
                 {% endfor %}
             </div>
         </div>

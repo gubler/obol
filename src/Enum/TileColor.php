@@ -119,7 +119,8 @@ enum TileColor: string
 
     public function label(): string
     {
-        return $this->name;
+        // Translation key resolved in the `messages` catalog; see ADR-0012.
+        return 'enum.tile_color.' . $this->value;
     }
 
     public static function random(): self

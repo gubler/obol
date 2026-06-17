@@ -34,11 +34,11 @@ final class CategoryIconTest extends TestCase
         }
     }
 
-    public function testExposesAHumanLabelPerIcon(): void
+    public function testReturnsATranslationKeyPerIcon(): void
     {
-        self::assertSame('Tv', CategoryIcon::Tv->label());
-        self::assertSame('Book Open', CategoryIcon::BookOpen->label());
-        self::assertSame('Gamepad 2', CategoryIcon::Gamepad2->label());
+        self::assertSame('enum.category_icon.tv', CategoryIcon::Tv->label());
+        self::assertSame('enum.category_icon.book_open', CategoryIcon::BookOpen->label());
+        self::assertSame('enum.category_icon.gamepad_2', CategoryIcon::Gamepad2->label());
     }
 
     public function testRandomReturnsAMember(): void

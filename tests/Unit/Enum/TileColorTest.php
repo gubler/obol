@@ -82,10 +82,10 @@ final class TileColorTest extends TestCase
         self::assertSame('#57534e', TileColor::Charcoal->baseColorHex()); // stone-600
     }
 
-    public function testExposesAHumanLabelPerSwatch(): void
+    public function testReturnsATranslationKeyPerSwatch(): void
     {
-        self::assertSame('Grey', TileColor::Grey->label());
-        self::assertSame('Magenta', TileColor::Magenta->label());
+        self::assertSame('enum.tile_color.grey', TileColor::Grey->label());
+        self::assertSame('enum.tile_color.magenta', TileColor::Magenta->label());
     }
 
     public function testRandomReturnsAPaletteMember(): void

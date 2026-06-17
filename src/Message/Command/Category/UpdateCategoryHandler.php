@@ -26,6 +26,6 @@ final readonly class UpdateCategoryHandler
             throw new \InvalidArgumentException(\sprintf('Category with ID "%s" not found.', $command->categoryId));
         }
 
-        $category->setName($command->name);
+        $category->update($command->name, $command->color, $command->icon);
     }
 }

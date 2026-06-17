@@ -18,6 +18,8 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  */
 final class CreateCategoryFormType extends AbstractType
 {
+    use CategoryAppearanceFieldsTrait;
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
@@ -26,6 +28,8 @@ final class CreateCategoryFormType extends AbstractType
                 'empty_data' => '',
             ])
         ;
+
+        $this->addAppearanceFields($builder);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

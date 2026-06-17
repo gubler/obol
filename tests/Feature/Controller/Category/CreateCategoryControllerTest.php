@@ -8,6 +8,8 @@ declare(strict_types=1);
 namespace App\Tests\Feature\Controller\Category;
 
 use App\Entity\Category;
+use App\Enum\CategoryIcon;
+use App\Enum\TileColor;
 use App\Factory\CategoryFactory;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -25,6 +27,47 @@ final class CreateCategoryControllerTest extends WebTestCase
         self::assertSelectorExists(selector: 'form');
         self::assertSelectorExists(selector: 'input[name="create_category[name]"]');
         self::assertSelectorExists(selector: 'button[type="submit"]');
+    }
+
+    public function testRendersAColorSwatchPickerAndAnIconPicker(): void
+    {
+        $client = self::createClient();
+
+        $crawler = $client->request(method: 'GET', uri: '/categories/new');
+
+        self::assertResponseIsSuccessful();
+        // The swatch picker mirrors the subscription form: one radio per TileColor, one pre-selected.
+        self::assertCount(18, $crawler->filter('input[type="radio"][name="create_category[color]"]'));
+        self::assertCount(1, $crawler->filter('input[type="radio"][name="create_category[color]"]:checked'));
+        // The icon picker: one radio per CategoryIcon, each rendering its Lucide SVG, one pre-selected.
+        $icons = $crawler->filter('input[type="radio"][name="create_category[icon]"]');
+        self::assertGreaterThanOrEqual(30, $icons->count());
+        self::assertCount(1, $crawler->filter('input[type="radio"][name="create_category[icon]"]:checked'));
+        self::assertGreaterThanOrEqual(30, $crawler->filter('.icon-picker svg')->count());
+    }
+
+    public function testPersistsTheChosenColorAndIcon(): void
+    {
+        $client = self::createClient();
+
+        $crawler = $client->request(method: 'GET', uri: '/categories/new');
+
+        $form = $crawler->selectButton(value: 'Save')->form();
+        $form['create_category[name]'] = 'Streaming';
+        $form['create_category[color]'] = 'violet';
+        $form['create_category[icon]'] = 'tv';
+
+        $client->submit(form: $form);
+
+        self::assertResponseRedirects(expectedLocation: '/categories');
+
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = self::getContainer()->get(id: EntityManagerInterface::class);
+        $category = $entityManager->getRepository(Category::class)->findOneBy(['name' => 'Streaming']);
+
+        self::assertNotNull($category);
+        self::assertSame(TileColor::Violet, $category->color);
+        self::assertSame(CategoryIcon::Tv, $category->icon);
     }
 
     public function testShowsCancelLinkBackToIndex(): void

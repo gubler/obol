@@ -7,10 +7,15 @@ declare(strict_types=1);
 
 namespace App\Message\Command\Category;
 
+use App\Enum\CategoryIcon;
+use App\Enum\TileColor;
+
 final readonly class CreateCategoryCommand
 {
     public function __construct(
         public string $name,
+        public TileColor $color,
+        public CategoryIcon $icon,
     ) {
     }
 }

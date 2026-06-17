@@ -44,7 +44,9 @@ final class EditCategoryController extends AbstractBaseController
 
             $this->commandBus->dispatch(command: new UpdateCategoryCommand(
                 categoryId: $id,
-                name: $data->name
+                name: $data->name,
+                color: $data->color,
+                icon: $data->icon,
             ));
 
             $this->addFlash(type: self::FLASH_SUCCESS, message: 'Category updated successfully');

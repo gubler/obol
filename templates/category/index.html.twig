@@ -30,7 +30,12 @@
                     <tbody class="bg-surface divide-y divide-line">
                         {% for category in categories %}
                             <tr>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ category.name }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="flex items-center gap-2">
+                                        {{ include('category/_badge.html.twig', {category: category}) }}
+                                        {{ category.name }}
+                                    </span>
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ category.subscriptions|length }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <a href="{{ path('category_show', {id: category.id}) }}" class="text-brand hover:text-brand-strong mr-3">View</a>

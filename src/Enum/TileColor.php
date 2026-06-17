@@ -60,6 +60,63 @@ enum TileColor: string
         };
     }
 
+    /**
+     * The flat, solid base color as a single `bg-*` class: the same bright shade the gradient starts
+     * from, without the gradient. Categories render flat (small icons read badly on a gradient). The
+     * literals must stay in this file so Tailwind's source scan compiles them.
+     */
+    public function baseColorClass(): string
+    {
+        return match ($this) {
+            self::Red => 'bg-red-500',
+            self::Magenta => 'bg-fuchsia-600',
+            self::Pink => 'bg-pink-600',
+            self::Orange => 'bg-orange-600',
+            self::Brown => 'bg-amber-700',
+            self::Gold => 'bg-yellow-600',
+            self::Lime => 'bg-lime-600',
+            self::Green => 'bg-green-600',
+            self::Emerald => 'bg-emerald-600',
+            self::Teal => 'bg-teal-600',
+            self::Cyan => 'bg-sky-600',
+            self::Blue => 'bg-blue-600',
+            self::Indigo => 'bg-indigo-500',
+            self::Violet => 'bg-violet-500',
+            self::Purple => 'bg-purple-500',
+            self::Slate => 'bg-slate-500',
+            self::Grey => 'bg-neutral-500',
+            self::Charcoal => 'bg-stone-600',
+        };
+    }
+
+    /**
+     * The base shade as a hex color, matching `baseColorClass()`. Used for canvas fills (the reports
+     * pie) where a CSS class cannot reach - so the wedge matches its flat swatch in the legend.
+     */
+    public function baseColorHex(): string
+    {
+        return match ($this) {
+            self::Red => '#ef4444',       // red-500
+            self::Magenta => '#c026d3',   // fuchsia-600
+            self::Pink => '#db2777',      // pink-600
+            self::Orange => '#ea580c',    // orange-600
+            self::Brown => '#b45309',     // amber-700
+            self::Gold => '#ca8a04',      // yellow-600
+            self::Lime => '#65a30d',      // lime-600
+            self::Green => '#16a34a',     // green-600
+            self::Emerald => '#059669',   // emerald-600
+            self::Teal => '#0d9488',      // teal-600
+            self::Cyan => '#0284c7',      // sky-600
+            self::Blue => '#2563eb',      // blue-600
+            self::Indigo => '#6366f1',    // indigo-500
+            self::Violet => '#8b5cf6',    // violet-500
+            self::Purple => '#a855f7',    // purple-500
+            self::Slate => '#64748b',     // slate-500
+            self::Grey => '#737373',      // neutral-500
+            self::Charcoal => '#57534e',  // stone-600
+        };
+    }
+
     public function label(): string
     {
         return $this->name;

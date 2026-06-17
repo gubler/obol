@@ -46,7 +46,7 @@ final readonly class CompositionChartFactory
             'labels' => array_map(static fn (CompositionSlice $slice): string => $slice->label, $composition->slices),
             'datasets' => [[
                 'data' => array_map(static fn (CompositionSlice $slice): int => $slice->converted->minorAmount, $composition->slices),
-                'backgroundColor' => $this->colours(\count($composition->slices)),
+                'backgroundColor' => $this->sliceColours($composition->slices),
                 // Custom payload read by the composition-pie Stimulus controller's tooltip callbacks.
                 'displayAmounts' => array_map(static fn (CompositionSlice $slice): string => $slice->converted->format(), $composition->slices),
                 'nativeBreakdown' => array_map(
@@ -70,13 +70,20 @@ final readonly class CompositionChartFactory
     }
 
     /**
+     * Wedge fills: each slice with a category color uses that color's hex (so the wedge matches its
+     * flat swatch in the legend); leaf slices without a color cycle the fixed palette.
+     *
+     * @param list<CompositionSlice> $slices
+     *
      * @return list<string>
      */
-    private function colours(int $count): array
+    private function sliceColours(array $slices): array
     {
         return array_map(
-            static fn (int $index): string => self::PALETTE[$index % \count(self::PALETTE)],
-            $count > 0 ? range(0, $count - 1) : [],
+            fn (CompositionSlice $slice, int $index): string => $slice->color?->baseColorHex()
+                ?? self::PALETTE[$index % \count(self::PALETTE)],
+            $slices,
+            array_keys($slices),
         );
     }
 }

@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Feature\Controller\Category;
 
+use App\Enum\CategoryIcon;
+use App\Enum\TileColor;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -25,6 +27,20 @@ final class ShowCategoryControllerTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'h1', text: 'Entertainment');
+    }
+
+    public function testShowsTheCategoryColorAndIconBadge(): void
+    {
+        $client = self::createClient();
+        $category = CategoryFactory::createOne(['name' => 'Streaming', 'color' => TileColor::Teal, 'icon' => CategoryIcon::Film]);
+
+        $client->request(method: 'GET', uri: '/categories/' . $category->id);
+
+        self::assertResponseIsSuccessful();
+        $badge = $client->getCrawler()->filter('h1 .category-badge');
+        self::assertCount(1, $badge);
+        self::assertStringContainsString('bg-teal-600', $badge->attr('class'));
+        self::assertCount(1, $badge->filter('svg'));
     }
 
     public function testDisplaysSubscriptionsInCategory(): void

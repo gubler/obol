@@ -7,8 +7,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Feature\Controller\Report;
 
+use App\Enum\CategoryIcon;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
+use App\Enum\TileColor;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
 use App\ValueObject\Money;
@@ -63,6 +65,27 @@ final class ReportsControllerTest extends WebTestCase
         $names = $crawler->filter('.report-subscription')->each(static fn ($node): string => $node->text());
         self::assertContains('Netflix', $names);
         self::assertNotContains('Old Hulu', $names);
+    }
+
+    public function testCompositionPieAndLegendUseEachCategoryColorAndIcon(): void
+    {
+        $client = self::createClient();
+        $streaming = CategoryFactory::createOne(['name' => 'Streaming', 'color' => TileColor::Violet, 'icon' => CategoryIcon::Tv]);
+        SubscriptionFactory::createOne(['category' => $streaming, 'name' => 'Netflix', 'cost' => new Money(4000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
+        SubscriptionFactory::createOne(['category' => null, 'name' => 'Orphan', 'cost' => new Money(1000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
+
+        $crawler = $client->request(method: 'GET', uri: '/reports');
+
+        self::assertResponseIsSuccessful();
+        // The legend shows each slice's flat color + icon badge.
+        $badge = $crawler->filter('.report-category-link .category-badge')->first();
+        self::assertStringContainsString('bg-violet-500', $badge->attr('class'));
+        self::assertCount(1, $badge->filter('svg'));
+
+        // The pie wedge fills use the category hex (and Charcoal for uncategorized), matching the swatches.
+        $content = (string) $client->getResponse()->getContent();
+        self::assertStringContainsString('#8b5cf6', $content); // violet-500 (Streaming)
+        self::assertStringContainsString('#57534e', $content); // stone-600 (Uncategorized / Charcoal)
     }
 
     public function testReportsOverviewShowsAnUncategorizedSliceLinkedToItsDrillDown(): void

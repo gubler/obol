@@ -1,0 +1,10 @@
+{# ABOUTME: A small flat color + icon badge for a category (or the Uncategorized pseudo-group). #}
+{# ABOUTME: Pass either `category` (nullable Category) or explicit `color` (?TileColor) + `icon` (?CategoryIcon). #}
+{# ABOUTME: Absent color/icon render the reserved neutral Charcoal swatch with a dashed icon. #}
+{% set badge_color = category is defined and category ? category.color : (color is defined ? color : null) %}
+{% set badge_icon = category is defined and category ? category.icon : (icon is defined ? icon : null) %}
+{% set color_class = badge_color ? badge_color.baseColorClass() : 'bg-stone-600' %}
+{% set icon_name = badge_icon ? badge_icon.iconName() : 'lucide:circle-dashed' %}
+<span class="category-badge inline-flex size-6 shrink-0 items-center justify-center rounded-md {{ color_class }} text-white">
+    {{ ux_icon(icon_name, {class: 'size-4'}) }}
+</span>

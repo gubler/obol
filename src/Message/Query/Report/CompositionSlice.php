@@ -3,11 +3,14 @@
 // ABOUTME: One wedge of a composition pie: a label, its converted share, and the native per-currency split.
 // ABOUTME: id is the entity the slice stands for (a category, for linking to its drill-down); null when there is none.
 // ABOUTME: uncategorized marks the bucket of subscriptions with no category, which links to its own drill-down.
+// ABOUTME: color/icon carry the category's appearance for the wedge fill and legend badge; null for leaf slices.
 
 declare(strict_types=1);
 
 namespace App\Message\Query\Report;
 
+use App\Enum\CategoryIcon;
+use App\Enum\TileColor;
 use App\ValueObject\Money;
 use Symfony\Component\Uid\Ulid;
 
@@ -23,6 +26,8 @@ final readonly class CompositionSlice
         public bool $isApproximate,
         public ?Ulid $id = null,
         public bool $uncategorized = false,
+        public ?TileColor $color = null,
+        public ?CategoryIcon $icon = null,
     ) {
     }
 }

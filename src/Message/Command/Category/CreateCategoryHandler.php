@@ -21,7 +21,7 @@ final readonly class CreateCategoryHandler
 
     public function __invoke(CreateCategoryCommand $command): void
     {
-        $category = new Category(name: $command->name);
+        $category = new Category(name: $command->name, color: $command->color, icon: $command->icon);
 
         $this->entityManager->persist($category);
     }

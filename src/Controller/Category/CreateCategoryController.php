@@ -30,7 +30,9 @@ final class CreateCategoryController extends AbstractBaseController
             $data = $form->getData();
 
             $this->commandBus->dispatch(command: new CreateCategoryCommand(
-                name: $data->name
+                name: $data->name,
+                color: $data->color,
+                icon: $data->icon,
             ));
 
             $this->addFlash(type: self::FLASH_SUCCESS, message: 'Category created successfully');

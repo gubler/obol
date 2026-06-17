@@ -7,8 +7,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Feature\Controller\Subscription;
 
+use App\Enum\CategoryIcon;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
+use App\Enum\TileColor;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
 use App\ValueObject\Money;
@@ -232,6 +234,26 @@ final class ListSubscriptionsControllerTest extends WebTestCase
         self::assertSame(2, $crawler->filter('.category-group')->count());
         self::assertSelectorTextContains(selector: 'body', text: 'Entertainment');
         self::assertSelectorTextContains(selector: 'body', text: 'Utilities');
+    }
+
+    public function testRendersEachCategoryGroupWithItsColorAndIconBadge(): void
+    {
+        $client = self::createClient();
+        $entertainment = CategoryFactory::createOne(['name' => 'Entertainment', 'color' => TileColor::Violet, 'icon' => CategoryIcon::Tv]);
+        SubscriptionFactory::createOne(['category' => $entertainment, 'name' => 'Netflix']);
+        // A null-category subscription gives the Uncategorized group its neutral badge.
+        SubscriptionFactory::createOne(['category' => null, 'name' => 'Orphan']);
+
+        $crawler = $client->request(method: 'GET', uri: '/');
+
+        self::assertResponseIsSuccessful();
+        $badges = $crawler->filter('.category-header .category-badge');
+        self::assertCount(2, $badges);
+        // Categories render flat (the base shade), not the tile gradient.
+        self::assertStringContainsString('bg-violet-500', $badges->first()->attr('class'));
+        self::assertCount(1, $badges->first()->filter('svg'));
+        // The Uncategorized group uses the reserved neutral Charcoal swatch (bg-stone-600).
+        self::assertStringContainsString('bg-stone-600', $badges->eq(1)->attr('class'));
     }
 
     public function testGroupsSubscriptionsWithNoCategoryUnderAnUncategorizedHeaderLast(): void

@@ -8,6 +8,8 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Message\Command\Category;
 
 use App\Entity\Category;
+use App\Enum\CategoryIcon;
+use App\Enum\TileColor;
 use App\Message\Command\Category\UpdateCategoryCommand;
 use App\Message\Command\Category\UpdateCategoryHandler;
 use App\Repository\CategoryRepository;
@@ -16,14 +18,14 @@ use Symfony\Component\Uid\Ulid;
 
 final class UpdateCategoryHandlerTest extends TestCase
 {
-    public function testHandlerUpdatesCategoryName(): void
+    public function testHandlerUpdatesCategoryNameColorAndIcon(): void
     {
         $ulid = new Ulid();
 
         $category = $this->createMock(Category::class);
         $category->expects(self::once())
-            ->method('setName')
-            ->with('Updated Name')
+            ->method('update')
+            ->with('Updated Name', TileColor::Teal, CategoryIcon::Film)
         ;
 
         $repository = $this->createMock(CategoryRepository::class);
@@ -33,7 +35,7 @@ final class UpdateCategoryHandlerTest extends TestCase
         ;
 
         $handler = new UpdateCategoryHandler($repository);
-        $handler(new UpdateCategoryCommand(categoryId: $ulid, name: 'Updated Name'));
+        $handler(new UpdateCategoryCommand(categoryId: $ulid, name: 'Updated Name', color: TileColor::Teal, icon: CategoryIcon::Film));
     }
 
     public function testHandlerThrowsWhenCategoryNotFound(): void
@@ -49,6 +51,6 @@ final class UpdateCategoryHandlerTest extends TestCase
         $handler = new UpdateCategoryHandler($repository);
 
         $this->expectException(\InvalidArgumentException::class);
-        $handler(new UpdateCategoryCommand(categoryId: $ulid, name: 'Updated Name'));
+        $handler(new UpdateCategoryCommand(categoryId: $ulid, name: 'Updated Name', color: TileColor::Blue, icon: CategoryIcon::Tag));
     }
 }

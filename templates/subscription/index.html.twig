@@ -76,8 +76,11 @@
         {% if grouped %}
             {% for group in listing.groups %}
                 <section class="category-group mb-8">
-                    <h2 class="category-header mb-3 flex items-baseline justify-between border-b border-line pb-2">
-                        <span class="text-lg font-semibold text-fg">{{ group.category ? group.category.name : 'Uncategorized' }}</span>
+                    <h2 class="category-header mb-3 flex items-center justify-between border-b border-line pb-2">
+                        <span class="flex items-center gap-2 text-lg font-semibold text-fg">
+                            {{ include('category/_badge.html.twig', {category: group.category}) }}
+                            {{ group.category ? group.category.name : 'Uncategorized' }}
+                        </span>
                         <span class="flex items-baseline gap-3 text-sm font-medium text-fg-muted">
                             {% if group.savingsTotal.converted.minorAmount > 0 %}
                                 <span class="category-savings-total">

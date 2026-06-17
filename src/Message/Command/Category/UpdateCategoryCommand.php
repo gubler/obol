@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace App\Message\Command\Category;
 
+use App\Enum\CategoryIcon;
+use App\Enum\TileColor;
 use Symfony\Component\Uid\Ulid;
 
 final readonly class UpdateCategoryCommand
@@ -14,6 +16,8 @@ final readonly class UpdateCategoryCommand
     public function __construct(
         public Ulid $categoryId,
         public string $name,
+        public TileColor $color,
+        public CategoryIcon $icon,
     ) {
     }
 }

@@ -1,0 +1,17 @@
+{# ABOUTME: Custom form theme block for the category icon picker. #}
+{# ABOUTME: Renders each CategoryIcon choice as a selectable chip showing its bundled Lucide SVG. #}
+{% block category_icon_widget %}
+    <div class="icon-picker grid grid-cols-6 gap-2 sm:grid-cols-10">
+        {% for choice in form %}
+            <div class="relative">
+                {{ form_widget(choice, {attr: {class: 'sr-only peer'}}) }}
+                <label for="{{ choice.vars.id }}"
+                       title="{{ choice.vars.label }}"
+                       class="flex h-9 w-full cursor-pointer items-center justify-center rounded-lg border border-line text-fg-muted ring-2 ring-transparent ring-offset-2 ring-offset-surface transition peer-checked:border-brand peer-checked:text-fg peer-checked:ring-brand peer-focus-visible:ring-brand-strong">
+                    {{ ux_icon(choice.vars.attr['data-icon'], {class: 'size-5'}) }}
+                    <span class="sr-only">{{ choice.vars.label }}</span>
+                </label>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

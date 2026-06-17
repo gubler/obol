@@ -38,8 +38,11 @@
                     {% for slice in composition.slices %}
                         <li>
                             <a href="{{ slice.uncategorized ? path('reports_uncategorized') : path('reports_category', {id: slice.id}) }}"
-                               class="report-category-link flex items-baseline justify-between gap-4 py-2 text-fg hover:bg-surface-2">
-                                <span class="report-category font-medium">{{ slice.label }}</span>
+                               class="report-category-link flex items-center justify-between gap-4 py-2 text-fg hover:bg-surface-2">
+                                <span class="flex items-center gap-2">
+                                    {{ include('category/_badge.html.twig', {color: slice.color, icon: slice.icon}) }}
+                                    <span class="report-category font-medium">{{ slice.label }}</span>
+                                </span>
                                 <span class="report-category-amount text-sm text-fg-muted">
                                     {{ include('components/money_disclosure.html.twig', {amount: slice.converted, label: '/ mo', approximate: slice.isApproximate}) }}
                                 </span>

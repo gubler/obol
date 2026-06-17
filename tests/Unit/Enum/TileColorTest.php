@@ -49,6 +49,39 @@ final class TileColorTest extends TestCase
         self::assertSame('bg-linear-to-b from-stone-600 from-45% to-stone-900', TileColor::Charcoal->gradientClasses());
     }
 
+    public function testEverySwatchYieldsAFlatSolidBaseColorClass(): void
+    {
+        // Categories render flat (small icons look bad on a gradient): the bright `from` shade only.
+        foreach (TileColor::cases() as $color) {
+            self::assertStringStartsWith('bg-', $color->baseColorClass());
+            self::assertStringNotContainsString('linear', $color->baseColorClass());
+            self::assertStringNotContainsString('from-', $color->baseColorClass());
+            self::assertStringNotContainsString(' ', $color->baseColorClass());
+        }
+    }
+
+    public function testMapsSwatchesToTheirFlatBaseShadeMatchingTheGradientFrom(): void
+    {
+        self::assertSame('bg-red-500', TileColor::Red->baseColorClass());
+        self::assertSame('bg-fuchsia-600', TileColor::Magenta->baseColorClass());
+        self::assertSame('bg-sky-600', TileColor::Cyan->baseColorClass());
+        self::assertSame('bg-stone-600', TileColor::Charcoal->baseColorClass());
+    }
+
+    public function testEverySwatchYieldsAHexForChartFills(): void
+    {
+        foreach (TileColor::cases() as $color) {
+            self::assertMatchesRegularExpression('/^#[0-9a-f]{6}$/', $color->baseColorHex());
+        }
+    }
+
+    public function testMapsSwatchesToTheBaseShadeHex(): void
+    {
+        self::assertSame('#ef4444', TileColor::Red->baseColorHex());     // red-500
+        self::assertSame('#0d9488', TileColor::Teal->baseColorHex());    // teal-600
+        self::assertSame('#57534e', TileColor::Charcoal->baseColorHex()); // stone-600
+    }
+
     public function testExposesAHumanLabelPerSwatch(): void
     {
         self::assertSame('Grey', TileColor::Grey->label());

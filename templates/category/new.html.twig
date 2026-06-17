@@ -12,15 +12,7 @@
         <div class="bg-surface shadow-md rounded p-6 max-w-2xl">
             {{ form_start(form, {attr: {class: 'space-y-6'}}) }}
 
-            <div>
-                {{ form_label(form.name, null, {label_attr: {class: 'block text-sm font-medium text-fg mb-2'}}) }}
-                {{ form_widget(form.name, {attr: {class: 'mt-1 block w-full rounded-md border-line shadow-sm focus:border-brand focus:ring-brand sm:text-sm'}}) }}
-                {% if form.name.vars.errors|length > 0 %}
-                    <div class="form-error text-danger text-sm mt-1">
-                        {{ form_errors(form.name) }}
-                    </div>
-                {% endif %}
-            </div>
+            {{ include('category/_form.html.twig', {form: form}) }}
 
             <div class="flex justify-end space-x-3">
                 <a href="{{ path('category_index') }}" class="bg-surface-2 hover:bg-line text-fg font-bold py-2 px-4 rounded">

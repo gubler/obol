@@ -68,15 +68,17 @@ Records a single payment transaction linked to a subscription.
 
 ## Category
 
-Groups subscriptions. Simple entity with a name and a collection of subscriptions.
+Groups subscriptions. Carries a name, a color, and an icon, plus its collection of subscriptions.
 
 | Property | Type | Notes |
 |----------|------|-------|
 | `id` | `Ulid` | Generated in constructor |
 | `name` | `string` | Non-empty (validated) |
+| `color` | `TileColor` | Defaults to a random swatch; rendered flat (`baseColorClass()`), not the tile gradient |
+| `icon` | `CategoryIcon` | Curated closed Lucide set; defaults to the neutral `Tag` |
 | `subscriptions` | `Collection<Subscription>` | OneToMany, read-only |
 
-The only mutation method is `setName()`. Categories cannot be deleted if they have subscriptions (`CategoryHasSubscriptionsException`).
+`setName()` changes the name alone; `update()` sets name, color, and icon together. Categories cannot be deleted if they have subscriptions (`CategoryHasSubscriptionsException`). The "Uncategorized" pseudo-group (a null category) renders with a reserved neutral Charcoal swatch and a dashed icon.
 
 ## SubscriptionEvent
 

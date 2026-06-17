@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Enum\CategoryIcon;
+use App\Enum\TileColor;
 use App\Repository\CategoryRepository;
 use Assert\Assertion;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -22,20 +24,32 @@ class Category
     #[ORM\Column(length: 255)]
     public private(set) string $name;
 
+    #[ORM\Column(enumType: TileColor::class)]
+    public private(set) TileColor $color;
+
+    #[ORM\Column(enumType: CategoryIcon::class)]
+    public private(set) CategoryIcon $icon;
+
     /**
      * @var Collection<int, Subscription>
      */
     #[ORM\OneToMany(targetEntity: Subscription::class, mappedBy: 'category')]
     public private(set) Collection $subscriptions;
 
-    public function __construct(string $name)
-    {
+    public function __construct(
+        string $name,
+        ?TileColor $color = null,
+        CategoryIcon $icon = CategoryIcon::Tag,
+    ) {
         $this->id = new Ulid();
         $this->subscriptions = new ArrayCollection();
 
         $name = trim(string: $name);
         Assertion::notEq(value1: $name, value2: '');
         $this->name = $name;
+        // A category always carries a color; pick a random swatch when one is not supplied.
+        $this->color = $color ?? TileColor::random();
+        $this->icon = $icon;
     }
 
     public function setName(string $name): void
@@ -43,5 +57,12 @@ class Category
         $name = trim(string: $name);
         Assertion::notEq(value1: $name, value2: '');
         $this->name = $name;
+    }
+
+    public function update(string $name, TileColor $color, CategoryIcon $icon): void
+    {
+        $this->setName($name);
+        $this->color = $color;
+        $this->icon = $icon;
     }
 }

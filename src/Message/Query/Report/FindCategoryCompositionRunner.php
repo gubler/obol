@@ -9,6 +9,7 @@ namespace App\Message\Query\Report;
 
 use App\Entity\Category;
 use App\Entity\Subscription;
+use App\Enum\TileColor;
 use App\Message\Currency\CurrencyTotaller;
 use App\Repository\SubscriptionRepository;
 use App\ValueObject\Money;
@@ -55,6 +56,10 @@ final readonly class FindCategoryCompositionRunner
                     isApproximate: $share->isApproximate,
                     id: $category?->id,
                     uncategorized: null === $category,
+                    // Uncategorized takes the reserved neutral Charcoal swatch; its badge icon falls
+                    // back to the dashed default (no CategoryIcon).
+                    color: null !== $category ? $category->color : TileColor::Charcoal,
+                    icon: $category?->icon,
                 );
             },
             array_values($byCategory),

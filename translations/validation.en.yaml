@@ -1,0 +1,3 @@
+# ABOUTME: English base catalog for the `validation` domain (custom constraint messages).
+# ABOUTME: Populated per-surface by the i18n child issues (#224-#227); keyed per ADR-0012.
+{}

@@ -1,0 +1,3 @@
+# ABOUTME: English ICU-formatted catalog (`messages` domain, intl-icu variant) for plural/select messages.
+# ABOUTME: The cadence plural lands here in #223; empty until a real ICU message exists (ADR-0012).
+{}

@@ -8,6 +8,7 @@
 fast_checks() {
     local status=0
     mise run lint:php      || status=1
+    mise run lint:yaml     || status=1
     mise run cs:check      || status=1
     mise run cs:twig:check || status=1
     mise run js:cs:check   || status=1

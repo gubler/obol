@@ -2,7 +2,7 @@
 <html lang="en" class="h-full bg-page text-fg">
     <head>
         <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
+        <title>{% block title %}{{ 'common.title.default'|trans }}{% endblock %}</title>
         <link rel="icon" type="image/svg+xml" href="{{ asset('icons/obol-coin.svg') }}">
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
@@ -39,15 +39,15 @@
                                 </div>
                                 <div class="hidden md:block">
                                     <div class="ml-10 flex items-baseline space-x-4">
-                                        <a href="{{ path('subscription_index') }}" class="rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">Subscriptions</a>
-                                        <a href="{{ path('category_index') }}" class="rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">Categories</a>
-                                        <a href="{{ path('reports_index') }}" class="rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">Reports</a>
+                                        <a href="{{ path('subscription_index') }}" class="rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.subscriptions'|trans }}</a>
+                                        <a href="{{ path('category_index') }}" class="rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.categories'|trans }}</a>
+                                        <a href="{{ path('reports_index') }}" class="rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.reports'|trans }}</a>
                                     </div>
                                 </div>
                             </div>
                             <div class="-mr-2 flex items-center gap-1">
-                                <button type="button" data-controller="theme" data-action="theme#toggle" aria-label="Toggle dark mode" aria-pressed="false" class="relative inline-flex items-center justify-center rounded-md p-2 text-header-muted hover:bg-white/5 hover:text-header-fg focus:outline-2 focus:outline-offset-2 focus:outline-brand">
-                                    <span class="sr-only">Toggle dark mode</span>
+                                <button type="button" data-controller="theme" data-action="theme#toggle" aria-label="{{ 'common.theme.toggle'|trans }}" aria-pressed="false" class="relative inline-flex items-center justify-center rounded-md p-2 text-header-muted hover:bg-white/5 hover:text-header-fg focus:outline-2 focus:outline-offset-2 focus:outline-brand">
+                                    <span class="sr-only">{{ 'common.theme.toggle'|trans }}</span>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true" class="size-6 dark:hidden">
                                         <path d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" stroke-linecap="round" stroke-linejoin="round" />
                                     </svg>
@@ -58,7 +58,7 @@
                                 <!-- Mobile menu button -->
                                 <button type="button" command="--toggle" commandfor="mobile-menu" class="relative inline-flex items-center justify-center rounded-md p-2 text-header-muted hover:bg-white/5 hover:text-header-fg focus:outline-2 focus:outline-offset-2 focus:outline-brand md:hidden">
                                     <span class="absolute -inset-0.5"></span>
-                                    <span class="sr-only">Open main menu</span>
+                                    <span class="sr-only">{{ 'common.menu.open'|trans }}</span>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 in-aria-expanded:hidden">
                                         <path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" stroke-linecap="round" stroke-linejoin="round" />
                                     </svg>
@@ -73,9 +73,9 @@
 
                 <el-disclosure id="mobile-menu" hidden class="block border-b border-white/10 md:hidden">
                     <div class="space-y-1 px-2 py-3 sm:px-3">
-                        <a href="{{ path('subscription_index') }}" class="block rounded-md px-3 py-2 text-base font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">Subscriptions</a>
-                        <a href="{{ path('category_index') }}" class="block rounded-md px-3 py-2 text-base font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">Categories</a>
-                        <a href="{{ path('reports_index') }}" class="block rounded-md px-3 py-2 text-base font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">Reports</a>
+                        <a href="{{ path('subscription_index') }}" class="block rounded-md px-3 py-2 text-base font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.subscriptions'|trans }}</a>
+                        <a href="{{ path('category_index') }}" class="block rounded-md px-3 py-2 text-base font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.categories'|trans }}</a>
+                        <a href="{{ path('reports_index') }}" class="block rounded-md px-3 py-2 text-base font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.reports'|trans }}</a>
                     </div>
                 </el-disclosure>
             </nav>

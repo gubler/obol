@@ -1,0 +1,14 @@
+# ABOUTME: English base catalog for the default `messages` domain (UI copy, flashes, labels).
+# ABOUTME: Keyed/symbolic ids per ADR-0012; this base catalog must stay complete (key-leak test).
+
+common:
+    nav:
+        subscriptions: Subscriptions
+        categories: Categories
+        reports: Reports
+    theme:
+        toggle: Toggle dark mode
+    menu:
+        open: Open main menu
+    title:
+        default: Welcome!

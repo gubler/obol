@@ -51,6 +51,11 @@ run = [
     """
 ]
 
+[tasks."lint:yaml"]
+description = "Lint YAML translation catalogs via Symfony's lint:yaml"
+depends = ["_ensure-up"]
+run = ["$DC_EXEC php bin/console lint:yaml translations"]
+
 [tasks.sa]
 description = "Static Analysis via PHPStan"
 depends = ["_ensure-up"]
@@ -196,7 +201,7 @@ run = ["npm run palette"]
 
 [tasks.check]
 description = "Run all checks: PHPStan (src + tests), tests, CS Fixer, Twig CS, and the JS toolchain"
-depends = ["sa", "sa:tests", "test", "cs", "cs:twig", "js:sa", "js:test", "js:cs"]
+depends = ["lint:yaml", "sa", "sa:tests", "test", "cs", "cs:twig", "js:sa", "js:test", "js:cs"]
 
 [tasks."docs:serve"]
 description = "Serve MkDocs site locally (runs on host, needs mkdocs-material via pipx)"

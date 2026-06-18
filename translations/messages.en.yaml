@@ -21,6 +21,9 @@ common:
         archive: Archive
         unarchive: Unarchive
     as_of: as of
+    relative:
+        today: Today
+        tomorrow: Tomorrow
 
 enum:
     tile_color:

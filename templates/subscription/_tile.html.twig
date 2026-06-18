@@ -14,7 +14,7 @@
     </div>
     <div>
         <div class="font-semibold leading-tight">{{ subscription.name }}</div>
-        <div class="mt-0.5 text-sm text-white/80">{{ subscription.nextRenewal|time_diff }}</div>
+        <div class="mt-0.5 text-sm text-white/80">{{ subscription.nextRenewal|renewal_label }}</div>
         {% if subscription.archived %}
             <span class="archived-badge mt-2 inline-flex items-center rounded-full bg-black/30 px-2 py-0.5 text-xs font-medium text-white">{{ 'subscription.badge.archived'|trans }}</span>
         {% endif %}

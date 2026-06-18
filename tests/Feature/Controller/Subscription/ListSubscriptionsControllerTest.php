@@ -40,6 +40,36 @@ final class ListSubscriptionsControllerTest extends WebTestCase
         self::assertSelectorTextContains(selector: 'body', text: 'Spotify');
     }
 
+    public function testTileShowsTodayForARenewalDatedToday(): void
+    {
+        $client = self::createClient();
+        SubscriptionFactory::createOne([
+            'name' => 'Netflix',
+            'nextRenewal' => new \DateTimeImmutable('today'),
+        ]);
+
+        $client->request(method: 'GET', uri: '/');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains(selector: '.subscription-tile', text: 'Today');
+        self::assertSelectorTextNotContains(selector: '.subscription-tile', text: 'hour');
+    }
+
+    public function testTileShowsTomorrowForARenewalDatedTomorrow(): void
+    {
+        $client = self::createClient();
+        SubscriptionFactory::createOne([
+            'name' => 'Spotify',
+            'nextRenewal' => new \DateTimeImmutable('tomorrow'),
+        ]);
+
+        $client->request(method: 'GET', uri: '/');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains(selector: '.subscription-tile', text: 'Tomorrow');
+        self::assertSelectorTextNotContains(selector: '.subscription-tile', text: 'hour');
+    }
+
     public function testShowsCreateNewLink(): void
     {
         $client = self::createClient();

@@ -1,0 +1,23 @@
+# ABOUTME: Compose file for the dev-docs build/dev container. Single ephemeral service.
+# ABOUTME: node_modules and the pnpm store live in named volumes - never on the host fs.
+
+services:
+  docs-builder:
+    image: node:22-alpine
+    working_dir: /app
+    volumes:
+      # Source: bind-mounted from the host so edits are live.
+      - .:/app
+      # node_modules and pnpm's content-addressable store are heavy and slow on
+      # bind mounts (especially on macOS). Named volumes overlay the bind mount
+      # and persist between `docker compose run --rm` calls, so reinstalls are
+      # fast and the host docs/ stays clean.
+      - obol_docs_node_modules:/app/node_modules
+      - obol_docs_pnpm_store:/app/.pnpm-store
+    environment:
+      - CI=true
+    command: sh -c "corepack enable && pnpm install --frozen-lockfile && pnpm build"
+
+volumes:
+  obol_docs_node_modules:
+  obol_docs_pnpm_store:

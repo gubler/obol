@@ -1,0 +1,20 @@
+# build output
+dist/
+
+# generated types and caches
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+pnpm-debug.log*
+
+# env
+.env
+.env.production
+
+# OS
+.DS_Store
+.pnpm-store/

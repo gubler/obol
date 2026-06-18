@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Symfony 8.1 application for managing subscriptions with payment tracking and event history. Built with PHP 8.5+, it uses Doctrine ORM for data persistence and follows strict type safety and code quality standards.
 
-The app runs inside Docker via FrankenPHP. Developer tooling (PHPStan, PHPUnit, CS Fixer, Rector) executes **inside the `php` container** via the `./bin/dc exec -T php` wrapper — `mise` tasks delegate to it. Only `docs:*` and `lint:php` run on the host.
+The app runs inside Docker via FrankenPHP. Developer tooling (PHPStan, PHPUnit, CS Fixer, Rector) executes **inside the `php` container** via the `./bin/dc exec -T php` wrapper — `mise` tasks delegate to it. The docs site builds in its own Node container (`docs/compose.yaml`); only `lint:php` and the `docs:deploy` rsync run directly on the host.
 
 ## Local routing (Lolly)
 
@@ -100,15 +100,16 @@ auto-launches it via the committed `.mcp.json`; the stack must be up. Dev-only -
 prod. Full reference: `docs/mate.md`.
 
 ### Documentation
+
+The developer docs are an Astro Starlight site under `docs/`, built in a Dockerized pnpm
+container (nothing on the host) and published to docs.dev88.work/obol via Ook.
+
 ```bash
-# Serve docs locally (requires mkdocs-material: pipx install mkdocs-material)
-mise run docs:serve
-
-# Build docs site (output to site/)
-mise run docs:build
-
-# Deploy to docs.dev88.work/obol
-mise run docs:deploy
+mise run docs:install   # one-time after clone (installs deps in the docs container)
+mise run docs:dev       # hot-reload dev server at http://localhost:4321/obol/
+mise run docs:build     # build to docs/dist/ (runs the links validator)
+mise run docs:check     # astro check (schema + TypeScript)
+mise run docs:deploy    # build + rsync to hex:/srv/docs/obol/
 ```
 
 Full developer documentation is in `docs/`. Key pages:

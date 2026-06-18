@@ -4,7 +4,7 @@ title: "Mise Tasks"
 
 [mise](https://mise.jdx.dev/) provides task runner shortcuts. All tasks are defined in `mise.toml` at the repo root.
 
-Most tasks run **inside the `php` container** via `./bin/dc exec`. The exceptions run on the host: `lint:php` (needs `git`), the `docs:*` tasks (need `mkdocs`), and the `js:*` tasks (need Node/npm - the JS toolchain is dev-only and never enters the container; run `npm ci` once after pulling).
+Most tasks run **inside the `php` container** via `./bin/dc exec`. The exceptions: `lint:php` (host-side, needs `git`); the `js:*` tasks (host-side Node/npm - the JS toolchain is dev-only and never enters the container; run `npm ci` once after pulling); and the `docs:*` / `user-docs:*` tasks, which build in their own Node container (`docs/compose.yaml`), with only the `docs:deploy` rsync running on the host.
 
 ## Stack control
 
@@ -56,11 +56,16 @@ See [Frontend](../frontend.md#javascript-toolchain-dev-only) for what the JS too
 
 ## Documentation
 
+The developer docs (`docs/`) and the end-user guide (`user-docs/`) are Astro Starlight sites built in a Dockerized pnpm container. The `user-docs:*` tasks mirror the `docs:*` set below.
+
 | Task | Description | Underlying Command |
 |------|-------------|-------------------|
-| `mise run docs:serve` | Serve docs locally (live reload, host-side) | `mkdocs serve` |
-| `mise run docs:build` | Build docs to `site/` | `scripts/build-docs.sh` |
-| `mise run docs:deploy` | Build and deploy to docs.dev88.work | `scripts/deploy-docs.sh` |
+| `mise run docs:install` | Install docs deps (one-time after clone) | `pnpm install --frozen-lockfile` (in container) |
+| `mise run docs:dev` | Live preview at `http://localhost:4321/obol/` | `pnpm dev` (in container) |
+| `mise run docs:build` | Build to `docs/dist/` (runs the links validator) | `pnpm build` (in container) |
+| `mise run docs:check` | `astro check` (schema + TypeScript) | `pnpm check` (in container) |
+| `mise run docs:preview` | Serve the built `docs/dist/` for review | `pnpm preview` (in container) |
+| `mise run docs:deploy` | Build and rsync to `hex:/srv/docs/obol/` | `rsync` (host-side) |
 
 ## Passing Extra Arguments
 
@@ -86,9 +91,9 @@ If mise is not installed, all commands still work by calling `./bin/dc exec -T p
 
 ```bash
 ./bin/dc up -d --wait
-./bin/dc exec -T php vendor/bin/pest --compact
+./bin/dc exec -T php vendor/bin/phpunit
 ./bin/dc exec -T php vendor/bin/phpstan --memory-limit=4G analyze
 ./bin/dc exec -T php vendor/bin/php-cs-fixer fix
 ./bin/dc exec -T php vendor/bin/rector
-mkdocs serve
+(cd docs && docker compose run --rm docs-builder)   # build the docs site
 ```

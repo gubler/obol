@@ -33,7 +33,6 @@ phpstan.neon
 /.twig-cs-fixer.cache
 ###< vincentlanglet/twig-cs-fixer ###
 /.phpactor.json
-/site/
 
 ###> phpunit/phpunit ###
 /phpunit.xml

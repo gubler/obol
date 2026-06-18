@@ -10,7 +10,8 @@ This guide covers setting up Obol for local development.
 - **[mise](https://mise.jdx.dev/)** for task shortcuts.
 - **Node.js 24+ with npm** for the dev-only JS toolchain (Biome + Vitest + `tsc --checkJs`). Needed to run the JS checks and the git hooks; not part of the app runtime.
 - **[Lolly](https://code.dev88.work/dev88/lolly)** — the shared local dev proxy. Optional but recommended; gives you `https://obol.lolly.localhost` with browser-trusted TLS.
-- **[MkDocs Material](https://squidfunk.github.io/mkdocs-material/)** (optional, for editing the docs site).
+
+The docs site needs no extra host tooling — it builds in its own Docker container (see [Working on documentation](#working-on-documentation) below).
 
 No PHP, Composer, or Postgres install on the host is required — everything PHP runs inside Docker. Node is the one host-side exception, used only by the dev/CI JS toolchain (see [Frontend](frontend.md#javascript-toolchain-dev-only)).
 
@@ -49,18 +50,15 @@ mise run dce -- php bin/console about   # Symfony info dump
 
 ## Working on documentation
 
-The docs site uses MkDocs with the Material theme. Install it on the host with:
+The docs are an [Astro Starlight](https://starlight.astro.build/) site under `docs/`, built in a Dockerized pnpm container — no Node or other host tooling required.
 
 ```bash
-pipx install mkdocs-material
+mise run docs:install   # one-time after clone (installs deps in the docs container)
+mise run docs:dev       # live preview at http://localhost:4321/obol/
+mise run docs:build     # build to docs/dist/ (runs the links validator)
 ```
 
-Then:
-
-```bash
-mise run docs:serve    # live preview at http://127.0.0.1:8000
-mise run docs:build    # output to site/
-```
+The separate end-user guide under `user-docs/` works the same way via the `user-docs:*` tasks.
 
 ## Further reading
 

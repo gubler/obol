@@ -64,23 +64,20 @@ State changes on `Subscription` go through dedicated methods (`update()`, `archi
 
 ## Documentation
 
-Full developer documentation is at [docs.dev88.work/obol](https://docs.dev88.work/obol).
+Developer docs are at [docs.dev88.work/obol](https://docs.dev88.work/obol); the end-user guide is at [docs.dev88.work/obol-user](https://docs.dev88.work/obol-user).
 
 ### Working on docs locally
 
-Requires [MkDocs](https://www.mkdocs.org/) with the Material theme:
+The docs are [Astro Starlight](https://starlight.astro.build/) sites (`docs/` for developer docs, `user-docs/` for the user guide), built in a Dockerized pnpm container — nothing to install on the host:
 
 ```bash
-pipx install mkdocs-material
-# or
-pip install mkdocs-material
+mise run docs:install   # one-time after clone
+mise run docs:dev       # live preview at http://localhost:4321/obol/
+mise run docs:build     # build to docs/dist/
+mise run docs:deploy    # build and rsync to docs.dev88.work/obol
 ```
 
-```bash
-mise run docs:serve   # Live preview at http://127.0.0.1:8000
-mise run docs:build   # Build to site/
-mise run docs:deploy  # Build and deploy to docs.dev88.work/obol
-```
+The `user-docs:*` tasks (`install` / `dev` / `build` / `deploy`) drive the end-user guide the same way.
 
 ## License
 

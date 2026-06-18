@@ -1,5 +1,5 @@
 // ABOUTME: Astro + Starlight config for the Obol developer docs site (docs.dev88.work/obol).
-// ABOUTME: Sidebar is curated (logical reading order, not alphabetical), mirroring the prior MkDocs nav.
+// ABOUTME: Sidebar is curated (logical reading order, not alphabetical) rather than auto-generated.
 
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';

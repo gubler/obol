@@ -1,4 +1,6 @@
-# Symfony AI Mate (dev-only MCP server)
+---
+title: "Symfony AI Mate (dev-only MCP server)"
+---
 
 [Symfony AI Mate](https://symfony.com/doc/current/ai/components/mate.html) is a
 development-only [MCP](https://modelcontextprotocol.io/) server that exposes live-app
@@ -20,7 +22,7 @@ wrapper to configure.
 
 ## Registering it with the AI client
 
-Claude Code auto-discovers the project MCP manifest at the repo root, [`.mcp.json`](../.mcp.json),
+Claude Code auto-discovers the project MCP manifest at the repo root, [`.mcp.json`](https://code.dev88.work/dev88/obol/src/branch/main/.mcp.json),
 which launches the server through the dockerized command:
 
 ```json
@@ -33,7 +35,7 @@ auto-detection is redirected to `/dev/null` before it `exec`s `docker compose`, 
 carries only the protocol stream.
 
 The Mate tools surface to Claude Code as `mcp__mate__*`. To skip per-tool approval prompts,
-add `mcp__mate__*` to `permissions.allow` in [`.claude/settings.json`](../.claude/settings.json)
+add `mcp__mate__*` to `permissions.allow` in [`.claude/settings.json`](https://code.dev88.work/dev88/obol/src/branch/main/.claude/settings.json)
 (left to each developer's discretion - it is not committed by default).
 
 ### Manual use
@@ -52,7 +54,7 @@ To exercise a single tool without the full MCP handshake:
 
 ## Extensions and tools
 
-Seven extensions are enabled in [`mate/extensions.php`](../mate/extensions.php), giving 20
+Seven extensions are enabled in [`mate/extensions.php`](https://code.dev88.work/dev88/obol/src/branch/main/mate/extensions.php), giving 20
 tools. Prefer these over the equivalent raw CLI - they return compact, structured output.
 
 | Extension (package) | Tools | Status |
@@ -75,7 +77,7 @@ selects.
   in-container, they invoke `vendor/bin/*` directly.
 - *PHPStan memory.* PHPStan analysing this Symfony/Doctrine app exhausts the container's
   128M CLI `memory_limit` (the same reason `mise run sa` runs with `--memory-limit=4G`).
-  Mate's PHPStan extension takes a command prefix, so [`mate/config.php`](../mate/config.php)
+  Mate's PHPStan extension takes a command prefix, so [`mate/config.php`](https://code.dev88.work/dev88/obol/src/branch/main/mate/config.php)
   sets `matesofmate_phpstan.custom_command` to `php -d memory_limit=4G vendor/bin/phpstan`.
 - *Monolog reads `var/log`.* No extra configuration was needed: Obol's dev logging already
   writes rotating files to `var/log` (`config/packages/monolog.yaml`), so the Monolog tools
@@ -103,7 +105,7 @@ Production never sees Mate:
   `composer install --no-dev` excludes them.
 - `mate/`, `.mcp.json`, and `*.md` (covering `AGENTS.md`) are in `.dockerignore`, so the Mate
   source and config never enter the prod image.
-- [`config/packages/http_discovery.yaml`](../config/packages/http_discovery.yaml) comes from
+- [`config/packages/http_discovery.yaml`](https://code.dev88.work/dev88/obol/src/branch/main/config/packages/http_discovery.yaml) comes from
   the `php-http/discovery` Flex recipe (pulled in transitively by Mate) and is scoped to
   `when@dev` + `when@test`. The package is dev-only, so loading those PSR-17 service
   definitions in prod would fail container compilation on the missing
@@ -115,7 +117,7 @@ without the Mate binary (absent in prod) they are inert.
 ## Adding or removing an extension
 
 The `symfony/ai-mate-composer-plugin` (which would auto-run discovery on every `composer
-install`) is *disallowed* in `composer.json` so that [`mate/extensions.php`](../mate/extensions.php)
+install`) is *disallowed* in `composer.json` so that [`mate/extensions.php`](https://code.dev88.work/dev88/obol/src/branch/main/mate/extensions.php)
 stays the committed source of truth and is not silently regenerated in CI. After `composer
 require --dev`-ing or removing a Mate extension, run `mise run mate:discover` and review the
 diff to `mate/extensions.php` (and the Mate-managed `AGENTS.md` / `mate/AGENT_INSTRUCTIONS.md`

@@ -1,4 +1,6 @@
-# CQRS & Message Bus
+---
+title: "CQRS & Message Bus"
+---
 
 Obol uses Symfony Messenger with three dedicated buses to enforce a strict separation between commands (writes), queries (reads), and events.
 

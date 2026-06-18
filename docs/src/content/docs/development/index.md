@@ -1,4 +1,6 @@
-# Development Workflow
+---
+title: "Development Workflow"
+---
 
 Obol follows a structured workflow for all changes: **Issue → Branch → TDD → Commit → PR → Merge → Close**.
 

@@ -1,4 +1,6 @@
-# Controllers
+---
+title: "Controllers"
+---
 
 All controllers follow the invokable single-action pattern: one controller class per route action, with a single `__invoke()` method.
 

@@ -1,4 +1,6 @@
-# Architecture Overview
+---
+title: "Architecture Overview"
+---
 
 Obol is a Symfony application that manages recurring subscriptions with payment tracking and full audit history. This section documents the core architectural patterns and how the pieces fit together.
 

@@ -196,7 +196,7 @@ description = "Rasterize assets/icons/obol-coin.svg into the public/ PNG favicon
 run = ["npm run icons"]
 
 [tasks.palette]
-description = "Regenerate docs/palette.md (light + dark token swatches) from assets/styles/app.css (host-side)"
+description = "Regenerate docs/src/content/docs/palette.md (light + dark token swatches) from assets/styles/app.css (host-side)"
 run = ["npm run palette"]
 
 [tasks.check]

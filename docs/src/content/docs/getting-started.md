@@ -1,4 +1,6 @@
-# Getting Started
+---
+title: "Getting Started"
+---
 
 This guide covers setting up Obol for local development.
 
@@ -23,7 +25,7 @@ mise run up
 ```
 
 - With Lolly running: the app is served at **https://obol.lolly.localhost** with browser-trusted TLS.
-- With Lolly stopped: the app is served at **http://127.0.0.1:8080** (plain HTTP, for quick "is it alive" checks).
+- With Lolly stopped: the app is served at `http://127.0.0.1:8080` (plain HTTP, for quick "is it alive" checks).
 
 `bin/dc` auto-detects which mode to use by probing for Lolly's `lolly` Docker network — no flag.
 

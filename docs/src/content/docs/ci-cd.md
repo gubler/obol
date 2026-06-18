@@ -1,4 +1,6 @@
-# CI/CD
+---
+title: "CI/CD"
+---
 
 Obol uses Gitea Actions for continuous integration and Docker image builds. The workflow is defined in `.gitea/workflows/ci.yml`.
 

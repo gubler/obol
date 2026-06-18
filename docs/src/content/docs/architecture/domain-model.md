@@ -1,4 +1,6 @@
-# Domain Model
+---
+title: "Domain Model"
+---
 
 All entities live in `src/Entity/` and share these design patterns:
 

@@ -1,4 +1,6 @@
-# Deployment
+---
+title: "Deployment"
+---
 
 Obol runs in Docker using FrankenPHP, a single binary that combines Caddy (web server) with the PHP runtime. No separate PHP-FPM or Nginx needed.
 
@@ -65,8 +67,9 @@ Three services:
 | `POSTGRES_PASSWORD` | Yes | `!ChangeMe!` | PostgreSQL password |
 | `POSTGRES_DB` | Yes | `app` | PostgreSQL database name |
 
-!!! warning
-    Change `APP_SECRET` and `POSTGRES_PASSWORD` from their defaults before deploying to production.
+:::caution
+Change `APP_SECRET` and `POSTGRES_PASSWORD` from their defaults before deploying to production.
+:::
 
 ## Entrypoint
 

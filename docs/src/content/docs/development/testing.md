@@ -1,4 +1,6 @@
-# Testing
+---
+title: "Testing"
+---
 
 Obol uses PHPUnit as the test runner with four test suites, Foundry factories for test data, and DAMA DoctrineTestBundle for automatic transaction rollback.
 
@@ -75,7 +77,7 @@ $subscription = SubscriptionFactory::createOne([
 - All classes in `App\Repository` must have a `Repository` suffix
 - All enums in `App\Enum` must be backed
 - Entities must not depend on controllers
-- Data access (repositories and the `EntityManager`) is confined to the handler layer — only `App\Message`, `App\Entity` and `App\Repository` may reference them (see [ADR-0006](../../reference/adr/0006-cqrs-buses-data-access-boundary.md) / [ADR-0007](../../reference/adr/0007-write-path-message-conventions.md))
+- Data access (repositories and the `EntityManager`) is confined to the handler layer — only `App\Message`, `App\Entity` and `App\Repository` may reference them (see [ADR-0006](https://code.dev88.work/dev88/obol/src/branch/main/reference/adr/0006-cqrs-buses-data-access-boundary.md) / [ADR-0007](https://code.dev88.work/dev88/obol/src/branch/main/reference/adr/0007-write-path-message-conventions.md))
 
 The "no debugging functions" rule (`dump`, `dd`, `var_dump`, `print_r`, `ray`) is enforced by PHPStan instead — function-call rules are not something reflection can express. It lives in the Symplify `ForbiddenFuncCallRule` in `phpstan.dist.neon` and runs under `mise run sa`.
 

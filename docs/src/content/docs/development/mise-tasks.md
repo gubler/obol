@@ -1,4 +1,6 @@
-# Mise Tasks
+---
+title: "Mise Tasks"
+---
 
 [mise](https://mise.jdx.dev/) provides task runner shortcuts. All tasks are defined in `mise.toml` at the repo root.
 
@@ -12,7 +14,7 @@ Most tasks run **inside the `php` container** via `./bin/dc exec`. The exception
 | `mise run down` | Stop the stack | `./bin/dc down` |
 | `mise run dce -- <cmd>` | Run an arbitrary command in the php container | `./bin/dc exec -T php <cmd>` |
 
-See [Local Setup](local-setup.md) for how solo and shared modes work.
+See [Local Setup](../getting-started.md) for how solo and shared modes work.
 
 ## Code Quality
 

@@ -58,7 +58,7 @@ mise run coverage:report               # HTML report in var/coverage/
 mise run infection                     # mutation testing (Unit suite; on-demand, not in check/CI)
 ```
 
-Infection (mutation testing) is **on-demand only** - never part of `mise run check`, the git hooks, or CI. It targets the Unit suite; baseline is ~79-81% MSI with the threshold pinned just under in `infection.json5`. Three stack-specific knobs (Xdebug coverage driver, unbounded CLI memory, `--threads=4`) are baked into the task. See `docs/development/testing.md` (Mutation Testing).
+Infection (mutation testing) is **on-demand only** - never part of `mise run check`, the git hooks, or CI. It targets the Unit suite; baseline is ~79-81% MSI with the threshold pinned just under in `infection.json5`. Three stack-specific knobs (Xdebug coverage driver, unbounded CLI memory, `--threads=4`) are baked into the task. See `docs/src/content/docs/development/testing.md` (Mutation Testing).
 
 ### Code Quality
 ```bash
@@ -78,7 +78,7 @@ mise run js:cs:check    # Biome: check only
 mise run js:sa          # tsc --checkJs static analysis
 mise run js:test        # Vitest unit tests (Stimulus controllers)
 ```
-Mirrors the PHP sa/cs/test trio for `assets/`; nothing is bundled or shipped (AssetMapper + importmap stay the runtime). See `docs/frontend.md`.
+Mirrors the PHP sa/cs/test trio for `assets/`; nothing is bundled or shipped (AssetMapper + importmap stay the runtime). See `docs/src/content/docs/frontend.md`.
 
 ### Database / fixtures
 ```bash
@@ -97,7 +97,7 @@ mise run mate:discover   # re-scan vendor after adding/removing a Mate extension
 introspection + dev drivers (PHPUnit, PHPStan, database, logs, container, profiler, composer)
 to AI assistants as `mcp__mate__*` tools. It runs **inside the `php` container** and Claude Code
 auto-launches it via the committed `.mcp.json`; the stack must be up. Dev-only - never shipped to
-prod. Full reference: `docs/mate.md`.
+prod. Full reference: `docs/src/content/docs/mate.md`.
 
 ### Documentation
 
@@ -112,12 +112,12 @@ mise run docs:check     # astro check (schema + TypeScript)
 mise run docs:deploy    # build + rsync to hex:/srv/docs/obol/
 ```
 
-Full developer documentation is in `docs/`. Key pages:
-- `docs/architecture/` — domain model, CQRS, controllers, forms/DTOs
-- `docs/development/` — standards, testing, git hooks, mise tasks
-- `docs/deployment.md` — Docker, compose setup, environment vars
-- `docs/ci-cd.md` — Gitea Actions workflow
-- `docs/operations/updates.md` — deploying new versions, migrations
+Full developer documentation is the Starlight site under `docs/src/content/docs/`. Key pages:
+- `docs/src/content/docs/architecture/` — domain model, CQRS, controllers, forms/DTOs
+- `docs/src/content/docs/development/` — standards, testing, git hooks, mise tasks
+- `docs/src/content/docs/deployment.md` — Docker, compose setup, environment vars
+- `docs/src/content/docs/ci-cd.md` — Gitea Actions workflow
+- `docs/src/content/docs/operations/updates.md` — deploying new versions, migrations
 
 ### Gitea Integration
 **IMPORTANT**: This project uses Gitea for issue tracking, NOT GitHub.
@@ -202,7 +202,7 @@ git push origin --delete issue-##-brief-description
 Hooks are plain shell scripts in `.githooks/`, activated via `core.hooksPath`. The
 `install-hooks` Composer script wires them on every `composer install`/`composer update`
 (`git config --local core.hooksPath .githooks`, guarded to no-op when there is no git
-directory). Nothing is copied into `.git/hooks/`. See `docs/development/git-hooks.md`.
+directory). Nothing is copied into `.git/hooks/`. See `docs/src/content/docs/development/git-hooks.md`.
 
 | Hook | Trigger | What Runs |
 |------|---------|-----------|
@@ -256,7 +256,7 @@ Uses Symfony AssetMapper with:
 - Hotwired Stimulus for JavaScript
 - Hotwired Turbo for navigation
 - No build step (importmap-based); no Node.js at runtime or build time
-- A dev-only JS toolchain (Biome + Vitest + `tsc --checkJs`) for the Stimulus controllers, mirroring the PHP sa/cs/test trio. Node tooling run at dev/CI time only; nothing is bundled or shipped. See `docs/frontend.md`.
+- A dev-only JS toolchain (Biome + Vitest + `tsc --checkJs`) for the Stimulus controllers, mirroring the PHP sa/cs/test trio. Node tooling run at dev/CI time only; nothing is bundled or shipped. See `docs/src/content/docs/frontend.md`.
 
 ## Code Quality Standards
 

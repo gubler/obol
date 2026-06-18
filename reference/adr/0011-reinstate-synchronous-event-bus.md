@@ -45,7 +45,7 @@ boundary) stands unchanged.
 the `validation` middleware the command/query buses carry for parity - domain events carry no
 user-supplied constraints. Handlers on `event.bus` are within `App\Message` and so honor ADR-0006's
 data-access boundary; they do not flush (the middleware owns the transaction - see
-`docs/development/standards.md`).
+`docs/src/content/docs/development/standards.md`).
 
 ## Considered options
 

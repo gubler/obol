@@ -49,7 +49,7 @@ mise run seed              # load fixtures
 mise run dce -- php bin/console <cmd>   # arbitrary Symfony command
 ```
 
-Full task reference: [Mise Tasks](docs/development/mise-tasks.md).
+Full task reference: [Mise Tasks](docs/src/content/docs/development/mise-tasks.md).
 
 ## Architecture
 

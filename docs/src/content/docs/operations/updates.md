@@ -1,4 +1,6 @@
-# Deploying Updates
+---
+title: "Deploying Updates"
+---
 
 This page covers how to deploy new versions of Obol and handle database migrations.
 
@@ -60,8 +62,9 @@ To revert the last migration:
 php bin/console doctrine:migrations:migrate prev
 ```
 
-!!! warning
-    Rollback requires `down()` methods in the migration. Not all migrations are reversible — check before relying on this.
+:::caution
+Rollback requires `down()` methods in the migration. Not all migrations are reversible — check before relying on this.
+:::
 
 ## Rollback Strategy for Bad Deployments
 

@@ -1,4 +1,6 @@
-# Code Quality Standards
+---
+title: "Code Quality Standards"
+---
 
 Obol enforces strict quality standards through PHPStan, PHP CS Fixer, Rector, and architectural tests.
 

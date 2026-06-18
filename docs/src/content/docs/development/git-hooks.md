@@ -1,4 +1,6 @@
-# Git Hooks
+---
+title: "Git Hooks"
+---
 
 Obol's git hooks are plain shell scripts tracked in `.githooks/`. Git is pointed at
 that directory with `core.hooksPath`, so the scripts run directly from the repo with

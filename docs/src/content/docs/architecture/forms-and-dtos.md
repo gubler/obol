@@ -1,4 +1,6 @@
-# Forms & DTOs
+---
+title: "Forms & DTOs"
+---
 
 Obol separates form input handling from domain entities using DTOs (Data Transfer Objects) and Symfony Form types.
 

@@ -221,6 +221,21 @@ category:
         deleted: Category deleted successfully
         delete_failed: Cannot delete category with subscriptions. Please reassign or delete subscriptions first.
 
+report:
+    heading: Reports
+    back: Back to reports
+    composition:
+        by_category: Monthly obligation by category
+        empty_title: Nothing to report yet
+        empty_hint: Add an active subscription to see it broken down here.
+    trend:
+        heading: Obligation over time
+    category:
+        by_subscription: Monthly obligation by subscription
+        empty: No active subscriptions in this category
+    chart:
+        obligation: Obligation
+
 payment:
     flash:
         recorded: Payment recorded successfully

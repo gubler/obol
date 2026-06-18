@@ -23,6 +23,7 @@ use App\Service\DisplayCurrencyProvider;
 use App\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class FindCategoryBreakdownRunnerTest extends TestCase
 {
@@ -65,9 +66,22 @@ final class FindCategoryBreakdownRunnerTest extends TestCase
         ;
         $totaller = new CurrencyTotaller(new Converter($exchangeRateRepository), new DisplayCurrencyProvider('USD'));
 
-        $runner = new FindCategoryBreakdownRunner($categoryRepository, $subscriptionRepository, $totaller);
+        $runner = new FindCategoryBreakdownRunner($categoryRepository, $subscriptionRepository, $totaller, self::translator());
 
         return $runner(new FindCategoryBreakdownQuery($categoryId));
+    }
+
+    /**
+     * A translator that resolves the uncategorized-title key to its en value, so the title stays unchanged.
+     */
+    private static function translator(): TranslatorInterface
+    {
+        $translator = self::createStub(TranslatorInterface::class);
+        $translator->method('trans')->willReturnCallback(
+            static fn (string $key): string => ['subscription.group.uncategorized' => 'Uncategorized'][$key] ?? $key,
+        );
+
+        return $translator;
     }
 
     public function testOneSlicePerSubscriptionSortedBySizeTitledWithTheCategoryName(): void
@@ -111,7 +125,7 @@ final class FindCategoryBreakdownRunnerTest extends TestCase
         $exchangeRateRepository->method('latestRate')->willReturn(null);
         $totaller = new CurrencyTotaller(new Converter($exchangeRateRepository), new DisplayCurrencyProvider('USD'));
 
-        $runner = new FindCategoryBreakdownRunner($categoryRepository, $subscriptionRepository, $totaller);
+        $runner = new FindCategoryBreakdownRunner($categoryRepository, $subscriptionRepository, $totaller, self::translator());
         $composition = $runner(new FindCategoryBreakdownQuery(null));
 
         self::assertInstanceOf(Composition::class, $composition);

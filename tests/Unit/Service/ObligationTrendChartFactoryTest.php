@@ -14,6 +14,7 @@ use App\Message\Query\Report\ObligationSeries;
 use App\Service\ObligationTrendChartFactory;
 use App\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Translation\Translator;
 use Symfony\UX\Chartjs\Builder\ChartBuilder;
 use Symfony\UX\Chartjs\Model\Chart;
 
@@ -21,7 +22,7 @@ final class ObligationTrendChartFactoryTest extends TestCase
 {
     public function testBuildsALineOverTheBucketsWithFormattedDisplayAmountsAndCurrencyFormatting(): void
     {
-        $factory = new ObligationTrendChartFactory(new ChartBuilder());
+        $factory = new ObligationTrendChartFactory(new ChartBuilder(), self::translator());
 
         $chart = $factory->line(self::trendSeries([['Apr 2026', 0], ['May 2026', 5000], ['Jun 2026', 8000]]));
 
@@ -29,10 +30,23 @@ final class ObligationTrendChartFactoryTest extends TestCase
 
         self::assertSame(Chart::TYPE_LINE, $chart->getType());
         self::assertSame(['Apr 2026', 'May 2026', 'Jun 2026'], $data['labels']);
+        self::assertSame('Obligation', $data['datasets'][0]['label']);
         self::assertSame([0, 5000, 8000], $data['datasets'][0]['data']);
         self::assertSame(['$0.00', '$50.00', '$80.00'], $data['datasets'][0]['displayAmounts']);
         self::assertSame('$', $data['datasets'][0]['currencySymbol']);
         self::assertSame(2, $data['datasets'][0]['fractionDigits']);
+    }
+
+    /**
+     * A translator backed by the report-chart catalog entry so the dataset label stays 'Obligation' in en.
+     */
+    private static function translator(): Translator
+    {
+        $translator = new Translator('en');
+        $translator->addLoader('array', new \Symfony\Component\Translation\Loader\ArrayLoader());
+        $translator->addResource('array', ['report.chart.obligation' => 'Obligation'], 'en');
+
+        return $translator;
     }
 
     /**

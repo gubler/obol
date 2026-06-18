@@ -13,6 +13,7 @@ use App\Repository\CategoryRepository;
 use App\Repository\SubscriptionRepository;
 use App\ValueObject\Money;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[AsMessageHandler(bus: 'query.bus', handles: FindCategoryBreakdownQuery::class)]
 final readonly class FindCategoryBreakdownRunner
@@ -21,6 +22,7 @@ final readonly class FindCategoryBreakdownRunner
         private CategoryRepository $categoryRepository,
         private SubscriptionRepository $subscriptionRepository,
         private CurrencyTotaller $currencyTotaller,
+        private TranslatorInterface $translator,
     ) {
     }
 
@@ -28,7 +30,7 @@ final readonly class FindCategoryBreakdownRunner
     {
         // A null category id is the uncategorized drill-down: the subscriptions with no category.
         if (null === $query->categoryId) {
-            $title = 'Uncategorized';
+            $title = $this->translator->trans('subscription.group.uncategorized');
             $filter = ['archived' => false, 'category' => null];
         } else {
             $category = $this->categoryRepository->find($query->categoryId);

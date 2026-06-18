@@ -1,9 +1,9 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Reports{% endblock %}
+{% block title %}{{ 'report.heading'|trans }}{% endblock %}
 
 {% block header %}
-    <h1 class="text-3xl font-bold tracking-tight text-header-fg">Reports</h1>
+    <h1 class="text-3xl font-bold tracking-tight text-header-fg">{{ 'report.heading'|trans }}</h1>
 {% endblock %}
 
 {% block body %}
@@ -13,11 +13,11 @@
 
     <section class="reports-composition">
         <div class="mb-4 flex flex-wrap items-baseline justify-between gap-2 border-b border-line pb-3">
-            <h2 class="text-lg font-semibold text-fg">Monthly obligation by category</h2>
+            <h2 class="text-lg font-semibold text-fg">{{ 'report.composition.by_category'|trans }}</h2>
             <div class="report-total text-2xl font-semibold text-fg">
                 {{ include('components/money_disclosure.html.twig', {
                     amount: composition.total.converted,
-                    label: '/ mo',
+                    label: 'subscription.totals.per_month'|trans,
                     asOf: composition.asOf,
                     breakdown: composition.total.breakdown,
                     approximate: composition.total.isApproximate,
@@ -27,8 +27,8 @@
 
         {% if composition.slices is empty %}
             <div class="empty-state rounded-lg border border-line bg-surface-2 px-6 py-12 text-center">
-                <p class="text-lg text-fg-muted">Nothing to report yet</p>
-                <p class="mt-2 text-fg-muted">Add an active subscription to see it broken down here.</p>
+                <p class="text-lg text-fg-muted">{{ 'report.composition.empty_title'|trans }}</p>
+                <p class="mt-2 text-fg-muted">{{ 'report.composition.empty_hint'|trans }}</p>
             </div>
         {% else %}
             <div class="grid items-center gap-8 md:grid-cols-2">
@@ -44,7 +44,7 @@
                                     <span class="report-category font-medium">{{ slice.label }}</span>
                                 </span>
                                 <span class="report-category-amount text-sm text-fg-muted">
-                                    {{ include('components/money_disclosure.html.twig', {amount: slice.converted, label: '/ mo', approximate: slice.isApproximate}) }}
+                                    {{ include('components/money_disclosure.html.twig', {amount: slice.converted, label: 'subscription.totals.per_month'|trans, approximate: slice.isApproximate}) }}
                                 </span>
                             </a>
                         </li>
@@ -56,7 +56,7 @@
 
     <section class="obligation-trend mt-10">
         <div class="mb-4 flex flex-wrap items-baseline justify-between gap-2 border-b border-line pb-3">
-            <h2 class="text-lg font-semibold text-fg">Obligation over time</h2>
+            <h2 class="text-lg font-semibold text-fg">{{ 'report.trend.heading'|trans }}</h2>
             <div class="inline-flex rounded-md bg-surface-2 p-1">
                 {% for option in trendOptions %}
                     <a href="{{ path('reports_index', {trend: option.value}) }}"

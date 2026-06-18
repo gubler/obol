@@ -21,6 +21,7 @@ use App\Repository\SubscriptionRepository;
 use App\Service\DisplayCurrencyProvider;
 use App\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class FindCategoryCompositionRunnerTest extends TestCase
 {
@@ -51,9 +52,22 @@ final class FindCategoryCompositionRunnerTest extends TestCase
         ;
         $totaller = new CurrencyTotaller(new Converter($exchangeRateRepository), new DisplayCurrencyProvider($displayCurrency));
 
-        $runner = new FindCategoryCompositionRunner($repository, $totaller);
+        $runner = new FindCategoryCompositionRunner($repository, $totaller, self::translator());
 
         return $runner(new FindCategoryCompositionQuery());
+    }
+
+    /**
+     * A translator that resolves the uncategorized-label key to its en value, so slice labels stay unchanged.
+     */
+    private static function translator(): TranslatorInterface
+    {
+        $translator = self::createStub(TranslatorInterface::class);
+        $translator->method('trans')->willReturnCallback(
+            static fn (string $key): string => ['subscription.group.uncategorized' => 'Uncategorized'][$key] ?? $key,
+        );
+
+        return $translator;
     }
 
     public function testOneSlicePerCategorySortedByShareDescendingWithTheOverallTotal(): void

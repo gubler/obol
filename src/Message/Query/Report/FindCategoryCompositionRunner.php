@@ -14,6 +14,7 @@ use App\Message\Currency\CurrencyTotaller;
 use App\Repository\SubscriptionRepository;
 use App\ValueObject\Money;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[AsMessageHandler(bus: 'query.bus', handles: FindCategoryCompositionQuery::class)]
 final readonly class FindCategoryCompositionRunner
@@ -27,6 +28,7 @@ final readonly class FindCategoryCompositionRunner
     public function __construct(
         private SubscriptionRepository $subscriptionRepository,
         private CurrencyTotaller $currencyTotaller,
+        private TranslatorInterface $translator,
     ) {
     }
 
@@ -50,7 +52,7 @@ final readonly class FindCategoryCompositionRunner
                 $category = $group['category'];
 
                 return new CompositionSlice(
-                    label: null !== $category ? $category->name : 'Uncategorized',
+                    label: null !== $category ? $category->name : $this->translator->trans('subscription.group.uncategorized'),
                     converted: $share->converted,
                     breakdown: $share->breakdown,
                     isApproximate: $share->isApproximate,

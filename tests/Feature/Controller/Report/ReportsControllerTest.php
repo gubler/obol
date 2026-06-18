@@ -13,12 +13,15 @@ use App\Enum\PaymentPeriod;
 use App\Enum\TileColor;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
+use App\Tests\Support\TranslationAssertions;
 use App\ValueObject\Money;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Uid\Ulid;
 
 final class ReportsControllerTest extends WebTestCase
 {
+    use TranslationAssertions;
+
     public function testReportsOverviewShowsPerCategoryCompositionExcludingArchivedSubscriptions(): void
     {
         $client = self::createClient();
@@ -65,6 +68,8 @@ final class ReportsControllerTest extends WebTestCase
         $names = $crawler->filter('.report-subscription')->each(static fn ($node): string => $node->text());
         self::assertContains('Netflix', $names);
         self::assertNotContains('Old Hulu', $names);
+
+        self::assertNoTranslationKeyLeaks((string) $client->getResponse()->getContent(), 'reports category drill-down');
     }
 
     public function testCompositionPieAndLegendUseEachCategoryColorAndIcon(): void

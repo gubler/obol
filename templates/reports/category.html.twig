@@ -1,23 +1,23 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ composition.title }} - Reports{% endblock %}
+{% block title %}{{ composition.title }} - {{ 'report.heading'|trans }}{% endblock %}
 
 {% block header %}
     <div class="flex items-center justify-between">
         <h1 class="text-3xl font-bold tracking-tight text-header-fg">{{ composition.title }}</h1>
         <a href="{{ path('reports_index') }}"
-           class="report-back rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">Back to reports</a>
+           class="report-back rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'report.back'|trans }}</a>
     </div>
 {% endblock %}
 
 {% block body %}
     <section class="reports-composition">
         <div class="mb-4 flex flex-wrap items-baseline justify-between gap-2 border-b border-line pb-3">
-            <h2 class="text-lg font-semibold text-fg">Monthly obligation by subscription</h2>
+            <h2 class="text-lg font-semibold text-fg">{{ 'report.category.by_subscription'|trans }}</h2>
             <div class="report-total text-2xl font-semibold text-fg">
                 {{ include('components/money_disclosure.html.twig', {
                     amount: composition.total.converted,
-                    label: '/ mo',
+                    label: 'subscription.totals.per_month'|trans,
                     asOf: composition.asOf,
                     breakdown: composition.total.breakdown,
                     approximate: composition.total.isApproximate,
@@ -27,7 +27,7 @@
 
         {% if composition.slices is empty %}
             <div class="empty-state rounded-lg border border-line bg-surface-2 px-6 py-12 text-center">
-                <p class="text-lg text-fg-muted">No active subscriptions in this category</p>
+                <p class="text-lg text-fg-muted">{{ 'report.category.empty'|trans }}</p>
             </div>
         {% else %}
             <div class="grid items-center gap-8 md:grid-cols-2">
@@ -38,7 +38,7 @@
                         <li class="flex items-baseline justify-between gap-4 py-2 text-fg">
                             <span class="report-subscription font-medium">{{ slice.label }}</span>
                             <span class="report-subscription-amount text-sm text-fg-muted">
-                                {{ include('components/money_disclosure.html.twig', {amount: slice.converted, label: '/ mo', approximate: slice.isApproximate}) }}
+                                {{ include('components/money_disclosure.html.twig', {amount: slice.converted, label: 'subscription.totals.per_month'|trans, approximate: slice.isApproximate}) }}
                             </span>
                         </li>
                     {% endfor %}

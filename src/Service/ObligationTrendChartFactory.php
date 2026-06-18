@@ -9,6 +9,7 @@ namespace App\Service;
 
 use App\Message\Query\Report\ObligationPoint;
 use App\Message\Query\Report\ObligationSeries;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
 use Symfony\UX\Chartjs\Model\Chart;
 
@@ -19,6 +20,7 @@ final readonly class ObligationTrendChartFactory
 
     public function __construct(
         private ChartBuilderInterface $chartBuilder,
+        private TranslatorInterface $translator,
     ) {
     }
 
@@ -32,7 +34,7 @@ final readonly class ObligationTrendChartFactory
         $chart->setData([
             'labels' => array_map(static fn (ObligationPoint $point): string => $point->label, $series->points),
             'datasets' => [[
-                'label' => 'Obligation',
+                'label' => $this->translator->trans('report.chart.obligation'),
                 'data' => array_map(static fn (ObligationPoint $point): int => $point->amount->minorAmount, $series->points),
                 'borderColor' => self::LINE_COLOUR,
                 'backgroundColor' => self::FILL_COLOUR,

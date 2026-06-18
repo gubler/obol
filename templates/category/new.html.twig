@@ -1,12 +1,12 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}New Category{% endblock %}
+{% block title %}{{ 'category.new.title'|trans }}{% endblock %}
 
 {% block body %}
     <div class="container mx-auto px-4 py-8">
         <div class="mb-6">
-            <a href="{{ path('category_index') }}" class="text-brand hover:text-brand-strong mb-4 inline-block">&larr; Back to Categories</a>
-            <h1 class="text-3xl font-bold">New Category</h1>
+            <a href="{{ path('category_index') }}" class="text-brand hover:text-brand-strong mb-4 inline-block">&larr; {{ 'category.new.back'|trans }}</a>
+            <h1 class="text-3xl font-bold">{{ 'category.new.heading'|trans }}</h1>
         </div>
 
         <div class="bg-surface shadow-md rounded p-6 max-w-2xl">
@@ -16,10 +16,10 @@
 
             <div class="flex justify-end space-x-3">
                 <a href="{{ path('category_index') }}" class="bg-surface-2 hover:bg-line text-fg font-bold py-2 px-4 rounded">
-                    Cancel
+                    {{ 'common.action.cancel'|trans }}
                 </a>
                 <button type="submit" class="bg-brand hover:bg-brand-strong text-on-brand font-bold py-2 px-4 rounded">
-                    Save
+                    {{ 'common.action.save'|trans }}
                 </button>
             </div>
 

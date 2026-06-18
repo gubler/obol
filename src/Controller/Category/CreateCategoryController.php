@@ -35,7 +35,7 @@ final class CreateCategoryController extends AbstractBaseController
                 icon: $data->icon,
             ));
 
-            $this->addFlash(type: self::FLASH_SUCCESS, message: 'Category created successfully');
+            $this->addFlash(type: self::FLASH_SUCCESS, message: $this->translator->trans('category.flash.created'));
 
             return $this->redirectToRoute(route: 'category_index');
         }

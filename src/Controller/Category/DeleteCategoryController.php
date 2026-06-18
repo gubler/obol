@@ -28,11 +28,11 @@ final class DeleteCategoryController extends AbstractBaseController
         try {
             $this->commandBus->dispatch(command: new DeleteCategoryCommand(categoryId: $id));
 
-            $this->addFlash(type: self::FLASH_SUCCESS, message: 'Category deleted successfully');
+            $this->addFlash(type: self::FLASH_SUCCESS, message: $this->translator->trans('category.flash.deleted'));
         } catch (\Exception) {
             $this->addFlash(
                 type: self::FLASH_ERROR,
-                message: 'Cannot delete category with subscriptions. Please reassign or delete subscriptions first.'
+                message: $this->translator->trans('category.flash.delete_failed')
             );
 
             return $this->redirectToRoute(route: 'category_show', parameters: ['id' => $id]);

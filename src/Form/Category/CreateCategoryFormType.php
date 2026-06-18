@@ -24,7 +24,7 @@ final class CreateCategoryFormType extends AbstractType
     {
         $builder
             ->add(child: 'name', type: TextType::class, options: [
-                'label' => 'Category Name',
+                'label' => 'category.form.name',
                 'empty_data' => '',
             ])
         ;

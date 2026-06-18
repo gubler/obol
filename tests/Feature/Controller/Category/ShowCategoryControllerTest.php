@@ -11,11 +11,14 @@ use App\Enum\CategoryIcon;
 use App\Enum\TileColor;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
+use App\Tests\Support\TranslationAssertions;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Uid\Ulid;
 
 final class ShowCategoryControllerTest extends WebTestCase
 {
+    use TranslationAssertions;
+
     public function testShowsCategoryDetails(): void
     {
         $client = self::createClient();
@@ -27,6 +30,7 @@ final class ShowCategoryControllerTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'h1', text: 'Entertainment');
+        self::assertNoTranslationKeyLeaks((string) $client->getResponse()->getContent(), 'category show');
     }
 
     public function testShowsTheCategoryColorAndIconBadge(): void
@@ -60,6 +64,7 @@ final class ShowCategoryControllerTest extends WebTestCase
         self::assertSelectorTextContains(selector: 'body', text: 'Netflix');
         self::assertSelectorTextContains(selector: 'body', text: 'Spotify');
         self::assertSelectorTextContains(selector: 'body', text: 'GitHub');
+        self::assertNoTranslationKeyLeaks((string) $client->getResponse()->getContent(), 'category show with subscriptions');
     }
 
     public function testShowsCategoryDetailsSection(): void

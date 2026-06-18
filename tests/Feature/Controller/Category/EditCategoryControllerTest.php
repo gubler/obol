@@ -9,12 +9,15 @@ namespace App\Tests\Feature\Controller\Category;
 
 use App\Entity\Category;
 use App\Factory\CategoryFactory;
+use App\Tests\Support\TranslationAssertions;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Uid\Ulid;
 
 final class EditCategoryControllerTest extends WebTestCase
 {
+    use TranslationAssertions;
+
     public function testGetRequestDisplaysEditFormWithCurrentData(): void
     {
         $client = self::createClient();
@@ -29,6 +32,7 @@ final class EditCategoryControllerTest extends WebTestCase
         self::assertSelectorExists(selector: 'form');
         self::assertSelectorExists(selector: 'input[name="edit_category[name]"][value="Original Name"]');
         self::assertSelectorExists(selector: 'button[type="submit"]');
+        self::assertNoTranslationKeyLeaks((string) $client->getResponse()->getContent(), 'category edit');
     }
 
     public function testShowsCancelLinkBackToShowPage(): void

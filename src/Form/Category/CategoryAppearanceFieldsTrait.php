@@ -26,7 +26,7 @@ trait CategoryAppearanceFieldsTrait
         $builder
             ->add(child: 'color', type: EnumType::class, options: [
                 'class' => TileColor::class,
-                'label' => 'Color',
+                'label' => 'category.form.color',
                 'expanded' => true,
                 'choice_label' => static fn (TileColor $color): string => $color->label(),
                 'choice_attr' => static fn (TileColor $color): array => ['data-gradient' => $color->gradientClasses()],
@@ -34,7 +34,7 @@ trait CategoryAppearanceFieldsTrait
             ])
             ->add(child: 'icon', type: EnumType::class, options: [
                 'class' => CategoryIcon::class,
-                'label' => 'Icon',
+                'label' => 'category.form.icon',
                 'expanded' => true,
                 'choice_label' => static fn (CategoryIcon $icon): string => $icon->label(),
                 'choice_attr' => static fn (CategoryIcon $icon): array => ['data-icon' => $icon->iconName()],

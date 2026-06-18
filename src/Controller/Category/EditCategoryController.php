@@ -49,7 +49,7 @@ final class EditCategoryController extends AbstractBaseController
                 icon: $data->icon,
             ));
 
-            $this->addFlash(type: self::FLASH_SUCCESS, message: 'Category updated successfully');
+            $this->addFlash(type: self::FLASH_SUCCESS, message: $this->translator->trans('category.flash.updated'));
 
             return $this->redirectToRoute(route: 'category_show', parameters: ['id' => $id]);
         }

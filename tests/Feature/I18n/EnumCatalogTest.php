@@ -10,6 +10,8 @@ namespace App\Tests\Feature\I18n;
 use App\Enum\CategoryIcon;
 use App\Enum\ObligationTrendPeriod;
 use App\Enum\PaymentPeriod;
+use App\Enum\PaymentType;
+use App\Enum\SubscriptionEventType;
 use App\Enum\SubscriptionSort;
 use App\Enum\TileColor;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -54,6 +56,14 @@ final class EnumCatalogTest extends KernelTestCase
         foreach (PaymentPeriod::cases() as $period) {
             yield 'payment period: ' . $period->value => [$period->label()];
         }
+
+        foreach (PaymentType::cases() as $type) {
+            yield 'payment type: ' . $type->value => [$type->label()];
+        }
+
+        foreach (SubscriptionEventType::cases() as $eventType) {
+            yield 'subscription event type: ' . $eventType->value => [$eventType->label()];
+        }
     }
 
     #[DataProvider('provideLabelEnglishSpotCheckCases')]
@@ -77,5 +87,7 @@ final class EnumCatalogTest extends KernelTestCase
         yield 'weekly trend' => ['enum.obligation_trend_period.week', 'Weekly'];
         yield 'monthly cost sort' => ['enum.subscription_sort.monthly_cost', 'Monthly cost'];
         yield 'yearly payment period' => ['enum.payment_period.year', 'Year'];
+        yield 'generated payment type' => ['enum.payment_type.generated', 'generated'];
+        yield 'cost change event' => ['enum.subscription_event_type.cost_change', 'costChange'];
     }
 }

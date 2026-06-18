@@ -18,6 +18,8 @@ common:
         delete: Delete
         cancel: Cancel
         save: Save
+        archive: Archive
+        unarchive: Unarchive
     as_of: as of
 
 enum:
@@ -85,6 +87,14 @@ enum:
         year: Year
         month: Month
         week: Week
+    payment_type:
+        verified: verified
+        generated: generated
+    subscription_event_type:
+        cost_change: costChange
+        update: update
+        archive: archive
+        unarchive: unarchive
 
 subscription:
     flash:
@@ -160,6 +170,20 @@ subscription:
         restart_notice: >-
             Automatic payment generation is paused for this subscription. To resume it, set the
             Next Renewal Date to a future date and check “Restart automatic payments?” below.
+    show:
+        back: Back to Subscriptions
+        manual_badge: Manual payments
+        manual_hint: Record a payment or edit the subscription to restart automatic generation.
+        details_heading: Subscription Details
+        archive_confirm: Are you sure you want to archive this subscription?
+        delete_confirm: Are you sure you want to delete this subscription?
+        category: Category
+        cost: Cost
+        next_renewal: Next Renewal
+        description: Description
+        link: Link
+        history_heading: History
+        history_empty: No history available
 
 payment:
     flash:
@@ -170,6 +194,16 @@ payment:
         delete_failed: Failed to delete payment. Please try again.
     back_to: Back to %name%
     for_subscription: for %name%
+    action:
+        add: Add Payment
+        validate: Validate
+    show:
+        heading: Payments
+        empty: No payments recorded
+    delete_confirm:
+        base: Delete this payment?
+        rollback: ' This rolls the next renewal back from %from% to %to%.'
+        manual: ' It also switches this subscription to manual payments.'
     form:
         amount: Amount
         paid_date: Paid Date

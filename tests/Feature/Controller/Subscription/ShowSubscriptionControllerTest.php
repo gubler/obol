@@ -13,11 +13,14 @@ use App\Enum\PaymentType;
 use App\Factory\CategoryFactory;
 use App\Factory\PaymentFactory;
 use App\Factory\SubscriptionFactory;
+use App\Tests\Support\TranslationAssertions;
 use App\ValueObject\Money;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class ShowSubscriptionControllerTest extends WebTestCase
 {
+    use TranslationAssertions;
+
     public function testShowsSubscriptionBasicResponse(): void
     {
         $client = self::createClient();
@@ -163,6 +166,14 @@ final class ShowSubscriptionControllerTest extends WebTestCase
             'description' => 'Test description',
         ]);
 
+        // A payment and the subscription's own events exercise the enum-label and payment surfaces,
+        // so the key-leak tripwire covers those rows too.
+        PaymentFactory::createOne([
+            'subscription' => $subscription,
+            'type' => PaymentType::Generated,
+            'paidDate' => new \DateTimeImmutable('2024-02-15'),
+        ]);
+
         $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id);
 
         self::assertResponseIsSuccessful();
@@ -170,6 +181,7 @@ final class ShowSubscriptionControllerTest extends WebTestCase
         $content = $client->getResponse()->getContent();
         self::assertNotFalse($content);
         self::assertStringContainsString('Netflix', $content);
+        self::assertNoTranslationKeyLeaks($content, 'subscription show');
     }
 
     public function testShowsAManualPaymentsBadgeForAManualSubscription(): void

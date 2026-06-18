@@ -31,7 +31,7 @@ final class CreateSubscriptionDto
     #[NotNull]
     public ?\DateTimeImmutable $nextRenewal = null;
 
-    public PaymentPeriod $paymentPeriod = PaymentPeriod::Year;
+    public PaymentPeriod $paymentPeriod = PaymentPeriod::Month;
 
     #[GreaterThanOrEqual(value: 1)]
     public int $paymentPeriodCount = 1;

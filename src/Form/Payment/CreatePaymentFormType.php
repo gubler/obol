@@ -24,11 +24,11 @@ final class CreatePaymentFormType extends AbstractType
     {
         $builder
             ->add(child: 'amount', type: MoneyMinorFormType::class, options: [
-                'label' => 'Amount',
+                'label' => 'payment.form.amount',
                 'fraction_digits' => $options['fraction_digits'],
             ])
             ->add(child: 'paidDate', type: DateType::class, options: [
-                'label' => 'Paid Date',
+                'label' => 'payment.form.paid_date',
                 'widget' => 'single_text',
                 'input' => 'datetime_immutable',
             ])
@@ -39,11 +39,11 @@ final class CreatePaymentFormType extends AbstractType
         if (true === $options['offer_restart']) {
             $builder
                 ->add(child: 'restartPaymentGeneration', type: CheckboxType::class, options: [
-                    'label' => 'Restart automatic payments?',
+                    'label' => 'payment.form.restart_payments',
                     'required' => false,
                 ])
                 ->add(child: 'nextRenewal', type: DateType::class, options: [
-                    'label' => 'Next renewal on',
+                    'label' => 'payment.form.next_renewal_on',
                     'widget' => 'single_text',
                     'input' => 'datetime_immutable',
                     'required' => false,

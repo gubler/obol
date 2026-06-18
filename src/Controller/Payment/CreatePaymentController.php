@@ -60,7 +60,7 @@ final class CreatePaymentController extends AbstractBaseController
                 nextRenewal: $data->nextRenewal,
             ));
 
-            $this->addFlash(type: self::FLASH_SUCCESS, message: 'Payment recorded successfully');
+            $this->addFlash(type: self::FLASH_SUCCESS, message: $this->translator->trans('payment.flash.recorded'));
 
             return $this->redirectToRoute(route: 'subscription_show', parameters: ['id' => $subscriptionId]);
         }

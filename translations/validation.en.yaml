@@ -3,3 +3,8 @@
 subscription:
     validation:
         restart_renewal_future: The next renewal date must be in the future to restart automatic payments.
+
+payment:
+    validation:
+        restart_renewal_required: Choose the next renewal date to restart automatic payments.
+        renewal_future: The next renewal date must be in the future.

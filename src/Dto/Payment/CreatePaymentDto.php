@@ -30,8 +30,8 @@ final class CreatePaymentDto
     #[When(
         expression: 'this.restartPaymentGeneration === true',
         constraints: [
-            new NotNull(message: 'Choose the next renewal date to restart automatic payments.'),
-            new GreaterThan(value: 'today', message: 'The next renewal date must be in the future.'),
+            new NotNull(message: 'payment.validation.restart_renewal_required'),
+            new GreaterThan(value: 'today', message: 'payment.validation.renewal_future'),
         ],
     )]
     public ?\DateTimeImmutable $nextRenewal = null;

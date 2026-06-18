@@ -13,14 +13,9 @@ use App\Message\Query\Subscription\FindSubscriptionQuery;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Uid\Ulid;
-use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class UnarchiveSubscriptionController extends AbstractBaseController
 {
-    public function __construct(private readonly TranslatorInterface $translator)
-    {
-    }
-
     #[Route(path: '/subscriptions/{id}/unarchive', name: 'subscription_unarchive', methods: ['POST'])]
     public function __invoke(Ulid $id): \Symfony\Component\HttpFoundation\RedirectResponse
     {

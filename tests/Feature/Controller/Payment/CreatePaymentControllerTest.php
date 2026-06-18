@@ -12,12 +12,15 @@ use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
+use App\Tests\Support\TranslationAssertions;
 use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class CreatePaymentControllerTest extends WebTestCase
 {
+    use TranslationAssertions;
+
     public function testDisplaysCreatePaymentForm(): void
     {
         $client = self::createClient();
@@ -31,6 +34,8 @@ final class CreatePaymentControllerTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('form');
+        // The new-payment page is not crawled by the i18n tripwire, so guard it here (ADR-0012).
+        self::assertNoTranslationKeyLeaks((string) $client->getResponse()->getContent(), 'new payment page');
     }
 
     public function testCreatesPaymentWithValidData(): void

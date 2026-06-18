@@ -23,11 +23,11 @@ final class AmendPaymentFormType extends AbstractType
     {
         $builder
             ->add(child: 'amount', type: MoneyMinorFormType::class, options: [
-                'label' => 'Amount',
+                'label' => 'payment.form.amount',
                 'fraction_digits' => $options['fraction_digits'],
             ])
             ->add(child: 'paidDate', type: DateType::class, options: [
-                'label' => 'Paid Date',
+                'label' => 'payment.form.paid_date',
                 'widget' => 'single_text',
                 'input' => 'datetime_immutable',
             ])

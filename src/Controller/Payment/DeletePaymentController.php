@@ -31,11 +31,11 @@ final class DeletePaymentController extends AbstractBaseController
         try {
             $this->commandBus->dispatch(command: new DeletePaymentCommand(paymentId: $id));
 
-            $this->addFlash(type: self::FLASH_SUCCESS, message: 'Payment deleted successfully');
+            $this->addFlash(type: self::FLASH_SUCCESS, message: $this->translator->trans('payment.flash.deleted'));
         } catch (\Exception) {
             $this->addFlash(
                 type: self::FLASH_ERROR,
-                message: 'Failed to delete payment. Please try again.'
+                message: $this->translator->trans('payment.flash.delete_failed')
             );
         }
 

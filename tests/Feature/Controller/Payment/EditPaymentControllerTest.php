@@ -13,12 +13,15 @@ use App\Enum\PaymentType;
 use App\Factory\CategoryFactory;
 use App\Factory\PaymentFactory;
 use App\Factory\SubscriptionFactory;
+use App\Tests\Support\TranslationAssertions;
 use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class EditPaymentControllerTest extends WebTestCase
 {
+    use TranslationAssertions;
+
     public function testGetRequestDisplaysTheEditFormPrefilledWithThePaymentAmount(): void
     {
         $client = self::createClient();
@@ -35,6 +38,8 @@ final class EditPaymentControllerTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'input[name="amend_payment[amount]"][value="15.99"]');
+        // The edit-payment page is not crawled by the i18n tripwire, so guard it here (ADR-0012).
+        self::assertNoTranslationKeyLeaks((string) $client->getResponse()->getContent(), 'edit payment page');
     }
 
     public function testPostRequestAmendsThePaymentAndVerifiesIt(): void

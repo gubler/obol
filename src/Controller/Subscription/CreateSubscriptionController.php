@@ -17,14 +17,12 @@ use App\Service\FileUploader;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class CreateSubscriptionController extends AbstractBaseController
 {
     public function __construct(
         private readonly FileUploader $fileUploader,
         private readonly DisplayCurrencyProvider $displayCurrencyProvider,
-        private readonly TranslatorInterface $translator,
     ) {
     }
 

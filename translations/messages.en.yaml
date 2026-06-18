@@ -18,6 +18,7 @@ common:
         delete: Delete
         cancel: Cancel
         save: Save
+    as_of: as of
 
 enum:
     tile_color:
@@ -159,3 +160,25 @@ subscription:
         restart_notice: >-
             Automatic payment generation is paused for this subscription. To resume it, set the
             Next Renewal Date to a future date and check “Restart automatic payments?” below.
+
+payment:
+    flash:
+        recorded: Payment recorded successfully
+        updated: Payment updated successfully
+        validated: Payment validated successfully
+        deleted: Payment deleted successfully
+        delete_failed: Failed to delete payment. Please try again.
+    back_to: Back to %name%
+    for_subscription: for %name%
+    form:
+        amount: Amount
+        paid_date: Paid Date
+        restart_payments: Restart automatic payments?
+        next_renewal_on: Next renewal on
+    new:
+        title: New Payment
+        heading: Record Payment
+        paused_notice: Automatic payment generation is paused for this subscription.
+    edit:
+        title: Edit Payment
+        heading: Edit Payment

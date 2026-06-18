@@ -20,13 +20,11 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Uid\Ulid;
-use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class EditSubscriptionController extends AbstractBaseController
 {
     public function __construct(
         private readonly FileUploader $fileUploader,
-        private readonly TranslatorInterface $translator,
     ) {
     }
 

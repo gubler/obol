@@ -1,13 +1,13 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Edit Payment - {{ payment.subscription.name }}{% endblock %}
+{% block title %}{{ 'payment.edit.title'|trans }} - {{ payment.subscription.name }}{% endblock %}
 
 {% block body %}
     <div class="container mx-auto px-4 py-8">
         <div class="mb-6">
-            <a href="{{ path('subscription_show', {id: payment.subscription.id}) }}" class="text-brand hover:text-brand-strong mb-4 inline-block">&larr; Back to {{ payment.subscription.name }}</a>
-            <h1 class="text-3xl font-bold">Edit Payment</h1>
-            <p class="text-fg-muted mt-1">for {{ payment.subscription.name }}</p>
+            <a href="{{ path('subscription_show', {id: payment.subscription.id}) }}" class="text-brand hover:text-brand-strong mb-4 inline-block">&larr; {{ 'payment.back_to'|trans({'%name%': payment.subscription.name}) }}</a>
+            <h1 class="text-3xl font-bold">{{ 'payment.edit.heading'|trans }}</h1>
+            <p class="text-fg-muted mt-1">{{ 'payment.for_subscription'|trans({'%name%': payment.subscription.name}) }}</p>
         </div>
 
         <div class="bg-surface shadow-md rounded p-6 max-w-2xl">
@@ -17,10 +17,10 @@
 
             <div class="flex justify-end space-x-3">
                 <a href="{{ path('subscription_show', {id: payment.subscription.id}) }}" class="bg-surface-2 hover:bg-line text-fg font-bold py-2 px-4 rounded">
-                    Cancel
+                    {{ 'common.action.cancel'|trans }}
                 </a>
                 <button type="submit" class="bg-brand hover:bg-brand-strong text-on-brand font-bold py-2 px-4 rounded">
-                    Save
+                    {{ 'common.action.save'|trans }}
                 </button>
             </div>
 

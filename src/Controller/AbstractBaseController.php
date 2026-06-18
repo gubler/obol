@@ -10,6 +10,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Contracts\Service\Attribute\Required;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 abstract class AbstractBaseController extends AbstractController
 {
@@ -27,15 +28,19 @@ abstract class AbstractBaseController extends AbstractController
 
     protected LoggerInterface $appLogger;
 
+    protected TranslatorInterface $translator;
+
     #[Required]
     public function autowireBaseController(
         CommandBus $commandBus,
         QueryBus $queryBus,
         LoggerInterface $appLogger,
+        TranslatorInterface $translator,
     ): void {
         $this->appLogger = $appLogger;
         $this->commandBus = $commandBus;
         $this->queryBus = $queryBus;
+        $this->translator = $translator;
     }
 
     /**

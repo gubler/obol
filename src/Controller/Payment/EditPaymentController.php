@@ -52,7 +52,7 @@ final class EditPaymentController extends AbstractBaseController
                 paidDate: $data->paidDate,
             ));
 
-            $this->addFlash(type: self::FLASH_SUCCESS, message: 'Payment updated successfully');
+            $this->addFlash(type: self::FLASH_SUCCESS, message: $this->translator->trans('payment.flash.updated'));
 
             return $this->redirectToRoute(route: 'subscription_show', parameters: ['id' => $payment->subscription->id]);
         }

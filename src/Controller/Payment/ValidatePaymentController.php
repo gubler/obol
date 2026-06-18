@@ -34,7 +34,7 @@ final class ValidatePaymentController extends AbstractBaseController
             paidDate: $payment->paidDate,
         ));
 
-        $this->addFlash(type: self::FLASH_SUCCESS, message: 'Payment validated successfully');
+        $this->addFlash(type: self::FLASH_SUCCESS, message: $this->translator->trans('payment.flash.validated'));
 
         return $this->redirectToRoute(route: 'subscription_show', parameters: ['id' => $payment->subscription->id]);
     }

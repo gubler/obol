@@ -1,13 +1,13 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}New Payment - {{ subscription.name }}{% endblock %}
+{% block title %}{{ 'payment.new.title'|trans }} - {{ subscription.name }}{% endblock %}
 
 {% block body %}
     <div class="container mx-auto px-4 py-8">
         <div class="mb-6">
-            <a href="{{ path('subscription_show', {id: subscription.id}) }}" class="text-brand hover:text-brand-strong mb-4 inline-block">&larr; Back to {{ subscription.name }}</a>
-            <h1 class="text-3xl font-bold">Record Payment</h1>
-            <p class="text-fg-muted mt-1">for {{ subscription.name }}</p>
+            <a href="{{ path('subscription_show', {id: subscription.id}) }}" class="text-brand hover:text-brand-strong mb-4 inline-block">&larr; {{ 'payment.back_to'|trans({'%name%': subscription.name}) }}</a>
+            <h1 class="text-3xl font-bold">{{ 'payment.new.heading'|trans }}</h1>
+            <p class="text-fg-muted mt-1">{{ 'payment.for_subscription'|trans({'%name%': subscription.name}) }}</p>
         </div>
 
         <div class="bg-surface shadow-md rounded p-6 max-w-2xl">
@@ -18,7 +18,7 @@
 
             {% if form.restartPaymentGeneration is defined %}
                 <div class="border-t border-line pt-4 space-y-3" data-controller="conditional-field">
-                    <p class="text-sm text-fg-muted">Automatic payment generation is paused for this subscription.</p>
+                    <p class="text-sm text-fg-muted">{{ 'payment.new.paused_notice'|trans }}</p>
                     {{ form_row(form.restartPaymentGeneration, {attr: {
                         'data-conditional-field-target': 'trigger',
                         'data-action': 'conditional-field#toggle',
@@ -31,10 +31,10 @@
 
             <div class="flex justify-end space-x-3">
                 <a href="{{ path('subscription_show', {id: subscription.id}) }}" class="bg-surface-2 hover:bg-line text-fg font-bold py-2 px-4 rounded">
-                    Cancel
+                    {{ 'common.action.cancel'|trans }}
                 </a>
                 <button type="submit" class="bg-brand hover:bg-brand-strong text-on-brand font-bold py-2 px-4 rounded">
-                    Save
+                    {{ 'common.action.save'|trans }}
                 </button>
             </div>
 

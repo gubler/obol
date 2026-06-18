@@ -42,6 +42,27 @@ final class EditSubscriptionControllerTest extends WebTestCase
         self::assertNoTranslationKeyLeaks((string) $client->getResponse()->getContent(), 'edit subscription page');
     }
 
+    public function testCategoryDropdownIsOrderedAlphabetically(): void
+    {
+        $client = self::createClient();
+        // Created out of alphabetical sequence so creation order != name order.
+        CategoryFactory::createOne(['name' => 'Zoom']);
+        $apple = CategoryFactory::createOne(['name' => 'Apple']);
+        CategoryFactory::createOne(['name' => 'Microsoft']);
+        $subscription = SubscriptionFactory::createOne(['category' => $apple]);
+
+        $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+
+        self::assertResponseIsSuccessful();
+        $options = $crawler
+            ->filter('select[name="edit_subscription[category]"] option')
+            ->each(static fn ($node): string => $node->text())
+        ;
+
+        // First option is the "Uncategorized" placeholder; the categories follow alphabetically.
+        self::assertSame(['Uncategorized', 'Apple', 'Microsoft', 'Zoom'], $options);
+    }
+
     public function testGetRequestWithInvalidIdReturns404(): void
     {
         $client = self::createClient();

@@ -34,6 +34,26 @@ final class CreateSubscriptionControllerTest extends WebTestCase
         self::assertSelectorExists(selector: 'button[type="submit"]');
     }
 
+    public function testCategoryDropdownIsOrderedAlphabetically(): void
+    {
+        $client = self::createClient();
+        // Created out of alphabetical sequence so creation order != name order.
+        CategoryFactory::createOne(['name' => 'Zoom']);
+        CategoryFactory::createOne(['name' => 'Apple']);
+        CategoryFactory::createOne(['name' => 'Microsoft']);
+
+        $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
+
+        self::assertResponseIsSuccessful();
+        $options = $crawler
+            ->filter('select[name="create_subscription[category]"] option')
+            ->each(static fn ($node): string => $node->text())
+        ;
+
+        // First option is the "Uncategorized" placeholder; the categories follow alphabetically.
+        self::assertSame(['Uncategorized', 'Apple', 'Microsoft', 'Zoom'], $options);
+    }
+
     public function testHidesTheCategoryPickerWhenNoCategoriesExist(): void
     {
         $client = self::createClient();

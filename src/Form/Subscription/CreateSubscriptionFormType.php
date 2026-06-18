@@ -11,6 +11,8 @@ use App\Dto\Subscription\CreateSubscriptionDto;
 use App\Entity\Category;
 use App\Enum\PaymentPeriod;
 use App\Enum\TileColor;
+use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
@@ -39,6 +41,12 @@ final class CreateSubscriptionFormType extends AbstractType
                 'class' => Category::class,
                 'label' => 'subscription.form.category',
                 'choice_label' => 'name',
+                // Order the dropdown alphabetically. Type-hinting Doctrine's base EntityRepository
+                // (rather than the app's concrete category repository) keeps the form clear of the
+                // handler-layer data-access boundary the arch test guards (ADR-0006/0007).
+                'query_builder' => static fn (EntityRepository $repository): QueryBuilder => $repository
+                    ->createQueryBuilder('category')
+                    ->orderBy('category.name', 'ASC'),
                 'placeholder' => 'subscription.group.uncategorized',
                 'required' => false,
             ]);

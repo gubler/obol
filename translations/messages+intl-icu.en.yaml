@@ -3,3 +3,4 @@
 
 subscription:
     cadence: '{count, plural, one {{period, select, week {week} month {month} year {year} other {{period}}}} other {# {period, select, week {weeks} month {months} year {years} other {{period}s}}}}'
+    tile_period: 'per {count, plural, one {{period, select, week {week} month {month} year {year} other {{period}}}} other {# {period, select, week {weeks} month {months} year {years} other {{period}s}}}}'

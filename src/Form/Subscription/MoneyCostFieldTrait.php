@@ -60,7 +60,7 @@ trait MoneyCostFieldTrait
     private function putCostField(FormBuilderInterface|FormInterface $form, int $fractionDigits): void
     {
         $form->add(child: 'cost', type: MoneyMinorFormType::class, options: [
-            'label' => 'Cost',
+            'label' => 'subscription.form.cost',
             'fraction_digits' => $fractionDigits,
         ]);
     }

@@ -12,6 +12,12 @@ common:
         open: Open main menu
     title:
         default: Welcome!
+    action:
+        view: View
+        edit: Edit
+        delete: Delete
+        cancel: Cancel
+        save: Save
 
 enum:
     tile_color:
@@ -74,3 +80,82 @@ enum:
         renewal: Renewal
         monthly_cost: Monthly cost
         cost: Cost
+    payment_period:
+        year: Year
+        month: Month
+        week: Week
+
+subscription:
+    flash:
+        created: Subscription created successfully
+        updated: Subscription updated successfully
+        archived: Subscription archived successfully
+        unarchived: Subscription unarchived successfully
+        deleted: Subscription deleted successfully
+        delete_failed: Failed to delete subscription. Please try again.
+    index:
+        heading: Subscriptions
+        new: New subscription
+        empty:
+            title: No subscriptions found
+            subtitle: Get started by creating your first subscription
+    capstone:
+        global_totals: Global totals
+        remaining: Remaining
+    view:
+        tiles: Tiles
+        list: List
+    group:
+        grouped: Grouped
+        ungrouped: Group by category
+        uncategorized: Uncategorized
+    archived:
+        showing: Showing archived
+        show: Show archived
+    sort:
+        label: Sort
+    totals:
+        set_aside: set aside
+        per_month: '/ mo'
+        per_week: '/ wk'
+        per_year: '/ yr'
+    remaining:
+        this_month: this month
+        this_week: this week
+        this_year: this year
+    list:
+        name: Name
+        cost_per_month: Cost / month
+        cost_per_period: Cost / period
+        next_payment: Next payment
+        actions: Actions
+    badge:
+        archived: Archived
+        manual: Manual
+        manual_paused: Automatic payment generation is paused
+    form:
+        category: Category
+        name: Subscription Name
+        next_renewal: Next Renewal Date
+        payment_period: Payment Period
+        payment_period_count: Payment Period Count
+        cost: Cost
+        currency: Currency
+        description: Description
+        link: Link
+        logo: Logo
+        color: Color
+        billing_cycle: Billing cycle
+        billing_cycle_every: Every
+        restart_payments: Restart automatic payments?
+    new:
+        title: New Subscription
+        heading: New Subscription
+        back: Back to Subscriptions
+    edit:
+        title: Edit Subscription
+        heading: Edit Subscription
+        back: Back to Subscription
+        restart_notice: >-
+            Automatic payment generation is paused for this subscription. To resume it, set the
+            Next Renewal Date to a future date and check “Restart automatic payments?” below.

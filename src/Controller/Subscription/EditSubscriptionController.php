@@ -20,11 +20,14 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Uid\Ulid;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class EditSubscriptionController extends AbstractBaseController
 {
-    public function __construct(private readonly FileUploader $fileUploader)
-    {
+    public function __construct(
+        private readonly FileUploader $fileUploader,
+        private readonly TranslatorInterface $translator,
+    ) {
     }
 
     #[Route(path: '/subscriptions/{id}/edit', name: 'subscription_edit', methods: ['GET', 'POST'])]
@@ -76,7 +79,7 @@ final class EditSubscriptionController extends AbstractBaseController
                 restartPaymentGeneration: $data->restartPaymentGeneration,
             ));
 
-            $this->addFlash(type: self::FLASH_SUCCESS, message: 'Subscription updated successfully');
+            $this->addFlash(type: self::FLASH_SUCCESS, message: $this->translator->trans('subscription.flash.updated'));
 
             return $this->redirectToRoute(route: 'subscription_show', parameters: ['id' => $id]);
         }

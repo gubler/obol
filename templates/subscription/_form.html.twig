@@ -12,9 +12,9 @@
 
 {# Cycle: paymentPeriodCount + paymentPeriod read as one sentence, "Every N period(s)". #}
 <div data-controller="billing-cycle">
-    <span class="block text-fg">Billing cycle</span>
+    <span class="block text-fg">{{ 'subscription.form.billing_cycle'|trans }}</span>
     <div class="mt-1 flex items-center gap-2">
-        <span class="text-fg">Every</span>
+        <span class="text-fg">{{ 'subscription.form.billing_cycle_every'|trans }}</span>
         {{ form_widget(form.paymentPeriodCount, {attr: {
             class: 'w-20',
             min: 1,

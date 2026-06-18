@@ -5,10 +5,10 @@
 {% block header %}
     <div class="flex justify-between items-center">
         <h1 class="text-3xl font-bold tracking-tight text-header-fg">
-            Subscriptions
+            {{ 'subscription.index.heading'|trans }}
         </h1>
         <a href="{{ path('subscription_new') }}" class="bg-brand hover:bg-brand-strong text-on-brand font-bold py-2 px-4 rounded">
-            New subscription
+            {{ 'subscription.index.new'|trans }}
         </a>
     </div>
 {% endblock %}
@@ -24,8 +24,8 @@
 
     {% if subscription_count == 0 %}
         <div class="empty-state bg-surface-2 border border-line rounded-lg px-6 py-12 text-center">
-            <p class="text-fg-muted text-lg">No subscriptions found</p>
-            <p class="text-fg-muted mt-2">Get started by creating your first subscription</p>
+            <p class="text-fg-muted text-lg">{{ 'subscription.index.empty.title'|trans }}</p>
+            <p class="text-fg-muted mt-2">{{ 'subscription.index.empty.subtitle'|trans }}</p>
         </div>
     {% else %}
         {% set toggle_link = 'rounded-md px-3 py-2 text-sm font-medium transition' %}
@@ -37,9 +37,9 @@
         <section class="global-totals mb-6 rounded-lg border border-line bg-surface p-4">
             <div class="mb-3 inline-flex rounded-md bg-surface-2 p-1">
                 <a href="{{ path('subscription_index', base_params|merge({capstone: 'totals'})) }}"
-                   class="{{ toggle_link }} {{ capstoneMode == 'totals' ? toggle_on : toggle_off }}">Global totals</a>
+                   class="{{ toggle_link }} {{ capstoneMode == 'totals' ? toggle_on : toggle_off }}">{{ 'subscription.capstone.global_totals'|trans }}</a>
                 <a href="{{ path('subscription_index', base_params|merge({capstone: 'remaining'})) }}"
-                   class="{{ toggle_link }} {{ capstoneMode == 'remaining' ? toggle_on : toggle_off }}">Remaining</a>
+                   class="{{ toggle_link }} {{ capstoneMode == 'remaining' ? toggle_on : toggle_off }}">{{ 'subscription.capstone.remaining'|trans }}</a>
             </div>
             {% if capstoneMode == 'remaining' %}
                 {{ include('subscription/_remaining.html.twig', {remaining: capstone}) }}
@@ -51,19 +51,19 @@
         <div class="mb-6 flex flex-wrap items-center gap-2">
             <div class="inline-flex rounded-md bg-surface-2 p-1">
                 <a href="{{ path('subscription_index', base_params|merge({view: 'tiles'})) }}"
-                   class="{{ toggle_link }} {{ view == 'tiles' ? toggle_on : toggle_off }}">Tiles</a>
+                   class="{{ toggle_link }} {{ view == 'tiles' ? toggle_on : toggle_off }}">{{ 'subscription.view.tiles'|trans }}</a>
                 <a href="{{ path('subscription_index', base_params|merge({view: 'list'})) }}"
-                   class="{{ toggle_link }} {{ view == 'list' ? toggle_on : toggle_off }}">List</a>
+                   class="{{ toggle_link }} {{ view == 'list' ? toggle_on : toggle_off }}">{{ 'subscription.view.list'|trans }}</a>
             </div>
 
             <a href="{{ path('subscription_index', base_params|merge({group: grouped ? '0' : '1'})) }}"
-               class="{{ toggle_link }} {{ grouped ? toggle_on : toggle_off }}">{{ grouped ? 'Grouped' : 'Group by category' }}</a>
+               class="{{ toggle_link }} {{ grouped ? toggle_on : toggle_off }}">{{ (grouped ? 'subscription.group.grouped' : 'subscription.group.ungrouped')|trans }}</a>
 
             <a href="{{ path('subscription_index', base_params|merge({archived: includeArchived ? '0' : '1'})) }}"
-               class="{{ toggle_link }} {{ includeArchived ? toggle_on : toggle_off }}">{{ includeArchived ? 'Showing archived' : 'Show archived' }}</a>
+               class="{{ toggle_link }} {{ includeArchived ? toggle_on : toggle_off }}">{{ (includeArchived ? 'subscription.archived.showing' : 'subscription.archived.show')|trans }}</a>
 
             <div class="sort-controls inline-flex items-center gap-2">
-                <span class="text-sm font-medium text-fg-muted">Sort</span>
+                <span class="text-sm font-medium text-fg-muted">{{ 'subscription.sort.label'|trans }}</span>
                 <div class="inline-flex rounded-md bg-surface-2 p-1">
                     {% for option in sortOptions %}
                         <a href="{{ path('subscription_index', base_params|merge({sort: option.value})) }}"
@@ -79,14 +79,14 @@
                     <h2 class="category-header mb-3 flex items-center justify-between border-b border-line pb-2">
                         <span class="flex items-center gap-2 text-lg font-semibold text-fg">
                             {{ include('category/_badge.html.twig', {category: group.category}) }}
-                            {{ group.category ? group.category.name : 'Uncategorized' }}
+                            {{ group.category ? group.category.name : 'subscription.group.uncategorized'|trans }}
                         </span>
                         <span class="flex items-baseline gap-3 text-sm font-medium text-fg-muted">
                             {% if group.savingsTotal.converted.minorAmount > 0 %}
                                 <span class="category-savings-total">
                                     {{ include('components/money_disclosure.html.twig', {
                                         amount: group.savingsTotal.converted,
-                                        label: 'set aside',
+                                        label: 'subscription.totals.set_aside'|trans,
                                         asOf: group.asOf,
                                         breakdown: group.savingsTotal.breakdown,
                                         approximate: group.savingsTotal.isApproximate,
@@ -96,7 +96,7 @@
                             <span class="category-monthly-total">
                                 {{ include('components/money_disclosure.html.twig', {
                                     amount: group.monthlyTotal.converted,
-                                    label: '/ mo',
+                                    label: 'subscription.totals.per_month'|trans,
                                     asOf: group.asOf,
                                     breakdown: group.monthlyTotal.breakdown,
                                     approximate: group.monthlyTotal.isApproximate,

@@ -13,9 +13,14 @@ use App\Message\Query\Subscription\FindSubscriptionQuery;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Uid\Ulid;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class ArchiveSubscriptionController extends AbstractBaseController
 {
+    public function __construct(private readonly TranslatorInterface $translator)
+    {
+    }
+
     #[Route(path: '/subscriptions/{id}/archive', name: 'subscription_archive', methods: ['POST'])]
     public function __invoke(Ulid $id): \Symfony\Component\HttpFoundation\RedirectResponse
     {
@@ -27,7 +32,7 @@ final class ArchiveSubscriptionController extends AbstractBaseController
 
         $this->commandBus->dispatch(command: new ArchiveSubscriptionCommand(subscriptionId: $id));
 
-        $this->addFlash(type: self::FLASH_SUCCESS, message: 'Subscription archived successfully');
+        $this->addFlash(type: self::FLASH_SUCCESS, message: $this->translator->trans('subscription.flash.archived'));
 
         return $this->redirectToRoute(route: 'subscription_show', parameters: ['id' => $id]);
     }

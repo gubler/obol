@@ -32,7 +32,7 @@ final class UpdateSubscriptionDto
 
     #[When(
         expression: 'this.restartPaymentGeneration === true',
-        constraints: [new GreaterThan(value: 'today', message: 'The next renewal date must be in the future to restart automatic payments.')],
+        constraints: [new GreaterThan(value: 'today', message: 'subscription.validation.restart_renewal_future')],
     )]
     public \DateTimeImmutable $nextRenewal;
 

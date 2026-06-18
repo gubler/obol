@@ -13,9 +13,14 @@ use App\Message\Query\Subscription\FindSubscriptionQuery;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Uid\Ulid;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class DeleteSubscriptionController extends AbstractBaseController
 {
+    public function __construct(private readonly TranslatorInterface $translator)
+    {
+    }
+
     #[Route(path: '/subscriptions/{id}/delete', name: 'subscription_delete', methods: ['POST'])]
     public function __invoke(Ulid $id): \Symfony\Component\HttpFoundation\RedirectResponse
     {
@@ -28,11 +33,11 @@ final class DeleteSubscriptionController extends AbstractBaseController
         try {
             $this->commandBus->dispatch(command: new DeleteSubscriptionCommand(subscriptionId: $id));
 
-            $this->addFlash(type: self::FLASH_SUCCESS, message: 'Subscription deleted successfully');
+            $this->addFlash(type: self::FLASH_SUCCESS, message: $this->translator->trans('subscription.flash.deleted'));
         } catch (\Exception) {
             $this->addFlash(
                 type: self::FLASH_ERROR,
-                message: 'Failed to delete subscription. Please try again.'
+                message: $this->translator->trans('subscription.flash.delete_failed')
             );
 
             return $this->redirectToRoute(route: 'subscription_show', parameters: ['id' => $id]);

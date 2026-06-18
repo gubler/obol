@@ -37,31 +37,32 @@ final class CreateSubscriptionFormType extends AbstractType
         if (true === $options['has_categories']) {
             $builder->add(child: 'category', type: EntityType::class, options: [
                 'class' => Category::class,
-                'label' => 'Category',
+                'label' => 'subscription.form.category',
                 'choice_label' => 'name',
-                'placeholder' => 'Uncategorized',
+                'placeholder' => 'subscription.group.uncategorized',
                 'required' => false,
             ]);
         }
 
         $builder
             ->add(child: 'name', type: TextType::class, options: [
-                'label' => 'Subscription Name',
+                'label' => 'subscription.form.name',
                 'empty_data' => '',
             ])
             ->add(child: 'nextRenewal', type: DateType::class, options: [
-                'label' => 'Next Renewal Date',
+                'label' => 'subscription.form.next_renewal',
                 'widget' => 'single_text',
                 'input' => 'datetime_immutable',
             ])
             ->add(child: 'paymentPeriod', type: EnumType::class, options: [
                 'class' => PaymentPeriod::class,
-                'label' => 'Payment Period',
+                'label' => 'subscription.form.payment_period',
+                'choice_label' => static fn (PaymentPeriod $period): string => $period->label(),
                 // The singular noun the billing-cycle controller pluralizes against the count.
                 'choice_attr' => static fn (PaymentPeriod $period): array => ['data-singular' => ucfirst($period->value)],
             ])
             ->add(child: 'paymentPeriodCount', type: NumberType::class, options: [
-                'label' => 'Payment Period Count',
+                'label' => 'subscription.form.payment_period_count',
             ])
         ;
 
@@ -72,23 +73,23 @@ final class CreateSubscriptionFormType extends AbstractType
 
         $builder
             ->add(child: 'description', type: TextareaType::class, options: [
-                'label' => 'Description',
+                'label' => 'subscription.form.description',
                 'required' => false,
                 'empty_data' => '',
             ])
             ->add(child: 'link', type: TextType::class, options: [
-                'label' => 'Link',
+                'label' => 'subscription.form.link',
                 'required' => false,
                 'empty_data' => '',
             ])
             ->add(child: 'logo', type: FileType::class, options: [
-                'label' => 'Logo',
+                'label' => 'subscription.form.logo',
                 'required' => false,
                 'empty_data' => '',
             ])
             ->add(child: 'color', type: EnumType::class, options: [
                 'class' => TileColor::class,
-                'label' => 'Color',
+                'label' => 'subscription.form.color',
                 'expanded' => true,
                 'choice_label' => static fn (TileColor $color): string => $color->label(),
                 'choice_attr' => static fn (TileColor $color): array => ['data-gradient' => $color->gradientClasses()],

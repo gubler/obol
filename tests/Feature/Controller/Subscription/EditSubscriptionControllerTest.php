@@ -13,12 +13,15 @@ use App\Enum\TileColor;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
 use App\Repository\SubscriptionRepository;
+use App\Tests\Support\TranslationAssertions;
 use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class EditSubscriptionControllerTest extends WebTestCase
 {
+    use TranslationAssertions;
+
     public function testGetRequestDisplaysEditFormWithExistingData(): void
     {
         $client = self::createClient();
@@ -35,6 +38,8 @@ final class EditSubscriptionControllerTest extends WebTestCase
         self::assertSelectorTextContains(selector: 'h1', text: 'Edit Subscription');
         self::assertSelectorExists(selector: 'form');
         self::assertSelectorExists(selector: 'input[name="edit_subscription[name]"][value="Netflix"]');
+        // The edit page is not crawled by the i18n tripwire, so guard it here (ADR-0012).
+        self::assertNoTranslationKeyLeaks((string) $client->getResponse()->getContent(), 'edit subscription page');
     }
 
     public function testGetRequestWithInvalidIdReturns404(): void

@@ -17,12 +17,14 @@ use App\Service\FileUploader;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class CreateSubscriptionController extends AbstractBaseController
 {
     public function __construct(
         private readonly FileUploader $fileUploader,
         private readonly DisplayCurrencyProvider $displayCurrencyProvider,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -66,7 +68,7 @@ final class CreateSubscriptionController extends AbstractBaseController
                 color: $data->color,
             ));
 
-            $this->addFlash(type: self::FLASH_SUCCESS, message: 'Subscription created successfully');
+            $this->addFlash(type: self::FLASH_SUCCESS, message: $this->translator->trans('subscription.flash.created'));
 
             return $this->redirectToRoute(route: 'subscription_index');
         }

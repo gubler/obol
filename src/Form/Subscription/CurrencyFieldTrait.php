@@ -25,7 +25,7 @@ trait CurrencyFieldTrait
     {
         $builder->add(child: 'currency', type: EnumType::class, options: [
             'class' => Currency::class,
-            'label' => 'Currency',
+            'label' => 'subscription.form.currency',
             'choice_label' => static fn (Currency $currency): string => $currency->symbol() . ' ' . $currency->value,
             // Locked once a payment exists: a disabled field is never bound from the request, so the
             // subscription keeps its currency regardless of what is submitted.

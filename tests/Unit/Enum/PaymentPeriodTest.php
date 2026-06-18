@@ -30,4 +30,11 @@ final class PaymentPeriodTest extends TestCase
             'week' => [PaymentPeriod::Week, 12.0 / 52.0],
         ];
     }
+
+    public function testReturnsATranslationKeyPerPeriod(): void
+    {
+        self::assertSame('enum.payment_period.year', PaymentPeriod::Year->label());
+        self::assertSame('enum.payment_period.month', PaymentPeriod::Month->label());
+        self::assertSame('enum.payment_period.week', PaymentPeriod::Week->label());
+    }
 }

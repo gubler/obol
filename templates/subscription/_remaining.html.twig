@@ -4,7 +4,7 @@
     <div class="remaining-total-monthly text-2xl font-semibold text-fg">
         {{ include('components/money_disclosure.html.twig', {
             amount: remaining.monthly.converted,
-            label: 'this month',
+            label: 'subscription.remaining.this_month'|trans,
             asOf: remaining.asOf,
             breakdown: remaining.monthly.breakdown,
             approximate: remaining.monthly.isApproximate,
@@ -13,7 +13,7 @@
     <div class="remaining-total-weekly text-sm text-fg-muted">
         {{ include('components/money_disclosure.html.twig', {
             amount: remaining.weekly.converted,
-            label: 'this week',
+            label: 'subscription.remaining.this_week'|trans,
             asOf: remaining.asOf,
             breakdown: remaining.weekly.breakdown,
             approximate: remaining.weekly.isApproximate,
@@ -22,7 +22,7 @@
     <div class="remaining-total-yearly text-sm text-fg-muted">
         {{ include('components/money_disclosure.html.twig', {
             amount: remaining.yearly.converted,
-            label: 'this year',
+            label: 'subscription.remaining.this_year'|trans,
             asOf: remaining.asOf,
             breakdown: remaining.yearly.breakdown,
             approximate: remaining.yearly.isApproximate,

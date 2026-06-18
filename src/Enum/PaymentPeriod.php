@@ -23,4 +23,10 @@ enum PaymentPeriod: string
             self::Week => 12.0 / 52.0,
         };
     }
+
+    public function label(): string
+    {
+        // Translation key resolved in the `messages` catalog; see ADR-0012.
+        return 'enum.payment_period.' . $this->value;
+    }
 }

@@ -9,6 +9,7 @@ namespace App\Tests\Feature\I18n;
 
 use App\Enum\CategoryIcon;
 use App\Enum\ObligationTrendPeriod;
+use App\Enum\PaymentPeriod;
 use App\Enum\SubscriptionSort;
 use App\Enum\TileColor;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -49,6 +50,10 @@ final class EnumCatalogTest extends KernelTestCase
         foreach (SubscriptionSort::cases() as $sort) {
             yield 'subscription sort: ' . $sort->value => [$sort->label()];
         }
+
+        foreach (PaymentPeriod::cases() as $period) {
+            yield 'payment period: ' . $period->value => [$period->label()];
+        }
     }
 
     #[DataProvider('provideLabelEnglishSpotCheckCases')]
@@ -71,5 +76,6 @@ final class EnumCatalogTest extends KernelTestCase
         yield 'gamepad icon' => ['enum.category_icon.gamepad_2', 'Gamepad 2'];
         yield 'weekly trend' => ['enum.obligation_trend_period.week', 'Weekly'];
         yield 'monthly cost sort' => ['enum.subscription_sort.monthly_cost', 'Monthly cost'];
+        yield 'yearly payment period' => ['enum.payment_period.year', 'Year'];
     }
 }

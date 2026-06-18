@@ -54,6 +54,22 @@ final class CreateSubscriptionControllerTest extends WebTestCase
         self::assertSame(['Uncategorized', 'Apple', 'Microsoft', 'Zoom'], $options);
     }
 
+    public function testWiresTheColorSyncControllerWithCategoryColors(): void
+    {
+        $client = self::createClient();
+        CategoryFactory::createOne(['name' => 'Apple', 'color' => TileColor::Teal]);
+
+        $client->request(method: 'GET', uri: '/subscriptions/new');
+
+        self::assertResponseIsSuccessful();
+        // The form drives the color-sync controller; the category select feeds it, each option carries
+        // its category's color, and the swatches are its targets.
+        self::assertSelectorExists(selector: 'form[data-controller="color-sync"]');
+        self::assertSelectorExists(selector: 'select[data-color-sync-target="category"][data-action="color-sync#categoryChanged"]');
+        self::assertSelectorExists(selector: 'select[data-color-sync-target="category"] option[data-color="teal"]');
+        self::assertSelectorExists(selector: 'input[data-color-sync-target="swatch"][value="teal"]');
+    }
+
     public function testHidesTheCategoryPickerWhenNoCategoriesExist(): void
     {
         $client = self::createClient();

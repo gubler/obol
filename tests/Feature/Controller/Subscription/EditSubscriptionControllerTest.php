@@ -72,6 +72,21 @@ final class EditSubscriptionControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(expectedCode: 404);
     }
 
+    public function testEditFormDoesNotWireTheColorSyncController(): void
+    {
+        $client = self::createClient();
+        CategoryFactory::createOne(['name' => 'Apple', 'color' => TileColor::Teal]);
+        $subscription = SubscriptionFactory::createOne(['name' => 'Netflix']);
+
+        $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+
+        self::assertResponseIsSuccessful();
+        // Color-sync is a new-form convenience only; the edit form must stay unaffected.
+        self::assertSelectorNotExists(selector: '[data-controller~="color-sync"]');
+        self::assertSelectorNotExists(selector: '[data-color-sync-target]');
+        self::assertSelectorNotExists(selector: 'option[data-color]');
+    }
+
     public function testPostRequestWithValidDataUpdatesSubscription(): void
     {
         $client = self::createClient();

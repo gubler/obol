@@ -47,6 +47,12 @@ final class CreateSubscriptionFormType extends AbstractType
                 'query_builder' => static fn (EntityRepository $repository): QueryBuilder => $repository
                     ->createQueryBuilder('category')
                     ->orderBy('category.name', 'ASC'),
+                // Expose each category's color to the color-sync controller; the placeholder carries none.
+                'choice_attr' => static fn (Category $category): array => ['data-color' => $category->color->value],
+                'attr' => [
+                    'data-color-sync-target' => 'category',
+                    'data-action' => 'color-sync#categoryChanged',
+                ],
                 'placeholder' => 'subscription.group.uncategorized',
                 'required' => false,
             ]);
@@ -100,7 +106,12 @@ final class CreateSubscriptionFormType extends AbstractType
                 'label' => 'subscription.form.color',
                 'expanded' => true,
                 'choice_label' => static fn (TileColor $color): string => $color->label(),
-                'choice_attr' => static fn (TileColor $color): array => ['data-gradient' => $color->gradientClasses()],
+                // Each swatch is a color-sync target; a genuine user click tears the controller down.
+                'choice_attr' => static fn (TileColor $color): array => [
+                    'data-gradient' => $color->gradientClasses(),
+                    'data-color-sync-target' => 'swatch',
+                    'data-action' => 'change->color-sync#userPicked',
+                ],
                 'block_prefix' => 'tile_color',
             ])
         ;

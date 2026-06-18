@@ -12,7 +12,9 @@
         </div>
 
         <div class="bg-surface shadow-md rounded p-6 max-w-2xl">
-            {{ form_start(form, {attr: {class: 'space-y-6'}}) }}
+            {# color-sync (new form only): sync the color swatch to the chosen category's color until
+               the user picks a swatch. See assets/controllers/color_sync_controller.js. #}
+            {{ form_start(form, {attr: {class: 'space-y-6', 'data-controller': 'color-sync'}}) }}
 
             {{ include('subscription/_form.html.twig', {form: form}) }}
 

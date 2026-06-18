@@ -83,6 +83,7 @@
         "symfony/css-selector": "8.1.*",
         "symfony/debug-bundle": "8.1.*",
         "symfony/maker-bundle": "^1.67.0",
+        "symfony/panther": "^2.4",
         "symfony/stopwatch": "8.1.*",
         "symfony/web-profiler-bundle": "8.1.*",
         "symplify/phpstan-rules": "^14.10.0",

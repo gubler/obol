@@ -8,10 +8,10 @@ Obol uses PHPUnit as the test runner with four test suites, Foundry factories fo
 |-------|-----------|-----------|---------|
 | Unit | `tests/Unit/` | PHPUnit `TestCase` | Pure PHP, no DB, no HTTP |
 | Feature | `tests/Feature/` | Symfony `WebTestCase` | HTTP layer via Symfony test client |
-| Integration | `tests/Integration/` | Symfony `WebTestCase` | End-to-end workflows, real DB |
+| Integration | `tests/Integration/` | Symfony `WebTestCase` / Panther `PantherTestCase` | End-to-end workflows, real DB; real-browser tests for JS behavior |
 | Arch | `tests/Arch/` | PHPUnit `TestCase` | Structural rules over `src/` |
 
-Test classes are namespaced under `App\Tests\` (PSR-4 maps `App\Tests\` to `tests/`). Feature and Integration classes extend `WebTestCase` directly; Unit and Arch classes extend `TestCase`.
+Test classes are namespaced under `App\Tests\` (PSR-4 maps `App\Tests\` to `tests/`). Feature and Integration classes extend `WebTestCase` directly; Unit and Arch classes extend `TestCase`. Browser tests in the Integration suite extend Panther's `PantherTestCase` (see [Browser tests](#browser-tests-panther)).
 
 ## Running Tests
 
@@ -92,6 +92,21 @@ mise run js:test   # Vitest, host-side via npm
 ```
 
 This runs in `mise run check`, the git hooks, and CI alongside the PHP tests. See [Frontend](../frontend.md#javascript-toolchain-dev-only) for the full JS toolchain (Biome, Vitest, `tsc --checkJs`).
+
+## Browser tests (Panther)
+
+Vitest covers a controller's logic against a hand-built DOM; what it cannot prove is that the controller actually loads and wires up against the real server-rendered page in a real browser. For that there is a thin layer of [Symfony Panther](https://symfony.com/doc/current/testing/end_to_end.html) tests in the Integration suite, driving headless Chromium over WebDriver. They are the JS analog of an end-to-end test: reserved for behavior that genuinely needs a browser, not a substitute for the Vitest/crawler pair.
+
+The first one is `tests/Integration/Controller/Subscription/ColorSyncBrowserTest.php`. Chromium and chromedriver ship in the dev image already, so they run inside the `php` container with no extra setup; CI installs `chromium`/`chromium-driver` and sets the `PANTHER_*` knobs (#85).
+
+The cross-process gotcha: Panther runs the app in its own PHP CLI server, so DAMA's per-test transaction rollback - which keeps the normal suite isolated - cannot reach it. A browser test therefore:
+
+- carries `#[SkipDatabaseRollback]` (DAMA) and truncates the tables it touches in `setUp`/`tearDown`;
+- seeds via Foundry in the test process, which **commits** (no surrounding transaction), so the rows are visible to the browser's server;
+- carries `#[WithoutErrorHandler]` so PHPUnit's error handler does not trip on the browser interaction;
+- passes `--headless=new --no-sandbox --disable-dev-shm-usage` to Chromium (root in a container with a small `/dev/shm`).
+
+`PANTHER_APP_ENV=test` (in `.env.test`) makes the spawned server share the `app_test` database with the test process. Browser tests run wherever the PHP suite does - `mise run test`, the git hooks, and CI.
 
 ## Code Coverage
 

@@ -46,6 +46,11 @@ jobs:
             # app_test database from this via doctrine's dbname_suffix.
             DATABASE_URL: "postgresql://app:!ChangeMe!@postgres:5432/app?serverVersion=16&charset=utf8"
             COMPOSER_ALLOW_SUPERUSER: 1
+            # Panther browser tests (#85): the container runs as root with a small
+            # /dev/shm, so Chromium needs --no-sandbox + --disable-dev-shm-usage.
+            # PANTHER_APP_ENV=test lives in .env.test so the spawned server shares app_test.
+            PANTHER_NO_SANDBOX: 1
+            PANTHER_CHROME_ARGUMENTS: "--disable-dev-shm-usage"
 
         steps:
             - name: "Install git and nodejs for Gitea Actions runtime"
@@ -70,7 +75,7 @@ jobs:
 
             - name: "Install OS packages and PHP extensions"
               run: |
-                  apt-get install -y --no-install-recommends file ca-certificates
+                  apt-get install -y --no-install-recommends file ca-certificates chromium chromium-driver
                   install-php-extensions @composer intl mbstring zip pdo_pgsql pcov
 
             - name: "Validate Composer config"

@@ -38,14 +38,19 @@ final readonly class Money
     }
 
     /**
-     * A symbol-prefixed, fixed-digit rendering (e.g. "$15.99", "¥2,000"). Proper locale-aware symbol
-     * placement and grouping is deferred to i18n (#116); this matches today's English, prefix UI.
+     * A localized currency rendering via ICU - e.g. en "$15.99"/"¥2,000", de_DE "1.599,99 $".
+     * Defaults to the request locale (\Locale::getDefault(), always en today), matching MoneyParser.
+     * Fraction digits follow the currency's stored convention rather than ICU's default, so a
+     * zero-decimal currency (JPY, HUF) never gains spurious decimals. See ADR-0012.
      */
-    public function format(): string
+    public function format(?string $locale = null): string
     {
+        $locale ??= \Locale::getDefault();
         $digits = $this->currency->fractionDigits();
-        $major = $this->minorAmount / (10 ** $digits);
 
-        return $this->currency->symbol() . number_format($major, $digits, '.', ',');
+        $formatter = new \NumberFormatter($locale, \NumberFormatter::CURRENCY);
+        $formatter->setAttribute(\NumberFormatter::FRACTION_DIGITS, $digits);
+
+        return (string) $formatter->formatCurrency($this->minorAmount / (10 ** $digits), $this->currency->value);
     }
 }

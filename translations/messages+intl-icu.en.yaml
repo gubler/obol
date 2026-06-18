@@ -1,3 +1,5 @@
 # ABOUTME: English ICU-formatted catalog (`messages` domain, intl-icu variant) for plural/select messages.
-# ABOUTME: The cadence plural lands here in #223; empty until a real ICU message exists (ADR-0012).
-{}
+# ABOUTME: Holds ICU plural/select messages (the billing-cadence plural); see ADR-0012.
+
+subscription:
+    cadence: '{count, plural, one {{period, select, week {week} month {month} year {year} other {{period}}}} other {# {period, select, week {weeks} month {months} year {years} other {{period}s}}}}'

@@ -24,9 +24,9 @@
                     </td>
                     <td class="whitespace-nowrap px-6 py-4 text-right text-fg">{{ subscription.monthlyCost.format() }}</td>
                     <td class="whitespace-nowrap px-6 py-4 text-right text-fg">
-                        {{ subscription.cost.format() }} / {{ subscription.paymentPeriodCount > 1 ? subscription.paymentPeriodCount ~ ' ' : '' }}{{ subscription.paymentPeriod.value }}{{ subscription.paymentPeriodCount > 1 ? 's' : '' }}
+                        {{ subscription.cost.format() }} / {{ 'subscription.cadence'|trans({count: subscription.paymentPeriodCount, period: subscription.paymentPeriod.value}) }}
                     </td>
-                    <td class="whitespace-nowrap px-6 py-4 text-fg">{{ subscription.nextRenewal|date('M j, Y') }}</td>
+                    <td class="whitespace-nowrap px-6 py-4 text-fg">{{ subscription.nextRenewal|format_date('medium') }}</td>
                     <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                         <a href="{{ path('subscription_show', {id: subscription.id}) }}" class="mr-3 text-brand hover:text-brand-strong">View</a>
                         <a href="{{ path('subscription_edit', {id: subscription.id}) }}" class="text-brand hover:text-brand-strong">Edit</a>

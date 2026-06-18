@@ -16,7 +16,7 @@
         </summary>
         <div class="money-disclosure-breakdown mt-1 text-sm font-normal text-fg-muted">
             {%- if asOf is defined and asOf %}
-                <div class="money-disclosure-asof">as of {{ asOf|date('M j, Y') }}</div>
+                <div class="money-disclosure-asof">as of {{ asOf|format_date('medium') }}</div>
             {%- endif %}
             {%- for money in breakdown %}
                 <div>{{ money.format() }}</div>

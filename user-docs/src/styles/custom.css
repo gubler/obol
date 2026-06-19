@@ -1,0 +1,25 @@
+/* ABOUTME: Custom styles for the Obol user-docs site.
+   ABOUTME: Tightens the splash hero padding and gives the logo room to render large beside the copy. */
+
+/* Starlight's hero padding clamps up to 10rem on wide screens, pushing the cards
+   below the fold. Flatten it. The selectors below beat Starlight's :where()-wrapped
+   (zero-specificity) defaults without !important. */
+.hero {
+  padding-block: 2rem;
+}
+
+/* Default splits the row 7fr (copy) / 4fr (logo), which leaves the logo cramped.
+   Give it an even half on wide screens so it can render at full size next to the text. */
+@media (min-width: 50rem) {
+  .hero {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Render the logo at ~300px (it's a vector, so upscaling is lossless), bounded by
+   its column on narrower viewports. */
+.hero img {
+  width: min(100%, 300px);
+  height: auto;
+  max-height: 300px;
+}

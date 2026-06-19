@@ -1,0 +1,44 @@
+---
+title: Obol User Guide
+description: Keep track of every subscription - what it costs, when it renews, and where your money goes.
+template: splash
+hero:
+  tagline: Keep track of every subscription - what it costs, when it renews, and where your money goes.
+  image:
+    file: ../../assets/obol-coin.svg
+  actions:
+    - text: Get started
+      link: /obol-user/getting-started/
+      icon: right-arrow
+      variant: primary
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+<CardGrid>
+  <LinkCard
+    title="Subscriptions"
+    href="/obol-user/subscriptions/"
+    description="Add, edit, archive, and organize the things you pay for."
+  />
+  <LinkCard
+    title="Categories"
+    href="/obol-user/categories/"
+    description="Group subscriptions (Streaming, Software, Utilities...) with a color and icon."
+  />
+  <LinkCard
+    title="Payments"
+    href="/obol-user/payments/"
+    description="Record what you've paid, and let Obol track renewals for you."
+  />
+  <LinkCard
+    title="Reports"
+    href="/obol-user/reports/"
+    description="See where your money goes, by category and over time."
+  />
+  <LinkCard
+    title="Currencies"
+    href="/obol-user/currencies/"
+    description="Track subscriptions in any currency."
+  />
+</CardGrid>

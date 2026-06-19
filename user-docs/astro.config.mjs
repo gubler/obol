@@ -1,5 +1,5 @@
 // ABOUTME: Astro + Starlight config for the Obol end-user docs site (docs.dev88.work/obol-user).
-// ABOUTME: Standalone from the dev docs; flat sidebar built from the content root so it populates as pages land.
+// ABOUTME: Standalone from the dev docs; flat, curated sidebar in reading order (the home is reached via the logo).
 
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
@@ -7,22 +7,16 @@ import mdx from '@astrojs/mdx';
 import mermaid from 'astro-mermaid';
 import rehypeRelativeMarkdownLinks from 'astro-rehype-relative-markdown-links';
 import starlightLinksValidator from 'starlight-links-validator';
-import fs from 'node:fs';
 
-const CONTENT_ROOT = './src/content/docs';
-
-/**
- * Loose `.md`/`.mdx` pages at the content root (excluding the home index), as direct sidebar links.
- * The user guide is flat - one page per top-level flow - so a `sidebar.order` frontmatter field
- * controls reading order; absent that, pages sort by slug. Returns [] before any page exists.
- */
-function rootPages() {
-  if (!fs.existsSync(CONTENT_ROOT)) return [];
-  return fs.readdirSync(CONTENT_ROOT)
-    .filter((e) => /\.mdx?$/.test(e) && e !== 'index.md' && e !== 'index.mdx')
-    .sort()
-    .map((e) => ({ slug: e.replace(/\.mdx?$/, '') }));
-}
+// Curated reading order rather than alphabetical; labels come from each page's frontmatter title.
+const sidebar = [
+  { slug: 'getting-started' },
+  { slug: 'subscriptions' },
+  { slug: 'categories' },
+  { slug: 'payments' },
+  { slug: 'reports' },
+  { slug: 'currencies' },
+];
 
 export default defineConfig({
   site: 'https://docs.dev88.work/obol-user',
@@ -34,7 +28,8 @@ export default defineConfig({
       plugins: [starlightLinksValidator()],
       logo: { src: './src/assets/obol-coin.svg', replacesTitle: false },
       favicon: '/obol-coin.svg',
-      sidebar: rootPages(),
+      customCss: ['./src/styles/custom.css'],
+      sidebar,
       expressiveCode: {
         shiki: {
           langAlias: {

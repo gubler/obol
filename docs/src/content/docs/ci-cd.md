@@ -17,7 +17,7 @@ Lint & Test runs on PRs only - it does **not** re-run when `production` is merge
 
 ## Job 1: Lint & Test
 
-Runs on `ubuntu-latest` with PHP 8.5 and Xdebug (for coverage).
+Runs on the `default` runner label (Asgard, arm64) with PHP 8.5 and Xdebug (for coverage).
 
 ### Steps
 
@@ -56,18 +56,18 @@ Runs only on pushes to `production` (a merged `main` -> `production` release). I
 ### Steps
 
 1. Checkout the code
-2. Set up QEMU (`docker/setup-qemu-action`) and Docker Buildx (`docker/setup-buildx-action`)
+2. Set up Docker Buildx (`docker/setup-buildx-action`)
 3. Set a short SHA environment variable (first 7 chars of the commit hash)
 4. Login to the Gitea Container Registry at `code.dev88.work`
-5. Build and push a multi-arch image (see below) with two tags:
+5. Build and push the image (see below) with two tags:
     - `code.dev88.work/dev88/obol:latest`
     - `code.dev88.work/dev88/obol:{short-sha}`
 
-### Multi-arch builds
+### Native amd64 build
 
-The build emits a manifest list covering both **`linux/amd64`** and **`linux/arm64`**, so the same tag pulls correctly on either architecture - amd64 for an x86_64 host (Hex), arm64 for a Mac/arm host. `provenance: false` keeps the published manifest to just those two real platforms (no `unknown/unknown` attestation entries in Gitea's package view).
+The build job runs on the `amd64` runner label (Hex, x86_64) and builds a single **`linux/amd64`** image natively - no QEMU emulation and no multi-arch manifest. Hex is the sole deploy target, so amd64 is the only architecture that needs to ship. `provenance: false` keeps the published manifest free of `unknown/unknown` attestation entries in Gitea's package view.
 
-The dev88 Gitea runner is **arm64**, so the amd64 leg is built under **QEMU emulation** (registered via `setup-qemu-action`). That includes compiling the PHP extensions and running the asset pipeline in the prod builder stage for amd64. If the emulated amd64 leg proves too slow or flaky in practice, the fallback is a native amd64 runner - decide from the observed build time on the first multi-arch CI run (tracked in [#123](https://code.dev88.work/dev88/obol/issues/123)).
+This replaces the earlier QEMU-emulated multi-arch build (the amd64 leg used to run under emulation on the arm64 runner; tracked in [#123](https://code.dev88.work/dev88/obol/issues/123) and [#259](https://code.dev88.work/dev88/obol/issues/259)). If an arm64 deploy target appears later, restore the second leg as a matrix build on the `arm64` runner and stitch the two with a manifest-merge job.
 
 ### Registry Authentication
 

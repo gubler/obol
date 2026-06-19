@@ -24,7 +24,7 @@ jobs:
         # a commit this already passed on its PR - no point re-running it on the
         # push that triggers the build.
         if: gitea.event_name == 'pull_request'
-        runs-on: ubuntu-latest
+        runs-on: default
         container:
             image: dunglas/frankenphp:1-php8.5
 
@@ -172,7 +172,10 @@ jobs:
 
     build:
         name: Build Docker Image
-        runs-on: ubuntu-latest
+        # Native amd64 build on the Hex runner (no QEMU emulation). Deploy target
+        # is Hex (x86_64) only; if an arm64 host enters the picture later, add a
+        # matrix leg on the arm64 runner and a manifest-merge job (see #259).
+        runs-on: amd64
         # Only on a release: push to production (a merged main -> production PR),
         # never off main. No needs/re-run of Lint & Test - the PR that merged into
         # production already passed it on the PR.
@@ -185,11 +188,6 @@ jobs:
         steps:
             - name: "Checkout code"
               uses: actions/checkout@v5
-
-            - name: "Set up QEMU"
-              # Register binfmt handlers so the arm64 Gitea runner can also emit
-              # the linux/amd64 image an x86_64 host (Hex) needs.
-              uses: docker/setup-qemu-action@v3
 
             - name: "Set up Docker Buildx"
               uses: docker/setup-buildx-action@v3
@@ -208,11 +206,10 @@ jobs:
               uses: docker/build-push-action@v6
               with:
                   context: .
-                  # amd64 for Hex (x86_64); arm64 keeps a Mac/arm host move open.
-                  # The amd64 leg is built via QEMU emulation on the arm64 runner.
-                  platforms: linux/amd64,linux/arm64
-                  # Keep the published manifest to the two real platforms - no
-                  # unknown/unknown attestation entries in Gitea's package view.
+                  # amd64 only - built natively on the Hex runner, the sole deploy
+                  # target (x86_64). No QEMU, no multi-arch manifest.
+                  platforms: linux/amd64
+                  # No unknown/unknown attestation entries in Gitea's package view.
                   provenance: false
                   push: true
                   tags: |

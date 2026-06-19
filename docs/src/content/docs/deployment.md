@@ -109,6 +109,6 @@ code.dev88.work/dev88/obol:latest
 code.dev88.work/dev88/obol:{short-sha}
 ```
 
-Each tag is a **multi-arch manifest** covering `linux/amd64` and `linux/arm64`, so the same tag pulls and runs on an x86_64 host (Hex) or an arm64 host (Mac/arm).
+Each tag is a single **`linux/amd64`** image, built natively on the Hex runner - the sole deploy target (x86_64).
 
-See [CI/CD](ci-cd.md#multi-arch-builds) for details on the build pipeline and how the multi-arch image is produced.
+See [CI/CD](ci-cd.md#native-amd64-build) for details on the build pipeline.

@@ -33,7 +33,9 @@ final class RenewalLabelExtension extends AbstractExtension
     /**
      * The renewal date is compared by calendar day against "now" so the label does not flip with the
      * time of day: a renewal anchored at midnight today reads "Today" whether the page loads at 1am or
-     * 11pm. Two or more days out (or any past date) falls back to KnpTime's day-granularity time_diff.
+     * 11pm. Two or more days out (or any past date) falls back to KnpTime's time_diff, fed the same
+     * midnight-aligned days so its count is the calendar-day distance (the renewal day itself counts,
+     * since it is a valid not-late payment day) rather than the time-of-day-truncated wall-clock gap.
      */
     public function label(\DateTimeImmutable $renewal): string
     {
@@ -46,7 +48,7 @@ final class RenewalLabelExtension extends AbstractExtension
         return match ($days) {
             0 => $this->translator->trans('common.relative.today'),
             1 => $this->translator->trans('common.relative.tomorrow'),
-            default => $this->dateTimeFormatter->formatDiff($renewal, $now),
+            default => $this->dateTimeFormatter->formatDiff($renewalDay, $today),
         };
     }
 }

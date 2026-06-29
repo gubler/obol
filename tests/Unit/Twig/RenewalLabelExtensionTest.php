@@ -35,14 +35,34 @@ final class RenewalLabelExtensionTest extends TestCase
     {
         $renewal = new \DateTimeImmutable('2026-06-20 00:00:00', new \DateTimeZone('UTC'));
 
-        self::assertSame('TIME_DIFF', $this->extensionAt('2026-06-18 12:00:00')->label($renewal));
+        self::assertSame('diff.in.day:2', $this->extensionAt('2026-06-18 12:00:00')->label($renewal));
     }
 
     public function testPastRenewalDelegatesToTimeDiff(): void
     {
         $renewal = new \DateTimeImmutable('2026-06-17 00:00:00', new \DateTimeZone('UTC'));
 
-        self::assertSame('TIME_DIFF', $this->extensionAt('2026-06-18 12:00:00')->label($renewal));
+        self::assertSame('diff.ago.day:1', $this->extensionAt('2026-06-18 12:00:00')->label($renewal));
+    }
+
+    public function testDayCountIncludesTheRenewalDayAndIgnoresTimeOfDay(): void
+    {
+        // June 29 -> July 22 is 23 calendar days: today is not counted, the renewal day is, since
+        // it is itself a valid (not late) payment day. The count must not be truncated by the time
+        // of day the page is viewed - morning and evening on the same day read the same.
+        $renewal = new \DateTimeImmutable('2026-07-22 00:00:00', new \DateTimeZone('UTC'));
+
+        self::assertSame('diff.in.day:23', $this->extensionAt('2026-06-29 01:00:00')->label($renewal));
+        self::assertSame('diff.in.day:23', $this->extensionAt('2026-06-29 23:00:00')->label($renewal));
+    }
+
+    public function testLongerHorizonsStillRenderInCoarserUnits(): void
+    {
+        // The fix pins the day count to calendar days without flattening KnpTime's coarser phrasing:
+        // a renewal two months out still reads in months, not in days.
+        $renewal = new \DateTimeImmutable('2026-08-29 00:00:00', new \DateTimeZone('UTC'));
+
+        self::assertSame('diff.in.month:2', $this->extensionAt('2026-06-29 12:00:00')->label($renewal));
     }
 
     private function extensionAt(string $now): RenewalLabelExtension
@@ -57,8 +77,9 @@ final class RenewalLabelExtensionTest extends TestCase
     }
 
     /**
-     * Resolves the today/tomorrow catalog keys to their English copy and collapses any KnpTime
-     * `time` diff message to a sentinel, so a delegated label is unambiguous in assertions.
+     * Resolves the today/tomorrow catalog keys to their English copy and renders any KnpTime
+     * `time` diff message as "<id>:<count>", so a delegated label exposes both the unit and the
+     * day count in assertions (e.g. "diff.in.day:23") without depending on the bundle's copy.
      */
     private function fakeTranslator(): TranslatorInterface
     {
@@ -69,7 +90,9 @@ final class RenewalLabelExtensionTest extends TestCase
             public function trans(string $id, array $parameters = [], ?string $domain = null, ?string $locale = null): string
             {
                 if ('time' === $domain) {
-                    return 'TIME_DIFF';
+                    $count = $parameters['%count%'] ?? null;
+
+                    return null === $count ? $id : \sprintf('%s:%s', $id, $count);
                 }
 
                 return match ($id) {

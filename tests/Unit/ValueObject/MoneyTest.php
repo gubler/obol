@@ -36,26 +36,26 @@ final class MoneyTest extends TestCase
     public function testRefusesToAddAcrossCurrencies(): void
     {
         $this->expectException(\Assert\InvalidArgumentException::class);
-        (new Money(1000, Currency::USD))->add(new Money(1000, Currency::EUR));
+        new Money(1000, Currency::USD)->add(new Money(1000, Currency::EUR));
     }
 
     public function testEqualityComparesAmountAndCurrency(): void
     {
-        self::assertTrue((new Money(1599, Currency::USD))->equals(new Money(1599, Currency::USD)));
-        self::assertFalse((new Money(1599, Currency::USD))->equals(new Money(1599, Currency::EUR)));
-        self::assertFalse((new Money(1599, Currency::USD))->equals(new Money(1600, Currency::USD)));
+        self::assertTrue(new Money(1599, Currency::USD)->equals(new Money(1599, Currency::USD)));
+        self::assertFalse(new Money(1599, Currency::USD)->equals(new Money(1599, Currency::EUR)));
+        self::assertFalse(new Money(1599, Currency::USD)->equals(new Money(1600, Currency::USD)));
     }
 
     public function testFormatsWithTheCurrencySymbolAndItsFractionDigits(): void
     {
-        self::assertSame('$15.99', (new Money(1599, Currency::USD))->format('en'));
-        self::assertSame('¥2,000', (new Money(2000, Currency::JPY))->format('en'));
-        self::assertSame('€15.99', (new Money(1599, Currency::EUR))->format('en'));
+        self::assertSame('$15.99', new Money(1599, Currency::USD)->format('en'));
+        self::assertSame('¥2,000', new Money(2000, Currency::JPY)->format('en'));
+        self::assertSame('€15.99', new Money(1599, Currency::EUR)->format('en'));
     }
 
     public function testFormatsForTheGivenLocale(): void
     {
-        $formatted = (new Money(159999, Currency::USD))->format('de_DE');
+        $formatted = new Money(159999, Currency::USD)->format('de_DE');
 
         // German swaps the grouping/decimal separators and places the symbol last.
         self::assertStringContainsString('1.599,99', $formatted);

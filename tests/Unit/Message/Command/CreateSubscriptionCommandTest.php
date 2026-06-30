@@ -29,10 +29,10 @@ final class CreateSubscriptionCommandTest extends TestCase
             paymentPeriodCount: 1,
             cost: 1599,
             currency: Currency::EUR,
+            color: TileColor::Blue,
             description: 'Streaming service',
             link: 'https://netflix.com',
             logo: 'netflix.png',
-            color: TileColor::Blue,
         );
 
         self::assertSame($categoryId, $command->categoryId);

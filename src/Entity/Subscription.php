@@ -250,7 +250,7 @@ class Subscription
     {
         $latest = $this->latestPayment();
         Assertion::true(
-            null !== $latest && $payment->id->equals($latest->id),
+            $latest instanceof Payment && $payment->id->equals($latest->id),
             'Only the latest payment can be deleted',
         );
 
@@ -344,9 +344,9 @@ class Subscription
         $updateGenerator = new ChangeContextGenerator(
             changes: [
                 // A subscription may have no category; the audit reads the absence as "Uncategorized".
-                new Change(field: 'category', current: null !== $this->category ? $this->category->name : 'Uncategorized', new: null !== $category ? $category->name : 'Uncategorized'),
+                new Change(field: 'category', current: $this->category instanceof Category ? $this->category->name : 'Uncategorized', new: $category instanceof Category ? $category->name : 'Uncategorized'),
                 // A subscription may have no payment source; the audit reads the absence as "Unassigned".
-                new Change(field: 'paymentSource', current: null !== $this->paymentSource ? $this->paymentSource->name : 'Unassigned', new: null !== $paymentSource ? $paymentSource->name : 'Unassigned'),
+                new Change(field: 'paymentSource', current: $this->paymentSource instanceof PaymentSource ? $this->paymentSource->name : 'Unassigned', new: $paymentSource instanceof PaymentSource ? $paymentSource->name : 'Unassigned'),
                 new Change(field: 'name', current: $this->name, new: $name),
                 new Change(field: 'nextRenewal', current: $this->nextRenewal->format(format: 'c'), new: $nextRenewal->format(format: 'c')),
                 new Change(field: 'description', current: $this->description, new: $description),
@@ -407,7 +407,7 @@ class Subscription
     {
         $generator = new ChangeContextGenerator(
             changes: [
-                new Change(field: 'paymentSource', current: null !== $this->paymentSource ? $this->paymentSource->name : 'Unassigned', new: null !== $paymentSource ? $paymentSource->name : 'Unassigned'),
+                new Change(field: 'paymentSource', current: $this->paymentSource instanceof PaymentSource ? $this->paymentSource->name : 'Unassigned', new: $paymentSource instanceof PaymentSource ? $paymentSource->name : 'Unassigned'),
             ]
         );
 

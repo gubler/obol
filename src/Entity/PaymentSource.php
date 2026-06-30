@@ -59,7 +59,7 @@ class PaymentSource
     public function update(?string $name = null, ?string $comment = null, ?TileColor $color = null): void
     {
         Assertion::true(
-            null !== $name || null !== $comment || null !== $color,
+            null !== $name || null !== $comment || $color instanceof TileColor,
             'At least one field must be provided to update a payment source.',
         );
 
@@ -73,7 +73,7 @@ class PaymentSource
             $this->comment = $comment;
         }
 
-        if (null !== $color) {
+        if ($color instanceof TileColor) {
             $this->color = $color;
         }
     }

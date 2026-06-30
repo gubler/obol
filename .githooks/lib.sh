@@ -11,6 +11,7 @@ fast_checks() {
     mise run lint:yaml     || status=1
     mise run cs:check      || status=1
     mise run cs:twig:check || status=1
+    mise run rector:check  || status=1
     mise run js:cs:check   || status=1
     mise run js:sa         || status=1
     return "$status"

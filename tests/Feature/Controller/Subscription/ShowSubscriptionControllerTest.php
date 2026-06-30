@@ -32,7 +32,7 @@ final class ShowSubscriptionControllerTest extends WebTestCase
             'description' => 'Streaming service',
         ]);
 
-        $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id);
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id);
 
         self::assertResponseIsSuccessful();
     }
@@ -46,7 +46,7 @@ final class ShowSubscriptionControllerTest extends WebTestCase
             'cost' => new Money(1999, Currency::USD),
         ]);
 
-        $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id);
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id);
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'body', text: 'Uncategorized');
@@ -61,7 +61,7 @@ final class ShowSubscriptionControllerTest extends WebTestCase
             'name' => 'Netflix',
         ]);
 
-        $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id);
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id);
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'a[href="/subscriptions/' . $subscription->id . '/edit"]');
@@ -76,7 +76,7 @@ final class ShowSubscriptionControllerTest extends WebTestCase
             'name' => 'Netflix',
         ]);
 
-        $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id);
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id);
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'form[action="/subscriptions/' . $subscription->id . '/delete"]');
@@ -99,7 +99,7 @@ final class ShowSubscriptionControllerTest extends WebTestCase
             'advancedRenewal' => true,
         ]);
 
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id);
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id);
 
         self::assertResponseIsSuccessful();
         $confirm = $crawler->filter('.payment-delete-form')->attr('data-turbo-confirm');
@@ -124,7 +124,7 @@ final class ShowSubscriptionControllerTest extends WebTestCase
             'advancedRenewal' => false,
         ]);
 
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id);
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id);
 
         self::assertResponseIsSuccessful();
         $confirm = $crawler->filter('.payment-delete-form')->attr('data-turbo-confirm');
@@ -140,7 +140,7 @@ final class ShowSubscriptionControllerTest extends WebTestCase
             'name' => 'Netflix',
         ]);
 
-        $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id);
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id);
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'a[href="/"]');
@@ -150,7 +150,7 @@ final class ShowSubscriptionControllerTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request(method: 'GET', uri: '/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX');
 
         self::assertResponseStatusCodeSame(expectedCode: 404);
     }
@@ -174,7 +174,7 @@ final class ShowSubscriptionControllerTest extends WebTestCase
             'paidDate' => new \DateTimeImmutable('2024-02-15'),
         ]);
 
-        $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id);
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id);
 
         self::assertResponseIsSuccessful();
         // Template should render without errors
@@ -189,7 +189,7 @@ final class ShowSubscriptionControllerTest extends WebTestCase
         $client = self::createClient();
         $subscription = SubscriptionFactory::new()->manual()->create(['name' => 'Netflix']);
 
-        $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id);
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id);
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: '.manual-payments-badge');
@@ -200,7 +200,7 @@ final class ShowSubscriptionControllerTest extends WebTestCase
         $client = self::createClient();
         $subscription = SubscriptionFactory::createOne(['name' => 'Netflix']);
 
-        $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id);
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id);
 
         self::assertResponseIsSuccessful();
         self::assertSelectorNotExists(selector: '.manual-payments-badge');
@@ -213,10 +213,10 @@ final class ShowSubscriptionControllerTest extends WebTestCase
         PaymentFactory::createOne(['subscription' => $subscription, 'paidDate' => new \DateTimeImmutable('2024-01-01')]);
         PaymentFactory::createOne(['subscription' => $subscription, 'paidDate' => new \DateTimeImmutable('2024-02-01')]);
 
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id);
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id);
 
         self::assertResponseIsSuccessful();
         // Two payments listed, but only the latest one is deletable.
-        self::assertSame(1, $crawler->filter('.payment-delete-form')->count());
+        self::assertCount(1, $crawler->filter('.payment-delete-form'));
     }
 }

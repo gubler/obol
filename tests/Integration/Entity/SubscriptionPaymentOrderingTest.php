@@ -38,7 +38,7 @@ final class SubscriptionPaymentOrderingTest extends WebTestCase
         self::assertInstanceOf(Subscription::class, $reloaded);
 
         $paidDates = array_map(
-            static fn ($payment): string => $payment->paidDate->format('Y-m-d'),
+            static fn (\App\Entity\Payment $payment): string => $payment->paidDate->format('Y-m-d'),
             $reloaded->payments->toArray(),
         );
 
@@ -61,7 +61,7 @@ final class SubscriptionPaymentOrderingTest extends WebTestCase
         self::assertInstanceOf(Subscription::class, $reloaded);
 
         $createdAt = array_map(
-            static fn ($payment): string => $payment->createdAt->format('H:i'),
+            static fn (\App\Entity\Payment $payment): string => $payment->createdAt->format('H:i'),
             $reloaded->payments->toArray(),
         );
 

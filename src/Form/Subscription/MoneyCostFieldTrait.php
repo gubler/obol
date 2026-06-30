@@ -47,6 +47,7 @@ trait MoneyCostFieldTrait
                 // PRE_SET_DATA established from the subscription's existing currency.
                 return;
             }
+
             $currency = Currency::tryFrom($value) ?? Currency::USD;
             $this->putCostField($event->getForm(), $currency->fractionDigits());
         });

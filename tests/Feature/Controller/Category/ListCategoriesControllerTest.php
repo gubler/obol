@@ -17,7 +17,7 @@ final class ListCategoriesControllerTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request(method: 'GET', uri: '/categories');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'h1', text: 'Categories');
@@ -27,7 +27,7 @@ final class ListCategoriesControllerTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request(method: 'GET', uri: '/categories');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: '.empty-state');
@@ -42,7 +42,7 @@ final class ListCategoriesControllerTest extends WebTestCase
         CategoryFactory::createOne(['name' => 'Software']);
         CategoryFactory::createOne(['name' => 'Utilities']);
 
-        $client->request(method: 'GET', uri: '/categories');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'body', text: 'Entertainment');
@@ -63,7 +63,7 @@ final class ListCategoriesControllerTest extends WebTestCase
         \Zenstruck\Foundry\Persistence\refresh($entertainment);
         \Zenstruck\Foundry\Persistence\refresh($software);
 
-        $client->request(method: 'GET', uri: '/categories');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'body', text: '3');
@@ -74,7 +74,7 @@ final class ListCategoriesControllerTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request(method: 'GET', uri: '/categories');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'a[href="/categories/new"]');
@@ -88,7 +88,7 @@ final class ListCategoriesControllerTest extends WebTestCase
         $category = CategoryFactory::createOne(['name' => 'Test Category']);
         $categoryId = $category->id;
 
-        $client->request(method: 'GET', uri: '/categories');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'a[href="/categories/' . $categoryId . '"]');

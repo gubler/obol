@@ -36,7 +36,7 @@ final readonly class CreatePaymentHandler
         );
 
         if ($command->restartPaymentGeneration) {
-            \assert(null !== $command->nextRenewal);
+            \assert($command->nextRenewal instanceof \DateTimeImmutable);
             $subscription->automatePayments($command->nextRenewal);
         }
     }

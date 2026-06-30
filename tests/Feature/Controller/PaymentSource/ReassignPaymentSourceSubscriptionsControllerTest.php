@@ -24,7 +24,7 @@ final class ReassignPaymentSourceSubscriptionsControllerTest extends WebTestCase
         PaymentSourceFactory::createOne(['name' => 'Visa 5678']);
         SubscriptionFactory::createOne(['paymentSource' => $source, 'name' => 'Netflix']);
 
-        $crawler = $client->request(method: 'GET', uri: '/payment-sources/' . $source->id);
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/' . $source->id);
 
         self::assertResponseIsSuccessful();
         self::assertCount(1, $crawler->filter('form[action="/payment-sources/' . $source->id . '/reassign"]'));
@@ -38,7 +38,7 @@ final class ReassignPaymentSourceSubscriptionsControllerTest extends WebTestCase
         $source = PaymentSourceFactory::createOne(['name' => 'Amex 1234']);
         SubscriptionFactory::createOne(['paymentSource' => $source, 'name' => 'Netflix']);
 
-        $crawler = $client->request(method: 'GET', uri: '/payment-sources/' . $source->id);
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/' . $source->id);
 
         self::assertResponseIsSuccessful();
         self::assertCount(0, $crawler->filter('select[name="target"]'));
@@ -54,7 +54,7 @@ final class ReassignPaymentSourceSubscriptionsControllerTest extends WebTestCase
         SubscriptionFactory::createOne(['paymentSource' => $from, 'name' => 'Spotify']);
         $toId = $to->id;
 
-        $client->request(method: 'POST', uri: '/payment-sources/' . $from->id . '/reassign', parameters: ['target' => (string) $to->id]);
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/payment-sources/' . $from->id . '/reassign', parameters: ['target' => (string) $to->id]);
 
         self::assertResponseRedirects(expectedLocation: '/payment-sources/' . $from->id);
         $client->followRedirect();
@@ -75,6 +75,7 @@ final class ReassignPaymentSourceSubscriptionsControllerTest extends WebTestCase
                 $hasEvent = true;
             }
         }
+
         self::assertTrue($hasEvent, 'Expected a paymentSource Update event on the moved subscription.');
     }
 
@@ -84,7 +85,7 @@ final class ReassignPaymentSourceSubscriptionsControllerTest extends WebTestCase
 
         $source = PaymentSourceFactory::createOne(['name' => 'Amex 1234']);
 
-        $client->request(method: 'POST', uri: '/payment-sources/' . $source->id . '/reassign', parameters: ['target' => 'not-a-ulid']);
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/payment-sources/' . $source->id . '/reassign', parameters: ['target' => 'not-a-ulid']);
         $client->followRedirect();
 
         self::assertSelectorTextContains(selector: '.flash-error', text: 'Could not move the subscriptions');

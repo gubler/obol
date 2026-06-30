@@ -19,7 +19,7 @@ final class CreatePaymentSourceControllerTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request(method: 'GET', uri: '/payment-sources/new');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/new');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'h1', text: 'New Payment Source');
@@ -33,7 +33,7 @@ final class CreatePaymentSourceControllerTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $crawler = $client->request(method: 'GET', uri: '/payment-sources/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/new');
 
         self::assertResponseIsSuccessful();
         // The swatch picker mirrors the subscription form: one radio per TileColor, one pre-selected.
@@ -45,7 +45,7 @@ final class CreatePaymentSourceControllerTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $crawler = $client->request(method: 'GET', uri: '/payment-sources/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/new');
 
         $form = $crawler->selectButton(value: 'Save')->form();
         $form['payment_source[name]'] = 'Amex 1234';
@@ -69,7 +69,7 @@ final class CreatePaymentSourceControllerTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request(method: 'GET', uri: '/payment-sources/new');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/new');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'a[href="/payment-sources"]');
@@ -79,7 +79,7 @@ final class CreatePaymentSourceControllerTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $crawler = $client->request(method: 'GET', uri: '/payment-sources/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/new');
 
         $form = $crawler->selectButton(value: 'Save')->form();
         $form['payment_source[name]'] = 'Flash Test Source';
@@ -94,7 +94,7 @@ final class CreatePaymentSourceControllerTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $crawler = $client->request(method: 'GET', uri: '/payment-sources/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/new');
 
         $form = $crawler->selectButton(value: 'Save')->form();
         $form['payment_source[name]'] = '';
@@ -110,7 +110,7 @@ final class CreatePaymentSourceControllerTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $crawler = $client->request(method: 'GET', uri: '/payment-sources/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/new');
 
         $form = $crawler->selectButton(value: 'Save')->form();
         $form['payment_source[name]'] = str_repeat(string: 'a', times: 256);
@@ -126,7 +126,7 @@ final class CreatePaymentSourceControllerTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request(method: 'GET', uri: '/payment-sources/new');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/new');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'input[name="payment_source[_token]"]');
@@ -136,7 +136,7 @@ final class CreatePaymentSourceControllerTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $crawler = $client->request(method: 'GET', uri: '/payment-sources/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/new');
 
         $initialCount = PaymentSourceFactory::count();
 

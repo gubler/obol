@@ -115,7 +115,7 @@ final class CreateSubscriptionHandlerTest extends TestCase
 
         $entityManager = $this->createMock(EntityManagerInterface::class);
         $entityManager->expects(self::once())->method('persist')
-            ->with(self::callback(static fn (Subscription $s): bool => null === $s->category && null === $s->paymentSource))
+            ->with(self::callback(static fn (Subscription $s): bool => !$s->category instanceof Category && !$s->paymentSource instanceof PaymentSource))
         ;
 
         $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);

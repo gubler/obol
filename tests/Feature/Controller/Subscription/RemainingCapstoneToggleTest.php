@@ -29,12 +29,12 @@ final class RemainingCapstoneToggleTest extends WebTestCase
         ]);
 
         // Default capstone is Global Totals.
-        $client->request(method: 'GET', uri: '/');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: '.global-total-monthly');
 
         // Toggle to Remaining: the single renewal due this month leaves $50.00 owed.
-        $client->request(method: 'GET', uri: '/?capstone=remaining');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/?capstone=remaining');
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: '.remaining-total-monthly', text: '$50.00');
         self::assertSelectorTextContains(selector: '.remaining-total-monthly', text: 'this month');

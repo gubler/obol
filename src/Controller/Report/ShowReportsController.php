@@ -22,8 +22,12 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class ShowReportsController extends AbstractBaseController
 {
+    public function __construct(private readonly CompositionChartFactory $chartFactory, private readonly ObligationTrendChartFactory $trendFactory)
+    {
+    }
+
     #[Route(path: '/reports', name: 'reports_index', methods: ['GET'])]
-    public function __invoke(Request $request, CompositionChartFactory $chartFactory, ObligationTrendChartFactory $trendFactory): Response
+    public function __invoke(Request $request): Response
     {
         $composition = $this->queryBus->query(query: new FindCategoryCompositionQuery());
         \assert($composition instanceof Composition);
@@ -37,11 +41,11 @@ final class ShowReportsController extends AbstractBaseController
 
         return $this->render(view: 'reports/index.html.twig', parameters: [
             'composition' => $composition,
-            'chart' => $chartFactory->pie($composition),
+            'chart' => $this->chartFactory->pie($composition),
             'paymentSourceComposition' => $paymentSourceComposition,
-            'paymentSourceChart' => $chartFactory->pie($paymentSourceComposition),
+            'paymentSourceChart' => $this->chartFactory->pie($paymentSourceComposition),
             'series' => $series,
-            'trendChart' => $trendFactory->line($series),
+            'trendChart' => $this->trendFactory->line($series),
             'trendPeriod' => $trendPeriod,
             'trendOptions' => ObligationTrendPeriod::cases(),
         ]);

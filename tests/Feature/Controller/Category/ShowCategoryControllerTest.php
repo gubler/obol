@@ -26,7 +26,7 @@ final class ShowCategoryControllerTest extends WebTestCase
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $categoryId = $category->id;
 
-        $client->request(method: 'GET', uri: '/categories/' . $categoryId);
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/' . $categoryId);
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'h1', text: 'Entertainment');
@@ -38,12 +38,12 @@ final class ShowCategoryControllerTest extends WebTestCase
         $client = self::createClient();
         $category = CategoryFactory::createOne(['name' => 'Streaming', 'color' => TileColor::Teal, 'icon' => CategoryIcon::Film]);
 
-        $client->request(method: 'GET', uri: '/categories/' . $category->id);
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/' . $category->id);
 
         self::assertResponseIsSuccessful();
         $badge = $client->getCrawler()->filter('h1 .category-badge');
         self::assertCount(1, $badge);
-        self::assertStringContainsString('bg-teal-600', $badge->attr('class'));
+        self::assertStringContainsString('bg-teal-600', (string) $badge->attr('class'));
         self::assertCount(1, $badge->filter('svg'));
     }
 
@@ -58,7 +58,7 @@ final class ShowCategoryControllerTest extends WebTestCase
 
         $categoryId = $category->id;
 
-        $client->request(method: 'GET', uri: '/categories/' . $categoryId);
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/' . $categoryId);
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'body', text: 'Netflix');
@@ -74,7 +74,7 @@ final class ShowCategoryControllerTest extends WebTestCase
         $category = CategoryFactory::createOne(['name' => 'Test Category']);
         $categoryId = $category->id;
 
-        $client->request(method: 'GET', uri: '/categories/' . $categoryId);
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/' . $categoryId);
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'h2', text: 'Category Details');
@@ -87,7 +87,7 @@ final class ShowCategoryControllerTest extends WebTestCase
         $category = CategoryFactory::createOne(['name' => 'Test Category']);
         $categoryId = $category->id;
 
-        $client->request(method: 'GET', uri: '/categories/' . $categoryId);
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/' . $categoryId);
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'a[href="/categories"]');
@@ -99,7 +99,7 @@ final class ShowCategoryControllerTest extends WebTestCase
 
         $nonExistentId = new Ulid();
 
-        $client->request(method: 'GET', uri: '/categories/' . $nonExistentId);
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/' . $nonExistentId);
 
         self::assertResponseStatusCodeSame(expectedCode: 404);
     }
@@ -111,7 +111,7 @@ final class ShowCategoryControllerTest extends WebTestCase
         $category = CategoryFactory::createOne(['name' => 'Empty Category']);
         $categoryId = $category->id;
 
-        $client->request(method: 'GET', uri: '/categories/' . $categoryId);
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/' . $categoryId);
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'body', text: 'No subscriptions in this category');

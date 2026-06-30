@@ -44,7 +44,7 @@ final class ArchTest extends TestCase
         foreach ($enums as $enum) {
             self::assertTrue(enum_exists($enum), $enum . ' in App\Enum is not an enum');
             self::assertTrue(
-                (new \ReflectionEnum($enum))->isBacked(),
+                new \ReflectionEnum($enum)->isBacked(),
                 $enum . ' must be a backed enum',
             );
         }

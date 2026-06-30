@@ -42,8 +42,8 @@ final readonly class MoneyMinorTransformer implements DataTransformerInterface
 
         try {
             return $this->parser->toMinor((string) $value, $this->fractionDigits);
-        } catch (MoneyParseException $exception) {
-            throw new TransformationFailedException($exception->getMessage(), previous: $exception);
+        } catch (MoneyParseException $moneyParseException) {
+            throw new TransformationFailedException($moneyParseException->getMessage(), $moneyParseException->getCode(), previous: $moneyParseException);
         }
     }
 }

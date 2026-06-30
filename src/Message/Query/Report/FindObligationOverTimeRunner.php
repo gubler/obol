@@ -86,6 +86,7 @@ final readonly class FindObligationOverTimeRunner
             if ($snapshot->recordedAt > $anchor) {
                 break;
             }
+
             $carried = $snapshot;
         }
 
@@ -99,7 +100,7 @@ final readonly class FindObligationOverTimeRunner
      */
     private function nativeAmounts(?ObligationSnapshot $snapshot): array
     {
-        if (null === $snapshot) {
+        if (!$snapshot instanceof ObligationSnapshot) {
             return [];
         }
 

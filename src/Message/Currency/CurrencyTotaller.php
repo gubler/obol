@@ -38,6 +38,7 @@ final readonly class CurrencyTotaller
             if ($money->currency !== $display) {
                 $approximate = true;
             }
+
             $converted = $converted->add($this->converter->convert($money, $display, $asOf));
         }
 

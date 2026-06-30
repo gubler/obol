@@ -24,7 +24,7 @@ final class ArchiveSubscriptionControllerTest extends WebTestCase
             'name' => 'Netflix',
         ]);
 
-        $client->request(method: 'POST', uri: '/subscriptions/' . $subscription->id . '/archive');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/subscriptions/' . $subscription->id . '/archive');
 
         self::assertResponseRedirects('/subscriptions/' . $subscription->id);
 
@@ -48,7 +48,7 @@ final class ArchiveSubscriptionControllerTest extends WebTestCase
             'name' => 'Spotify',
         ]);
 
-        $client->request(method: 'POST', uri: '/subscriptions/' . $subscription->id . '/archive');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/subscriptions/' . $subscription->id . '/archive');
         $client->followRedirect();
 
         self::assertSelectorTextContains('.flash-success', 'Subscription archived successfully');
@@ -58,7 +58,7 @@ final class ArchiveSubscriptionControllerTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request(method: 'POST', uri: '/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/archive');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/archive');
 
         self::assertResponseStatusCodeSame(404);
     }
@@ -72,7 +72,7 @@ final class ArchiveSubscriptionControllerTest extends WebTestCase
             'name' => 'Netflix',
         ]);
 
-        $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/archive');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id . '/archive');
 
         self::assertResponseStatusCodeSame(405);
     }
@@ -88,7 +88,7 @@ final class ArchiveSubscriptionControllerTest extends WebTestCase
 
         $initialEventCount = \count($subscription->subscriptionEvents);
 
-        $client->request(method: 'POST', uri: '/subscriptions/' . $subscription->id . '/archive');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/subscriptions/' . $subscription->id . '/archive');
 
         $container = self::getContainer();
         /** @var EntityManagerInterface $entityManager */

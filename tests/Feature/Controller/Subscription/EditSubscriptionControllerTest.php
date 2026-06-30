@@ -32,7 +32,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
             'cost' => new Money(1599, Currency::USD),
         ]);
 
-        $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id . '/edit');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'h1', text: 'Edit Subscription');
@@ -51,7 +51,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
         CategoryFactory::createOne(['name' => 'Microsoft']);
         $subscription = SubscriptionFactory::createOne(['category' => $apple]);
 
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id . '/edit');
 
         self::assertResponseIsSuccessful();
         $options = $crawler
@@ -67,7 +67,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request(method: 'GET', uri: '/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/edit');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/edit');
 
         self::assertResponseStatusCodeSame(expectedCode: 404);
     }
@@ -78,7 +78,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
         CategoryFactory::createOne(['name' => 'Apple', 'color' => TileColor::Teal]);
         $subscription = SubscriptionFactory::createOne(['name' => 'Netflix']);
 
-        $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id . '/edit');
 
         self::assertResponseIsSuccessful();
         // Color-sync is a new-form convenience only; the edit form must stay unaffected.
@@ -98,7 +98,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
             'cost' => new Money(1599, Currency::USD),
         ]);
 
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id . '/edit');
 
         $form = $crawler->selectButton(value: 'Save')->form([
             'edit_subscription[category]' => $newCategory->id->toBase32(),
@@ -144,7 +144,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
             'cost' => new Money(1599, Currency::USD),
         ]);
 
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id . '/edit');
 
         $form = $crawler->selectButton(value: 'Save')->form([
             'edit_subscription[name]' => 'Netflix',
@@ -177,7 +177,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
             'cost' => new Money(1599, Currency::USD),
         ]);
 
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id . '/edit');
         $form = $crawler->selectButton(value: 'Save')->form([
             'edit_subscription[currency]' => 'EUR',
         ]);
@@ -189,6 +189,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
         /** @var EntityManagerInterface $entityManager */
         $entityManager = $container->get(id: EntityManagerInterface::class);
         $entityManager->clear();
+
         $updated = $entityManager->getRepository(Subscription::class)->find($subscription->id);
 
         self::assertSame(Currency::EUR, $updated->cost->currency);
@@ -202,7 +203,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
             'cost' => new Money(1599, Currency::USD),
         ]);
 
-        $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id . '/edit');
 
         self::assertResponseIsSuccessful();
         // The picker is rendered disabled, so the currency cannot be resubmitted once payments exist.
@@ -214,7 +215,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
         $client = self::createClient();
         $subscription = SubscriptionFactory::createOne(['name' => 'Netflix']);
 
-        $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id . '/edit');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorNotExists(selector: '#edit_subscription_restartPaymentGeneration');
@@ -230,9 +231,9 @@ final class EditSubscriptionControllerTest extends WebTestCase
             'cost' => new Money(1599, Currency::USD),
         ]);
 
-        $future = (new \DateTimeImmutable('+45 days'))->format('Y-m-d');
+        $future = new \DateTimeImmutable('+45 days')->format('Y-m-d');
 
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id . '/edit');
 
         self::assertSelectorExists(selector: '#edit_subscription_restartPaymentGeneration');
 
@@ -256,6 +257,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
         $entityManager->clear();
 
         $updated = $entityManager->getRepository(className: Subscription::class)->find($subscription->id);
+        self::assertInstanceOf(Subscription::class, $updated);
         self::assertTrue($updated->generatesPaymentsAutomatically());
         self::assertSame($future, $updated->nextRenewal->format('Y-m-d'));
     }
@@ -270,7 +272,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
             'cost' => new Money(1599, Currency::USD),
         ]);
 
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id . '/edit');
 
         $form = $crawler->selectButton(value: 'Save')->form([
             'edit_subscription[category]' => $category->id->toBase32(),
@@ -293,6 +295,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
 
         // Still manual - the invalid restart did not take effect.
         $updated = $entityManager->getRepository(className: Subscription::class)->find($subscription->id);
+        self::assertInstanceOf(Subscription::class, $updated);
         self::assertFalse($updated->generatesPaymentsAutomatically());
     }
 
@@ -305,7 +308,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
             'name' => 'Spotify',
         ]);
 
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id . '/edit');
 
         $form = $crawler->selectButton(value: 'Save')->form([
             'edit_subscription[name]' => 'Spotify Premium',
@@ -326,7 +329,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
             'name' => 'Netflix',
         ]);
 
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id . '/edit');
 
         $form = $crawler->selectButton(value: 'Save')->form();
         $form['edit_subscription[name]'] = '';
@@ -342,7 +345,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request(method: 'POST', uri: '/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/edit');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/edit');
 
         self::assertResponseStatusCodeSame(expectedCode: 404);
     }
@@ -356,7 +359,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
             'name' => 'Netflix',
         ]);
 
-        $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id . '/edit');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'input[name="edit_subscription[_token]"]');
@@ -371,7 +374,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
             'name' => 'Netflix',
         ]);
 
-        $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id . '/edit');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'a[href="/subscriptions/' . $subscription->id . '"]');
@@ -389,7 +392,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
 
         $initialEventCount = \count($subscription->subscriptionEvents);
 
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id . '/edit');
 
         $form = $crawler->selectButton(value: 'Save')->form([
             'edit_subscription[name]' => 'Netflix Premium',

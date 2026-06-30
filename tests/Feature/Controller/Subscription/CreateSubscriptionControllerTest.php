@@ -23,7 +23,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
         // The category picker only appears when at least one category exists.
         CategoryFactory::createOne(['name' => 'Entertainment']);
 
-        $client->request(method: 'GET', uri: '/subscriptions/new');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'h1', text: 'New Subscription');
@@ -42,7 +42,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
         CategoryFactory::createOne(['name' => 'Apple']);
         CategoryFactory::createOne(['name' => 'Microsoft']);
 
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
         self::assertResponseIsSuccessful();
         $options = $crawler
@@ -59,7 +59,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
         $client = self::createClient();
         CategoryFactory::createOne(['name' => 'Apple', 'color' => TileColor::Teal]);
 
-        $client->request(method: 'GET', uri: '/subscriptions/new');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
         self::assertResponseIsSuccessful();
         // The form drives the color-sync controller; the category select feeds it, each option carries
@@ -74,7 +74,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request(method: 'GET', uri: '/subscriptions/new');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorNotExists(selector: 'select[name="create_subscription[category]"]');
@@ -84,7 +84,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request(method: 'GET', uri: '/subscriptions/new');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'a[href="/"]');
@@ -95,7 +95,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
         $client = self::createClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
         $form = $crawler->selectButton(value: 'Save')->form([
             'create_subscription[category]' => $category->id->toBase32(),
@@ -156,7 +156,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
         // The bug report: a cost of 35.50 was saved as 35 and rendered as $0.35.
         $client = self::createClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
         $form = $crawler->selectButton(value: 'Save')->form(
             $this->validSubscriptionForm($category->id->toBase32(), 'Disney Plus', '35.50'),
@@ -173,7 +173,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
     {
         $client = self::createClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
         // A thousands separator must not trip validation, and the decimal must scale to minor units.
         $form = $crawler->selectButton(value: 'Save')->form(
@@ -191,7 +191,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
     {
         $client = self::createClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
         // Yen has no minor unit: 2,000 yen is 2000 minor, not 200000.
         $fields = $this->validSubscriptionForm($category->id->toBase32(), 'Manga Box JP', '2,000');
@@ -210,7 +210,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
     {
         $client = self::createClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
         $form = $crawler->selectButton(value: 'Save')->form(
             $this->validSubscriptionForm($category->id->toBase32(), 'Bogus', 'not money'),
@@ -227,7 +227,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
         $client = self::createClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
         $form = $crawler->selectButton(value: 'Save')->form([
             'create_subscription[category]' => $category->id->toBase32(),
@@ -252,7 +252,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
         self::assertSame(1500, $subscription->cost->minorAmount);
 
         // The chosen currency drives rendering on the detail page.
-        $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id);
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id);
         self::assertSelectorTextContains(selector: 'body', text: '€15.00');
     }
 
@@ -261,7 +261,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
         $client = self::createClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
         $form = $crawler->selectButton(value: 'Save')->form([
             'create_subscription[category]' => $category->id->toBase32(),
@@ -283,7 +283,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
         $client = self::createClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
         $form = $crawler->selectButton(value: 'Save')->form([
             'create_subscription[category]' => $category->id->toBase32(),
@@ -306,7 +306,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
         $client = self::createClient();
         CategoryFactory::createOne(['name' => 'Entertainment']);
 
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
         $form = $crawler->selectButton(value: 'Save')->form([
             'create_subscription[name]' => 'Test Sub',
@@ -331,7 +331,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
         $client = self::createClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
         $form = $crawler->selectButton(value: 'Save')->form([
             'create_subscription[category]' => $category->id->toBase32(),
@@ -352,7 +352,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request(method: 'GET', uri: '/subscriptions/new');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'input[name="create_subscription[_token]"]');
@@ -363,7 +363,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
         $client = self::createClient();
         CategoryFactory::createOne(['name' => 'Entertainment']);
 
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
         $initialCount = SubscriptionFactory::count();
 

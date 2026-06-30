@@ -196,7 +196,6 @@ final class SubscriptionTest extends TestCase
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
             color: $subscription->color,
-            paymentSource: null,
         );
 
         self::assertNull($subscription->paymentSource);

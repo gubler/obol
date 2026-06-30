@@ -148,11 +148,9 @@ jobs:
               if: always() && steps.npm.outcome == 'success'
               run: npm run test
 
-            # Refactor drift (non-blocking: surfaces Rector suggestions in PRs
-            # without failing the build)
+            # Refactor drift: the tree must already satisfy the configured Rector rules.
             - name: "Rector (dry-run)"
               if: always() && steps.install.outcome == 'success'
-              continue-on-error: true
               run: vendor/bin/rector --dry-run --no-progress-bar
 
             # Tests

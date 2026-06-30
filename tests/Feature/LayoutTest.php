@@ -15,7 +15,7 @@ final class LayoutTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request(method: 'GET', uri: '/');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'head link[rel="icon"][type="image/svg+xml"]');
@@ -25,7 +25,7 @@ final class LayoutTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request(method: 'GET', uri: '/');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'head link[rel="icon"][type="image/png"]');
@@ -35,7 +35,7 @@ final class LayoutTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request(method: 'GET', uri: '/');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'head link[rel="apple-touch-icon"]');
@@ -45,7 +45,7 @@ final class LayoutTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request(method: 'GET', uri: '/');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'nav img[alt="Obol"]');
@@ -55,7 +55,7 @@ final class LayoutTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request(method: 'GET', uri: '/');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorNotExists(selector: 'img[alt="Your Company"]');

@@ -32,7 +32,7 @@ final class FrankfurterClientTest extends TestCase
             'response_headers' => ['content-type' => 'application/json'],
         ]));
 
-        $snapshot = (new FrankfurterClient($http))->fetchLatest();
+        $snapshot = new FrankfurterClient($http)->fetchLatest();
 
         self::assertSameInstant(new \DateTimeImmutable('2024-06-10'), $snapshot->date);
         self::assertSame(1.0732, $snapshot->rates['USD']);

@@ -22,7 +22,7 @@ final class CategoryCrudWorkflowTest extends WebTestCase
         $client = self::createClient();
 
         // Create
-        $crawler = $client->request(method: 'GET', uri: '/categories/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/new');
         $form = $crawler->selectButton(value: 'Save')->form();
         $form['create_category[name]'] = 'Workflow Test Category';
         $client->submit(form: $form);
@@ -40,7 +40,7 @@ final class CategoryCrudWorkflowTest extends WebTestCase
         $categoryId = $category->id;
 
         // Edit
-        $crawler = $client->request(method: 'GET', uri: '/categories/' . $categoryId . '/edit');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/' . $categoryId . '/edit');
         $form = $crawler->selectButton(value: 'Save')->form();
         $form['edit_category[name]'] = 'Updated Workflow Category';
         $client->submit(form: $form);
@@ -54,7 +54,7 @@ final class CategoryCrudWorkflowTest extends WebTestCase
         self::assertSame('Updated Workflow Category', $updatedCategory->name);
 
         // Delete
-        $client->request(method: 'POST', uri: '/categories/' . $categoryId . '/delete');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/categories/' . $categoryId . '/delete');
 
         self::assertResponseRedirects(expectedLocation: '/categories');
 
@@ -72,7 +72,7 @@ final class CategoryCrudWorkflowTest extends WebTestCase
         $categoryId = $category->id;
 
         // Try to delete the category. This should fail
-        $client->request(method: 'POST', uri: '/categories/' . $categoryId . '/delete');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/categories/' . $categoryId . '/delete');
         $client->followRedirect();
 
         self::assertSelectorTextContains(selector: '.flash-error', text: 'Cannot delete category with subscriptions');
@@ -83,11 +83,12 @@ final class CategoryCrudWorkflowTest extends WebTestCase
         /** @var EntityManagerInterface $entityManager */
         $entityManager = $container->get(id: EntityManagerInterface::class);
         $subscriptionEntity = $entityManager->getRepository(Subscription::class)->findOneBy(['name' => 'Netflix']);
+        self::assertInstanceOf(Subscription::class, $subscriptionEntity);
         $entityManager->remove($subscriptionEntity);
         $entityManager->flush();
 
         // Now delete should work
-        $client->request(method: 'POST', uri: '/categories/' . $categoryId . '/delete');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/categories/' . $categoryId . '/delete');
         self::assertResponseRedirects(expectedLocation: '/categories');
         $client->followRedirect();
 
@@ -108,14 +109,14 @@ final class CategoryCrudWorkflowTest extends WebTestCase
         $categories = ['Zebra', 'Alpha', 'Beta'];
 
         foreach ($categories as $name) {
-            $crawler = $client->request(method: 'GET', uri: '/categories/new');
+            $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/new');
             $form = $crawler->selectButton(value: 'Save')->form();
             $form['create_category[name]'] = $name;
             $client->submit(form: $form);
             $client->followRedirect();
         }
 
-        $crawler = $client->request(method: 'GET', uri: '/categories');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories');
 
         $categoryNames = $crawler->filter('table tbody tr td:first-child')->each(
             fn (Crawler $node): string => $node->text()

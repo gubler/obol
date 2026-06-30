@@ -30,7 +30,7 @@ final class ValidatePaymentControllerTest extends WebTestCase
             'amount' => new Money(1599, Currency::USD),
         ]);
 
-        $client->request(method: 'POST', uri: '/payments/' . $payment->id . '/validate');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/payments/' . $payment->id . '/validate');
 
         self::assertResponseRedirects(expectedLocation: '/subscriptions/' . $subscription->id);
 
@@ -49,7 +49,7 @@ final class ValidatePaymentControllerTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request(method: 'POST', uri: '/payments/01JKXXXXXXXXXXXXXXXXXXXXXXX/validate');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/payments/01JKXXXXXXXXXXXXXXXXXXXXXXX/validate');
 
         self::assertResponseStatusCodeSame(expectedCode: 404);
     }

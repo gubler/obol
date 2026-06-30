@@ -23,7 +23,7 @@ final class NoUnresolvedTranslationKeysTest extends WebTestCase
 
         $url = self::getContainer()->get('router')->generate($route);
 
-        $client->request(method: 'GET', uri: $url);
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: $url);
 
         self::assertResponseIsSuccessful();
         self::assertNoTranslationKeyLeaks((string) $client->getResponse()->getContent(), $route);

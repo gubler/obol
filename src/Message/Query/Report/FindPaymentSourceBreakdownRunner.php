@@ -29,7 +29,7 @@ final readonly class FindPaymentSourceBreakdownRunner
     public function __invoke(FindPaymentSourceBreakdownQuery $query): ?Composition
     {
         // A null source id is the unassigned drill-down: the subscriptions with no payment source.
-        if (null === $query->paymentSourceId) {
+        if (!$query->paymentSourceId instanceof \Symfony\Component\Uid\Ulid) {
             $title = $this->translator->trans('subscription.group.unassigned');
             $filter = ['archived' => false, 'paymentSource' => null];
         } else {

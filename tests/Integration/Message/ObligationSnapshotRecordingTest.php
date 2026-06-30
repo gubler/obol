@@ -52,7 +52,7 @@ final class ObligationSnapshotRecordingTest extends WebTestCase
         self::assertEqualsCanonicalizing(['USD' => 4000], $snapshots->findLatest()?->obligationsByCurrency);
 
         $subscription = $entityManager->getRepository(Subscription::class)->findOneBy([]);
-        \assert($subscription instanceof Subscription);
+        self::assertInstanceOf(Subscription::class, $subscription);
 
         // No-op update (rename only): obligation is unchanged, so no new snapshot.
         $commandBus->dispatch(new UpdateSubscriptionCommand(

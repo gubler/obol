@@ -21,7 +21,7 @@ final class PaymentSourceReportTest extends WebTestCase
         $source = PaymentSourceFactory::createOne(['name' => 'Amex 1234']);
         SubscriptionFactory::createOne(['paymentSource' => $source, 'name' => 'Netflix']);
 
-        $crawler = $client->request(method: 'GET', uri: '/reports');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/reports');
 
         self::assertResponseIsSuccessful();
         self::assertCount(1, $crawler->filter('.reports-payment-source-composition'));
@@ -37,7 +37,7 @@ final class PaymentSourceReportTest extends WebTestCase
         $source = PaymentSourceFactory::createOne(['name' => 'Amex 1234']);
         SubscriptionFactory::createOne(['paymentSource' => $source, 'name' => 'Netflix']);
 
-        $crawler = $client->request(method: 'GET', uri: '/reports/payment-sources/' . $source->id);
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/reports/payment-sources/' . $source->id);
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'h1', text: 'Amex 1234');
@@ -50,7 +50,7 @@ final class PaymentSourceReportTest extends WebTestCase
 
         SubscriptionFactory::createOne(['name' => 'Orphan']);
 
-        $crawler = $client->request(method: 'GET', uri: '/reports/payment-sources/unassigned');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/reports/payment-sources/unassigned');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'h1', text: 'Unassigned');
@@ -61,7 +61,7 @@ final class PaymentSourceReportTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request(method: 'GET', uri: '/reports/payment-sources/' . new Ulid());
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/reports/payment-sources/' . new Ulid());
 
         self::assertResponseStatusCodeSame(expectedCode: 404);
     }

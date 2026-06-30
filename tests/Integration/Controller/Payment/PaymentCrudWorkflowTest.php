@@ -26,12 +26,12 @@ final class PaymentCrudWorkflowTest extends WebTestCase
         ]);
 
         // Visit subscription show page — no payments yet
-        $client->request('GET', '/subscriptions/' . $subscription->id);
+        $client->request(\Symfony\Component\HttpFoundation\Request::METHOD_GET, '/subscriptions/' . $subscription->id);
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('.payments-section', 'No payments recorded');
 
         // Navigate to create payment form
-        $client->request('GET', '/subscriptions/' . $subscription->id . '/payments/new');
+        $client->request(\Symfony\Component\HttpFoundation\Request::METHOD_GET, '/subscriptions/' . $subscription->id . '/payments/new');
         self::assertResponseIsSuccessful();
 
         // Submit payment form

@@ -26,7 +26,7 @@ final class DeleteSubscriptionControllerTest extends WebTestCase
 
         $subscriptionId = $subscription->id;
 
-        $client->request(method: 'POST', uri: '/subscriptions/' . $subscriptionId . '/delete');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/subscriptions/' . $subscriptionId . '/delete');
 
         self::assertResponseRedirects(expectedLocation: '/');
 
@@ -50,7 +50,7 @@ final class DeleteSubscriptionControllerTest extends WebTestCase
             'name' => 'Spotify',
         ]);
 
-        $client->request(method: 'POST', uri: '/subscriptions/' . $subscription->id . '/delete');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/subscriptions/' . $subscription->id . '/delete');
         $client->followRedirect();
 
         self::assertSelectorTextContains(selector: '.flash-success', text: 'Subscription deleted successfully');
@@ -60,7 +60,7 @@ final class DeleteSubscriptionControllerTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request(method: 'POST', uri: '/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/delete');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/delete');
 
         self::assertResponseStatusCodeSame(expectedCode: 404);
     }
@@ -74,7 +74,7 @@ final class DeleteSubscriptionControllerTest extends WebTestCase
             'name' => 'Netflix',
         ]);
 
-        $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/delete');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id . '/delete');
 
         self::assertResponseStatusCodeSame(expectedCode: 405);
     }
@@ -90,7 +90,7 @@ final class DeleteSubscriptionControllerTest extends WebTestCase
 
         $initialCount = SubscriptionFactory::count();
 
-        $client->request(method: 'POST', uri: '/subscriptions/' . $subscription->id . '/delete');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/subscriptions/' . $subscription->id . '/delete');
 
         $finalCount = SubscriptionFactory::count();
 

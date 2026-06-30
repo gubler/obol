@@ -42,6 +42,7 @@ final class MoneyPersistenceTest extends WebTestCase
         $entityManager->persist($category);
         $entityManager->persist($subscription);
         $entityManager->flush();
+
         $subscriptionId = $subscription->id;
         $entityManager->clear();
 

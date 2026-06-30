@@ -29,7 +29,7 @@ final readonly class FindCategoryBreakdownRunner
     public function __invoke(FindCategoryBreakdownQuery $query): ?Composition
     {
         // A null category id is the uncategorized drill-down: the subscriptions with no category.
-        if (null === $query->categoryId) {
+        if (!$query->categoryId instanceof \Symfony\Component\Uid\Ulid) {
             $title = $this->translator->trans('subscription.group.uncategorized');
             $filter = ['archived' => false, 'category' => null];
         } else {

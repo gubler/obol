@@ -15,7 +15,7 @@ use Doctrine\ORM\Mapping as ORM;
 final readonly class Money
 {
     public function __construct(
-        #[ORM\Column(name: 'amount', type: 'integer')]
+        #[ORM\Column(name: 'amount', type: \Doctrine\DBAL\Types\Types::INTEGER)]
         public int $minorAmount,
         #[ORM\Column(name: 'currency', enumType: Currency::class)]
         public Currency $currency,

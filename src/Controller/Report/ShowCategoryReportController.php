@@ -18,19 +18,23 @@ use Symfony\Component\Uid\Ulid;
 
 final class ShowCategoryReportController extends AbstractBaseController
 {
+    public function __construct(private readonly CompositionChartFactory $chartFactory)
+    {
+    }
+
     #[Route(path: '/reports/categories/{id}', name: 'reports_category', methods: ['GET'])]
-    public function __invoke(Ulid $id, CompositionChartFactory $chartFactory): Response
+    public function __invoke(Ulid $id): Response
     {
         $composition = $this->queryBus->query(query: new FindCategoryBreakdownQuery(categoryId: $id));
         \assert(null === $composition || $composition instanceof Composition);
 
-        if (null === $composition) {
+        if (!$composition instanceof Composition) {
             throw new NotFoundHttpException(\sprintf('Category with ID "%s" not found.', $id));
         }
 
         return $this->render(view: 'reports/category.html.twig', parameters: [
             'composition' => $composition,
-            'chart' => $chartFactory->pie($composition),
+            'chart' => $this->chartFactory->pie($composition),
         ]);
     }
 }

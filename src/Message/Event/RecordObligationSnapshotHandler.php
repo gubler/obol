@@ -31,7 +31,7 @@ final readonly class RecordObligationSnapshotHandler
             $current = $this->currentObligation();
 
             $latest = $this->obligationSnapshotRepository->findLatest();
-            if (null !== $latest) {
+            if ($latest instanceof ObligationSnapshot) {
                 $previous = $latest->obligationsByCurrency;
                 ksort($previous);
                 // Append only when the obligation actually moved; a no-op edit (rename, colour) is skipped.

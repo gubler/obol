@@ -27,9 +27,6 @@ class Category
     #[ORM\Column(enumType: TileColor::class)]
     public private(set) TileColor $color;
 
-    #[ORM\Column(enumType: CategoryIcon::class)]
-    public private(set) CategoryIcon $icon;
-
     /**
      * @var Collection<int, Subscription>
      */
@@ -39,7 +36,8 @@ class Category
     public function __construct(
         string $name,
         ?TileColor $color = null,
-        CategoryIcon $icon = CategoryIcon::Tag,
+        #[ORM\Column(enumType: CategoryIcon::class)]
+        public private(set) CategoryIcon $icon = CategoryIcon::Tag,
     ) {
         $this->id = new Ulid();
         $this->subscriptions = new ArrayCollection();
@@ -49,7 +47,6 @@ class Category
         $this->name = $name;
         // A category always carries a color; pick a random swatch when one is not supplied.
         $this->color = $color ?? TileColor::random();
-        $this->icon = $icon;
     }
 
     public function setName(string $name): void

@@ -32,7 +32,7 @@ final class MixedCurrencyCategoryTest extends WebTestCase
         SubscriptionFactory::createOne(['category' => $category, 'cost' => new Money(4000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
         SubscriptionFactory::createOne(['category' => $category, 'cost' => new Money(3000, Currency::EUR), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
 
-        $client->request(method: 'GET', uri: '/');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
 
         self::assertResponseIsSuccessful();
         // 4000 USD + (3000 EUR -> 3240 USD) = 7240 USD, flagged approximate, native split disclosed.

@@ -41,7 +41,7 @@ class ExchangeRateRepository extends ServiceEntityRepository
             ->setMaxResults(1)
         ;
 
-        if (null !== $asOf) {
+        if ($asOf instanceof \DateTimeImmutable) {
             $qb->andWhere('r.asOf <= :asOf')->setParameter('asOf', $asOf);
         }
 

@@ -126,6 +126,11 @@ description = "Refactoring via Rector"
 depends = ["_ensure-up"]
 run = ["$DC_EXEC php vendor/bin/rector"]
 
+[tasks."rector:check"]
+description = "Rector (dry-run; fails on drift)"
+depends = ["_ensure-up"]
+run = ["$DC_EXEC php vendor/bin/rector --dry-run"]
+
 [tasks.seed]
 description = "Load fixtures (purges first, then seeds)"
 depends = ["_ensure-up"]
@@ -200,8 +205,8 @@ description = "Regenerate docs/src/content/docs/palette.md (light + dark token s
 run = ["npm run palette"]
 
 [tasks.check]
-description = "Run all checks: PHPStan (src + tests), tests, CS Fixer, Twig CS, and the JS toolchain"
-depends = ["lint:yaml", "sa", "sa:tests", "test", "cs", "cs:twig", "js:sa", "js:test", "js:cs"]
+description = "Run all checks: PHPStan (src + tests), tests, CS Fixer, Twig CS, Rector, and the JS toolchain"
+depends = ["lint:yaml", "sa", "sa:tests", "test", "cs", "cs:twig", "rector:check", "js:sa", "js:test", "js:cs"]
 
 [tasks."docs:install"]
 description = "Install dev-docs dependencies (one-time, after clone)"

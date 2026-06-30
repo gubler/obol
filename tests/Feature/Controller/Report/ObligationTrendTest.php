@@ -23,7 +23,7 @@ final class ObligationTrendTest extends WebTestCase
         $category = CategoryFactory::createOne(['name' => 'Streaming']);
         SubscriptionFactory::createOne(['category' => $category, 'cost' => new Money(4000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
 
-        $client->request(method: 'GET', uri: '/reports');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/reports');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: '.obligation-trend canvas');                 // the line chart
@@ -37,7 +37,7 @@ final class ObligationTrendTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request(method: 'GET', uri: '/reports?trend=week');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/reports?trend=week');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: '.obligation-trend [aria-current="page"]', text: 'Weekly');

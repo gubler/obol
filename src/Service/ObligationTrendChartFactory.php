@@ -16,6 +16,7 @@ use Symfony\UX\Chartjs\Model\Chart;
 final readonly class ObligationTrendChartFactory
 {
     private const string LINE_COLOUR = '#6366f1';
+
     private const string FILL_COLOUR = 'rgba(99, 102, 241, 0.15)';
 
     public function __construct(

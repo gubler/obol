@@ -18,7 +18,7 @@ final class SubscriptionFormFieldsTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
         self::assertResponseIsSuccessful();
 
@@ -32,7 +32,7 @@ final class SubscriptionFormFieldsTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
         self::assertResponseIsSuccessful();
 
@@ -50,7 +50,7 @@ final class SubscriptionFormFieldsTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
         self::assertResponseIsSuccessful();
 
@@ -75,7 +75,7 @@ final class SubscriptionFormFieldsTest extends WebTestCase
             'cost' => new Money(1500, Currency::EUR),
         ]);
 
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id . '/edit');
 
         self::assertResponseIsSuccessful();
         $selected = $crawler->filter('select[name="edit_subscription[currency]"] option[selected]');

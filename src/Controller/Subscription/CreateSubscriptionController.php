@@ -65,10 +65,10 @@ final class CreateSubscriptionController extends AbstractBaseController
                 paymentPeriodCount: $data->paymentPeriodCount,
                 cost: $data->cost,
                 currency: $data->currency,
+                color: $data->color,
                 description: $data->description,
                 link: $data->link,
                 logo: $logo,
-                color: $data->color,
                 paymentSourceId: $data->paymentSource?->id,
             ));
 

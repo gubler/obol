@@ -22,7 +22,7 @@ final class PaymentSourceAssignmentTest extends WebTestCase
 
         PaymentSourceFactory::createOne(['name' => 'Amex 1234']);
 
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
         self::assertResponseIsSuccessful();
         $select = $crawler->filter('select[name="create_subscription[paymentSource]"]');
@@ -34,7 +34,7 @@ final class PaymentSourceAssignmentTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
         self::assertResponseIsSuccessful();
         self::assertCount(0, $crawler->filter('select[name="create_subscription[paymentSource]"]'));
@@ -48,7 +48,7 @@ final class PaymentSourceAssignmentTest extends WebTestCase
         $subscription = SubscriptionFactory::createOne(['name' => 'Netflix']);
         $subscriptionId = $subscription->id;
 
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscriptionId . '/edit');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscriptionId . '/edit');
         $form = $crawler->selectButton(value: 'Save')->form();
         $form['edit_subscription[paymentSource]'] = (string) $source->id;
         $client->submit(form: $form);
@@ -58,6 +58,7 @@ final class PaymentSourceAssignmentTest extends WebTestCase
         /** @var EntityManagerInterface $entityManager */
         $entityManager = self::getContainer()->get(id: EntityManagerInterface::class);
         $entityManager->clear();
+
         $updated = $entityManager->getRepository(Subscription::class)->find($subscriptionId);
 
         self::assertNotNull($updated);
@@ -71,6 +72,7 @@ final class PaymentSourceAssignmentTest extends WebTestCase
                 $hasPaymentSourceEvent = true;
             }
         }
+
         self::assertTrue($hasPaymentSourceEvent, 'Expected an Update event recording the paymentSource change.');
     }
 }

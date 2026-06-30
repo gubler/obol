@@ -2,11 +2,15 @@
 
 declare(strict_types=1);
 
+use Rector\CodeQuality\Rector\ClassMethod\LocallyCalledStaticMethodToNonStaticRector;
 use Rector\CodeQuality\Rector\ClassMethod\OptionalParametersAfterRequiredRector;
 use Rector\CodingStyle\Rector\Encapsed\EncapsedStringsToSprintfRector;
 use Rector\CodingStyle\Rector\FuncCall\FunctionFirstClassCallableRector;
 use Rector\CodingStyle\Rector\If_\NullableCompareToNullRector;
 use Rector\Config\RectorConfig;
+use Rector\DeadCode\Rector\Cast\RecastingRemovalRector;
+use Rector\PHPUnit\CodeQuality\Rector\Class_\PreferPHPUnitThisCallRector;
+use Rector\PHPUnit\CodeQuality\Rector\Class_\YieldDataProviderRector;
 use Rector\TypeDeclaration\Rector\ArrowFunction\AddArrowFunctionReturnTypeRector;
 use Rector\TypeDeclaration\Rector\ClassMethod\ReturnNeverTypeRector;
 use Rector\TypeDeclaration\Rector\Closure\AddClosureVoidReturnTypeWhereNoReturnRector;
@@ -48,6 +52,18 @@ return RectorConfig::configure()
         NullableCompareToNullRector::class,
         AddArrowFunctionReturnTypeRector::class,
         AddClosureVoidReturnTypeWhereNoReturnRector::class,
+        // The house style (enforced by php-cs-fixer's php_unit_test_case_static_method_calls)
+        // is `self::assert*` in tests; this rule wants `$this->assert*` and would fight it forever.
+        PreferPHPUnitThisCallRector::class,
+        // php-cs-fixer keeps stateless test helpers `static`; this rule wants them as instance
+        // methods, so the two would ping-pong. Stateless helpers staying static is fine.
+        LocallyCalledStaticMethodToNonStaticRector::class,
+        // Drops casts it deems redundant, but strips `(string)` off NumberFormatter::getSymbol()
+        // (which returns string|false), breaking type safety. The casts are deliberate.
+        RecastingRemovalRector::class,
+        // Rewrites array data providers to yield but drops the @return docblock, so PHPStan loses
+        // the iterable value type. Our providers are array-style throughout; keep them uniform.
+        YieldDataProviderRector::class,
     ])
     ->withRootFiles()
 ;

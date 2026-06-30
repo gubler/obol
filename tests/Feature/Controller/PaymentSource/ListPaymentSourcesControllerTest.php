@@ -16,7 +16,7 @@ final class ListPaymentSourcesControllerTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request(method: 'GET', uri: '/payment-sources');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: '.empty-state', text: 'No payment sources found');
@@ -29,7 +29,7 @@ final class ListPaymentSourcesControllerTest extends WebTestCase
         PaymentSourceFactory::createOne(['name' => 'Amex 1234']);
         PaymentSourceFactory::createOne(['name' => 'Visa 5678']);
 
-        $client->request(method: 'GET', uri: '/payment-sources');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'body', text: 'Amex 1234');

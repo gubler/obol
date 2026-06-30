@@ -24,7 +24,7 @@ final class UnarchiveSubscriptionControllerTest extends WebTestCase
             'name' => 'Netflix',
         ])->archived()->create();
 
-        $client->request(method: 'POST', uri: '/subscriptions/' . $subscription->id . '/unarchive');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/subscriptions/' . $subscription->id . '/unarchive');
 
         self::assertResponseRedirects('/subscriptions/' . $subscription->id);
 
@@ -48,7 +48,7 @@ final class UnarchiveSubscriptionControllerTest extends WebTestCase
             'name' => 'Spotify',
         ])->archived()->create();
 
-        $client->request(method: 'POST', uri: '/subscriptions/' . $subscription->id . '/unarchive');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/subscriptions/' . $subscription->id . '/unarchive');
         $client->followRedirect();
 
         self::assertSelectorTextContains('.flash-success', 'Subscription unarchived successfully');
@@ -58,7 +58,7 @@ final class UnarchiveSubscriptionControllerTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request(method: 'POST', uri: '/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/unarchive');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/unarchive');
 
         self::assertResponseStatusCodeSame(404);
     }
@@ -72,7 +72,7 @@ final class UnarchiveSubscriptionControllerTest extends WebTestCase
             'name' => 'Netflix',
         ])->archived()->create();
 
-        $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/unarchive');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id . '/unarchive');
 
         self::assertResponseStatusCodeSame(405);
     }
@@ -88,7 +88,7 @@ final class UnarchiveSubscriptionControllerTest extends WebTestCase
 
         $initialEventCount = \count($subscription->subscriptionEvents);
 
-        $client->request(method: 'POST', uri: '/subscriptions/' . $subscription->id . '/unarchive');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/subscriptions/' . $subscription->id . '/unarchive');
 
         $container = self::getContainer();
         /** @var EntityManagerInterface $entityManager */

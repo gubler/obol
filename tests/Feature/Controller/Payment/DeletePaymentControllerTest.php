@@ -31,7 +31,7 @@ final class DeletePaymentControllerTest extends WebTestCase
             'amount' => new Money(1599, Currency::USD),
         ]);
 
-        $client->request('POST', '/payments/' . $payment->id . '/delete');
+        $client->request(\Symfony\Component\HttpFoundation\Request::METHOD_POST, '/payments/' . $payment->id . '/delete');
 
         self::assertResponseRedirects('/subscriptions/' . $subscription->id);
 
@@ -59,7 +59,7 @@ final class DeletePaymentControllerTest extends WebTestCase
             'amount' => new Money(1599, Currency::USD),
         ]);
 
-        $client->request('POST', '/payments/' . $payment->id . '/delete');
+        $client->request(\Symfony\Component\HttpFoundation\Request::METHOD_POST, '/payments/' . $payment->id . '/delete');
         $client->followRedirect();
 
         self::assertSelectorTextContains('.flash-success', 'Payment deleted successfully');
@@ -69,7 +69,7 @@ final class DeletePaymentControllerTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request('POST', '/payments/01JKXXXXXXXXXXXXXXXXXXXXXXX/delete');
+        $client->request(\Symfony\Component\HttpFoundation\Request::METHOD_POST, '/payments/01JKXXXXXXXXXXXXXXXXXXXXXXX/delete');
 
         self::assertResponseStatusCodeSame(404);
     }
@@ -87,7 +87,7 @@ final class DeletePaymentControllerTest extends WebTestCase
             'amount' => new Money(1599, Currency::USD),
         ]);
 
-        $client->request('GET', '/payments/' . $payment->id . '/delete');
+        $client->request(\Symfony\Component\HttpFoundation\Request::METHOD_GET, '/payments/' . $payment->id . '/delete');
 
         self::assertResponseStatusCodeSame(405);
     }

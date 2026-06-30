@@ -35,7 +35,7 @@ final readonly class UpdateSubscriptionHandler
 
         // A subscription may be uncategorized; only a given-but-missing category is an error.
         $category = null;
-        if (null !== $command->categoryId) {
+        if ($command->categoryId instanceof \Symfony\Component\Uid\Ulid) {
             $category = $this->categoryRepository->find($command->categoryId);
 
             if (null === $category) {
@@ -45,7 +45,7 @@ final readonly class UpdateSubscriptionHandler
 
         // A subscription may be unassigned; only a given-but-missing payment source is an error.
         $paymentSource = null;
-        if (null !== $command->paymentSourceId) {
+        if ($command->paymentSourceId instanceof \Symfony\Component\Uid\Ulid) {
             $paymentSource = $this->paymentSourceRepository->find($command->paymentSourceId);
 
             if (null === $paymentSource) {

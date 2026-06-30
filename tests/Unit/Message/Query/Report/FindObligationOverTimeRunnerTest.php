@@ -102,7 +102,7 @@ final class FindObligationOverTimeRunnerTest extends TestCase
     {
         $series = $this->runTrend([], now: '2026-06-13');
 
-        $values = array_map(static fn ($point): int => $point->amount->minorAmount, $series->points);
+        $values = array_map(static fn (\App\Message\Query\Report\ObligationPoint $point): int => $point->amount->minorAmount, $series->points);
 
         self::assertCount(24, $series->points);
         self::assertSame([0], array_values(array_unique($values)));

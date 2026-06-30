@@ -22,7 +22,7 @@ final class PeriodBoundariesTest extends TestCase
     {
         self::assertSameInstant(
             new \DateTimeImmutable('2026-02-28 23:59:59'),
-            (new PeriodBoundaries(0))->endOfPeriod(PaymentPeriod::Month, new \DateTimeImmutable('2026-02-10')),
+            new PeriodBoundaries(0)->endOfPeriod(PaymentPeriod::Month, new \DateTimeImmutable('2026-02-10')),
         );
     }
 
@@ -30,18 +30,18 @@ final class PeriodBoundariesTest extends TestCase
     {
         self::assertSameInstant(
             new \DateTimeImmutable('2026-12-31 23:59:59'),
-            (new PeriodBoundaries(0))->endOfPeriod(PaymentPeriod::Year, new \DateTimeImmutable('2026-06-12')),
+            new PeriodBoundaries(0)->endOfPeriod(PaymentPeriod::Year, new \DateTimeImmutable('2026-06-12')),
         );
     }
 
     #[DataProvider('provideEndOfWeekIsTheCurrentWeekSaturdayAtEndOfDayUsSundayStartCases')]
     public function testEndOfWeekIsTheCurrentWeekSaturdayAtEndOfDayUsSundayStart(string $asOf): void
     {
-        $end = (new PeriodBoundaries(0))->endOfPeriod(PaymentPeriod::Week, new \DateTimeImmutable($asOf));
+        $end = new PeriodBoundaries(0)->endOfPeriod(PaymentPeriod::Week, new \DateTimeImmutable($asOf));
 
         self::assertSame('6', $end->format('w'));                  // Saturday - Sunday-start weeks end on Saturday
         self::assertSame('23:59:59', $end->format('H:i:s'));
-        self::assertTrue($end >= new \DateTimeImmutable($asOf));
+        self::assertGreaterThanOrEqual(new \DateTimeImmutable($asOf), $end);
         self::assertLessThan(7, $end->diff(new \DateTimeImmutable($asOf))->days);
     }
 
@@ -58,7 +58,7 @@ final class PeriodBoundariesTest extends TestCase
 
     public function testTheWeekStartDayIsConfigurableAMondayStartEndsTheWeekOnSunday(): void
     {
-        $end = (new PeriodBoundaries(1))->endOfPeriod(PaymentPeriod::Week, new \DateTimeImmutable('2026-06-15'));
+        $end = new PeriodBoundaries(1)->endOfPeriod(PaymentPeriod::Week, new \DateTimeImmutable('2026-06-15'));
 
         self::assertSame('0', $end->format('w'));                  // Sunday - Monday-start (ISO) weeks end on Sunday
         self::assertSame('23:59:59', $end->format('H:i:s'));
@@ -68,7 +68,7 @@ final class PeriodBoundariesTest extends TestCase
     {
         self::assertSameInstant(
             new \DateTimeImmutable('2026-01-01 00:00:00'),
-            (new PeriodBoundaries(0))->startOfPeriod(ObligationTrendPeriod::Year, new \DateTimeImmutable('2026-06-13 15:30:45')),
+            new PeriodBoundaries(0)->startOfPeriod(ObligationTrendPeriod::Year, new \DateTimeImmutable('2026-06-13 15:30:45')),
         );
     }
 
@@ -76,19 +76,19 @@ final class PeriodBoundariesTest extends TestCase
     {
         self::assertSameInstant(
             new \DateTimeImmutable('2026-06-01 00:00:00'),
-            (new PeriodBoundaries(0))->startOfPeriod(ObligationTrendPeriod::Month, new \DateTimeImmutable('2026-06-13 15:30:45')),
+            new PeriodBoundaries(0)->startOfPeriod(ObligationTrendPeriod::Month, new \DateTimeImmutable('2026-06-13 15:30:45')),
         );
     }
 
     #[DataProvider('provideStartOfWeekIsTheCurrentWeekStartDayAtMidnightUsSundayStartCases')]
     public function testStartOfWeekIsTheCurrentWeekStartDayAtMidnightUsSundayStart(string $asOf): void
     {
-        $start = (new PeriodBoundaries(0))->startOfPeriod(ObligationTrendPeriod::Week, new \DateTimeImmutable($asOf));
+        $start = new PeriodBoundaries(0)->startOfPeriod(ObligationTrendPeriod::Week, new \DateTimeImmutable($asOf));
 
         self::assertSame('0', $start->format('w'));                // Sunday - the configured week start
         self::assertSame('00:00:00', $start->format('H:i:s'));
-        self::assertTrue($start <= new \DateTimeImmutable($asOf));
-        self::assertLessThan(7, (new \DateTimeImmutable($asOf))->diff($start)->days);
+        self::assertLessThanOrEqual(new \DateTimeImmutable($asOf), $start);
+        self::assertLessThan(7, new \DateTimeImmutable($asOf)->diff($start)->days);
     }
 
     /**
@@ -104,7 +104,7 @@ final class PeriodBoundariesTest extends TestCase
 
     public function testStartOfWeekHonorsAConfigurableMondayStart(): void
     {
-        $start = (new PeriodBoundaries(1))->startOfPeriod(ObligationTrendPeriod::Week, new \DateTimeImmutable('2026-06-18 12:00:00'));
+        $start = new PeriodBoundaries(1)->startOfPeriod(ObligationTrendPeriod::Week, new \DateTimeImmutable('2026-06-18 12:00:00'));
 
         self::assertSame('1', $start->format('w'));                // Monday - ISO week start
         self::assertSame('00:00:00', $start->format('H:i:s'));

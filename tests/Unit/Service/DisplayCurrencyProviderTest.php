@@ -14,6 +14,6 @@ final class DisplayCurrencyProviderTest extends TestCase
 {
     public function testExposesTheCurrencyForItsConfiguredCode(): void
     {
-        self::assertSame(Currency::JPY, (new DisplayCurrencyProvider('JPY'))->get());
+        self::assertSame(Currency::JPY, new DisplayCurrencyProvider('JPY')->get());
     }
 }

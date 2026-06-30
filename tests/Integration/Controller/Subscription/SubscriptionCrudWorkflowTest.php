@@ -25,7 +25,7 @@ final class SubscriptionCrudWorkflowTest extends WebTestCase
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
         // Create
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
         $form = $crawler->selectButton(value: 'Save')->form([
             'create_subscription[category]' => $category->id->toBase32(),
             'create_subscription[name]' => 'Workflow Test Subscription',
@@ -51,12 +51,12 @@ final class SubscriptionCrudWorkflowTest extends WebTestCase
         $subscriptionId = $subscription->id;
 
         // Read
-        $client->request(method: 'GET', uri: '/subscriptions/' . $subscriptionId);
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscriptionId);
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'h1', text: 'Workflow Test Subscription');
 
         // Update
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscriptionId . '/edit');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscriptionId . '/edit');
         $form = $crawler->selectButton(value: 'Save')->form([
             'edit_subscription[name]' => 'Updated Workflow Subscription',
             'edit_subscription[cost]' => '19.99',
@@ -73,7 +73,7 @@ final class SubscriptionCrudWorkflowTest extends WebTestCase
         self::assertSame(1999, $updatedSubscription->cost->minorAmount);
 
         // Delete
-        $client->request(method: 'POST', uri: '/subscriptions/' . $subscriptionId . '/delete');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/subscriptions/' . $subscriptionId . '/delete');
 
         self::assertResponseRedirects(expectedLocation: '/');
 
@@ -95,7 +95,7 @@ final class SubscriptionCrudWorkflowTest extends WebTestCase
         $initialEventCount = $subscription->subscriptionEvents->count();
 
         // Update the subscription
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id . '/edit');
         $form = $crawler->selectButton(value: 'Save')->form([
             'edit_subscription[name]' => 'Netflix Premium',
             'edit_subscription[cost]' => '19.99',
@@ -132,7 +132,7 @@ final class SubscriptionCrudWorkflowTest extends WebTestCase
         $subscriptions = ['Zebra Service', 'Alpha Service', 'Beta Service'];
 
         foreach ($subscriptions as $name) {
-            $crawler = $client->request(method: 'GET', uri: '/subscriptions/new');
+            $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
             $form = $crawler->selectButton(value: 'Save')->form([
                 'create_subscription[category]' => $category->id->toBase32(),
                 'create_subscription[name]' => $name,
@@ -145,7 +145,7 @@ final class SubscriptionCrudWorkflowTest extends WebTestCase
             $client->followRedirect();
         }
 
-        $crawler = $client->request(method: 'GET', uri: '/?view=list');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/?view=list');
 
         $subscriptionNames = $crawler->filter('table tbody tr td:first-child')->each(
             fn (Crawler $node) => $node->text()
@@ -175,7 +175,7 @@ final class SubscriptionCrudWorkflowTest extends WebTestCase
             'name' => 'Test Service',
         ]);
 
-        $crawler = $client->request(method: 'GET', uri: '/subscriptions/' . $subscription->id . '/edit');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id . '/edit');
         $form = $crawler->selectButton(value: 'Save')->form([
             'edit_subscription[category]' => $category2->id->toBase32(),
         ]);

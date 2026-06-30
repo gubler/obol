@@ -25,7 +25,7 @@ final class CadenceRenderingTest extends WebTestCase
             'paymentPeriodCount' => 3,
         ]);
 
-        $client->request(method: 'GET', uri: '/?view=list');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/?view=list');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: '.subscription-list', text: '3 months');

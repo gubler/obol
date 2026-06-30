@@ -34,7 +34,7 @@ final class EditPaymentControllerTest extends WebTestCase
             'paidDate' => new \DateTimeImmutable('2024-01-01'),
         ]);
 
-        $client->request(method: 'GET', uri: '/payments/' . $payment->id . '/edit');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payments/' . $payment->id . '/edit');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'input[name="amend_payment[amount]"][value="15.99"]');
@@ -54,7 +54,7 @@ final class EditPaymentControllerTest extends WebTestCase
             'paidDate' => new \DateTimeImmutable('2024-01-01'),
         ]);
 
-        $crawler = $client->request(method: 'GET', uri: '/payments/' . $payment->id . '/edit');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payments/' . $payment->id . '/edit');
         $form = $crawler->selectButton(value: 'Save')->form([
             'amend_payment[amount]' => '12.99',
             'amend_payment[paidDate]' => '2024-01-05',
@@ -78,7 +78,7 @@ final class EditPaymentControllerTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request(method: 'GET', uri: '/payments/01JKXXXXXXXXXXXXXXXXXXXXXXX/edit');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payments/01JKXXXXXXXXXXXXXXXXXXXXXXX/edit');
 
         self::assertResponseStatusCodeSame(expectedCode: 404);
     }

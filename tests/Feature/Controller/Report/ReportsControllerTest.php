@@ -36,7 +36,7 @@ final class ReportsControllerTest extends WebTestCase
         SubscriptionFactory::new()->archived()->create(['category' => $streaming, 'name' => 'Old Hulu', 'cost' => new Money(9900, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
         SubscriptionFactory::new()->archived()->create(['category' => $defunct, 'name' => 'Dead App', 'cost' => new Money(5000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
 
-        $crawler = $client->request(method: 'GET', uri: '/reports');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/reports');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'canvas');                                 // the pie is rendered
@@ -59,7 +59,7 @@ final class ReportsControllerTest extends WebTestCase
         SubscriptionFactory::createOne(['category' => $streaming, 'name' => 'Netflix', 'cost' => new Money(4000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
         SubscriptionFactory::new()->archived()->create(['category' => $streaming, 'name' => 'Old Hulu', 'cost' => new Money(9900, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
 
-        $crawler = $client->request(method: 'GET', uri: '/reports/categories/' . $streaming->id->toRfc4122());
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/reports/categories/' . $streaming->id->toRfc4122());
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'canvas');
@@ -79,12 +79,12 @@ final class ReportsControllerTest extends WebTestCase
         SubscriptionFactory::createOne(['category' => $streaming, 'name' => 'Netflix', 'cost' => new Money(4000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
         SubscriptionFactory::createOne(['category' => null, 'name' => 'Orphan', 'cost' => new Money(1000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
 
-        $crawler = $client->request(method: 'GET', uri: '/reports');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/reports');
 
         self::assertResponseIsSuccessful();
         // The legend shows each slice's flat color + icon badge.
         $badge = $crawler->filter('.report-category-link .category-badge')->first();
-        self::assertStringContainsString('bg-violet-500', $badge->attr('class'));
+        self::assertStringContainsString('bg-violet-500', (string) $badge->attr('class'));
         self::assertCount(1, $badge->filter('svg'));
 
         // The pie wedge fills use the category hex (and Charcoal for uncategorized), matching the swatches.
@@ -101,7 +101,7 @@ final class ReportsControllerTest extends WebTestCase
         SubscriptionFactory::createOne(['category' => $streaming, 'name' => 'Netflix', 'cost' => new Money(4000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
         SubscriptionFactory::createOne(['category' => null, 'name' => 'Orphan', 'cost' => new Money(1000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
 
-        $crawler = $client->request(method: 'GET', uri: '/reports');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/reports');
 
         self::assertResponseIsSuccessful();
         $names = $crawler->filter('.report-category')->each(static fn ($node): string => $node->text());
@@ -118,7 +118,7 @@ final class ReportsControllerTest extends WebTestCase
         SubscriptionFactory::createOne(['category' => null, 'name' => 'Orphan', 'cost' => new Money(1000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
         SubscriptionFactory::new()->archived()->create(['category' => null, 'name' => 'Dead Orphan', 'cost' => new Money(5000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
 
-        $crawler = $client->request(method: 'GET', uri: '/reports/categories/uncategorized');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/reports/categories/uncategorized');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'canvas');
@@ -134,7 +134,7 @@ final class ReportsControllerTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request(method: 'GET', uri: '/reports/categories/' . new Ulid()->toRfc4122());
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/reports/categories/' . new Ulid()->toRfc4122());
 
         self::assertResponseStatusCodeSame(expectedCode: 404);
     }

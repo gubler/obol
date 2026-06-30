@@ -92,7 +92,7 @@ run = ["$DC exec -T -e XDEBUG_MODE=coverage php php -d memory_limit=-1 vendor/bi
 description = "Run tests with coverage (min 70%)"
 depends = ["_ensure-up", "tailwind"]
 # PHPUnit has no native --min; bin/coverage-min.php enforces the threshold from the Clover report.
-run = ["$DC_EXEC sh -c 'XDEBUG_MODE=coverage php vendor/bin/phpunit --coverage-clover var/coverage.xml && php bin/coverage-min.php var/coverage.xml 70'"]
+run = ["$DC_EXEC sh -c 'XDEBUG_MODE=coverage php -d memory_limit=512M vendor/bin/phpunit --coverage-clover var/coverage.xml && php bin/coverage-min.php var/coverage.xml 70'"]
 
 [tasks."coverage:report"]
 description = "Generate HTML coverage report under var/coverage/"

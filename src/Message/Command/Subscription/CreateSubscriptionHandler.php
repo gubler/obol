@@ -9,6 +9,7 @@ namespace App\Message\Command\Subscription;
 
 use App\Entity\Subscription;
 use App\Repository\CategoryRepository;
+use App\Repository\PaymentSourceRepository;
 use App\Service\SubscriptionChangeNotifierInterface;
 use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
@@ -19,6 +20,7 @@ final readonly class CreateSubscriptionHandler
 {
     public function __construct(
         private CategoryRepository $categoryRepository,
+        private PaymentSourceRepository $paymentSourceRepository,
         private EntityManagerInterface $entityManager,
         private SubscriptionChangeNotifierInterface $subscriptionChangeNotifier,
     ) {
@@ -36,6 +38,16 @@ final readonly class CreateSubscriptionHandler
             }
         }
 
+        // A subscription may be unassigned; only a given-but-missing payment source is an error.
+        $paymentSource = null;
+        if (null !== $command->paymentSourceId) {
+            $paymentSource = $this->paymentSourceRepository->find($command->paymentSourceId);
+
+            if (null === $paymentSource) {
+                throw new \InvalidArgumentException(\sprintf('Payment source with ID "%s" not found.', $command->paymentSourceId));
+            }
+        }
+
         $subscription = new Subscription(
             category: $category,
             name: $command->name,
@@ -47,6 +59,7 @@ final readonly class CreateSubscriptionHandler
             link: $command->link,
             logo: $command->logo,
             color: $command->color,
+            paymentSource: $paymentSource,
         );
 
         $this->entityManager->persist($subscription);

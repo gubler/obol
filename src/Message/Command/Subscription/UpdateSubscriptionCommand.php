@@ -28,6 +28,7 @@ final readonly class UpdateSubscriptionCommand
         public Currency $currency,
         public TileColor $color,
         public bool $restartPaymentGeneration = false,
+        public ?Ulid $paymentSourceId = null,
     ) {
     }
 }

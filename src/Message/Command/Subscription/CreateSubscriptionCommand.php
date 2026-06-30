@@ -26,6 +26,7 @@ final readonly class CreateSubscriptionCommand
         public string $description = '',
         public string $link = '',
         public string $logo = '',
+        public ?Ulid $paymentSourceId = null,
     ) {
     }
 }

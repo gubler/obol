@@ -7,6 +7,10 @@
     {{ form_row(form.category) }}
 {% endif %}
 
+{% if form.paymentSource is defined %}
+    {{ form_row(form.paymentSource) }}
+{% endif %}
+
 {{ form_row(form.name) }}
 {{ form_row(form.nextRenewal) }}
 

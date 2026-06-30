@@ -12,6 +12,7 @@ use App\Enum\ObligationTrendPeriod;
 use App\Message\Query\Report\Composition;
 use App\Message\Query\Report\FindCategoryCompositionQuery;
 use App\Message\Query\Report\FindObligationOverTimeQuery;
+use App\Message\Query\Report\FindPaymentSourceCompositionQuery;
 use App\Message\Query\Report\ObligationSeries;
 use App\Service\CompositionChartFactory;
 use App\Service\ObligationTrendChartFactory;
@@ -27,6 +28,9 @@ final class ShowReportsController extends AbstractBaseController
         $composition = $this->queryBus->query(query: new FindCategoryCompositionQuery());
         \assert($composition instanceof Composition);
 
+        $paymentSourceComposition = $this->queryBus->query(query: new FindPaymentSourceCompositionQuery());
+        \assert($paymentSourceComposition instanceof Composition);
+
         $trendPeriod = ObligationTrendPeriod::fromQuery($request->query->getString('trend'));
         $series = $this->queryBus->query(query: new FindObligationOverTimeQuery(period: $trendPeriod));
         \assert($series instanceof ObligationSeries);
@@ -34,6 +38,8 @@ final class ShowReportsController extends AbstractBaseController
         return $this->render(view: 'reports/index.html.twig', parameters: [
             'composition' => $composition,
             'chart' => $chartFactory->pie($composition),
+            'paymentSourceComposition' => $paymentSourceComposition,
+            'paymentSourceChart' => $chartFactory->pie($paymentSourceComposition),
             'series' => $series,
             'trendChart' => $trendFactory->line($series),
             'trendPeriod' => $trendPeriod,

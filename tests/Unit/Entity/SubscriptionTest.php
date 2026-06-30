@@ -9,6 +9,7 @@ namespace App\Tests\Unit\Entity;
 
 use App\Entity\Category;
 use App\Entity\Payment;
+use App\Entity\PaymentSource;
 use App\Entity\Subscription;
 use App\Entity\SubscriptionEvent;
 use App\Enum\Currency;
@@ -129,6 +130,127 @@ final class SubscriptionTest extends TestCase
         /** @var SubscriptionEvent $event */
         $event = $subscription->subscriptionEvents->first();
         self::assertArrayHasKey('category', $event->context);
+    }
+
+    public function testAssignsAPaymentSourceByUpdatingFromNull(): void
+    {
+        $source = new PaymentSource(name: 'Amex 1234');
+
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: new Money(1500, Currency::USD),
+        );
+
+        self::assertNull($subscription->paymentSource);
+
+        $subscription->update(
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            description: '',
+            link: '',
+            logo: '',
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: new Money(1500, Currency::USD),
+            color: $subscription->color,
+            paymentSource: $source,
+        );
+
+        self::assertSame($source, $subscription->paymentSource);
+        self::assertCount(1, $subscription->subscriptionEvents);
+        /** @var SubscriptionEvent $event */
+        $event = $subscription->subscriptionEvents->first();
+        self::assertSame(SubscriptionEventType::Update, $event->type);
+        self::assertArrayHasKey('paymentSource', $event->context);
+        self::assertSame('Unassigned', $event->context['paymentSource']['old']);
+        self::assertSame('Amex 1234', $event->context['paymentSource']['new']);
+    }
+
+    public function testRemovingThePaymentSourceRecordsAnUnassignedChange(): void
+    {
+        $source = new PaymentSource(name: 'Amex 1234');
+
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: new Money(1500, Currency::USD),
+            paymentSource: $source,
+        );
+
+        $subscription->update(
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            description: '',
+            link: '',
+            logo: '',
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: new Money(1500, Currency::USD),
+            color: $subscription->color,
+            paymentSource: null,
+        );
+
+        self::assertNull($subscription->paymentSource);
+        /** @var SubscriptionEvent $event */
+        $event = $subscription->subscriptionEvents->first();
+        self::assertArrayHasKey('paymentSource', $event->context);
+        self::assertSame('Amex 1234', $event->context['paymentSource']['old']);
+        self::assertSame('Unassigned', $event->context['paymentSource']['new']);
+    }
+
+    public function testReassignPaymentSourceMovesTheSourceAndRecordsAnUpdateEvent(): void
+    {
+        $from = new PaymentSource(name: 'Amex 1234');
+        $to = new PaymentSource(name: 'Visa 5678');
+
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: new Money(1500, Currency::USD),
+            paymentSource: $from,
+        );
+
+        $subscription->reassignPaymentSource($to);
+
+        self::assertSame($to, $subscription->paymentSource);
+        self::assertCount(1, $subscription->subscriptionEvents);
+        /** @var SubscriptionEvent $event */
+        $event = $subscription->subscriptionEvents->first();
+        self::assertSame(SubscriptionEventType::Update, $event->type);
+        self::assertSame('Amex 1234', $event->context['paymentSource']['old']);
+        self::assertSame('Visa 5678', $event->context['paymentSource']['new']);
+    }
+
+    public function testReassignPaymentSourceToTheSameSourceIsANoOp(): void
+    {
+        $source = new PaymentSource(name: 'Amex 1234');
+
+        $subscription = new Subscription(
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: new Money(1500, Currency::USD),
+            paymentSource: $source,
+        );
+
+        $subscription->reassignPaymentSource($source);
+
+        self::assertSame($source, $subscription->paymentSource);
+        self::assertCount(0, $subscription->subscriptionEvents);
     }
 
     public function testSetsCreatedAtToCurrentTime(): void

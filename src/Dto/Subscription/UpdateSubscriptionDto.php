@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace App\Dto\Subscription;
 
 use App\Entity\Category;
+use App\Entity\PaymentSource;
 use App\Entity\Subscription;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
@@ -26,6 +27,9 @@ final class UpdateSubscriptionDto
 {
     // A category is optional; a subscription may be left uncategorized.
     public ?Category $category;
+
+    // A payment source is optional; a subscription may be left unassigned.
+    public ?PaymentSource $paymentSource;
 
     #[NotBlank]
     public string $name;
@@ -72,6 +76,7 @@ final class UpdateSubscriptionDto
     public function __construct(Subscription $subscription)
     {
         $this->category = $subscription->category;
+        $this->paymentSource = $subscription->paymentSource;
         $this->name = $subscription->name;
         $this->nextRenewal = $subscription->nextRenewal;
         $this->paymentPeriod = $subscription->paymentPeriod;

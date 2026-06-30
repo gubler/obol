@@ -5,6 +5,7 @@ common:
     nav:
         subscriptions: Subscriptions
         categories: Categories
+        payment_sources: Payment Sources
         reports: Reports
     theme:
         toggle: Toggle dark mode
@@ -123,6 +124,7 @@ subscription:
         grouped: Grouped
         ungrouped: Group by category
         uncategorized: Uncategorized
+        unassigned: Unassigned
     archived:
         showing: Showing archived
         show: Show archived
@@ -149,6 +151,7 @@ subscription:
         manual_paused: Automatic payment generation is paused
     form:
         category: Category
+        payment_source: Payment Source
         name: Subscription Name
         next_renewal: Next Renewal Date
         payment_period: Payment Period
@@ -181,6 +184,7 @@ subscription:
         archive_confirm: Are you sure you want to archive this subscription?
         delete_confirm: Are you sure you want to delete this subscription?
         category: Category
+        payment_source: Payment Source
         cost: Cost
         next_renewal: Next Renewal
         description: Description
@@ -224,11 +228,52 @@ category:
         deleted: Category deleted successfully
         delete_failed: Cannot delete category with subscriptions. Please reassign or delete subscriptions first.
 
+payment_source:
+    action:
+        new: New Payment Source
+    index:
+        title: Payment Sources
+        heading: Payment Sources
+        col_name: Name
+        col_subscriptions: Subscriptions
+        col_actions: Actions
+    empty:
+        title: No payment sources found
+        subtitle: Get started by creating your first payment source
+    new:
+        title: New Payment Source
+        heading: New Payment Source
+        back: Back to Payment Sources
+    edit:
+        title: Edit Payment Source
+        heading: Edit Payment Source
+        back: Back to Payment Source
+    show:
+        back: Back to Payment Sources
+        details_heading: Payment Source Details
+        delete_confirm: Are you sure you want to delete this payment source?
+        subscriptions_heading: Subscriptions
+        no_subscriptions: No subscriptions use this payment source
+        move_all_label: Move all subscriptions to another payment source
+        move_all_button: Move all
+    form:
+        name: Payment Source Name
+        comment: Comment
+        color: Color
+    flash:
+        created: Payment source created successfully
+        updated: Payment source updated successfully
+        deleted: Payment source deleted successfully
+        delete_failed: Cannot delete payment source with subscriptions. Please reassign or detach subscriptions first.
+        reassigned: Subscriptions moved successfully
+        reassign_failed: Could not move the subscriptions. Please try again.
+
 report:
     heading: Reports
     back: Back to reports
     composition:
         by_category: Monthly obligation by category
+        by_payment_source: Monthly obligation by payment source
         empty_title: Nothing to report yet
         empty_hint: Add an active subscription to see it broken down here.
     trend:
@@ -236,6 +281,9 @@ report:
     category:
         by_subscription: Monthly obligation by subscription
         empty: No active subscriptions in this category
+    payment_source:
+        by_subscription: Monthly obligation by subscription
+        empty: No active subscriptions use this payment source
     chart:
         obligation: Obligation
 

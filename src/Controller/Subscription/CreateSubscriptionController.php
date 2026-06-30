@@ -12,6 +12,7 @@ use App\Dto\Subscription\CreateSubscriptionDto;
 use App\Form\Subscription\CreateSubscriptionFormType;
 use App\Message\Command\Subscription\CreateSubscriptionCommand;
 use App\Message\Query\Category\FindAllCategoriesQuery;
+use App\Message\Query\PaymentSource\FindAllPaymentSourcesQuery;
 use App\Service\DisplayCurrencyProvider;
 use App\Service\FileUploader;
 use Symfony\Component\HttpFoundation\Request;
@@ -36,8 +37,12 @@ final class CreateSubscriptionController extends AbstractBaseController
         $categories = $this->queryBus->query(query: new FindAllCategoriesQuery());
         \assert(\is_array($categories));
 
+        $paymentSources = $this->queryBus->query(query: new FindAllPaymentSourcesQuery());
+        \assert(\is_array($paymentSources));
+
         $form = $this->createForm(type: CreateSubscriptionFormType::class, data: $dto, options: [
             'has_categories' => [] !== $categories,
+            'has_payment_sources' => [] !== $paymentSources,
         ]);
 
         $form->handleRequest(request: $request);
@@ -64,6 +69,7 @@ final class CreateSubscriptionController extends AbstractBaseController
                 link: $data->link,
                 logo: $logo,
                 color: $data->color,
+                paymentSourceId: $data->paymentSource?->id,
             ));
 
             $this->addFlash(type: self::FLASH_SUCCESS, message: $this->translator->trans('subscription.flash.created'));

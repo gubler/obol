@@ -33,6 +33,17 @@ older docs.
   row). Modeled as null end to end; the homepage groups these under an "Uncategorized" bucket
   sorted last, the reports pie shows them as one "Uncategorized" slice, and their drill-down is
   the reserved `/reports/categories/uncategorized` route.
+- **PaymentSource** - a named method of payment (e.g. "Amex 1234"), optionally attached to a
+  subscription. Carries a **name**, an optional free-text **comment**, and a `TileColor`. A
+  Category-shaped entity: optional nullable `ManyToOne` on `Subscription`, its own CRUD, and a
+  report (the by-source pie + drill-down). Cannot be deleted while it still holds subscriptions
+  (`PaymentSourceHasSubscriptionsException`); a "Move all to..." action on its page reassigns
+  every subscription to another source. Named "source", not "method", to avoid colliding with
+  **PaymentType**. See ADR-0013.
+- **Unassigned** - a subscription with no payment source (a null `paymentSource`, not a real
+  PaymentSource row). The payment-source analog of **Uncategorized**: modeled as null end to
+  end, shown as one "Unassigned" slice on the by-source report, with the reserved
+  `/reports/payment-sources/unassigned` drill-down.
 - **PaymentPeriod** - the billing cadence enum. The only cases are **`Year`**, **`Month`**,
   and **`Week`**. (There is no `Day` case, despite what older docs claimed.)
 - **paymentPeriodCount** - the multiplier on the period, e.g. `paymentPeriodCount: 3` with
@@ -107,6 +118,8 @@ Recorded under `reference/adr/`:
 - ADR-0009 - Savings target model (one-month lead, whole-months proration)
 - ADR-0010 - Reporting and obligation-snapshot model (on-change native-per-currency series, convert-at-read)
 - ADR-0011 - Reinstate the synchronous event bus for domain events
+- ADR-0012 - Internationalization conventions
+- ADR-0013 - Payment source tracking (Category-shaped entity; reassign action; by-source report)
 
 ADR-0006 records the CQRS-via-Messenger decision (keep the command/query buses; data
 access confined to the handler layer) settled in #79. ADR-0007 extends it with the

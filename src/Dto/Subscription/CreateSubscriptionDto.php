@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace App\Dto\Subscription;
 
 use App\Entity\Category;
+use App\Entity\PaymentSource;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\TileColor;
@@ -24,6 +25,9 @@ final class CreateSubscriptionDto
 {
     // A category is optional; a subscription may be left uncategorized.
     public ?Category $category = null;
+
+    // A payment source is optional; a subscription may be left unassigned.
+    public ?PaymentSource $paymentSource = null;
 
     #[NotBlank]
     public string $name = '';

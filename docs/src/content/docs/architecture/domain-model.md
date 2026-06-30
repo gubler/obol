@@ -21,6 +21,7 @@ The core entity. Tracks a recurring payment with its cost, billing period, and m
 | `archived` | `bool` | Default `false` |
 | `createdAt` | `DateTimeImmutable` | Set in constructor |
 | `category` | `?Category` | Optional, ManyToOne (null = uncategorized) |
+| `paymentSource` | `?PaymentSource` | Optional, ManyToOne (null = unassigned) |
 | `name` | `string` | Non-empty (validated) |
 | `lastPaidDate` | `DateTimeImmutable` | When last payment occurred |
 | `paymentPeriod` | `PaymentPeriod` | Year, Month, or Week |
@@ -41,7 +42,7 @@ The core entity. Tracks a recurring payment with its cost, billing period, and m
 
 Accepts all mutable fields. Uses two `ChangeContextGenerator` instances to diff:
 
-1. **General fields** (category, name, lastPaidDate, description, link, logo) — emits a `SubscriptionEventType::Update` event if any changed
+1. **General fields** (category, paymentSource, name, lastPaidDate, description, link, logo) — emits a `SubscriptionEventType::Update` event if any changed. `reassignPaymentSource()` records the same kind of event for just the payment-source change (used by the bulk "move all" action).
 2. **Cost fields** (paymentPeriod, paymentPeriodCount, cost) — emits a `SubscriptionEventType::CostChange` event if any changed
 
 Events are only created when values actually differ from the current state.
@@ -81,6 +82,20 @@ Groups subscriptions. Carries a name, a color, and an icon, plus its collection 
 | `subscriptions` | `Collection<Subscription>` | OneToMany, read-only |
 
 `setName()` changes the name alone; `update()` sets name, color, and icon together. Categories cannot be deleted if they have subscriptions (`CategoryHasSubscriptionsException`). The "Uncategorized" pseudo-group (a null category) renders with a reserved neutral Charcoal swatch and a dashed icon.
+
+## PaymentSource
+
+A method of payment (e.g. "Amex 1234") optionally attached to a subscription. A Category-shaped entity (see ADR-0013).
+
+| Property | Type | Notes |
+|----------|------|-------|
+| `id` | `Ulid` | Generated in constructor |
+| `name` | `string` | Non-empty (validated) |
+| `comment` | `string` | Optional free-text note |
+| `color` | `TileColor` | Defaults to a random swatch |
+| `subscriptions` | `Collection<Subscription>` | OneToMany, read-only |
+
+`update()` is the single mutator: it takes a nullable name, comment, and color, changes only the fields that are provided, and asserts at least one was. A source cannot be deleted while it holds subscriptions (`PaymentSourceHasSubscriptionsException`); the "Move all to..." action on its page reassigns every subscription to another source (each move records its own audit event via `Subscription::reassignPaymentSource()`). The "Unassigned" pseudo-group (a null payment source) renders with the reserved neutral Charcoal swatch.
 
 ## SubscriptionEvent
 
@@ -134,6 +149,7 @@ Used by `Subscription::update()` to build event context without manual compariso
 ```mermaid
 erDiagram
     Category |o--o{ Subscription : "has many"
+    PaymentSource |o--o{ Subscription : "has many"
     Subscription ||--o{ Payment : "has many"
     Subscription ||--o{ SubscriptionEvent : "has many"
 ```

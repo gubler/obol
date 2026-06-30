@@ -98,6 +98,13 @@ class Subscription
         #[ORM\Column(length: 255)]
         public private(set) string $logo = '',
         ?TileColor $color = null,
+        /**
+         * The payment source (method of payment) this subscription is charged to, or null when unassigned.
+         * The form picker and audit-trail wiring land in a later slice; for now it is set at construction.
+         */
+        #[ORM\ManyToOne(inversedBy: 'subscriptions')]
+        #[ORM\JoinColumn(nullable: true)]
+        public private(set) ?PaymentSource $paymentSource = null,
     ) {
         $name = $this->normalizeAndAssert(name: $name, cost: $cost, paymentPeriodCount: $paymentPeriodCount);
 
@@ -322,6 +329,7 @@ class Subscription
         int $paymentPeriodCount,
         Money $cost,
         TileColor $color,
+        ?PaymentSource $paymentSource = null,
     ): void {
         $name = $this->normalizeAndAssert(name: $name, cost: $cost, paymentPeriodCount: $paymentPeriodCount);
 
@@ -337,6 +345,8 @@ class Subscription
             changes: [
                 // A subscription may have no category; the audit reads the absence as "Uncategorized".
                 new Change(field: 'category', current: null !== $this->category ? $this->category->name : 'Uncategorized', new: null !== $category ? $category->name : 'Uncategorized'),
+                // A subscription may have no payment source; the audit reads the absence as "Unassigned".
+                new Change(field: 'paymentSource', current: null !== $this->paymentSource ? $this->paymentSource->name : 'Unassigned', new: null !== $paymentSource ? $paymentSource->name : 'Unassigned'),
                 new Change(field: 'name', current: $this->name, new: $name),
                 new Change(field: 'nextRenewal', current: $this->nextRenewal->format(format: 'c'), new: $nextRenewal->format(format: 'c')),
                 new Change(field: 'description', current: $this->description, new: $description),
@@ -376,6 +386,7 @@ class Subscription
         }
 
         $this->category = $category;
+        $this->paymentSource = $paymentSource;
         $this->name = $name;
         $this->nextRenewal = $nextRenewal;
         $this->description = $description;
@@ -385,6 +396,36 @@ class Subscription
         $this->paymentPeriodCount = $paymentPeriodCount;
         $this->cost = $cost;
         $this->color = $color;
+    }
+
+    /**
+     * Moves this subscription to a different payment source, recording the change in the audit trail as
+     * an Update event. A move to the source it already carries is a no-op. Obligation is unaffected, so
+     * this deliberately does not announce a SubscriptionsChanged event (see ADR-0010).
+     */
+    public function reassignPaymentSource(?PaymentSource $paymentSource): void
+    {
+        $generator = new ChangeContextGenerator(
+            changes: [
+                new Change(field: 'paymentSource', current: null !== $this->paymentSource ? $this->paymentSource->name : 'Unassigned', new: null !== $paymentSource ? $paymentSource->name : 'Unassigned'),
+            ]
+        );
+
+        $context = $generator->buildContext();
+
+        if ([] === $context) {
+            return;
+        }
+
+        $this->subscriptionEvents->add(
+            new SubscriptionEvent(
+                subscription: $this,
+                type: SubscriptionEventType::Update,
+                context: $context,
+            )
+        );
+
+        $this->paymentSource = $paymentSource;
     }
 
     /**

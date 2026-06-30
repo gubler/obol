@@ -54,6 +54,49 @@
         {% endif %}
     </section>
 
+    <section class="reports-payment-source-composition mt-10">
+        <div class="mb-4 flex flex-wrap items-baseline justify-between gap-2 border-b border-line pb-3">
+            <h2 class="text-lg font-semibold text-fg">{{ 'report.composition.by_payment_source'|trans }}</h2>
+            <div class="report-total text-2xl font-semibold text-fg">
+                {{ include('components/money_disclosure.html.twig', {
+                    amount: paymentSourceComposition.total.converted,
+                    label: 'subscription.totals.per_month'|trans,
+                    asOf: paymentSourceComposition.asOf,
+                    breakdown: paymentSourceComposition.total.breakdown,
+                    approximate: paymentSourceComposition.total.isApproximate,
+                }) }}
+            </div>
+        </div>
+
+        {% if paymentSourceComposition.slices is empty %}
+            <div class="empty-state rounded-lg border border-line bg-surface-2 px-6 py-12 text-center">
+                <p class="text-lg text-fg-muted">{{ 'report.composition.empty_title'|trans }}</p>
+                <p class="mt-2 text-fg-muted">{{ 'report.composition.empty_hint'|trans }}</p>
+            </div>
+        {% else %}
+            <div class="grid items-center gap-8 md:grid-cols-2">
+                {{ include('reports/_pie.html.twig', {chart: paymentSourceChart}) }}
+
+                <ul class="report-payment-source-list divide-y divide-line">
+                    {% for slice in paymentSourceComposition.slices %}
+                        <li>
+                            <a href="{{ slice.id is null ? path('reports_unassigned') : path('reports_payment_source', {id: slice.id}) }}"
+                               class="report-payment-source-link flex items-center justify-between gap-4 py-2 text-fg hover:bg-surface-2">
+                                <span class="flex items-center gap-2">
+                                    {{ include('payment_source/_badge.html.twig', {color: slice.color}) }}
+                                    <span class="report-payment-source font-medium">{{ slice.label }}</span>
+                                </span>
+                                <span class="report-payment-source-amount text-sm text-fg-muted">
+                                    {{ include('components/money_disclosure.html.twig', {amount: slice.converted, label: 'subscription.totals.per_month'|trans, approximate: slice.isApproximate}) }}
+                                </span>
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    </section>
+
     <section class="obligation-trend mt-10">
         <div class="mb-4 flex flex-wrap items-baseline justify-between gap-2 border-b border-line pb-3">
             <h2 class="text-lg font-semibold text-fg">{{ 'report.trend.heading'|trans }}</h2>

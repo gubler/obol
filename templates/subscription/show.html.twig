@@ -62,6 +62,10 @@
                     <dd class="text-lg text-fg">{{ subscription.category ? subscription.category.name : 'subscription.group.uncategorized'|trans }}</dd>
                 </div>
                 <div>
+                    <dt class="text-sm font-medium text-fg-muted">{{ 'subscription.show.payment_source'|trans }}</dt>
+                    <dd class="text-lg text-fg">{{ subscription.paymentSource ? subscription.paymentSource.name : 'subscription.group.unassigned'|trans }}</dd>
+                </div>
+                <div>
                     <dt class="text-sm font-medium text-fg-muted">{{ 'subscription.show.cost'|trans }}</dt>
                     <dd class="text-lg text-fg">{{ subscription.cost.format() }} / {{ 'subscription.cadence'|trans({count: subscription.paymentPeriodCount, period: subscription.paymentPeriod.value}) }}</dd>
                 </div>

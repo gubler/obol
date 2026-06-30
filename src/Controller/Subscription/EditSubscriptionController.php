@@ -13,6 +13,7 @@ use App\Entity\Subscription;
 use App\Form\Subscription\EditSubscriptionFormType;
 use App\Message\Command\Subscription\UpdateSubscriptionCommand;
 use App\Message\Query\Category\FindAllCategoriesQuery;
+use App\Message\Query\PaymentSource\FindAllPaymentSourcesQuery;
 use App\Message\Query\Subscription\FindSubscriptionQuery;
 use App\Service\FileUploader;
 use Symfony\Component\HttpFoundation\Request;
@@ -44,11 +45,15 @@ final class EditSubscriptionController extends AbstractBaseController
         $categories = $this->queryBus->query(query: new FindAllCategoriesQuery());
         \assert(\is_array($categories));
 
+        $paymentSources = $this->queryBus->query(query: new FindAllPaymentSourcesQuery());
+        \assert(\is_array($paymentSources));
+
         $form = $this->createForm(type: EditSubscriptionFormType::class, data: $dto, options: [
             'offer_restart' => !$subscription->generatesPaymentsAutomatically(),
             // The currency is fixed once any payment exists; disable the picker so it cannot change.
             'lock_currency' => !$subscription->payments->isEmpty(),
             'has_categories' => [] !== $categories,
+            'has_payment_sources' => [] !== $paymentSources,
         ]);
 
         $form->handleRequest(request: $request);
@@ -75,6 +80,7 @@ final class EditSubscriptionController extends AbstractBaseController
                 currency: $data->currency,
                 color: $data->color,
                 restartPaymentGeneration: $data->restartPaymentGeneration,
+                paymentSourceId: $data->paymentSource?->id,
             ));
 
             $this->addFlash(type: self::FLASH_SUCCESS, message: $this->translator->trans('subscription.flash.updated'));

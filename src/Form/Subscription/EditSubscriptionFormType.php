@@ -9,6 +9,7 @@ namespace App\Form\Subscription;
 
 use App\Dto\Subscription\UpdateSubscriptionDto;
 use App\Entity\Category;
+use App\Entity\PaymentSource;
 use App\Enum\PaymentPeriod;
 use App\Enum\TileColor;
 use Doctrine\ORM\EntityRepository;
@@ -50,6 +51,22 @@ final class EditSubscriptionFormType extends AbstractType
                     ->createQueryBuilder('category')
                     ->orderBy('category.name', 'ASC'),
                 'placeholder' => 'subscription.group.uncategorized',
+                'required' => false,
+            ]);
+        }
+
+        // The payment-source picker is only offered when sources exist; clearing it (or having none)
+        // leaves the subscription unassigned. The controller passes the flag so the form needs no
+        // database access.
+        if (true === $options['has_payment_sources']) {
+            $builder->add(child: 'paymentSource', type: EntityType::class, options: [
+                'class' => PaymentSource::class,
+                'label' => 'subscription.form.payment_source',
+                'choice_label' => 'name',
+                'query_builder' => static fn (EntityRepository $repository): QueryBuilder => $repository
+                    ->createQueryBuilder('payment_source')
+                    ->orderBy('payment_source.name', 'ASC'),
+                'placeholder' => 'subscription.group.unassigned',
                 'required' => false,
             ]);
         }
@@ -124,10 +141,12 @@ final class EditSubscriptionFormType extends AbstractType
             'offer_restart' => false,
             'lock_currency' => false,
             'has_categories' => true,
+            'has_payment_sources' => true,
         ]);
         $resolver->setAllowedTypes(option: 'offer_restart', allowedTypes: 'bool');
         $resolver->setAllowedTypes(option: 'lock_currency', allowedTypes: 'bool');
         $resolver->setAllowedTypes(option: 'has_categories', allowedTypes: 'bool');
+        $resolver->setAllowedTypes(option: 'has_payment_sources', allowedTypes: 'bool');
     }
 
     #[\Override]

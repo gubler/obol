@@ -9,6 +9,10 @@ The **Reports** page turns your subscriptions into a picture of your recurring s
 
 A breakdown of your total monthly obligation across categories, shown as a pie with the figures alongside. It answers "where is my subscription money going?" at a glance. Add an active subscription and it shows up here.
 
+## Monthly obligation by payment source
+
+The same breakdown, grouped by [payment source](/obol-user/payment-sources/) instead of category - how much of your monthly obligation rides on each card or account. Select a source to open its own **monthly obligation by subscription** report; subscriptions with no source roll up into an **Unassigned** report, reached the same way.
+
 ## Obligation over time
 
 A line chart of your total obligation, with a **Weekly / Monthly / Yearly** toggle so you can read it at whatever cadence makes sense. Use it to see how your commitments are trending as you add and cancel subscriptions.

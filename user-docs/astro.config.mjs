@@ -13,6 +13,7 @@ const sidebar = [
   { slug: 'getting-started' },
   { slug: 'subscriptions' },
   { slug: 'categories' },
+  { slug: 'payment-sources' },
   { slug: 'payments' },
   { slug: 'reports' },
   { slug: 'currencies' },

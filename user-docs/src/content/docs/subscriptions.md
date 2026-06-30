@@ -11,6 +11,7 @@ Select **New subscription** on the dashboard and fill in the form:
 
 - **Subscription Name** - what it is (e.g. "Netflix").
 - **Category** - optional; groups the subscription on the dashboard and in reports. See [Categories](/obol-user/categories/).
+- **Payment Source** - optional; the card or account that pays for it. See [Payment Sources](/obol-user/payment-sources/). The picker appears once you've created at least one.
 - **Next Renewal Date** - when the next payment is due. Obol counts down to this.
 - **Billing cycle** - read as a sentence: *Every* **N** **period**, where the period is Week, Month, or Year. "Every 1 Month" or "Every 3 Months", for example.
 - **Cost** and **Currency** - the amount per cycle, in whatever currency you choose. See [Currencies](/obol-user/currencies/).

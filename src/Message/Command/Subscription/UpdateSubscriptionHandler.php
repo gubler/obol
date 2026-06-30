@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace App\Message\Command\Subscription;
 
 use App\Repository\CategoryRepository;
+use App\Repository\PaymentSourceRepository;
 use App\Repository\SubscriptionRepository;
 use App\Service\SubscriptionChangeNotifierInterface;
 use App\ValueObject\Money;
@@ -19,6 +20,7 @@ final readonly class UpdateSubscriptionHandler
     public function __construct(
         private SubscriptionRepository $subscriptionRepository,
         private CategoryRepository $categoryRepository,
+        private PaymentSourceRepository $paymentSourceRepository,
         private SubscriptionChangeNotifierInterface $subscriptionChangeNotifier,
     ) {
     }
@@ -41,6 +43,16 @@ final readonly class UpdateSubscriptionHandler
             }
         }
 
+        // A subscription may be unassigned; only a given-but-missing payment source is an error.
+        $paymentSource = null;
+        if (null !== $command->paymentSourceId) {
+            $paymentSource = $this->paymentSourceRepository->find($command->paymentSourceId);
+
+            if (null === $paymentSource) {
+                throw new \InvalidArgumentException(\sprintf('Payment source with ID "%s" not found.', $command->paymentSourceId));
+            }
+        }
+
         $subscription->update(
             category: $category,
             name: $command->name,
@@ -52,6 +64,7 @@ final readonly class UpdateSubscriptionHandler
             paymentPeriodCount: $command->paymentPeriodCount,
             cost: new Money($command->cost, $command->currency),
             color: $command->color,
+            paymentSource: $paymentSource,
         );
 
         // update() has already set the anchor; resuming re-anchors it and flips back to automated.

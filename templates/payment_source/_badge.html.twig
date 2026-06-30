@@ -1,0 +1,8 @@
+{# ABOUTME: A small flat color swatch for a payment source (or the Unassigned pseudo-group). #}
+{# ABOUTME: Pass either `payment_source` (nullable PaymentSource) or an explicit `color` (?TileColor). #}
+{# ABOUTME: An absent color renders the reserved neutral Charcoal swatch. #}
+{% set badge_color = payment_source is defined and payment_source ? payment_source.color : (color is defined ? color : null) %}
+{% set color_class = badge_color ? badge_color.baseColorClass() : 'bg-stone-600' %}
+<span class="payment-source-badge inline-flex size-6 shrink-0 items-center justify-center rounded-md {{ color_class }} text-white">
+    {{ ux_icon('lucide:credit-card', {class: 'size-4'}) }}
+</span>

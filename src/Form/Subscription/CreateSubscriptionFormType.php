@@ -9,6 +9,7 @@ namespace App\Form\Subscription;
 
 use App\Dto\Subscription\CreateSubscriptionDto;
 use App\Entity\Category;
+use App\Entity\PaymentSource;
 use App\Enum\PaymentPeriod;
 use App\Enum\TileColor;
 use Doctrine\ORM\EntityRepository;
@@ -54,6 +55,21 @@ final class CreateSubscriptionFormType extends AbstractType
                     'data-action' => 'color-sync#categoryChanged',
                 ],
                 'placeholder' => 'subscription.group.uncategorized',
+                'required' => false,
+            ]);
+        }
+
+        // The payment-source picker is only offered when sources exist; without one the subscription is
+        // left unassigned. The controller passes the flag so the form needs no database access.
+        if (true === $options['has_payment_sources']) {
+            $builder->add(child: 'paymentSource', type: EntityType::class, options: [
+                'class' => PaymentSource::class,
+                'label' => 'subscription.form.payment_source',
+                'choice_label' => 'name',
+                'query_builder' => static fn (EntityRepository $repository): QueryBuilder => $repository
+                    ->createQueryBuilder('payment_source')
+                    ->orderBy('payment_source.name', 'ASC'),
+                'placeholder' => 'subscription.group.unassigned',
                 'required' => false,
             ]);
         }
@@ -122,8 +138,10 @@ final class CreateSubscriptionFormType extends AbstractType
         $resolver->setDefaults(defaults: [
             'data_class' => CreateSubscriptionDto::class,
             'has_categories' => true,
+            'has_payment_sources' => true,
         ]);
         $resolver->setAllowedTypes(option: 'has_categories', allowedTypes: 'bool');
+        $resolver->setAllowedTypes(option: 'has_payment_sources', allowedTypes: 'bool');
     }
 
     #[\Override]

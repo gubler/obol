@@ -49,17 +49,29 @@ class Category
         $this->color = $color ?? TileColor::random();
     }
 
-    public function setName(string $name): void
+    /**
+     * Updates any combination of the name, color, and icon; a null argument leaves that field
+     * unchanged. At least one field must be provided.
+     */
+    public function update(?string $name = null, ?TileColor $color = null, ?CategoryIcon $icon = null): void
     {
-        $name = trim(string: $name);
-        Assertion::notEq(value1: $name, value2: '');
-        $this->name = $name;
-    }
+        Assertion::true(
+            null !== $name || $color instanceof TileColor || $icon instanceof CategoryIcon,
+            'At least one field must be provided to update a category.',
+        );
 
-    public function update(string $name, TileColor $color, CategoryIcon $icon): void
-    {
-        $this->setName($name);
-        $this->color = $color;
-        $this->icon = $icon;
+        if (null !== $name) {
+            $name = trim(string: $name);
+            Assertion::notEq(value1: $name, value2: '');
+            $this->name = $name;
+        }
+
+        if ($color instanceof TileColor) {
+            $this->color = $color;
+        }
+
+        if ($icon instanceof CategoryIcon) {
+            $this->icon = $icon;
+        }
     }
 }

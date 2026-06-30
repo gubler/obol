@@ -81,7 +81,7 @@ Groups subscriptions. Carries a name, a color, and an icon, plus its collection 
 | `icon` | `CategoryIcon` | Curated closed Lucide set; defaults to the neutral `Tag` |
 | `subscriptions` | `Collection<Subscription>` | OneToMany, read-only |
 
-`setName()` changes the name alone; `update()` sets name, color, and icon together. Categories cannot be deleted if they have subscriptions (`CategoryHasSubscriptionsException`). The "Uncategorized" pseudo-group (a null category) renders with a reserved neutral Charcoal swatch and a dashed icon.
+`update()` is the single mutator: it takes a nullable name, color, and icon, changes only the fields that are provided, and asserts at least one was. Categories cannot be deleted if they have subscriptions (`CategoryHasSubscriptionsException`). The "Uncategorized" pseudo-group (a null category) renders with a reserved neutral Charcoal swatch and a dashed icon.
 
 ## PaymentSource
 

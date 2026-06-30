@@ -55,13 +55,42 @@ final class CategoryTest extends TestCase
         self::assertCount(0, $category->subscriptions);
     }
 
-    public function testAllowsSettingName(): void
+    public function testUpdateChangesOnlyTheProvidedFields(): void
     {
-        $category = new Category(name: 'Original Name');
+        $category = new Category(name: 'Original', color: TileColor::Red, icon: CategoryIcon::Tag);
 
-        $category->setName('Updated Name');
+        $category->update(icon: CategoryIcon::Film);
 
-        self::assertSame('Updated Name', $category->name);
+        self::assertSame('Original', $category->name);
+        self::assertSame(TileColor::Red, $category->color);
+        self::assertSame(CategoryIcon::Film, $category->icon);
+    }
+
+    public function testUpdateTrimsTheNameWhenProvided(): void
+    {
+        $category = new Category(name: 'Original');
+
+        $category->update(name: '  Updated  ');
+
+        self::assertSame('Updated', $category->name);
+    }
+
+    public function testUpdateRejectsWhenNoFieldIsProvided(): void
+    {
+        $category = new Category(name: 'Valid');
+
+        $this->expectException(\Assert\InvalidArgumentException::class);
+
+        $category->update();
+    }
+
+    public function testUpdateRejectsAnEmptyName(): void
+    {
+        $category = new Category(name: 'Valid');
+
+        $this->expectException(\Assert\InvalidArgumentException::class);
+
+        $category->update(name: '');
     }
 
     public function testRejectsEmptyName(): void
@@ -76,31 +105,5 @@ final class CategoryTest extends TestCase
         $this->expectException(\Assert\InvalidArgumentException::class);
 
         new Category(name: '   ');
-    }
-
-    public function testSetNameRejectsEmptyName(): void
-    {
-        $category = new Category(name: 'Valid');
-
-        $this->expectException(\Assert\InvalidArgumentException::class);
-
-        $category->setName('');
-    }
-
-    public function testSetNameRejectsWhitespaceName(): void
-    {
-        $category = new Category(name: 'Valid');
-
-        $this->expectException(\Assert\InvalidArgumentException::class);
-
-        $category->setName('   ');
-    }
-
-    public function testSetNameTrimsName(): void
-    {
-        $category = new Category(name: 'Original');
-        $category->setName('  Updated  ');
-
-        self::assertSame('Updated', $category->name);
     }
 }

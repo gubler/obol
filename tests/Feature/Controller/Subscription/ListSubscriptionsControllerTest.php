@@ -427,8 +427,10 @@ final class ListSubscriptionsControllerTest extends WebTestCase
             'category' => $category,
             'name' => 'Netflix',
             'cost' => new Money(1500, Currency::USD),
-            // The extra hours keep the floored relative span clear of the day boundary.
-            'nextRenewal' => new \DateTimeImmutable('+2 days +6 hours'),
+            // Anchor to a fixed calendar day: renewal_label floors both dates to midnight and
+            // measures the calendar-day distance, so a relative seed with extra hours could tip
+            // onto the next day past a UTC midnight and read "3 days" (#297).
+            'nextRenewal' => new \DateTimeImmutable('today +2 days'),
         ]);
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');

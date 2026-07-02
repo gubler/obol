@@ -62,6 +62,14 @@ Enforced via `symplify/phpstan-rules`:
   `ControllerMethodInjectionToConstructorRector` enforces this. The
   `AbstractBaseController` bus wiring uses `#[Required]` setter injection, so
   child constructors coexist with it.
+- **Wire services with `#[Autowire]` attributes on the class, not in
+  `services.yaml`.** Parameters still live in `services.yaml` under `parameters:`
+  (that is where machine/deploy configuration belongs), but a service that needs
+  one binds it on the constructor argument -
+  `#[Autowire(param: 'app.uploads_directory')] private string $targetDirectory`.
+  Keeping the wiring on the class makes a service's dependencies legible from the
+  class itself instead of a separate YAML block - less "magic." Migrate existing
+  `services.yaml` argument blocks to attributes as you touch them.
 - Form types must end with `Type` suffix
 - No class-level `#[Route]` attributes (method-level only)
 - No trailing slashes in routes

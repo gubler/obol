@@ -282,6 +282,7 @@ This project enforces strict quality standards:
 - No `$this->get()` in controllers or commands
 - No `AbstractController::__construct()` with dependencies
 - Controllers must use dependency injection via method parameters or constructor
+- Wire services with `#[Autowire]` attributes on the class, not in `services.yaml` (parameters stay in `services.yaml`; wiring lives on the constructor argument). Migrate existing argument blocks as touched.
 - No global constants
 - Routes must have names for generation
 - No trailing slashes in routes

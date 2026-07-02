@@ -23,11 +23,6 @@ services:
     App\:
         resource: '../src/'
 
-    App\Service\FileUploader:
-        arguments:
-            $targetDirectory: '%app.uploads_directory%'
-            $publicPath: '%app.uploads_public_path%'
-
     App\Service\DisplayCurrencyProvider:
         arguments:
             $displayCurrency: '%app.display_currency%'

@@ -70,7 +70,6 @@ Query handlers are called "Runners" (not "Handlers") to distinguish them from co
 
 ```
 src/Message/
-├── AsyncMessageInterface.php    # Marker for async routing
 ├── Command/
 │   ├── Category/
 │   │   ├── CreateCategoryCommand.php
@@ -111,9 +110,22 @@ src/Message/
     └── GeneratePaymentsHandler.php
 ```
 
-## Async Transport
+## Async Transports
 
-Any message class implementing `AsyncMessageInterface` is routed to the `async` Doctrine transport (stored in the `messenger_messages` table). This is currently used for email sending via `SendEmailMessage`.
+Two Doctrine transports back off-request work, both stored in the `messenger_messages` table (distinguished by `queue_name`):
+
+- **`mail`** — outbound transactional email. Symfony wraps every `MailerInterface::send()` in a `SendEmailMessage` envelope; `config/packages/messenger.yaml` routes that class to this transport, so mail is delivered off-request rather than in the web request.
+- **`async`** — general-purpose off-request work. Wired and ready, but nothing routes to it yet.
+
+Routing is explicit in `messenger.yaml` (there is no marker interface). The Symfony Scheduler keeps its own `scheduler_default` transport.
+
+A single sidecar `worker` container drains all three in priority order so mail goes first:
+
+```bash
+php bin/console messenger:consume mail async scheduler_default --time-limit=3600
+```
+
+The `app:mailer:smoke <address>` console command deliberately **bypasses** the `mail` transport by injecting the mailer transport directly and sending in-process, so a misconfigured `MAILER_DSN` throws in the command rather than queueing and failing silently on the worker. It is the pre-flight gate before a deploy.
 
 ## The Full Request Flow
 

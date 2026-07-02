@@ -10,10 +10,17 @@ services:
       APP_SECRET: ${APP_SECRET}
       MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET}
       MERCURE_SUBSCRIBER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET}
+      # Transactional mail (magic-link/signup). The base compose sets no MAILER_DSN, so
+      # without this prod would inherit the dev `.env` null:// default and silently drop every
+      # send. php runs app:mailer:smoke; verify a deploy with it. Sourced from the host deploy env.
+      MAILER_DSN: ${MAILER_DSN}
 
   # Prod worker: same prod image as php (built by the php service), plus the app secret the kernel
   # needs. DATABASE_URL comes from the base compose anchor; depends_on (php healthy) from base too.
+  # Carries MAILER_DSN too: async mail dispatch routes the actual SMTP send through this worker,
+  # not the web request, so it needs the mailer env just as much as the php container.
   worker:
     image: ${IMAGES_PREFIX:-}obol-php-prod
     environment:
       APP_SECRET: ${APP_SECRET}
+      MAILER_DSN: ${MAILER_DSN}

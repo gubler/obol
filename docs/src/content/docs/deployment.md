@@ -38,13 +38,15 @@ Three services:
 - Depends on `database` with healthcheck
 - Volume: `uploads_data` mounted at `/app/public/uploads`
 
-**`worker`** — long-running Messenger consumer for the Symfony Scheduler
+**`worker`** — long-running Messenger consumer
 
-- Same image as `php`, run with `messenger:consume scheduler_default --time-limit=3600`
-- Drives the daily payment-generation schedule; **without it the scheduler never fires**
+- Same image as `php`, run with `messenger:consume mail async scheduler_default --time-limit=3600`
+- Drains three transports in priority order (mail first): `mail` (outbound transactional email), `async` (general off-request work, empty for now), and `scheduler_default` (the Symfony Scheduler)
+- Drives the daily payment-generation schedule; **without it the scheduler never fires** and queued mail never sends
 - Depends on `php` being healthy (so vendor install and migrations are already done before it boots), and on `database`
 - `restart: unless-stopped`; recycles hourly via the time limit
-- Present in dev too (base + override), so the scheduler runs locally
+- Present in dev too (base + override), so the scheduler and mail delivery run locally
+- In production it carries `MAILER_DSN` (async mail is delivered here, not in the web request)
 
 **`database`** — PostgreSQL 16 Alpine
 
@@ -54,7 +56,8 @@ Three services:
 ### Development overrides (`compose.override.yaml`)
 
 - Exposes the database port locally (random port)
-- Adds a `mailer` service (Mailpit) for local SMTP testing on ports 1025 (SMTP) and 8025 (web UI)
+- Outbound mail uses whatever `MAILER_DSN` you set in `.env.local` (there is no Mailpit catcher). For local/early dev, point it at Fastmail SMTP with an app password; the committed default is `null://null`, a no-op. Verify wiring with `app:mailer:smoke`.
+  - URL-encode any reserved characters in the DSN username - notably the `@` in an email login becomes `%40`, so `test@example.com` is written `test%40example.com`: `smtp://test%40example.com:APP_PASSWORD@smtp.fastmail.com:465`.
 
 ## Environment Variables
 
@@ -66,6 +69,7 @@ Three services:
 | `POSTGRES_USER` | Yes | `app` | PostgreSQL username |
 | `POSTGRES_PASSWORD` | Yes | `!ChangeMe!` | PostgreSQL password |
 | `POSTGRES_DB` | Yes | `app` | PostgreSQL database name |
+| `MAILER_DSN` | Yes (prod) | `null://null` | Outbound mail transport. Set to a real SMTP DSN (e.g. Fastmail app password) in prod and `.env.local`; the `null://null` default silently drops mail. URL-encode reserved characters in the username (`@` becomes `%40`). Verify with `app:mailer:smoke`. |
 
 :::caution
 Change `APP_SECRET` and `POSTGRES_PASSWORD` from their defaults before deploying to production.

@@ -22,14 +22,16 @@ services:
       database:
         condition: service_healthy
 
-  # Long-running Messenger consumer for the Symfony Scheduler transport. Without it the daily
-  # GeneratePayments schedule never fires. Same image as php, different command; it waits for php
-  # to be healthy so vendor install and migrations (run by php's entrypoint) are already done,
-  # which makes its own entrypoint setup a no-op and avoids racing php on first boot.
+  # Long-running Messenger consumer. Drains three transports in priority order so mail drains
+  # first: `mail` (outbound transactional email), `async` (general off-request work,
+  # empty for now), and `scheduler_default` (the Symfony Scheduler transport - without it the
+  # daily GeneratePayments schedule never fires). Same image as php, different command; it waits
+  # for php to be healthy so vendor install and migrations (run by php's entrypoint) are already
+  # done, which makes its own entrypoint setup a no-op and avoids racing php on first boot.
   worker:
     image: ${IMAGES_PREFIX:-}obol-php
     restart: unless-stopped
-    command: php bin/console messenger:consume scheduler_default --time-limit=3600
+    command: php bin/console messenger:consume mail async scheduler_default --time-limit=3600
     # The image healthcheck probes the Caddy admin endpoint, which this command does not serve.
     healthcheck:
       disable: true

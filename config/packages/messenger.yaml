@@ -1,5 +1,30 @@
 framework:
     messenger:
+        transports:
+            # Outbound transactional email (magic-link/signup). Symfony wraps
+            # every MailerInterface::send() in a SendEmailMessage envelope; the routing
+            # below moves those onto this transport so the sidecar worker delivers them
+            # off-request. auto_setup is off - the messenger_messages table is owned by a
+            # migration, not created on the fly.
+            mail:
+                dsn: 'doctrine://default'
+                options:
+                    auto_setup: false
+                    queue_name: mail
+            # General-purpose async work. Empty today, wired and ready for the first
+            # off-request command that isn't email.
+            async:
+                dsn: 'doctrine://default'
+                options:
+                    auto_setup: false
+                    queue_name: async
+
+        # All transactional email goes off-request via the `mail` transport. The smoke
+        # command (app:mailer:smoke) deliberately bypasses this by injecting the transport
+        # directly, so a broken DSN throws in-process rather than on the worker.
+        routing:
+            Symfony\Component\Mailer\Messenger\SendEmailMessage: mail
+
         default_bus: command.bus
         buses:
             command.bus:
@@ -15,3 +40,13 @@ framework:
                 middleware:
                     - dispatch_after_current_bus
                     - doctrine_transaction
+
+# In-memory Messenger transports for tests. Async dispatches are observable via
+# Symfony\Component\Messenger\Transport\InMemory\InMemoryTransport - tests can assert
+# messages were enqueued without spinning a worker or touching the database.
+when@test:
+    framework:
+        messenger:
+            transports:
+                mail: 'in-memory://'
+                async: 'in-memory://'

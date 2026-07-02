@@ -68,7 +68,7 @@ Developer docs are at [docs.dev88.work/obol](https://docs.dev88.work/obol); the 
 
 ### Working on docs locally
 
-The docs are [Astro Starlight](https://starlight.astro.build/) sites (`docs/` for developer docs, `user-docs/` for the user guide), built in a Dockerized pnpm container — nothing to install on the host:
+The docs are [Astro Starlight](https://starlight.astro.build/) sites (`docs/` for developer docs, `docs-user/` for the user guide), built in a Dockerized pnpm container — nothing to install on the host:
 
 ```bash
 mise run docs:install   # one-time after clone
@@ -77,7 +77,7 @@ mise run docs:build     # build to docs/dist/
 mise run docs:deploy    # build and rsync to docs.dev88.work/obol
 ```
 
-The `user-docs:*` tasks (`install` / `dev` / `build` / `deploy`) drive the end-user guide the same way.
+The `docs-user:*` tasks (`install` / `dev` / `build` / `deploy`) drive the end-user guide the same way.
 
 ## License
 

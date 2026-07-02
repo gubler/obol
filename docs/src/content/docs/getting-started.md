@@ -58,7 +58,7 @@ mise run docs:dev       # live preview at http://localhost:4321/obol/
 mise run docs:build     # build to docs/dist/ (runs the links validator)
 ```
 
-The separate end-user guide under `user-docs/` works the same way via the `user-docs:*` tasks.
+The separate end-user guide under `docs-user/` works the same way via the `docs-user:*` tasks.
 
 ## Further reading
 

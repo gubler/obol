@@ -4,7 +4,7 @@ title: "Mise Tasks"
 
 [mise](https://mise.jdx.dev/) provides task runner shortcuts. All tasks are defined in `mise.toml` at the repo root.
 
-Most tasks run **inside the `php` container** via `./bin/dc exec`. The exceptions: `lint:php` (host-side, needs `git`); the `js:*` tasks (host-side Node/npm - the JS toolchain is dev-only and never enters the container; run `npm ci` once after pulling); and the `docs:*` / `user-docs:*` tasks, which build in their own Node container (`docs/compose.yaml`), with only the `docs:deploy` rsync running on the host.
+Most tasks run **inside the `php` container** via `./bin/dc exec`. The exceptions: `lint:php` (host-side, needs `git`); the `js:*` tasks (host-side Node/npm - the JS toolchain is dev-only and never enters the container; run `npm ci` once after pulling); and the `docs:*` / `docs-user:*` tasks, which build in their own Node container (`docs/compose.yaml`), with only the `docs:deploy` rsync running on the host.
 
 ## Stack control
 
@@ -56,7 +56,7 @@ See [Frontend](../frontend.md#javascript-toolchain-dev-only) for what the JS too
 
 ## Documentation
 
-The developer docs (`docs/`) and the end-user guide (`user-docs/`) are Astro Starlight sites built in a Dockerized pnpm container. The `user-docs:*` tasks mirror the `docs:*` set below.
+The developer docs (`docs/`) and the end-user guide (`docs-user/`) are Astro Starlight sites built in a Dockerized pnpm container. The `docs-user:*` tasks mirror the `docs:*` set below.
 
 | Task | Description | Underlying Command |
 |------|-------------|-------------------|

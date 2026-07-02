@@ -238,34 +238,34 @@ description = "Build and rsync the dev-docs to hex:/srv/docs/obol/"
 depends = ["docs:build"]
 run = "rsync -avz --delete docs/dist/ hex:/srv/docs/obol/"
 
-# End-user docs site (Astro Starlight in user-docs/, published to docs.dev88.work/obol-user).
+# End-user docs site (Astro Starlight in docs-user/, published to docs.dev88.work/obol-user).
 # Standalone from the dev docs; builds in its own Dockerized pnpm container.
-[tasks."user-docs:install"]
-description = "Install user-docs dependencies (one-time, after clone)"
-dir = "user-docs"
+[tasks."docs-user:install"]
+description = "Install docs-user dependencies (one-time, after clone)"
+dir = "docs-user"
 run = "docker compose run --rm docs-builder sh -c 'corepack enable && pnpm install --frozen-lockfile'"
 
-[tasks."user-docs:dev"]
-description = "Run the user-docs site with hot reload (http://localhost:4322/obol-user/)"
-dir = "user-docs"
+[tasks."docs-user:dev"]
+description = "Run the docs-user site with hot reload (http://localhost:4322/obol-user/)"
+dir = "docs-user"
 run = "docker compose run --rm -p 4322:4321 docs-builder sh -c 'corepack enable && pnpm dev --host 0.0.0.0'"
 
-[tasks."user-docs:build"]
-description = "Build the user-docs site to user-docs/dist/ (Dockerized pnpm; runs the links validator)"
-dir = "user-docs"
+[tasks."docs-user:build"]
+description = "Build the docs-user site to docs-user/dist/ (Dockerized pnpm; runs the links validator)"
+dir = "docs-user"
 run = "docker compose run --rm docs-builder"
 
-[tasks."user-docs:check"]
-description = "Run astro check on the user-docs (Zod schema + TS validation)"
-dir = "user-docs"
+[tasks."docs-user:check"]
+description = "Run astro check on the docs-user (Zod schema + TS validation)"
+dir = "docs-user"
 run = "docker compose run --rm docs-builder sh -c 'corepack enable && pnpm check'"
 
-[tasks."user-docs:preview"]
-description = "Serve the built user-docs dist/ locally for final review (http://localhost:4322/obol-user/)"
-dir = "user-docs"
+[tasks."docs-user:preview"]
+description = "Serve the built docs-user dist/ locally for final review (http://localhost:4322/obol-user/)"
+dir = "docs-user"
 run = "docker compose run --rm -p 4322:4321 docs-builder sh -c 'corepack enable && pnpm preview --host 0.0.0.0'"
 
-[tasks."user-docs:deploy"]
-description = "Build and rsync the user-docs to hex:/srv/docs/obol-user/"
-depends = ["user-docs:build"]
-run = "rsync -avz --delete user-docs/dist/ hex:/srv/docs/obol-user/"
+[tasks."docs-user:deploy"]
+description = "Build and rsync the docs-user to hex:/srv/docs/obol-user/"
+depends = ["docs-user:build"]
+run = "rsync -avz --delete docs-user/dist/ hex:/srv/docs/obol-user/"

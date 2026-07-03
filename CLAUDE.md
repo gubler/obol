@@ -262,6 +262,16 @@ Uses Symfony AssetMapper with:
 
 This project enforces strict quality standards:
 
+### Comments and documentation
+- **No issue/PR numbers in code comments or documentation.** Comments and docs (code comments,
+  `README.md`, `docs/`, `docs-user/`, `CONTEXT.md`, ADRs, migration descriptions) must be
+  self-contained to the application - a reader with only the repo should never hit a reference they
+  can't resolve. Gitea issue/PR numbers live outside the codebase, so they don't belong here.
+- You **may** reference in-repo decisions, since those travel with the code: an ADR
+  (`reference/adr/NNNN`) or an out-of-scope note (`reference/out-of-scope/`).
+- This rule covers docs and comments only. Issue/PR descriptions, comments, and commit/PR
+  `refs:`/`Closes` footers on Gitea are unaffected - cross-referencing is exactly their job.
+
 ### Type Coverage
 100% type coverage required for:
 - Return types

@@ -12,15 +12,15 @@ use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
+use App\Tests\Support\AuthenticatedTestCase;
 use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-final class GlobalTotalsCapstoneTest extends WebTestCase
+final class GlobalTotalsCapstoneTest extends AuthenticatedTestCase
 {
     public function testShowsTheGlobalTotalObligationAcrossWeekMonthAndYear(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         SubscriptionFactory::createOne(['category' => $category, 'cost' => new Money(1500, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
         SubscriptionFactory::createOne(['category' => $category, 'cost' => new Money(1000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
@@ -35,7 +35,7 @@ final class GlobalTotalsCapstoneTest extends WebTestCase
 
     public function testConvertsAMultiCurrencyTotalToTheDisplayCurrencyWithANativeBreakdown(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         /** @var EntityManagerInterface $entityManager */
         $entityManager = self::getContainer()->get(EntityManagerInterface::class);
         // 1 EUR = 1.08 USD.

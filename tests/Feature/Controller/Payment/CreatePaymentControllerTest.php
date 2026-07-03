@@ -12,18 +12,18 @@ use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
+use App\Tests\Support\AuthenticatedTestCase;
 use App\Tests\Support\TranslationAssertions;
 use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-final class CreatePaymentControllerTest extends WebTestCase
+final class CreatePaymentControllerTest extends AuthenticatedTestCase
 {
     use TranslationAssertions;
 
     public function testDisplaysCreatePaymentForm(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::createOne([
             'category' => $category,
@@ -40,7 +40,7 @@ final class CreatePaymentControllerTest extends WebTestCase
 
     public function testCreatesPaymentWithValidData(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::createOne([
             'category' => $category,
@@ -71,7 +71,7 @@ final class CreatePaymentControllerTest extends WebTestCase
 
     public function testShowsSuccessFlashMessageAfterCreation(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::createOne([
             'category' => $category,
@@ -90,7 +90,7 @@ final class CreatePaymentControllerTest extends WebTestCase
 
     public function testShowsValidationErrorsForInvalidData(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::createOne([
             'category' => $category,
@@ -109,7 +109,7 @@ final class CreatePaymentControllerTest extends WebTestCase
 
     public function testDoesNotOfferTheRestartControlForAnAutomatedSubscription(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $subscription = SubscriptionFactory::createOne(['name' => 'Netflix']);
 
         $client->request(\Symfony\Component\HttpFoundation\Request::METHOD_GET, '/subscriptions/' . $subscription->id . '/payments/new');
@@ -120,7 +120,7 @@ final class CreatePaymentControllerTest extends WebTestCase
 
     public function testOffersTheRestartControlForAManualSubscription(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $subscription = SubscriptionFactory::new()->manual()->create(['name' => 'Netflix']);
 
         $client->request(\Symfony\Component\HttpFoundation\Request::METHOD_GET, '/subscriptions/' . $subscription->id . '/payments/new');
@@ -131,7 +131,7 @@ final class CreatePaymentControllerTest extends WebTestCase
 
     public function testResumesAutomatedGenerationWhenRestartIsRequestedFromThePaymentForm(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $subscription = SubscriptionFactory::new()->manual()->create([
             'name' => 'Netflix',
             'cost' => new Money(1599, Currency::USD),
@@ -164,7 +164,7 @@ final class CreatePaymentControllerTest extends WebTestCase
 
     public function testKeepsManualGenerationWhenThePaymentFormIsSubmittedWithoutRestart(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $subscription = SubscriptionFactory::new()->manual()->create([
             'name' => 'Netflix',
             'cost' => new Money(1599, Currency::USD),
@@ -190,7 +190,7 @@ final class CreatePaymentControllerTest extends WebTestCase
 
     public function testReturns404ForInvalidSubscriptionId(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(\Symfony\Component\HttpFoundation\Request::METHOD_GET, '/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/payments/new');
 

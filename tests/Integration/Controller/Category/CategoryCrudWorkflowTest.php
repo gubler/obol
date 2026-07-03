@@ -11,15 +11,15 @@ use App\Entity\Category;
 use App\Entity\Subscription;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
+use App\Tests\Support\AuthenticatedTestCase;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DomCrawler\Crawler;
 
-final class CategoryCrudWorkflowTest extends WebTestCase
+final class CategoryCrudWorkflowTest extends AuthenticatedTestCase
 {
     public function testCompleteCreateEditDeleteWorkflow(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         // Create
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/new');
@@ -65,7 +65,7 @@ final class CategoryCrudWorkflowTest extends WebTestCase
 
     public function testCannotDeleteCategoryWithSubscriptionsThenDeleteAfterRemovingSubscriptions(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $category = CategoryFactory::createOne(['name' => 'Category With Sub']);
         SubscriptionFactory::createOne(['category' => $category, 'name' => 'Netflix']);
@@ -104,7 +104,7 @@ final class CategoryCrudWorkflowTest extends WebTestCase
 
     public function testCreateMultipleCategoriesAndVerifyListOrder(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $categories = ['Zebra', 'Alpha', 'Beta'];
 

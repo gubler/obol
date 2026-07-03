@@ -7,19 +7,19 @@ declare(strict_types=1);
 
 namespace App\Tests\Feature\I18n;
 
+use App\Tests\Support\AuthenticatedTestCase;
 use App\Tests\Support\TranslationAssertions;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\ExpectationFailedException;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-final class NoUnresolvedTranslationKeysTest extends WebTestCase
+final class NoUnresolvedTranslationKeysTest extends AuthenticatedTestCase
 {
     use TranslationAssertions;
 
     #[DataProvider('provideParamlessPagesAreKeyCleanCases')]
     public function testParamlessPagesAreKeyClean(string $route): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $url = self::getContainer()->get('router')->generate($route);
 

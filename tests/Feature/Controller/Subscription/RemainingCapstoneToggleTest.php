@@ -11,14 +11,14 @@ use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
+use App\Tests\Support\AuthenticatedTestCase;
 use App\ValueObject\Money;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-final class RemainingCapstoneToggleTest extends WebTestCase
+final class RemainingCapstoneToggleTest extends AuthenticatedTestCase
 {
     public function testTheCapstoneDefaultsToGlobalTotalsAndTogglesToRemaining(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Software']);
         SubscriptionFactory::createOne([
             'category' => $category,

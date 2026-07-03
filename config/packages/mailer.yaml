@@ -1,3 +1,6 @@
 framework:
     mailer:
         dsn: '%env(MAILER_DSN)%'
+        # Default sender for transactional mail (magic-link login, etc.); override per-message if needed.
+        headers:
+            From: '%env(MAILER_FROM)%'

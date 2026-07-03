@@ -9,16 +9,16 @@ namespace App\Tests\Feature\I18n;
 
 use App\Enum\PaymentPeriod;
 use App\Factory\SubscriptionFactory;
+use App\Tests\Support\AuthenticatedTestCase;
 use App\Tests\Support\TranslationAssertions;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-final class CadenceRenderingTest extends WebTestCase
+final class CadenceRenderingTest extends AuthenticatedTestCase
 {
     use TranslationAssertions;
 
     public function testListViewRendersThePluralizedCadence(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         SubscriptionFactory::createOne([
             'name' => 'Quarterly Co',
             'paymentPeriod' => PaymentPeriod::Month,

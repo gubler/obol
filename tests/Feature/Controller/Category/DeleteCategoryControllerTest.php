@@ -10,15 +10,15 @@ namespace App\Tests\Feature\Controller\Category;
 use App\Entity\Category;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
+use App\Tests\Support\AuthenticatedTestCase;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Uid\Ulid;
 
-final class DeleteCategoryControllerTest extends WebTestCase
+final class DeleteCategoryControllerTest extends AuthenticatedTestCase
 {
     public function testDeletesCategoryWithoutSubscriptionsSuccessfully(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $category = CategoryFactory::createOne(['name' => 'Empty Category']);
         $categoryId = $category->id;
@@ -39,7 +39,7 @@ final class DeleteCategoryControllerTest extends WebTestCase
 
     public function testDeleteSuccessShowsFlashMessage(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $category = CategoryFactory::createOne(['name' => 'Test Category']);
         $categoryId = $category->id;
@@ -52,7 +52,7 @@ final class DeleteCategoryControllerTest extends WebTestCase
 
     public function testCannotDeleteCategoryWithSubscriptions(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $category = CategoryFactory::createOne(['name' => 'Category With Subscriptions']);
         SubscriptionFactory::createOne(['category' => $category, 'name' => 'Netflix']);
@@ -75,7 +75,7 @@ final class DeleteCategoryControllerTest extends WebTestCase
 
     public function testDeleteFailureShowsErrorFlashMessage(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $category = CategoryFactory::createOne(['name' => 'Category With Subscriptions']);
         SubscriptionFactory::createOne(['category' => $category, 'name' => 'Spotify']);
@@ -90,7 +90,7 @@ final class DeleteCategoryControllerTest extends WebTestCase
 
     public function testReturns404ForNonExistentCategory(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $nonExistentId = new Ulid();
 
@@ -101,7 +101,7 @@ final class DeleteCategoryControllerTest extends WebTestCase
 
     public function testOnlyAcceptsPostMethod(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $category = CategoryFactory::createOne(['name' => 'Test Category']);
         $categoryId = $category->id;

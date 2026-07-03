@@ -1,29 +1,50 @@
 security:
-    # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
-    password_hashers:
-        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
-    # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
-        users_in_memory: { memory: null }
+        # Resolves any verified UserEmail address (primary or secondary) to its User.
+        app_user_provider:
+            id: App\Security\MultiEmailUserProvider
+
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         main:
             lazy: true
-            provider: users_in_memory
+            provider: app_user_provider
+            entry_point: App\Security\LoginRedirectEntryPoint
 
-            # activate different ways to authenticate
-            # https://symfony.com/doc/current/security.html#the-firewall
+            # Passwordless magic-link authentication. The signature covers id + primary email; the
+            # link is checked at app_login_check and consumed by the native login_link authenticator.
+            login_link:
+                check_route: app_login_check
+                check_post_only: false
+                signature_properties: ['id', 'email']
+                lifetime: '%app.login_link.lifetime_seconds%'
+                provider: app_user_provider
 
-            # https://symfony.com/doc/current/security/impersonating_user.html
-            # switch_user: true
+            # Keep sessions alive across browser restarts. No tokensInvalidatedAt yet (server-side
+            # force-logout is Stage 2), so the cookie signs on the primary email - a primary-email
+            # change invalidates outstanding cookies.
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 2592000 # 30 days
+                path: /
+                secure: auto
+                samesite: lax
+                signature_properties: ['email']
+                always_remember_me: true
 
-    # Easy way to control access for large sections of your site
-    # Note: Only the *first* access control that matches will be used
+            logout:
+                path: app_logout
+                target: app_login
+
+    # Note: Only the *first* access control that matches will be used.
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/logout, roles: PUBLIC_ACCESS }
+        # Non-prod login bypass for Panther browser tests (TestLoginAsController 404s outside dev/test).
+        - { path: ^/_test, roles: PUBLIC_ACCESS }
+        - { path: ^/, roles: ROLE_USER }
 
 when@test:
     security:

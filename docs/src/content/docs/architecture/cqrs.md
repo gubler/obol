@@ -115,9 +115,11 @@ src/Message/
 Two Doctrine transports back off-request work, both stored in the `messenger_messages` table (distinguished by `queue_name`):
 
 - **`mail`** — outbound transactional email. Symfony wraps every `MailerInterface::send()` in a `SendEmailMessage` envelope; `config/packages/messenger.yaml` routes that class to this transport, so mail is delivered off-request rather than in the web request.
-- **`async`** — general-purpose off-request work. Wired and ready, but nothing routes to it yet.
+- **`async`** — general-purpose off-request work.
 
-Routing is explicit in `messenger.yaml` (there is no marker interface). The Symfony Scheduler keeps its own `scheduler_default` transport.
+Our own messages declare their transport with `#[AsMessage(transport: '...')]` on the message class, so no per-message routing list accrues in `messenger.yaml` — only the framework's `SendEmailMessage`, which we cannot annotate, is routed there. The Symfony Scheduler keeps its own `scheduler_default` transport.
+
+For example, `RequestLoginLinkCommand` is `#[AsMessage(transport: 'async')]`: the magic-link request runs on the worker, so the login path stays timing-flat for every address whether or not it has an account.
 
 A single sidecar `worker` container drains all three in priority order so mail goes first:
 

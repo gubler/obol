@@ -12,14 +12,14 @@ use App\Enum\Currency;
 use App\Enum\TileColor;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
+use App\Tests\Support\AuthenticatedTestCase;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-final class CreateSubscriptionControllerTest extends WebTestCase
+final class CreateSubscriptionControllerTest extends AuthenticatedTestCase
 {
     public function testGetRequestDisplaysCreateForm(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         // The category picker only appears when at least one category exists.
         CategoryFactory::createOne(['name' => 'Entertainment']);
 
@@ -36,7 +36,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
 
     public function testCategoryDropdownIsOrderedAlphabetically(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         // Created out of alphabetical sequence so creation order != name order.
         CategoryFactory::createOne(['name' => 'Zoom']);
         CategoryFactory::createOne(['name' => 'Apple']);
@@ -56,7 +56,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
 
     public function testWiresTheColorSyncControllerWithCategoryColors(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         CategoryFactory::createOne(['name' => 'Apple', 'color' => TileColor::Teal]);
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
@@ -72,7 +72,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
 
     public function testHidesTheCategoryPickerWhenNoCategoriesExist(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
@@ -82,7 +82,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
 
     public function testShowsCancelLinkBackToIndex(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
@@ -92,7 +92,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
 
     public function testPostRequestWithValidDataCreatesSubscription(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
@@ -154,7 +154,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
     public function testStoresTheReportedDecimalCostInMinorUnits(): void
     {
         // The bug report: a cost of 35.50 was saved as 35 and rendered as $0.35.
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
@@ -171,7 +171,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
 
     public function testParsesAGroupedDecimalCostIntoMinorUnits(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
@@ -189,7 +189,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
 
     public function testStoresACostInAZeroDecimalCurrencyWithoutScaling(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
@@ -208,7 +208,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
 
     public function testRejectsANonNumericCostWithoutCreatingASubscription(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
@@ -224,7 +224,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
 
     public function testPostRequestCreatesASubscriptionInAChosenNonDefaultCurrency(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
@@ -258,7 +258,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
 
     public function testPostRequestWithValidDataShowsSuccessFlashMessage(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
@@ -280,7 +280,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
 
     public function testPostRequestWithEmptyNameShowsValidationError(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
@@ -303,7 +303,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
 
     public function testPostRequestWithoutACategoryCreatesAnUncategorizedSubscription(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         CategoryFactory::createOne(['name' => 'Entertainment']);
 
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
@@ -328,7 +328,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
 
     public function testPostRequestWithoutNextRenewalDateShowsValidationError(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
@@ -350,7 +350,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
 
     public function testFormIncludesCsrfProtection(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
@@ -360,7 +360,7 @@ final class CreateSubscriptionControllerTest extends WebTestCase
 
     public function testPostRequestDoesNotCreateSubscriptionWhenValidationFails(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         CategoryFactory::createOne(['name' => 'Entertainment']);
 
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');

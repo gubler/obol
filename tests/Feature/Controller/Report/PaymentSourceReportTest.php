@@ -9,14 +9,14 @@ namespace App\Tests\Feature\Controller\Report;
 
 use App\Factory\PaymentSourceFactory;
 use App\Factory\SubscriptionFactory;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use App\Tests\Support\AuthenticatedTestCase;
 use Symfony\Component\Uid\Ulid;
 
-final class PaymentSourceReportTest extends WebTestCase
+final class PaymentSourceReportTest extends AuthenticatedTestCase
 {
     public function testReportsIndexShowsThePaymentSourceCompositionSection(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $source = PaymentSourceFactory::createOne(['name' => 'Amex 1234']);
         SubscriptionFactory::createOne(['paymentSource' => $source, 'name' => 'Netflix']);
@@ -32,7 +32,7 @@ final class PaymentSourceReportTest extends WebTestCase
 
     public function testSourceDrillDownListsItsSubscriptions(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $source = PaymentSourceFactory::createOne(['name' => 'Amex 1234']);
         SubscriptionFactory::createOne(['paymentSource' => $source, 'name' => 'Netflix']);
@@ -46,7 +46,7 @@ final class PaymentSourceReportTest extends WebTestCase
 
     public function testUnassignedDrillDownListsSubscriptionsWithNoSource(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         SubscriptionFactory::createOne(['name' => 'Orphan']);
 
@@ -59,7 +59,7 @@ final class PaymentSourceReportTest extends WebTestCase
 
     public function testReturns404ForAnUnknownSource(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/reports/payment-sources/' . new Ulid());
 

@@ -1,0 +1,10 @@
+{# Magic-link login email (plain text). All copy is translatable per ADR-0012. #}
+{{ 'auth.email.login_link.heading'|trans }}
+
+{{ 'auth.email.login_link.body'|trans }}
+
+{{ loginLinkUrl }}
+
+{{ 'auth.email.login_link.expiry'|trans({'%when%': expiresAt|time_diff}) }}
+
+{{ 'auth.email.login_link.ignore'|trans }}

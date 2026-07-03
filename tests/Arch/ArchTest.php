@@ -71,8 +71,22 @@ final class ArchTest extends TestCase
     {
         $allowedPrefixes = ['App\Message', 'App\Entity', 'App\Repository'];
 
+        // Individually-justified framework-integration exemptions that genuinely cannot route through
+        // the bus. Each entry carries its own justification.
+        $namedExemptions = [
+            // The security user provider runs at the pre-firewall bootstrap seam (refreshUser rehydrates
+            // the session user on every request while security is still initializing); routing it through
+            // the query bus would risk circularity once owner-scoped runners read the current user. It is
+            // a data-access seam like a repository, not a consumer bypassing the boundary. See ADR-0014.
+            \App\Security\MultiEmailUserProvider::class,
+        ];
+
         foreach (self::allSourceFiles() as $path) {
             $namespace = self::namespaceOf($path);
+
+            if (\in_array(self::fqcnOf($path), $namedExemptions, true)) {
+                continue;
+            }
 
             foreach ($allowedPrefixes as $prefix) {
                 if (str_starts_with($namespace, $prefix)) {

@@ -11,14 +11,14 @@ use App\Entity\Subscription;
 use App\Enum\SubscriptionEventType;
 use App\Factory\PaymentSourceFactory;
 use App\Factory\SubscriptionFactory;
+use App\Tests\Support\AuthenticatedTestCase;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-final class ReassignPaymentSourceSubscriptionsControllerTest extends WebTestCase
+final class ReassignPaymentSourceSubscriptionsControllerTest extends AuthenticatedTestCase
 {
     public function testShowPageOffersTheMoveAllFormWhenThereAreSubscriptionsAndOtherSources(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $source = PaymentSourceFactory::createOne(['name' => 'Amex 1234']);
         PaymentSourceFactory::createOne(['name' => 'Visa 5678']);
@@ -33,7 +33,7 @@ final class ReassignPaymentSourceSubscriptionsControllerTest extends WebTestCase
 
     public function testDoesNotOfferTheMoveAllFormWhenThereIsNoOtherSource(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $source = PaymentSourceFactory::createOne(['name' => 'Amex 1234']);
         SubscriptionFactory::createOne(['paymentSource' => $source, 'name' => 'Netflix']);
@@ -46,7 +46,7 @@ final class ReassignPaymentSourceSubscriptionsControllerTest extends WebTestCase
 
     public function testMovesEverySubscriptionToTheTargetAndRecordsAudit(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $from = PaymentSourceFactory::createOne(['name' => 'Amex 1234']);
         $to = PaymentSourceFactory::createOne(['name' => 'Visa 5678']);
@@ -81,7 +81,7 @@ final class ReassignPaymentSourceSubscriptionsControllerTest extends WebTestCase
 
     public function testRejectsAnInvalidTarget(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $source = PaymentSourceFactory::createOne(['name' => 'Amex 1234']);
 

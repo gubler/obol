@@ -10,14 +10,14 @@ namespace App\Tests\Feature\Controller\Subscription;
 use App\Entity\Subscription;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
+use App\Tests\Support\AuthenticatedTestCase;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-final class UnarchiveSubscriptionControllerTest extends WebTestCase
+final class UnarchiveSubscriptionControllerTest extends AuthenticatedTestCase
 {
     public function testUnarchiveRequestUnarchivesSubscription(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::new([
             'category' => $category,
@@ -41,7 +41,7 @@ final class UnarchiveSubscriptionControllerTest extends WebTestCase
 
     public function testUnarchiveRequestShowsSuccessFlashMessage(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::new([
             'category' => $category,
@@ -56,7 +56,7 @@ final class UnarchiveSubscriptionControllerTest extends WebTestCase
 
     public function testUnarchiveRequestWithInvalidIdReturns404(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/unarchive');
 
@@ -65,7 +65,7 @@ final class UnarchiveSubscriptionControllerTest extends WebTestCase
 
     public function testOnlyAcceptsPostMethod(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::new([
             'category' => $category,
@@ -79,7 +79,7 @@ final class UnarchiveSubscriptionControllerTest extends WebTestCase
 
     public function testUnarchiveCreatesSubscriptionEvent(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::new([
             'category' => $category,

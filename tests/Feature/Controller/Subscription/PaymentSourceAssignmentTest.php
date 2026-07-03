@@ -11,14 +11,14 @@ use App\Entity\Subscription;
 use App\Enum\SubscriptionEventType;
 use App\Factory\PaymentSourceFactory;
 use App\Factory\SubscriptionFactory;
+use App\Tests\Support\AuthenticatedTestCase;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-final class PaymentSourceAssignmentTest extends WebTestCase
+final class PaymentSourceAssignmentTest extends AuthenticatedTestCase
 {
     public function testCreateFormShowsThePaymentSourcePickerWhenSourcesExist(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         PaymentSourceFactory::createOne(['name' => 'Amex 1234']);
 
@@ -32,7 +32,7 @@ final class PaymentSourceAssignmentTest extends WebTestCase
 
     public function testCreateFormHidesThePaymentSourcePickerWhenNoneExist(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
@@ -42,7 +42,7 @@ final class PaymentSourceAssignmentTest extends WebTestCase
 
     public function testEditingASubscriptionToAssignAPaymentSourceRecordsAnAuditEvent(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $source = PaymentSourceFactory::createOne(['name' => 'Amex 1234']);
         $subscription = SubscriptionFactory::createOne(['name' => 'Netflix']);

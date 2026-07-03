@@ -11,17 +11,17 @@ use App\Enum\CategoryIcon;
 use App\Enum\TileColor;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
+use App\Tests\Support\AuthenticatedTestCase;
 use App\Tests\Support\TranslationAssertions;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Uid\Ulid;
 
-final class ShowCategoryControllerTest extends WebTestCase
+final class ShowCategoryControllerTest extends AuthenticatedTestCase
 {
     use TranslationAssertions;
 
     public function testShowsCategoryDetails(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $categoryId = $category->id;
@@ -35,7 +35,7 @@ final class ShowCategoryControllerTest extends WebTestCase
 
     public function testShowsTheCategoryColorAndIconBadge(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Streaming', 'color' => TileColor::Teal, 'icon' => CategoryIcon::Film]);
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/' . $category->id);
@@ -49,7 +49,7 @@ final class ShowCategoryControllerTest extends WebTestCase
 
     public function testDisplaysSubscriptionsInCategory(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $category = CategoryFactory::createOne(['name' => 'Software']);
         SubscriptionFactory::createOne(['category' => $category, 'name' => 'Netflix']);
@@ -69,7 +69,7 @@ final class ShowCategoryControllerTest extends WebTestCase
 
     public function testShowsCategoryDetailsSection(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $category = CategoryFactory::createOne(['name' => 'Test Category']);
         $categoryId = $category->id;
@@ -82,7 +82,7 @@ final class ShowCategoryControllerTest extends WebTestCase
 
     public function testShowsBackToListLink(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $category = CategoryFactory::createOne(['name' => 'Test Category']);
         $categoryId = $category->id;
@@ -95,7 +95,7 @@ final class ShowCategoryControllerTest extends WebTestCase
 
     public function testReturns404ForNonExistentCategory(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $nonExistentId = new Ulid();
 
@@ -106,7 +106,7 @@ final class ShowCategoryControllerTest extends WebTestCase
 
     public function testShowsEmptyStateWhenCategoryHasNoSubscriptions(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $category = CategoryFactory::createOne(['name' => 'Empty Category']);
         $categoryId = $category->id;

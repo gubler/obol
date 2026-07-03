@@ -10,15 +10,15 @@ namespace App\Tests\Feature\Controller\PaymentSource;
 use App\Entity\PaymentSource;
 use App\Enum\TileColor;
 use App\Factory\PaymentSourceFactory;
+use App\Tests\Support\AuthenticatedTestCase;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Uid\Ulid;
 
-final class EditPaymentSourceControllerTest extends WebTestCase
+final class EditPaymentSourceControllerTest extends AuthenticatedTestCase
 {
     public function testGetRequestDisplaysPrefilledForm(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $source = PaymentSourceFactory::createOne(['name' => 'Amex 1234', 'comment' => 'old note']);
 
@@ -32,7 +32,7 @@ final class EditPaymentSourceControllerTest extends WebTestCase
 
     public function testUpdatesNameCommentAndColor(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $source = PaymentSourceFactory::createOne(['name' => 'Old Name', 'comment' => 'old']);
         $sourceId = $source->id;
@@ -61,7 +61,7 @@ final class EditPaymentSourceControllerTest extends WebTestCase
 
     public function testUpdateShowsSuccessFlashMessage(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $source = PaymentSourceFactory::createOne(['name' => 'Source']);
 
@@ -76,7 +76,7 @@ final class EditPaymentSourceControllerTest extends WebTestCase
 
     public function testReturns404ForNonExistentPaymentSource(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/' . new Ulid() . '/edit');
 

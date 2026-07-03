@@ -13,18 +13,18 @@ use App\Enum\TileColor;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
 use App\Repository\SubscriptionRepository;
+use App\Tests\Support\AuthenticatedTestCase;
 use App\Tests\Support\TranslationAssertions;
 use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-final class EditSubscriptionControllerTest extends WebTestCase
+final class EditSubscriptionControllerTest extends AuthenticatedTestCase
 {
     use TranslationAssertions;
 
     public function testGetRequestDisplaysEditFormWithExistingData(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::createOne([
             'category' => $category,
@@ -44,7 +44,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
 
     public function testCategoryDropdownIsOrderedAlphabetically(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         // Created out of alphabetical sequence so creation order != name order.
         CategoryFactory::createOne(['name' => 'Zoom']);
         $apple = CategoryFactory::createOne(['name' => 'Apple']);
@@ -65,7 +65,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
 
     public function testGetRequestWithInvalidIdReturns404(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/edit');
 
@@ -74,7 +74,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
 
     public function testEditFormDoesNotWireTheColorSyncController(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         CategoryFactory::createOne(['name' => 'Apple', 'color' => TileColor::Teal]);
         $subscription = SubscriptionFactory::createOne(['name' => 'Netflix']);
 
@@ -89,7 +89,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
 
     public function testPostRequestWithValidDataUpdatesSubscription(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $newCategory = CategoryFactory::createOne(['name' => 'Utilities']);
         $subscription = SubscriptionFactory::createOne([
@@ -136,7 +136,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
 
     public function testClearingTheCategoryLeavesTheSubscriptionUncategorized(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::createOne([
             'category' => $category,
@@ -171,7 +171,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
 
     public function testChangesTheCurrencyWhileTheSubscriptionHasNoPayments(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $subscription = SubscriptionFactory::createOne([
             'name' => 'Netflix',
             'cost' => new Money(1599, Currency::USD),
@@ -197,7 +197,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
 
     public function testLocksTheCurrencyFieldOnceAPaymentHasBeenRecorded(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $subscription = SubscriptionFactory::new()->withRecentPayment()->create([
             'name' => 'Netflix',
             'cost' => new Money(1599, Currency::USD),
@@ -212,7 +212,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
 
     public function testDoesNotOfferTheRestartControlForAnAutomatedSubscription(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $subscription = SubscriptionFactory::createOne(['name' => 'Netflix']);
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id . '/edit');
@@ -223,7 +223,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
 
     public function testResumesAutomatedGenerationFromTheEditFormWhenRestartIsRequested(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::new()->manual()->create([
             'category' => $category,
@@ -264,7 +264,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
 
     public function testRejectsARestartWithANonFutureRenewalDate(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::new()->manual()->create([
             'category' => $category,
@@ -301,7 +301,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
 
     public function testPostRequestWithValidDataShowsSuccessFlashMessage(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::createOne([
             'category' => $category,
@@ -322,7 +322,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
 
     public function testPostRequestWithEmptyNameShowsValidationError(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::createOne([
             'category' => $category,
@@ -343,7 +343,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
 
     public function testPostRequestWithInvalidIdReturns404(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/edit');
 
@@ -352,7 +352,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
 
     public function testFormIncludesCsrfProtection(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::createOne([
             'category' => $category,
@@ -367,7 +367,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
 
     public function testShowsCancelLinkBackToSubscription(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::createOne([
             'category' => $category,
@@ -382,7 +382,7 @@ final class EditSubscriptionControllerTest extends WebTestCase
 
     public function testUpdatesCreateSubscriptionEvents(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::createOne([
             'category' => $category,

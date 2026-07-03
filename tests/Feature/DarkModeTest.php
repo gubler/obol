@@ -7,13 +7,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Feature;
 
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use App\Tests\Support\AuthenticatedTestCase;
 
-final class DarkModeTest extends WebTestCase
+final class DarkModeTest extends AuthenticatedTestCase
 {
     public function testThemeToggleIsRenderedInTheNav(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
@@ -24,7 +24,7 @@ final class DarkModeTest extends WebTestCase
 
     public function testNoFlashScriptResolvesTheThemeBeforePaint(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 

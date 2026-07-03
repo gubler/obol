@@ -12,15 +12,15 @@ use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
+use App\Tests\Support\AuthenticatedTestCase;
 use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-final class MixedCurrencyCategoryTest extends WebTestCase
+final class MixedCurrencyCategoryTest extends AuthenticatedTestCase
 {
     public function testRendersAMixedCurrencyCategoryTotalConvertedToTheDisplayCurrency(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         /** @var EntityManagerInterface $entityManager */
         $entityManager = self::getContainer()->get(EntityManagerInterface::class);
         // 1 EUR = 1.08 USD.

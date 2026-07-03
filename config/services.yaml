@@ -11,6 +11,8 @@ parameters:
     # The day the week starts on, as a day-of-week ordinal: 0 = Sunday (US), 1 = Monday (ISO 8601).
     # Drives the "remaining this week" boundary; becomes locale/per-user later. See ADR-0010.
     app.week_start_day: 0
+    # How long a magic-link login is valid, in seconds (15 minutes).
+    app.login_link.lifetime_seconds: 900
 
 services:
     # default configuration for services in *this* file

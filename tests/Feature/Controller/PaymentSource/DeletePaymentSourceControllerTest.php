@@ -10,15 +10,15 @@ namespace App\Tests\Feature\Controller\PaymentSource;
 use App\Entity\PaymentSource;
 use App\Factory\PaymentSourceFactory;
 use App\Factory\SubscriptionFactory;
+use App\Tests\Support\AuthenticatedTestCase;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Uid\Ulid;
 
-final class DeletePaymentSourceControllerTest extends WebTestCase
+final class DeletePaymentSourceControllerTest extends AuthenticatedTestCase
 {
     public function testDeletesPaymentSourceWithoutSubscriptionsSuccessfully(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $source = PaymentSourceFactory::createOne(['name' => 'Empty Source']);
         $sourceId = $source->id;
@@ -34,7 +34,7 @@ final class DeletePaymentSourceControllerTest extends WebTestCase
 
     public function testDeleteSuccessShowsFlashMessage(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $source = PaymentSourceFactory::createOne(['name' => 'Test Source']);
 
@@ -46,7 +46,7 @@ final class DeletePaymentSourceControllerTest extends WebTestCase
 
     public function testCannotDeletePaymentSourceWithSubscriptions(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $source = PaymentSourceFactory::createOne(['name' => 'In-Use Source']);
         SubscriptionFactory::createOne(['paymentSource' => $source, 'name' => 'Netflix']);
@@ -63,7 +63,7 @@ final class DeletePaymentSourceControllerTest extends WebTestCase
 
     public function testDeleteFailureShowsErrorFlashMessage(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $source = PaymentSourceFactory::createOne(['name' => 'In-Use Source']);
         SubscriptionFactory::createOne(['paymentSource' => $source, 'name' => 'Spotify']);
@@ -76,7 +76,7 @@ final class DeletePaymentSourceControllerTest extends WebTestCase
 
     public function testReturns404ForNonExistentPaymentSource(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/payment-sources/' . new Ulid() . '/delete');
 
@@ -85,7 +85,7 @@ final class DeletePaymentSourceControllerTest extends WebTestCase
 
     public function testOnlyAcceptsPostMethod(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $source = PaymentSourceFactory::createOne(['name' => 'Test Source']);
 

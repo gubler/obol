@@ -1,13 +1,15 @@
 # Obol - Context
 
-Obol is a personal, single-user web app for tracking recurring subscriptions and
-their payments. It records each subscription's cost and billing cadence, organizes
-subscriptions by category, keeps a complete audit trail of every change, and helps
-budget for upcoming renewals.
+Obol is a web app for tracking recurring subscriptions and their payments. It records
+each subscription's cost and billing cadence, organizes subscriptions by category, keeps
+a complete audit trail of every change, and helps budget for upcoming renewals.
 
-It is deliberately single-tenant: no user accounts, no team or household sharing, no
-public API, no bank integration. See `reference/out-of-scope/` for what is explicitly
-not being built, and `reference/adr/` for the decisions behind how it is built.
+It is becoming multi-user: accounts exist and the app requires passwordless magic-link
+login (ADR-0014, superseding ADR-0004's no-auth stance). Per-user data isolation is still
+landing - a logged-in user currently sees all data until per-user ownership lands. Still
+deliberately out of scope: team or household sharing, a public API, and bank integration.
+See `reference/out-of-scope/` for what is explicitly not being built, and `reference/adr/`
+for the decisions behind how it is built.
 
 ## Domain glossary
 
@@ -44,6 +46,13 @@ older docs.
   PaymentSource row). The payment-source analog of **Uncategorized**: modeled as null end to
   end, shown as one "Unassigned" slice on the by-source report, with the reserved
   `/reports/payment-sources/unassigned` drill-down.
+- **User** - a passwordless account and the security identity behind the login wall. Carries a
+  ULID, roles, and a denormalized primary **email** (the session identifier). Authentication is
+  magic-link only; there is no password. See ADR-0014.
+- **UserEmail** - one address a User controls, independently verified, with at most one marked
+  **primary**. A magic link resolves to its User via any *verified* UserEmail (so a second verified
+  address is a recovery credential); the primary is the canonical identity. Unverified rows cannot
+  log in. **Avoid** treating `User.email` as the only address - it is just the denormalized primary.
 - **PaymentPeriod** - the billing cadence enum. The only cases are **`Year`**, **`Month`**,
   and **`Week`**. (There is no `Day` case, despite what older docs claimed.)
 - **paymentPeriodCount** - the multiplier on the period, e.g. `paymentPeriodCount: 3` with

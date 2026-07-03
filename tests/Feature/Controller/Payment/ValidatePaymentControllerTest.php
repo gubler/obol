@@ -13,15 +13,15 @@ use App\Enum\PaymentType;
 use App\Factory\CategoryFactory;
 use App\Factory\PaymentFactory;
 use App\Factory\SubscriptionFactory;
+use App\Tests\Support\AuthenticatedTestCase;
 use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-final class ValidatePaymentControllerTest extends WebTestCase
+final class ValidatePaymentControllerTest extends AuthenticatedTestCase
 {
     public function testPostRequestValidatesAGeneratedPayment(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::createOne(['category' => $category]);
         $payment = PaymentFactory::createOne([
@@ -47,7 +47,7 @@ final class ValidatePaymentControllerTest extends WebTestCase
 
     public function testPostRequestWithInvalidIdReturns404(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/payments/01JKXXXXXXXXXXXXXXXXXXXXXXX/validate');
 

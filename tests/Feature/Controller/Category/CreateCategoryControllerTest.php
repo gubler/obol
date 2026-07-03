@@ -11,14 +11,14 @@ use App\Entity\Category;
 use App\Enum\CategoryIcon;
 use App\Enum\TileColor;
 use App\Factory\CategoryFactory;
+use App\Tests\Support\AuthenticatedTestCase;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-final class CreateCategoryControllerTest extends WebTestCase
+final class CreateCategoryControllerTest extends AuthenticatedTestCase
 {
     public function testGetRequestDisplaysCreateForm(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/new');
 
@@ -31,7 +31,7 @@ final class CreateCategoryControllerTest extends WebTestCase
 
     public function testRendersAColorSwatchPickerAndAnIconPicker(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/new');
 
@@ -48,7 +48,7 @@ final class CreateCategoryControllerTest extends WebTestCase
 
     public function testPersistsTheChosenColorAndIcon(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/new');
 
@@ -72,7 +72,7 @@ final class CreateCategoryControllerTest extends WebTestCase
 
     public function testShowsCancelLinkBackToIndex(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/new');
 
@@ -82,7 +82,7 @@ final class CreateCategoryControllerTest extends WebTestCase
 
     public function testPostRequestWithValidDataCreatesCategory(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/new');
 
@@ -106,7 +106,7 @@ final class CreateCategoryControllerTest extends WebTestCase
 
     public function testPostRequestWithValidDataShowsSuccessFlashMessage(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/new');
 
@@ -121,7 +121,7 @@ final class CreateCategoryControllerTest extends WebTestCase
 
     public function testPostRequestWithEmptyNameShowsValidationError(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/new');
 
@@ -137,7 +137,7 @@ final class CreateCategoryControllerTest extends WebTestCase
 
     public function testPostRequestWithTooLongNameShowsValidationError(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/new');
 
@@ -153,7 +153,7 @@ final class CreateCategoryControllerTest extends WebTestCase
 
     public function testPostRequestWithOnlyWhitespaceShowsValidationError(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/new');
 
@@ -168,7 +168,7 @@ final class CreateCategoryControllerTest extends WebTestCase
 
     public function testFormIncludesCsrfProtection(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/new');
 
@@ -178,7 +178,7 @@ final class CreateCategoryControllerTest extends WebTestCase
 
     public function testPostRequestDoesNotCreateCategoryWhenValidationFails(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/new');
 

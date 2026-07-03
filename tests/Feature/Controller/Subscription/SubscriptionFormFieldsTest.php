@@ -9,14 +9,14 @@ namespace App\Tests\Feature\Controller\Subscription;
 
 use App\Enum\Currency;
 use App\Factory\SubscriptionFactory;
+use App\Tests\Support\AuthenticatedTestCase;
 use App\ValueObject\Money;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-final class SubscriptionFormFieldsTest extends WebTestCase
+final class SubscriptionFormFieldsTest extends AuthenticatedTestCase
 {
     public function testCurrencyDropdownShowsEachCurrencySymbolAndIsoCode(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
@@ -30,7 +30,7 @@ final class SubscriptionFormFieldsTest extends WebTestCase
 
     public function testRendersTheCycleAsAnInlineEveryNPeriodControl(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
@@ -48,7 +48,7 @@ final class SubscriptionFormFieldsTest extends WebTestCase
 
     public function testRendersCostWithTheCurrencyDropdownLeadingTheAmount(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
 
@@ -69,7 +69,7 @@ final class SubscriptionFormFieldsTest extends WebTestCase
 
     public function testTheCurrencyDropdownDefaultsToTheSelectedCurrency(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $subscription = SubscriptionFactory::createOne([
             'name' => 'Manga Box',
             'cost' => new Money(1500, Currency::EUR),

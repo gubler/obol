@@ -13,15 +13,15 @@ use App\Enum\PaymentPeriod;
 use App\Enum\TileColor;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
+use App\Tests\Support\AuthenticatedTestCase;
 use App\ValueObject\Money;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DomCrawler\Crawler;
 
-final class ListSubscriptionsControllerTest extends WebTestCase
+final class ListSubscriptionsControllerTest extends AuthenticatedTestCase
 {
     public function testDisplaysListOfSubscriptions(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
         SubscriptionFactory::createOne([
@@ -42,7 +42,7 @@ final class ListSubscriptionsControllerTest extends WebTestCase
 
     public function testTileShowsTodayForARenewalDatedToday(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         SubscriptionFactory::createOne([
             'name' => 'Netflix',
             'nextRenewal' => new \DateTimeImmutable('today'),
@@ -57,7 +57,7 @@ final class ListSubscriptionsControllerTest extends WebTestCase
 
     public function testTileShowsTomorrowForARenewalDatedTomorrow(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         SubscriptionFactory::createOne([
             'name' => 'Spotify',
             'nextRenewal' => new \DateTimeImmutable('tomorrow'),
@@ -72,7 +72,7 @@ final class ListSubscriptionsControllerTest extends WebTestCase
 
     public function testShowsCreateNewLink(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
 
@@ -82,7 +82,7 @@ final class ListSubscriptionsControllerTest extends WebTestCase
 
     public function testShowsPageTitle(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
 
@@ -92,7 +92,7 @@ final class ListSubscriptionsControllerTest extends WebTestCase
 
     public function testDisplaysSubscriptionsInAlphabeticalOrderInTheListView(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
         SubscriptionFactory::createOne([
@@ -128,7 +128,7 @@ final class ListSubscriptionsControllerTest extends WebTestCase
 
     public function testRendersSortControls(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         SubscriptionFactory::createOne(['category' => $category, 'name' => 'Netflix']);
 
@@ -145,7 +145,7 @@ final class ListSubscriptionsControllerTest extends WebTestCase
 
     public function testOrdersTheListViewByNextRenewalWhenSortingByRenewal(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
         // Alphabetical order is the reverse of renewal order, so only a renewal sort yields Zulu, Alfa.
@@ -171,7 +171,7 @@ final class ListSubscriptionsControllerTest extends WebTestCase
 
     public function testOrdersTheListViewByCostDescendingWhenSortingByCost(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
         SubscriptionFactory::createOne(['category' => $category, 'name' => 'Alfa', 'cost' => new Money(100, Currency::USD)]);
@@ -188,7 +188,7 @@ final class ListSubscriptionsControllerTest extends WebTestCase
 
     public function testPreservesTheSortPreferenceAcrossTheViewToggleLinks(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         SubscriptionFactory::createOne(['category' => $category, 'name' => 'Netflix']);
 
@@ -200,7 +200,7 @@ final class ListSubscriptionsControllerTest extends WebTestCase
 
     public function testShowsLinksToIndividualSubscriptions(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::createOne([
             'category' => $category,
@@ -215,7 +215,7 @@ final class ListSubscriptionsControllerTest extends WebTestCase
 
     public function testDisplaysEmptyStateWhenNoSubscriptions(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
 
@@ -225,7 +225,7 @@ final class ListSubscriptionsControllerTest extends WebTestCase
 
     public function testDefaultsToTheTilesView(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         SubscriptionFactory::createOne(['category' => $category, 'name' => 'Netflix']);
 
@@ -238,7 +238,7 @@ final class ListSubscriptionsControllerTest extends WebTestCase
 
     public function testRendersATableInTheListView(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         SubscriptionFactory::createOne(['category' => $category, 'name' => 'Netflix']);
 
@@ -251,7 +251,7 @@ final class ListSubscriptionsControllerTest extends WebTestCase
 
     public function testGroupsSubscriptionsByCategoryByDefault(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $entertainment = CategoryFactory::createOne(['name' => 'Entertainment']);
         $utilities = CategoryFactory::createOne(['name' => 'Utilities']);
 
@@ -268,7 +268,7 @@ final class ListSubscriptionsControllerTest extends WebTestCase
 
     public function testRendersEachCategoryGroupWithItsColorAndIconBadge(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $entertainment = CategoryFactory::createOne(['name' => 'Entertainment', 'color' => TileColor::Violet, 'icon' => CategoryIcon::Tv]);
         SubscriptionFactory::createOne(['category' => $entertainment, 'name' => 'Netflix']);
         // A null-category subscription gives the Uncategorized group its neutral badge.
@@ -288,7 +288,7 @@ final class ListSubscriptionsControllerTest extends WebTestCase
 
     public function testGroupsSubscriptionsWithNoCategoryUnderAnUncategorizedHeaderLast(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $entertainment = CategoryFactory::createOne(['name' => 'Entertainment']);
 
         SubscriptionFactory::createOne(['category' => $entertainment, 'name' => 'Netflix']);
@@ -306,7 +306,7 @@ final class ListSubscriptionsControllerTest extends WebTestCase
 
     public function testDropsCategoryHeadersInTheUngroupedView(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         SubscriptionFactory::createOne(['category' => $category, 'name' => 'Netflix']);
 
@@ -319,7 +319,7 @@ final class ListSubscriptionsControllerTest extends WebTestCase
 
     public function testShowsTheCombinedMonthlyTotalForACategory(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
         SubscriptionFactory::createOne([
@@ -346,7 +346,7 @@ final class ListSubscriptionsControllerTest extends WebTestCase
 
     public function testShowsASavingsTargetForACategoryThatRenewsBeyondAMonth(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Software']);
 
         SubscriptionFactory::createOne([
@@ -370,7 +370,7 @@ final class ListSubscriptionsControllerTest extends WebTestCase
         // A monthly bill is set aside a cycle ahead, so it counts toward the category savings total -
         // keeping it reconcilable against an external monthly budget. (Exact figures are unit-tested;
         // here we only assert the total renders, since the by-month value shifts with the calendar month.)
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
         SubscriptionFactory::createOne([
@@ -392,7 +392,7 @@ final class ListSubscriptionsControllerTest extends WebTestCase
 
     public function testHidesArchivedSubscriptionsByDefault(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
         SubscriptionFactory::createOne(['category' => $category, 'name' => 'Active Sub']);
@@ -407,7 +407,7 @@ final class ListSubscriptionsControllerTest extends WebTestCase
 
     public function testShowsArchivedSubscriptionsWhenRequested(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
         SubscriptionFactory::new(['category' => $category, 'name' => 'Archived Sub'])->archived()->create();
@@ -420,7 +420,7 @@ final class ListSubscriptionsControllerTest extends WebTestCase
 
     public function testShowsTheRelativeRenewalAndCostOnATile(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
         SubscriptionFactory::createOne([

@@ -12,15 +12,15 @@ use App\Enum\Currency;
 use App\Factory\CategoryFactory;
 use App\Factory\PaymentFactory;
 use App\Factory\SubscriptionFactory;
+use App\Tests\Support\AuthenticatedTestCase;
 use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-final class DeletePaymentControllerTest extends WebTestCase
+final class DeletePaymentControllerTest extends AuthenticatedTestCase
 {
     public function testDeletesPayment(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::createOne([
             'category' => $category,
@@ -48,7 +48,7 @@ final class DeletePaymentControllerTest extends WebTestCase
 
     public function testShowsSuccessFlashMessage(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::createOne([
             'category' => $category,
@@ -67,7 +67,7 @@ final class DeletePaymentControllerTest extends WebTestCase
 
     public function testReturns404ForInvalidPaymentId(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(\Symfony\Component\HttpFoundation\Request::METHOD_POST, '/payments/01JKXXXXXXXXXXXXXXXXXXXXXXX/delete');
 
@@ -76,7 +76,7 @@ final class DeletePaymentControllerTest extends WebTestCase
 
     public function testOnlyAcceptsPostMethod(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::createOne([
             'category' => $category,

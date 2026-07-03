@@ -19,9 +19,11 @@ framework:
                     auto_setup: false
                     queue_name: async
 
-        # All transactional email goes off-request via the `mail` transport. The smoke
-        # command (app:mailer:smoke) deliberately bypasses this by injecting the transport
-        # directly, so a broken DSN throws in-process rather than on the worker.
+        # SendEmailMessage is a framework class we cannot annotate, so its routing lives here: all
+        # transactional email goes off-request via the `mail` transport. (The smoke command,
+        # app:mailer:smoke, deliberately bypasses this by injecting the transport directly, so a broken
+        # DSN throws in-process rather than on the worker.) Our own messages declare their transport with
+        # #[AsMessage(transport: '...')] on the message class, so this list does not grow per message.
         routing:
             Symfony\Component\Mailer\Messenger\SendEmailMessage: mail
 

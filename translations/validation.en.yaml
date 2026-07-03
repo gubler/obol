@@ -8,3 +8,10 @@ payment:
     validation:
         restart_renewal_required: Choose the next renewal date to restart automatic payments.
         renewal_future: The next renewal date must be in the future.
+
+auth:
+    login:
+        email:
+            not_blank: Enter your email address.
+            invalid: Enter a valid email address.
+            too_long: That email address is too long.

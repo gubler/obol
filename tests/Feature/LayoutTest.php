@@ -7,13 +7,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Feature;
 
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use App\Tests\Support\AuthenticatedTestCase;
 
-final class LayoutTest extends WebTestCase
+final class LayoutTest extends AuthenticatedTestCase
 {
     public function testDeclaresSvgFavicon(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
 
@@ -23,7 +23,7 @@ final class LayoutTest extends WebTestCase
 
     public function testDeclaresPngFaviconFallback(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
 
@@ -33,7 +33,7 @@ final class LayoutTest extends WebTestCase
 
     public function testDeclaresAppleTouchIcon(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
 
@@ -43,7 +43,7 @@ final class LayoutTest extends WebTestCase
 
     public function testHeaderShowsObolLogo(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
 
@@ -53,7 +53,7 @@ final class LayoutTest extends WebTestCase
 
     public function testDropsPlaceholderCompanyMark(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
 

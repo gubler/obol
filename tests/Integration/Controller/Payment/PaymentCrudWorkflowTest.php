@@ -10,14 +10,14 @@ namespace App\Tests\Integration\Controller\Payment;
 use App\Enum\Currency;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
+use App\Tests\Support\AuthenticatedTestCase;
 use App\ValueObject\Money;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-final class PaymentCrudWorkflowTest extends WebTestCase
+final class PaymentCrudWorkflowTest extends AuthenticatedTestCase
 {
     public function testFullPaymentWorkflow(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::createOne([
             'category' => $category,

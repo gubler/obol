@@ -9,18 +9,18 @@ namespace App\Tests\Feature\Controller\Category;
 
 use App\Entity\Category;
 use App\Factory\CategoryFactory;
+use App\Tests\Support\AuthenticatedTestCase;
 use App\Tests\Support\TranslationAssertions;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Uid\Ulid;
 
-final class EditCategoryControllerTest extends WebTestCase
+final class EditCategoryControllerTest extends AuthenticatedTestCase
 {
     use TranslationAssertions;
 
     public function testGetRequestDisplaysEditFormWithCurrentData(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $category = CategoryFactory::createOne(['name' => 'Original Name']);
         $categoryId = $category->id;
@@ -37,7 +37,7 @@ final class EditCategoryControllerTest extends WebTestCase
 
     public function testShowsCancelLinkBackToShowPage(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $category = CategoryFactory::createOne(['name' => 'Test Category']);
         $categoryId = $category->id;
@@ -50,7 +50,7 @@ final class EditCategoryControllerTest extends WebTestCase
 
     public function testPostRequestWithValidDataUpdatesCategory(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $category = CategoryFactory::createOne(['name' => 'Old Name']);
         $categoryId = $category->id;
@@ -77,7 +77,7 @@ final class EditCategoryControllerTest extends WebTestCase
 
     public function testPostRequestWithValidDataShowsSuccessFlashMessage(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $category = CategoryFactory::createOne(['name' => 'Test Category']);
         $categoryId = $category->id;
@@ -95,7 +95,7 @@ final class EditCategoryControllerTest extends WebTestCase
 
     public function testPostRequestWithEmptyNameShowsValidationError(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $category = CategoryFactory::createOne(['name' => 'Test Category']);
         $categoryId = $category->id;
@@ -114,7 +114,7 @@ final class EditCategoryControllerTest extends WebTestCase
 
     public function testPostRequestWithTooLongNameShowsValidationError(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $category = CategoryFactory::createOne(['name' => 'Test Category']);
         $categoryId = $category->id;
@@ -133,7 +133,7 @@ final class EditCategoryControllerTest extends WebTestCase
 
     public function testReturns404ForNonExistentCategory(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $nonExistentId = new Ulid();
 
@@ -144,7 +144,7 @@ final class EditCategoryControllerTest extends WebTestCase
 
     public function testFormIncludesCsrfProtection(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $category = CategoryFactory::createOne(['name' => 'Test Category']);
         $categoryId = $category->id;

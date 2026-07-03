@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'auth.login.title'|trans }}{% endblock %}
+
+{% block body %}
+    <div class="container mx-auto max-w-md px-4 py-8">
+        <h1 class="mb-2 text-3xl font-bold">{{ 'auth.login.heading'|trans }}</h1>
+        <p class="mb-6 text-fg/70">{{ 'auth.login.intro'|trans }}</p>
+
+        {% for message in app.flashes('notice') %}
+            <div class="flash-notice bg-success-surface border border-success text-success px-4 py-3 rounded mb-4">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        {% if lastAuthError %}
+            <div class="flash-error bg-danger-surface border border-danger text-danger px-4 py-3 rounded mb-4">
+                {{ lastAuthError.messageKey|trans(lastAuthError.messageData, 'security') }}
+            </div>
+        {% endif %}
+
+        <div class="bg-surface shadow-md rounded p-6">
+            {{ form_start(form, {attr: {class: 'space-y-6'}}) }}
+                {{ form_row(form.email) }}
+                <button type="submit" class="w-full bg-brand hover:bg-brand-strong text-on-brand font-bold py-2 px-4 rounded">
+                    {{ 'auth.login.submit'|trans }}
+                </button>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}

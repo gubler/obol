@@ -66,15 +66,19 @@ description = "Static Analysis on tests/ via PHPStan (relaxed profile)"
 depends = ["_ensure-up"]
 run = ["$DC_EXEC php vendor/bin/phpstan --memory-limit=4G analyze -c phpstan-tests.neon"]
 
+# memory_limit=512M: the full suite peaks close to the container's 128M PHP default (Xdebug plus the
+# Form/validator/property-info reflection path is memory-hungry), so an unbumped run intermittently
+# crosses the limit and dies with "Premature end of PHP process" - flaking the git hooks. 512M gives
+# ample headroom while still catching a genuine runaway. Mirrors the coverage task's limit.
 [tasks.test]
 description = "Tests via PHPUnit"
 depends = ["_ensure-up", "tailwind"]
-run = ["$DC_EXEC php vendor/bin/phpunit"]
+run = ["$DC_EXEC php -d memory_limit=512M vendor/bin/phpunit"]
 
 [tasks."test:v"]
 description = "Tests via PHPUnit (testdox output)"
 depends = ["_ensure-up", "tailwind"]
-run = ["$DC_EXEC php vendor/bin/phpunit --testdox"]
+run = ["$DC_EXEC php -d memory_limit=512M vendor/bin/phpunit --testdox"]
 
 [tasks.infection]
 description = "Mutation testing via Infection (on-demand; NOT in `check` or CI). Defaults to the Unit suite."

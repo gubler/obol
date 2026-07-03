@@ -10,14 +10,14 @@ namespace App\Tests\Feature\Controller\PaymentSource;
 use App\Entity\PaymentSource;
 use App\Enum\TileColor;
 use App\Factory\PaymentSourceFactory;
+use App\Tests\Support\AuthenticatedTestCase;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-final class CreatePaymentSourceControllerTest extends WebTestCase
+final class CreatePaymentSourceControllerTest extends AuthenticatedTestCase
 {
     public function testGetRequestDisplaysCreateForm(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/new');
 
@@ -31,7 +31,7 @@ final class CreatePaymentSourceControllerTest extends WebTestCase
 
     public function testRendersAColorSwatchPicker(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/new');
 
@@ -43,7 +43,7 @@ final class CreatePaymentSourceControllerTest extends WebTestCase
 
     public function testPersistsTheChosenColorAndComment(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/new');
 
@@ -67,7 +67,7 @@ final class CreatePaymentSourceControllerTest extends WebTestCase
 
     public function testShowsCancelLinkBackToIndex(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/new');
 
@@ -77,7 +77,7 @@ final class CreatePaymentSourceControllerTest extends WebTestCase
 
     public function testPostRequestWithValidDataShowsSuccessFlashMessage(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/new');
 
@@ -92,7 +92,7 @@ final class CreatePaymentSourceControllerTest extends WebTestCase
 
     public function testPostRequestWithEmptyNameShowsValidationError(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/new');
 
@@ -108,7 +108,7 @@ final class CreatePaymentSourceControllerTest extends WebTestCase
 
     public function testPostRequestWithTooLongNameShowsValidationError(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/new');
 
@@ -124,7 +124,7 @@ final class CreatePaymentSourceControllerTest extends WebTestCase
 
     public function testFormIncludesCsrfProtection(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/new');
 
@@ -134,7 +134,7 @@ final class CreatePaymentSourceControllerTest extends WebTestCase
 
     public function testPostRequestDoesNotCreatePaymentSourceWhenValidationFails(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/new');
 

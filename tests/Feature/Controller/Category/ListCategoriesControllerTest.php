@@ -9,13 +9,13 @@ namespace App\Tests\Feature\Controller\Category;
 
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use App\Tests\Support\AuthenticatedTestCase;
 
-final class ListCategoriesControllerTest extends WebTestCase
+final class ListCategoriesControllerTest extends AuthenticatedTestCase
 {
     public function testIndexPageRendersSuccessfully(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories');
 
@@ -25,7 +25,7 @@ final class ListCategoriesControllerTest extends WebTestCase
 
     public function testShowsEmptyStateWhenNoCategoriesExist(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories');
 
@@ -36,7 +36,7 @@ final class ListCategoriesControllerTest extends WebTestCase
 
     public function testDisplaysListOfCategories(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         CategoryFactory::createOne(['name' => 'Entertainment']);
         CategoryFactory::createOne(['name' => 'Software']);
@@ -52,7 +52,7 @@ final class ListCategoriesControllerTest extends WebTestCase
 
     public function testDisplaysSubscriptionCountsForCategories(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $entertainment = CategoryFactory::createOne(['name' => 'Entertainment']);
         $software = CategoryFactory::createOne(['name' => 'Software']);
@@ -72,7 +72,7 @@ final class ListCategoriesControllerTest extends WebTestCase
 
     public function testShowsNewCategoryButton(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories');
 
@@ -83,7 +83,7 @@ final class ListCategoriesControllerTest extends WebTestCase
 
     public function testShowsViewLinksForEachCategory(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $category = CategoryFactory::createOne(['name' => 'Test Category']);
         $categoryId = $category->id;

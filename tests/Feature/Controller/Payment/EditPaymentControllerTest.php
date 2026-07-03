@@ -13,18 +13,18 @@ use App\Enum\PaymentType;
 use App\Factory\CategoryFactory;
 use App\Factory\PaymentFactory;
 use App\Factory\SubscriptionFactory;
+use App\Tests\Support\AuthenticatedTestCase;
 use App\Tests\Support\TranslationAssertions;
 use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-final class EditPaymentControllerTest extends WebTestCase
+final class EditPaymentControllerTest extends AuthenticatedTestCase
 {
     use TranslationAssertions;
 
     public function testGetRequestDisplaysTheEditFormPrefilledWithThePaymentAmount(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::createOne(['category' => $category, 'cost' => new Money(1599, Currency::USD)]);
         $payment = PaymentFactory::createOne([
@@ -44,7 +44,7 @@ final class EditPaymentControllerTest extends WebTestCase
 
     public function testPostRequestAmendsThePaymentAndVerifiesIt(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::createOne(['category' => $category, 'cost' => new Money(1599, Currency::USD)]);
         $payment = PaymentFactory::createOne([
@@ -76,7 +76,7 @@ final class EditPaymentControllerTest extends WebTestCase
 
     public function testGetRequestWithInvalidIdReturns404(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payments/01JKXXXXXXXXXXXXXXXXXXXXXXX/edit');
 

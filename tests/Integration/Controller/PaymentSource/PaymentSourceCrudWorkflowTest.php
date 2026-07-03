@@ -8,15 +8,15 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Controller\PaymentSource;
 
 use App\Entity\PaymentSource;
+use App\Tests\Support\AuthenticatedTestCase;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DomCrawler\Crawler;
 
-final class PaymentSourceCrudWorkflowTest extends WebTestCase
+final class PaymentSourceCrudWorkflowTest extends AuthenticatedTestCase
 {
     public function testCompleteCreateEditDeleteWorkflow(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         // Create
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/new');
@@ -59,7 +59,7 @@ final class PaymentSourceCrudWorkflowTest extends WebTestCase
 
     public function testCreateMultiplePaymentSourcesAndVerifyListOrder(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         foreach (['Zebra Card', 'Alpha Card', 'Beta Card'] as $name) {
             $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/new');

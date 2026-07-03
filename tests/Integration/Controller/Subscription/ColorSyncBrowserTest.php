@@ -9,6 +9,7 @@ namespace App\Tests\Integration\Controller\Subscription;
 
 use App\Enum\TileColor;
 use App\Factory\CategoryFactory;
+use App\Factory\UserFactory;
 use DAMA\DoctrineTestBundle\PHPUnit\SkipDatabaseRollback;
 use Doctrine\ORM\EntityManagerInterface;
 use Facebook\WebDriver\WebDriverBy;
@@ -40,13 +41,14 @@ final class ColorSyncBrowserTest extends PantherTestCase
     {
         self::getContainer()->get(EntityManagerInterface::class)
             ->getConnection()
-            ->executeStatement('TRUNCATE subscription_event, payment, subscription, category RESTART IDENTITY CASCADE')
+            ->executeStatement('TRUNCATE subscription_event, payment, subscription, category, user_email, "user" RESTART IDENTITY CASCADE')
         ;
     }
 
     #[WithoutErrorHandler]
     public function testTheSwatchSyncsToTheCategoryColorUntilTheUserPicksOne(): void
     {
+        $founder = UserFactory::founder();
         $apple = CategoryFactory::createOne(['name' => 'Apple', 'color' => TileColor::Teal]);
         $spotify = CategoryFactory::createOne(['name' => 'Spotify', 'color' => TileColor::Blue]);
 
@@ -56,6 +58,9 @@ final class ColorSyncBrowserTest extends PantherTestCase
             'capabilities' => ['acceptInsecureCerts' => true],
         ]);
 
+        // The app is authenticated-by-default; log the browser in via the non-prod bypass before
+        // reaching the protected form.
+        $client->request('GET', '/_test/login-as/' . $founder->email);
         $client->request('GET', '/subscriptions/new');
         $client->waitForVisibility('select[name="create_subscription[category]"]', 10);
 

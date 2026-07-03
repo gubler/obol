@@ -12,16 +12,16 @@ use App\Enum\Currency;
 use App\Enum\SubscriptionEventType;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
+use App\Tests\Support\AuthenticatedTestCase;
 use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DomCrawler\Crawler;
 
-final class SubscriptionCrudWorkflowTest extends WebTestCase
+final class SubscriptionCrudWorkflowTest extends AuthenticatedTestCase
 {
     public function testCompleteCreateReadUpdateDeleteWorkflow(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
         // Create
@@ -84,7 +84,7 @@ final class SubscriptionCrudWorkflowTest extends WebTestCase
 
     public function testUpdateCreatesSubscriptionEvents(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::createOne([
             'category' => $category,
@@ -126,7 +126,7 @@ final class SubscriptionCrudWorkflowTest extends WebTestCase
 
     public function testCreateMultipleSubscriptionsAndVerifyListOrder(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
         $subscriptions = ['Zebra Service', 'Alpha Service', 'Beta Service'];
@@ -167,7 +167,7 @@ final class SubscriptionCrudWorkflowTest extends WebTestCase
 
     public function testChangingCategoryCreatesUpdateEvent(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category1 = CategoryFactory::createOne(['name' => 'Entertainment']);
         $category2 = CategoryFactory::createOne(['name' => 'Utilities']);
         $subscription = SubscriptionFactory::createOne([

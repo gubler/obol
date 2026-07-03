@@ -7,6 +7,7 @@ common:
         categories: Categories
         payment_sources: Payment Sources
         reports: Reports
+        logout: Log out
     theme:
         toggle: Toggle dark mode
     menu:
@@ -99,6 +100,25 @@ enum:
         update: update
         archive: archive
         unarchive: unarchive
+
+auth:
+    login:
+        title: Log in
+        heading: Log in to Obol
+        intro: Enter your email and we'll send you a link to sign in. No password needed.
+        link_sent: If that account exists, check your email for a link to sign in.
+        submit: Email me a link
+        email:
+            label: Email address
+            placeholder: you@example.com
+    email:
+        login_link:
+            subject: Your Obol sign-in link
+            heading: Sign in to Obol
+            body: Use the link below to sign in. You did not need a password.
+            cta: Sign in to Obol
+            expiry: This link expires %when%.
+            ignore: If you did not request this, you can safely ignore this email.
 
 subscription:
     flash:

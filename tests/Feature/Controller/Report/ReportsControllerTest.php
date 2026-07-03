@@ -13,18 +13,18 @@ use App\Enum\PaymentPeriod;
 use App\Enum\TileColor;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
+use App\Tests\Support\AuthenticatedTestCase;
 use App\Tests\Support\TranslationAssertions;
 use App\ValueObject\Money;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Uid\Ulid;
 
-final class ReportsControllerTest extends WebTestCase
+final class ReportsControllerTest extends AuthenticatedTestCase
 {
     use TranslationAssertions;
 
     public function testReportsOverviewShowsPerCategoryCompositionExcludingArchivedSubscriptions(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $streaming = CategoryFactory::createOne(['name' => 'Streaming']);
         $software = CategoryFactory::createOne(['name' => 'Software']);
@@ -53,7 +53,7 @@ final class ReportsControllerTest extends WebTestCase
 
     public function testCategoryDrillDownShowsThatCategorySubscriptionsExcludingArchived(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $streaming = CategoryFactory::createOne(['name' => 'Streaming']);
         SubscriptionFactory::createOne(['category' => $streaming, 'name' => 'Netflix', 'cost' => new Money(4000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
@@ -74,7 +74,7 @@ final class ReportsControllerTest extends WebTestCase
 
     public function testCompositionPieAndLegendUseEachCategoryColorAndIcon(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $streaming = CategoryFactory::createOne(['name' => 'Streaming', 'color' => TileColor::Violet, 'icon' => CategoryIcon::Tv]);
         SubscriptionFactory::createOne(['category' => $streaming, 'name' => 'Netflix', 'cost' => new Money(4000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
         SubscriptionFactory::createOne(['category' => null, 'name' => 'Orphan', 'cost' => new Money(1000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
@@ -95,7 +95,7 @@ final class ReportsControllerTest extends WebTestCase
 
     public function testReportsOverviewShowsAnUncategorizedSliceLinkedToItsDrillDown(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $streaming = CategoryFactory::createOne(['name' => 'Streaming']);
         SubscriptionFactory::createOne(['category' => $streaming, 'name' => 'Netflix', 'cost' => new Money(4000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
@@ -111,7 +111,7 @@ final class ReportsControllerTest extends WebTestCase
 
     public function testUncategorizedDrillDownShowsSubscriptionsWithNoCategoryExcludingArchived(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $streaming = CategoryFactory::createOne(['name' => 'Streaming']);
         SubscriptionFactory::createOne(['category' => $streaming, 'name' => 'Netflix', 'cost' => new Money(4000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
@@ -132,7 +132,7 @@ final class ReportsControllerTest extends WebTestCase
 
     public function testDrillDownForUnknownCategoryIs404(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/reports/categories/' . new Ulid()->toRfc4122());
 

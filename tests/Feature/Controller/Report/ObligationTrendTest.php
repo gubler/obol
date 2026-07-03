@@ -11,14 +11,14 @@ use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
+use App\Tests\Support\AuthenticatedTestCase;
 use App\ValueObject\Money;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-final class ObligationTrendTest extends WebTestCase
+final class ObligationTrendTest extends AuthenticatedTestCase
 {
     public function testReportsPageShowsObligationTrendWithWeekMonthYearToggleMonthlyByDefault(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         // Creating a subscription records an obligation snapshot, so the trend has data to plot.
         $category = CategoryFactory::createOne(['name' => 'Streaming']);
         SubscriptionFactory::createOne(['category' => $category, 'cost' => new Money(4000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
@@ -35,7 +35,7 @@ final class ObligationTrendTest extends WebTestCase
 
     public function testSelectingTrendGranularityMarksItActive(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/reports?trend=week');
 

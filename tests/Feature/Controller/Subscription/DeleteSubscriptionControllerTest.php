@@ -10,14 +10,14 @@ namespace App\Tests\Feature\Controller\Subscription;
 use App\Entity\Subscription;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
+use App\Tests\Support\AuthenticatedTestCase;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-final class DeleteSubscriptionControllerTest extends WebTestCase
+final class DeleteSubscriptionControllerTest extends AuthenticatedTestCase
 {
     public function testDeleteRequestWithValidIdDeletesSubscription(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::createOne([
             'category' => $category,
@@ -43,7 +43,7 @@ final class DeleteSubscriptionControllerTest extends WebTestCase
 
     public function testDeleteRequestWithValidIdShowsSuccessFlashMessage(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::createOne([
             'category' => $category,
@@ -58,7 +58,7 @@ final class DeleteSubscriptionControllerTest extends WebTestCase
 
     public function testDeleteRequestWithInvalidIdReturns404(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/delete');
 
@@ -67,7 +67,7 @@ final class DeleteSubscriptionControllerTest extends WebTestCase
 
     public function testOnlyAcceptsPostMethod(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::createOne([
             'category' => $category,
@@ -81,7 +81,7 @@ final class DeleteSubscriptionControllerTest extends WebTestCase
 
     public function testDeleteReducesSubscriptionCount(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::createOne([
             'category' => $category,

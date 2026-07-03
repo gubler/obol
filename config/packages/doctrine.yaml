@@ -7,6 +7,14 @@ doctrine:
         #server_version: '16'
 
         profiling_collect_backtrace: '%kernel.debug%'
+
+        types:
+            citext: App\Doctrine\Type\CitextType
+
+        # Map the PostgreSQL `citext` SQL type back to our citext Doctrine type during schema
+        # introspection so doctrine:migrations:diff does not propose spurious changes.
+        mapping_types:
+            citext: citext
     orm:
 #        auto_generate_proxy_classes: true
 #        enable_lazy_ghost_objects: true

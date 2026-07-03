@@ -8,13 +8,13 @@ declare(strict_types=1);
 namespace App\Tests\Feature\Controller\PaymentSource;
 
 use App\Factory\PaymentSourceFactory;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use App\Tests\Support\AuthenticatedTestCase;
 
-final class ListPaymentSourcesControllerTest extends WebTestCase
+final class ListPaymentSourcesControllerTest extends AuthenticatedTestCase
 {
     public function testShowsEmptyStateWhenNoPaymentSources(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources');
 
@@ -24,7 +24,7 @@ final class ListPaymentSourcesControllerTest extends WebTestCase
 
     public function testListsPaymentSources(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         PaymentSourceFactory::createOne(['name' => 'Amex 1234']);
         PaymentSourceFactory::createOne(['name' => 'Visa 5678']);

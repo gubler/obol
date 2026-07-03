@@ -8,14 +8,14 @@ declare(strict_types=1);
 namespace App\Tests\Feature\Controller\PaymentSource;
 
 use App\Factory\PaymentSourceFactory;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use App\Tests\Support\AuthenticatedTestCase;
 use Symfony\Component\Uid\Ulid;
 
-final class ShowPaymentSourceControllerTest extends WebTestCase
+final class ShowPaymentSourceControllerTest extends AuthenticatedTestCase
 {
     public function testShowsPaymentSourceDetails(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $source = PaymentSourceFactory::createOne(['name' => 'Amex 1234', 'comment' => 'Primary card']);
 
@@ -28,7 +28,7 @@ final class ShowPaymentSourceControllerTest extends WebTestCase
 
     public function testReturns404ForNonExistentPaymentSource(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/' . new Ulid());
 

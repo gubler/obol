@@ -5,6 +5,22 @@ description: A tour of the Obol dashboard and your first subscription.
 
 Obol helps you stay on top of recurring payments - streaming services, software, utilities, memberships, anything you pay for on a schedule. You add each subscription once, and Obol tracks the cost and the next renewal so nothing sneaks up on you.
 
+## Signing in
+
+Obol is passwordless - there's nothing to remember and no password to reset.
+
+1. Open Obol. If you're not signed in, you'll land on the login page.
+2. Enter your email address and select **Email me a link**.
+3. Open the email from Obol and click the sign-in link. You're in.
+
+A few things worth knowing:
+
+- The link is valid for **15 minutes** and works once. If it expires, just request a new one.
+- For your privacy, the "check your email" message looks the same whether or not an account exists for that address - so the page never reveals who has an account.
+- Obol keeps you signed in on that device, so day to day you won't need to repeat this. Select **Log out** in the top bar to end the session.
+
+During closed testing, accounts are set up for you - if you can't sign in, ask whoever invited you.
+
 ## The dashboard
 
 The home page is your dashboard - every subscription you're tracking, at a glance.

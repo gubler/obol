@@ -13,17 +13,17 @@ use App\Enum\PaymentType;
 use App\Factory\CategoryFactory;
 use App\Factory\PaymentFactory;
 use App\Factory\SubscriptionFactory;
+use App\Tests\Support\AuthenticatedTestCase;
 use App\Tests\Support\TranslationAssertions;
 use App\ValueObject\Money;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-final class ShowSubscriptionControllerTest extends WebTestCase
+final class ShowSubscriptionControllerTest extends AuthenticatedTestCase
 {
     use TranslationAssertions;
 
     public function testShowsSubscriptionBasicResponse(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::createOne([
             'category' => $category,
@@ -39,7 +39,7 @@ final class ShowSubscriptionControllerTest extends WebTestCase
 
     public function testShowsUncategorizedForASubscriptionWithoutACategory(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $subscription = SubscriptionFactory::createOne([
             'category' => null,
             'name' => 'Orphan',
@@ -54,7 +54,7 @@ final class ShowSubscriptionControllerTest extends WebTestCase
 
     public function testShowsEditLink(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::createOne([
             'category' => $category,
@@ -69,7 +69,7 @@ final class ShowSubscriptionControllerTest extends WebTestCase
 
     public function testShowsDeleteButton(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::createOne([
             'category' => $category,
@@ -84,7 +84,7 @@ final class ShowSubscriptionControllerTest extends WebTestCase
 
     public function testPaymentDeleteConfirmationStatesTheRollbackAndManualSwitch(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $subscription = SubscriptionFactory::createOne([
             'name' => 'Netflix',
             'nextRenewal' => new \DateTimeImmutable('2024-03-01'),
@@ -109,7 +109,7 @@ final class ShowSubscriptionControllerTest extends WebTestCase
 
     public function testPaymentDeleteConfirmationIsPlainWhenRemovalHasNoConsequence(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $subscription = SubscriptionFactory::createOne([
             'name' => 'Netflix',
             'nextRenewal' => new \DateTimeImmutable('2024-03-01'),
@@ -133,7 +133,7 @@ final class ShowSubscriptionControllerTest extends WebTestCase
 
     public function testShowsBackToListLink(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::createOne([
             'category' => $category,
@@ -148,7 +148,7 @@ final class ShowSubscriptionControllerTest extends WebTestCase
 
     public function testInvalidIdReturns404(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX');
 
@@ -157,7 +157,7 @@ final class ShowSubscriptionControllerTest extends WebTestCase
 
     public function testRendersWithoutErrors(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::createOne([
             'category' => $category,
@@ -186,7 +186,7 @@ final class ShowSubscriptionControllerTest extends WebTestCase
 
     public function testShowsAManualPaymentsBadgeForAManualSubscription(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $subscription = SubscriptionFactory::new()->manual()->create(['name' => 'Netflix']);
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id);
@@ -197,7 +197,7 @@ final class ShowSubscriptionControllerTest extends WebTestCase
 
     public function testShowsNoManualPaymentsBadgeForAnAutomatedSubscription(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $subscription = SubscriptionFactory::createOne(['name' => 'Netflix']);
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id);
@@ -208,7 +208,7 @@ final class ShowSubscriptionControllerTest extends WebTestCase
 
     public function testOffersTheDeleteActionOnlyOnTheLatestPayment(): void
     {
-        $client = self::createClient();
+        $client = $this->authenticatedClient();
         $subscription = SubscriptionFactory::createOne(['name' => 'Netflix']);
         PaymentFactory::createOne(['subscription' => $subscription, 'paidDate' => new \DateTimeImmutable('2024-01-01')]);
         PaymentFactory::createOne(['subscription' => $subscription, 'paidDate' => new \DateTimeImmutable('2024-02-01')]);

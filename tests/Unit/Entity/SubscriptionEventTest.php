@@ -10,6 +10,7 @@ namespace App\Tests\Unit\Entity;
 use App\Entity\Category;
 use App\Entity\Subscription;
 use App\Entity\SubscriptionEvent;
+use App\Entity\User;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\SubscriptionEventType;
@@ -26,6 +27,7 @@ final class SubscriptionEventTest extends TestCase
 
         $category = new Category(name: 'Test Category');
         $this->subscription = new Subscription(
+            owner: new User(email: 'owner@example.com'),
             category: $category,
             name: 'Test Subscription',
             nextRenewal: new \DateTimeImmutable(),

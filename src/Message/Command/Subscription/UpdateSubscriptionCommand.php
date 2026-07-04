@@ -15,6 +15,7 @@ use Symfony\Component\Uid\Ulid;
 final readonly class UpdateSubscriptionCommand
 {
     public function __construct(
+        public Ulid $ownerUserId,
         public Ulid $subscriptionId,
         public ?Ulid $categoryId,
         public string $name,

@@ -21,6 +21,6 @@ final readonly class FindSubscriptionRunner
 
     public function __invoke(FindSubscriptionQuery $query): ?Subscription
     {
-        return $this->subscriptionRepository->find($query->subscriptionId);
+        return $this->subscriptionRepository->findForOwner($query->subscriptionId, $query->ownerUserId);
     }
 }

@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace App\Tests\Arch;
 
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Uid\Ulid;
 
 final class ArchTest extends TestCase
 {
@@ -107,6 +108,71 @@ final class ArchTest extends TestCase
                 $namespace . '\\' . basename($path, '.php') . ' must not use a repository (data access is confined to the handler layer; see ADR-0006/0007)',
             );
         }
+    }
+
+    /**
+     * ADR-0015: subscription and payment data is per-user. Every command and query that reads or
+     * mutates it carries an `ownerUserId` (a Ulid, per ADR-0007) so the handler can scope by owner;
+     * this test makes that structural, so a new owned message cannot forget the owner.
+     */
+    public function testOwnedMessagesCarryTheOwnerUserId(): void
+    {
+        // Message namespaces whose data is owner-scoped in this slice. Category/PaymentSource ownership
+        // (their own namespaces) lands in a later slice, so they are deliberately absent.
+        $ownedNamespaces = [
+            'App\Message\Command\Subscription',
+            'App\Message\Query\Subscription',
+            'App\Message\Command\Payment',
+            'App\Message\Query\Payment',
+            'App\Message\Query\Report',
+        ];
+
+        // Global jobs that legitimately span every user, each documented at its call site:
+        $exemptions = [
+            // the nightly generation sweep iterates all users' due subscriptions (owner is stamped on
+            // each payment from its subscription), and
+            \App\Message\Command\Payment\GenerateDuePaymentsCommand::class,
+            // the obligation-over-time series reads ObligationSnapshot, whose per-user isolation is a
+            // later slice; it stays global until then.
+            \App\Message\Query\Report\FindObligationOverTimeQuery::class,
+        ];
+
+        $checked = 0;
+        foreach (self::classNamesUnder('App\Message') as $class) {
+            if (!str_ends_with($class, 'Command') && !str_ends_with($class, 'Query')) {
+                continue;
+            }
+
+            $inScope = array_any($ownedNamespaces, fn ($namespace) => str_starts_with($class, $namespace . '\\'));
+            if (!$inScope) {
+                continue;
+            }
+
+            if (\in_array($class, $exemptions, true)) {
+                continue;
+            }
+
+            $reflection = new \ReflectionClass($class);
+            self::assertTrue(
+                $reflection->hasProperty('ownerUserId'),
+                $class . ' is an owner-scoped message but does not carry an ownerUserId (see ADR-0015)',
+            );
+
+            $property = $reflection->getProperty('ownerUserId');
+            self::assertTrue($property->isPublic(), $class . '::$ownerUserId must be public');
+
+            $type = $property->getType();
+            self::assertInstanceOf(\ReflectionNamedType::class, $type);
+            self::assertSame(
+                Ulid::class,
+                $type->getName(),
+                $class . '::$ownerUserId must be a Ulid (messages carry Ulid, not strings; see ADR-0007)',
+            );
+
+            ++$checked;
+        }
+
+        self::assertGreaterThan(0, $checked, 'expected at least one owner-scoped message to check');
     }
 
     /**

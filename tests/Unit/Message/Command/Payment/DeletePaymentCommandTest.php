@@ -16,7 +16,7 @@ final class DeletePaymentCommandTest extends TestCase
     public function testCommandStoresValues(): void
     {
         $paymentId = new Ulid();
-        $command = new DeletePaymentCommand(paymentId: $paymentId);
+        $command = new DeletePaymentCommand(ownerUserId: new Ulid(), paymentId: $paymentId);
 
         self::assertSame($paymentId, $command->paymentId);
     }

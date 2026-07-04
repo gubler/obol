@@ -19,14 +19,14 @@ final class DeleteSubscriptionController extends AbstractBaseController
     #[Route(path: '/subscriptions/{id}/delete', name: 'subscription_delete', methods: ['POST'])]
     public function __invoke(Ulid $id): \Symfony\Component\HttpFoundation\RedirectResponse
     {
-        $subscription = $this->queryBus->query(query: new FindSubscriptionQuery(subscriptionId: $id));
+        $subscription = $this->queryBus->query(query: new FindSubscriptionQuery(ownerUserId: $this->currentUser()->id, subscriptionId: $id));
 
         if (null === $subscription) {
             throw new NotFoundHttpException(\sprintf('Subscription with ID "%s" not found.', $id));
         }
 
         try {
-            $this->commandBus->dispatch(command: new DeleteSubscriptionCommand(subscriptionId: $id));
+            $this->commandBus->dispatch(command: new DeleteSubscriptionCommand(ownerUserId: $this->currentUser()->id, subscriptionId: $id));
 
             $this->addFlash(type: self::FLASH_SUCCESS, message: $this->translator->trans('subscription.flash.deleted'));
         } catch (\Exception) {

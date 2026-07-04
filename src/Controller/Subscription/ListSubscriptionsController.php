@@ -26,15 +26,17 @@ final class ListSubscriptionsController extends AbstractBaseController
         $includeArchived = '1' === $request->query->get('archived');
         $sort = SubscriptionSort::fromQuery($request->query->getString('sort'));
 
+        $ownerUserId = $this->currentUser()->id;
+
         $listing = $this->queryBus->query(
-            query: new FindSubscriptionsForHomepageQuery(includeArchived: $includeArchived, sort: $sort),
+            query: new FindSubscriptionsForHomepageQuery(ownerUserId: $ownerUserId, includeArchived: $includeArchived, sort: $sort),
         );
 
         // The capstone always reflects active obligation, independent of the listing's archived toggle.
         $capstoneMode = 'remaining' === $request->query->get('capstone') ? 'remaining' : 'totals';
         $capstone = 'remaining' === $capstoneMode
-            ? $this->queryBus->query(query: new FindRemainingInPeriodQuery())
-            : $this->queryBus->query(query: new FindTotalObligationQuery());
+            ? $this->queryBus->query(query: new FindRemainingInPeriodQuery(ownerUserId: $ownerUserId))
+            : $this->queryBus->query(query: new FindTotalObligationQuery(ownerUserId: $ownerUserId));
 
         return $this->render(view: 'subscription/index.html.twig', parameters: [
             'listing' => $listing,

@@ -30,7 +30,7 @@ final readonly class FindRemainingInPeriodRunner
     public function __invoke(FindRemainingInPeriodQuery $query): RemainingInPeriod
     {
         $asOf = $this->clock->now();
-        $subscriptions = $this->subscriptionRepository->findBy(['archived' => false]);
+        $subscriptions = $this->subscriptionRepository->findActiveForOwner($query->ownerUserId);
 
         return new RemainingInPeriod(
             weekly: $this->remaining(PaymentPeriod::Week, $subscriptions, $asOf),

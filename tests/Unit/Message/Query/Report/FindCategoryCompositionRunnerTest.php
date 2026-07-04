@@ -9,6 +9,7 @@ namespace App\Tests\Unit\Message\Query\Report;
 
 use App\Entity\Category;
 use App\Entity\Subscription;
+use App\Entity\User;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Message\Currency\Converter;
@@ -21,6 +22,7 @@ use App\Repository\SubscriptionRepository;
 use App\Service\DisplayCurrencyProvider;
 use App\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Uid\Ulid;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class FindCategoryCompositionRunnerTest extends TestCase
@@ -28,6 +30,7 @@ final class FindCategoryCompositionRunnerTest extends TestCase
     private static function compositionSubscription(?Category $category, int $costMinor, Currency $currency = Currency::USD, PaymentPeriod $period = PaymentPeriod::Month, int $count = 1): Subscription
     {
         return new Subscription(
+            owner: new User(email: 'owner@example.com'),
             category: $category,
             name: 'Test',
             nextRenewal: new \DateTimeImmutable('2026-01-01'),
@@ -44,7 +47,7 @@ final class FindCategoryCompositionRunnerTest extends TestCase
     private function runComposition(array $subscriptions, array $rates = [], string $displayCurrency = 'USD'): Composition
     {
         $repository = self::createMock(SubscriptionRepository::class);
-        $repository->expects(self::once())->method('findBy')->with(['archived' => false])->willReturn($subscriptions);
+        $repository->expects(self::once())->method('findActiveForOwner')->willReturn($subscriptions);
 
         $exchangeRateRepository = self::createStub(ExchangeRateRepository::class);
         $exchangeRateRepository->method('latestRate')
@@ -54,7 +57,7 @@ final class FindCategoryCompositionRunnerTest extends TestCase
 
         $runner = new FindCategoryCompositionRunner($repository, $totaller, self::translator());
 
-        return $runner(new FindCategoryCompositionQuery());
+        return $runner(new FindCategoryCompositionQuery(ownerUserId: new Ulid()));
     }
 
     /**

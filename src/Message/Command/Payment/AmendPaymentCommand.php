@@ -12,6 +12,7 @@ use Symfony\Component\Uid\Ulid;
 final readonly class AmendPaymentCommand
 {
     public function __construct(
+        public Ulid $ownerUserId,
         public Ulid $paymentId,
         public int $amount,
         public \DateTimeImmutable $paidDate,

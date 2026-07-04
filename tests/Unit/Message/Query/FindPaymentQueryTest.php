@@ -16,7 +16,7 @@ final class FindPaymentQueryTest extends TestCase
     public function testCreatesQueryWithPaymentId(): void
     {
         $paymentId = new Ulid();
-        $query = new FindPaymentQuery(paymentId: $paymentId);
+        $query = new FindPaymentQuery(ownerUserId: new Ulid(), paymentId: $paymentId);
 
         self::assertSame($paymentId, $query->paymentId);
     }
@@ -24,6 +24,7 @@ final class FindPaymentQueryTest extends TestCase
     public function testIsReadonly(): void
     {
         $query = new FindPaymentQuery(
+            ownerUserId: new Ulid(),
             paymentId: new Ulid()
         );
 

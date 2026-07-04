@@ -12,6 +12,7 @@ use App\Entity\Payment;
 use App\Entity\PaymentSource;
 use App\Entity\Subscription;
 use App\Entity\SubscriptionEvent;
+use App\Entity\User;
 use App\Enum\Currency;
 use App\Enum\PaymentGeneration;
 use App\Enum\PaymentPeriod;
@@ -28,17 +29,36 @@ final class SubscriptionTest extends TestCase
 
     private Category $category;
 
+    private User $owner;
+
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->category = new Category(name: 'Entertainment');
+        $this->owner = new User(email: 'owner@example.com');
+    }
+
+    public function testCreatesSubscriptionWithAnImmutableOwner(): void
+    {
+        $subscription = new Subscription(
+            owner: $this->owner,
+            category: $this->category,
+            name: 'Netflix',
+            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: new Money(1500, Currency::USD),
+        );
+
+        self::assertSame($this->owner, $subscription->owner);
     }
 
     public function testCreatesSubscriptionWithValidData(): void
     {
         $nextRenewal = new \DateTimeImmutable('2024-01-01');
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: $nextRenewal,
@@ -58,6 +78,7 @@ final class SubscriptionTest extends TestCase
     public function testCreatesSubscriptionWithoutACategory(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: null,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-01-01'),
@@ -72,6 +93,7 @@ final class SubscriptionTest extends TestCase
     public function testRemovesACategoryByUpdatingToNull(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-01-01'),
@@ -104,6 +126,7 @@ final class SubscriptionTest extends TestCase
     public function testAddsACategoryByUpdatingFromNull(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: null,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-01-01'),
@@ -137,6 +160,7 @@ final class SubscriptionTest extends TestCase
         $source = new PaymentSource(name: 'Amex 1234');
 
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-01-01'),
@@ -176,6 +200,7 @@ final class SubscriptionTest extends TestCase
         $source = new PaymentSource(name: 'Amex 1234');
 
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-01-01'),
@@ -212,6 +237,7 @@ final class SubscriptionTest extends TestCase
         $to = new PaymentSource(name: 'Visa 5678');
 
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-01-01'),
@@ -237,6 +263,7 @@ final class SubscriptionTest extends TestCase
         $source = new PaymentSource(name: 'Amex 1234');
 
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-01-01'),
@@ -256,6 +283,7 @@ final class SubscriptionTest extends TestCase
     {
         $before = new \DateTimeImmutable();
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Spotify',
             nextRenewal: new \DateTimeImmutable(),
@@ -272,6 +300,7 @@ final class SubscriptionTest extends TestCase
     public function testInitializesAsNotArchived(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Spotify',
             nextRenewal: new \DateTimeImmutable(),
@@ -286,6 +315,7 @@ final class SubscriptionTest extends TestCase
     public function testInitializesEmptyCollections(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Spotify',
             nextRenewal: new \DateTimeImmutable(),
@@ -301,6 +331,7 @@ final class SubscriptionTest extends TestCase
     public function testAcceptsOptionalFields(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable(),
@@ -320,6 +351,7 @@ final class SubscriptionTest extends TestCase
     public function testDefaultsOptionalFieldsToEmpty(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Spotify',
             nextRenewal: new \DateTimeImmutable(),
@@ -336,6 +368,7 @@ final class SubscriptionTest extends TestCase
     public function testCreatesOnlyUpdateEventWhenOnlyGeneralFieldsChange(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-01-01'),
@@ -371,6 +404,7 @@ final class SubscriptionTest extends TestCase
     {
         $nextRenewal = new \DateTimeImmutable('2024-01-01');
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: $nextRenewal,
@@ -404,6 +438,7 @@ final class SubscriptionTest extends TestCase
     {
         $nextRenewal = new \DateTimeImmutable('2024-01-01');
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: $nextRenewal,
@@ -437,6 +472,7 @@ final class SubscriptionTest extends TestCase
     public function testCreatesBothEventsWhenBothTypesOfFieldsChange(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-01-01'),
@@ -473,6 +509,7 @@ final class SubscriptionTest extends TestCase
     {
         $nextRenewal = new \DateTimeImmutable('2024-01-01');
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: $nextRenewal,
@@ -500,6 +537,7 @@ final class SubscriptionTest extends TestCase
     public function testAdvancesNextRenewalByOneIntervalFromTheAnchor(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-02-01'),
@@ -520,6 +558,7 @@ final class SubscriptionTest extends TestCase
     public function testRollingBackARemovedPaymentPullsTheRenewalAnchorBack(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-02-01'),
@@ -543,6 +582,7 @@ final class SubscriptionTest extends TestCase
     public function testAddsPaymentToCollection(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-01-01'),
@@ -566,6 +606,7 @@ final class SubscriptionTest extends TestCase
     public function testUsesSubscriptionCostByDefault(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-01-01'),
@@ -587,6 +628,7 @@ final class SubscriptionTest extends TestCase
     public function testAcceptsCustomAmount(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-01-01'),
@@ -610,6 +652,7 @@ final class SubscriptionTest extends TestCase
     public function testDefaultsToAutomated(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-02-01'),
@@ -625,6 +668,7 @@ final class SubscriptionTest extends TestCase
     public function testSwitchingToManualSetsPaymentGenerationToManual(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-02-01'),
@@ -642,6 +686,7 @@ final class SubscriptionTest extends TestCase
     public function testRecordingAPaymentUnderManualGenerationLeavesTheRenewalAnchorUntouched(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-02-01'),
@@ -663,6 +708,7 @@ final class SubscriptionTest extends TestCase
     public function testRemovingAPaymentUnderManualGenerationLeavesTheRenewalAnchorUntouched(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-02-01'),
@@ -687,6 +733,7 @@ final class SubscriptionTest extends TestCase
     public function testRemovingTheLatestGeneratedPaymentSwitchesToManualAndRollsBackTheAnchor(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-02-01'),
@@ -713,6 +760,7 @@ final class SubscriptionTest extends TestCase
     public function testRemovingTheLatestVerifiedPaymentRollsBackButLeavesGenerationAutomated(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-02-01'),
@@ -739,6 +787,7 @@ final class SubscriptionTest extends TestCase
     public function testBackfillingAHistoricalPaymentDoesNotAdvanceTheAnchor(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-02-01'),
@@ -762,6 +811,7 @@ final class SubscriptionTest extends TestCase
     public function testAPaymentOnThePeriodBoundaryDoesNotAdvanceTheAnchor(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-02-01'),
@@ -785,6 +835,7 @@ final class SubscriptionTest extends TestCase
     public function testAnInPeriodPaymentAdvancesTheAnchorAndIsFlagged(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-02-01'),
@@ -807,6 +858,7 @@ final class SubscriptionTest extends TestCase
     public function testRemovingABackfilledPaymentDoesNotRollBackTheAnchor(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-02-01'),
@@ -830,6 +882,7 @@ final class SubscriptionTest extends TestCase
     public function testProjectsTheRolledBackAnchorWhenRemovingAnAdvancingPayment(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-02-01'),
@@ -852,6 +905,7 @@ final class SubscriptionTest extends TestCase
     public function testProjectsNoConsequenceWhenRemovingABackfilledVerifiedPayment(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-02-01'),
@@ -874,6 +928,7 @@ final class SubscriptionTest extends TestCase
     public function testRemovingAPaymentThatIsNotTheLatestIsRejected(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-02-01'),
@@ -900,6 +955,7 @@ final class SubscriptionTest extends TestCase
     public function testAutomatingSetsGenerationToAutomatedAndAnchorsTheFutureRenewal(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-02-01'),
@@ -920,6 +976,7 @@ final class SubscriptionTest extends TestCase
     public function testAutomatingWithANonFutureRenewalIsRejected(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-02-01'),
@@ -937,6 +994,7 @@ final class SubscriptionTest extends TestCase
     public function testSuggestedResumeRenewalStepsTheCadenceToTheFirstDateAfterToday(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2020-01-15'),
@@ -956,6 +1014,7 @@ final class SubscriptionTest extends TestCase
     {
         $future = new \DateTimeImmutable('+40 days');
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: $future,
@@ -970,6 +1029,7 @@ final class SubscriptionTest extends TestCase
     public function testSetsArchivedToTrue(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-01-01'),
@@ -986,6 +1046,7 @@ final class SubscriptionTest extends TestCase
     public function testCreatesArchiveEvent(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-01-01'),
@@ -1006,6 +1067,7 @@ final class SubscriptionTest extends TestCase
     public function testUnarchiveSetsArchivedToFalse(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-01-01'),
@@ -1023,6 +1085,7 @@ final class SubscriptionTest extends TestCase
     public function testUnarchiveCreatesUnarchiveEvent(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-01-01'),
@@ -1050,6 +1113,7 @@ final class SubscriptionTest extends TestCase
         $this->expectException(\Assert\InvalidArgumentException::class);
 
         new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: '',
             nextRenewal: new \DateTimeImmutable(),
@@ -1064,6 +1128,7 @@ final class SubscriptionTest extends TestCase
         $this->expectException(\Assert\InvalidArgumentException::class);
 
         new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: '   ',
             nextRenewal: new \DateTimeImmutable(),
@@ -1078,6 +1143,7 @@ final class SubscriptionTest extends TestCase
         $this->expectException(\Assert\InvalidArgumentException::class);
 
         new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable(),
@@ -1092,6 +1158,7 @@ final class SubscriptionTest extends TestCase
         $this->expectException(\Assert\InvalidArgumentException::class);
 
         new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable(),
@@ -1106,6 +1173,7 @@ final class SubscriptionTest extends TestCase
         $this->expectException(\Assert\InvalidArgumentException::class);
 
         new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable(),
@@ -1120,6 +1188,7 @@ final class SubscriptionTest extends TestCase
         $this->expectException(\Assert\InvalidArgumentException::class);
 
         new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable(),
@@ -1132,6 +1201,7 @@ final class SubscriptionTest extends TestCase
     public function testUpdateRejectsEmptyName(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-01-01'),
@@ -1159,6 +1229,7 @@ final class SubscriptionTest extends TestCase
     public function testUpdateRejectsWhitespaceName(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-01-01'),
@@ -1186,6 +1257,7 @@ final class SubscriptionTest extends TestCase
     public function testUpdateRejectsZeroCost(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-01-01'),
@@ -1213,6 +1285,7 @@ final class SubscriptionTest extends TestCase
     public function testUpdateRejectsNegativeCost(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-01-01'),
@@ -1240,6 +1313,7 @@ final class SubscriptionTest extends TestCase
     public function testUpdateRejectsZeroPeriodCount(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-01-01'),
@@ -1267,6 +1341,7 @@ final class SubscriptionTest extends TestCase
     public function testUpdateRejectsNegativePeriodCount(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-01-01'),
@@ -1294,6 +1369,7 @@ final class SubscriptionTest extends TestCase
     public function testTrimsNameOnCreation(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: '  Netflix  ',
             nextRenewal: new \DateTimeImmutable('2024-01-01'),
@@ -1308,6 +1384,7 @@ final class SubscriptionTest extends TestCase
     public function testUpdateTrimsName(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-01-01'),
@@ -1335,6 +1412,7 @@ final class SubscriptionTest extends TestCase
     public function testAssignsARandomPaletteColorWhenNoneIsGiven(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-01-01'),
@@ -1349,6 +1427,7 @@ final class SubscriptionTest extends TestCase
     public function testAcceptsAnExplicitColor(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-01-01'),
@@ -1364,6 +1443,7 @@ final class SubscriptionTest extends TestCase
     public function testRecordsAColorChangeAsAnUpdateEvent(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-01-01'),
@@ -1398,6 +1478,7 @@ final class SubscriptionTest extends TestCase
     public function testRecordsNoEventWhenTheColorIsUnchanged(): void
     {
         $subscription = new Subscription(
+            owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-01-01'),
@@ -1574,6 +1655,7 @@ final class SubscriptionTest extends TestCase
     private function makeSubscription(PaymentPeriod $period, int $count, int $cost, string $nextRenewal = '2024-01-01'): Subscription
     {
         return new Subscription(
+            owner: $this->owner,
             category: new Category(name: 'Entertainment'),
             name: 'Example',
             nextRenewal: new \DateTimeImmutable($nextRenewal),

@@ -32,7 +32,7 @@ final class EditSubscriptionController extends AbstractBaseController
     #[Route(path: '/subscriptions/{id}/edit', name: 'subscription_edit', methods: ['GET', 'POST'])]
     public function __invoke(Ulid $id, Request $request): Response
     {
-        $subscription = $this->queryBus->query(query: new FindSubscriptionQuery(subscriptionId: $id));
+        $subscription = $this->queryBus->query(query: new FindSubscriptionQuery(ownerUserId: $this->currentUser()->id, subscriptionId: $id));
 
         if (null === $subscription) {
             throw new NotFoundHttpException(\sprintf('Subscription with ID "%s" not found.', $id));
@@ -67,6 +67,7 @@ final class EditSubscriptionController extends AbstractBaseController
                 : $subscription->logo;
 
             $this->commandBus->dispatch(command: new UpdateSubscriptionCommand(
+                ownerUserId: $this->currentUser()->id,
                 subscriptionId: $id,
                 categoryId: $data->category?->id,
                 name: $data->name,

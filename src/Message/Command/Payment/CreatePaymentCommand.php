@@ -12,6 +12,7 @@ use Symfony\Component\Uid\Ulid;
 final readonly class CreatePaymentCommand
 {
     public function __construct(
+        public Ulid $ownerUserId,
         public Ulid $subscriptionId,
         public int $amount,
         public \DateTimeImmutable $paidDate,

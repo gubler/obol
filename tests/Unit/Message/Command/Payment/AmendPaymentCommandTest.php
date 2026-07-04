@@ -19,6 +19,7 @@ final class AmendPaymentCommandTest extends TestCase
         $paidDate = new \DateTimeImmutable('2024-01-05');
 
         $command = new AmendPaymentCommand(
+            ownerUserId: new Ulid(),
             paymentId: $paymentId,
             amount: 1200,
             paidDate: $paidDate,

@@ -18,6 +18,7 @@ The core entity. Tracks a recurring payment with its cost, billing period, and m
 | Property | Type | Notes |
 |----------|------|-------|
 | `id` | `Ulid` | Generated in constructor |
+| `owner` | `User` | Required, ManyToOne, immutable — the subscription is never reassigned (see ADR-0015) |
 | `archived` | `bool` | Default `false` |
 | `createdAt` | `DateTimeImmutable` | Set in constructor |
 | `category` | `?Category` | Optional, ManyToOne (null = uncategorized) |
@@ -63,6 +64,7 @@ Records a single payment transaction linked to a subscription.
 |----------|------|-------|
 | `id` | `Ulid` | Generated in constructor |
 | `subscription` | `Subscription` | Required, ManyToOne |
+| `owner` | `User` | Required, ManyToOne, denormalized from `subscription.owner` in the constructor — the invariant `owner == subscription.owner` is un-bypassable (see ADR-0015) |
 | `type` | `PaymentType` | `Verified` or `Generated` |
 | `amount` | `int` | In cents, must be > 0 |
 | `createdAt` | `DateTimeImmutable` | When the payment occurred |
@@ -148,8 +150,15 @@ Used by `Subscription::update()` to build event context without manual compariso
 
 ```mermaid
 erDiagram
+    User ||--o{ Subscription : "owns"
+    User ||--o{ Payment : "owns"
     Category |o--o{ Subscription : "has many"
     PaymentSource |o--o{ Subscription : "has many"
     Subscription ||--o{ Payment : "has many"
     Subscription ||--o{ SubscriptionEvent : "has many"
 ```
+
+Each `Subscription` and `Payment` has an immutable `owner` (a `User`). `Payment.owner` is
+denormalized from its subscription at creation, so a user's payments can be queried without
+joining through `Subscription`. `SubscriptionEvent` inherits its owner via its subscription
+(no own FK). See ADR-0015.

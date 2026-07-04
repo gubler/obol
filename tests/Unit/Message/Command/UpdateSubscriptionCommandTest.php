@@ -23,6 +23,7 @@ final class UpdateSubscriptionCommandTest extends TestCase
         $nextRenewal = new \DateTimeImmutable('2026-01-15');
 
         $command = new UpdateSubscriptionCommand(
+            ownerUserId: new Ulid(),
             subscriptionId: $subscriptionId,
             categoryId: $categoryId,
             name: 'Netflix Premium',
@@ -54,6 +55,7 @@ final class UpdateSubscriptionCommandTest extends TestCase
     public function testIsReadonly(): void
     {
         $command = new UpdateSubscriptionCommand(
+            ownerUserId: new Ulid(),
             subscriptionId: new Ulid(),
             categoryId: new Ulid(),
             name: 'Test',

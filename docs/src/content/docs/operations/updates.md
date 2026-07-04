@@ -46,6 +46,12 @@ php bin/console doctrine:migrations:diff
 
 Edit the generated file in `migrations/` to adjust the SQL if needed. Migrations should be idempotent where possible.
 
+### The founder ownership migration
+
+One migration is a deploy gate. When per-row ownership landed (ADR-0015), a migration adds the `owner` columns to `subscription` and `payment`, *seeds the founder account* (a `User` plus a primary verified `UserEmail`), backfills every existing row to the founder, then flips the columns to `NOT NULL`. It is irreversible — `down()` throws.
+
+Because the founder logs in by magic link, the prod mailer must be live and `app:mailer:smoke` must pass *before* this migration runs. If it runs first, the founder's first login has no working mailbox to reach and locks them out.
+
 ## Checking Migration Status
 
 ```bash

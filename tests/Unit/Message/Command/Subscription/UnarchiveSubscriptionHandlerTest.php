@@ -26,7 +26,7 @@ final class UnarchiveSubscriptionHandlerTest extends TestCase
 
         $repository = $this->createMock(SubscriptionRepository::class);
         $repository->expects(self::once())
-            ->method('find')
+            ->method('findForOwner')
             ->willReturn($subscription)
         ;
 
@@ -34,7 +34,7 @@ final class UnarchiveSubscriptionHandlerTest extends TestCase
         $notifier->expects(self::once())->method('notifyChanged');
 
         $handler = new UnarchiveSubscriptionHandler($repository, $notifier);
-        $handler(new UnarchiveSubscriptionCommand(subscriptionId: $ulid));
+        $handler(new UnarchiveSubscriptionCommand(ownerUserId: new Ulid(), subscriptionId: $ulid));
     }
 
     public function testHandlerThrowsWhenSubscriptionNotFound(): void
@@ -43,7 +43,7 @@ final class UnarchiveSubscriptionHandlerTest extends TestCase
 
         $repository = $this->createMock(SubscriptionRepository::class);
         $repository->expects(self::once())
-            ->method('find')
+            ->method('findForOwner')
             ->willReturn(null)
         ;
 
@@ -53,6 +53,6 @@ final class UnarchiveSubscriptionHandlerTest extends TestCase
         $handler = new UnarchiveSubscriptionHandler($repository, $notifier);
 
         $this->expectException(\InvalidArgumentException::class);
-        $handler(new UnarchiveSubscriptionCommand(subscriptionId: $ulid));
+        $handler(new UnarchiveSubscriptionCommand(ownerUserId: new Ulid(), subscriptionId: $ulid));
     }
 }

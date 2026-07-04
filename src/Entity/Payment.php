@@ -22,6 +22,15 @@ class Payment
     #[ORM\Embedded(class: Money::class, columnPrefix: 'amount_')]
     public private(set) Money $amount;
 
+    /**
+     * The user this payment belongs to. Denormalized from the subscription so a user's payments can be
+     * queried without joining through Subscription. Derived in the constructor (never a parameter), so
+     * the invariant owner == subscription.owner cannot be violated by a caller (see ADR-0015).
+     */
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(name: 'owner_user_id', nullable: false)]
+    public private(set) User $owner;
+
     public function __construct(
         #[ORM\ManyToOne(inversedBy: 'payments')]
         #[ORM\JoinColumn(nullable: false)]
@@ -42,6 +51,7 @@ class Payment
 
         $this->id = new Ulid();
         $this->amount = $amount;
+        $this->owner = $subscription->owner;
     }
 
     /**

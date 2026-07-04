@@ -24,7 +24,7 @@ final class EditPaymentController extends AbstractBaseController
     #[Route(path: '/payments/{id}/edit', name: 'payment_edit', methods: ['GET', 'POST'])]
     public function __invoke(Ulid $id, Request $request): Response
     {
-        $payment = $this->queryBus->query(query: new FindPaymentQuery(paymentId: $id));
+        $payment = $this->queryBus->query(query: new FindPaymentQuery(ownerUserId: $this->currentUser()->id, paymentId: $id));
 
         if (null === $payment) {
             throw new NotFoundHttpException(\sprintf('Payment with ID "%s" not found.', $id));
@@ -47,6 +47,7 @@ final class EditPaymentController extends AbstractBaseController
             \assert(null !== $data->paidDate);
 
             $this->commandBus->dispatch(command: new AmendPaymentCommand(
+                ownerUserId: $this->currentUser()->id,
                 paymentId: $id,
                 amount: $data->amount,
                 paidDate: $data->paidDate,

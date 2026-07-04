@@ -10,6 +10,7 @@ namespace App\Message\Command\Subscription;
 use App\Entity\Subscription;
 use App\Repository\CategoryRepository;
 use App\Repository\PaymentSourceRepository;
+use App\Repository\UserRepository;
 use App\Service\SubscriptionChangeNotifierInterface;
 use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
@@ -21,6 +22,7 @@ final readonly class CreateSubscriptionHandler
     public function __construct(
         private CategoryRepository $categoryRepository,
         private PaymentSourceRepository $paymentSourceRepository,
+        private UserRepository $userRepository,
         private EntityManagerInterface $entityManager,
         private SubscriptionChangeNotifierInterface $subscriptionChangeNotifier,
     ) {
@@ -28,6 +30,12 @@ final readonly class CreateSubscriptionHandler
 
     public function __invoke(CreateSubscriptionCommand $command): void
     {
+        $owner = $this->userRepository->find($command->ownerUserId);
+
+        if (null === $owner) {
+            throw new \InvalidArgumentException(\sprintf('User with ID "%s" not found.', $command->ownerUserId));
+        }
+
         // A subscription may be uncategorized; only a given-but-missing category is an error.
         $category = null;
         if ($command->categoryId instanceof \Symfony\Component\Uid\Ulid) {
@@ -49,6 +57,7 @@ final readonly class CreateSubscriptionHandler
         }
 
         $subscription = new Subscription(
+            owner: $owner,
             category: $category,
             name: $command->name,
             nextRenewal: $command->nextRenewal,

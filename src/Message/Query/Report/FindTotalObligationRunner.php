@@ -29,7 +29,7 @@ final readonly class FindTotalObligationRunner
 
         $monthlyCosts = array_map(
             static fn (Subscription $subscription): Money => $subscription->monthlyCost(),
-            $this->subscriptionRepository->findBy(['archived' => false]),
+            $this->subscriptionRepository->findActiveForOwner($query->ownerUserId),
         );
 
         $monthly = $this->currencyTotaller->total($monthlyCosts, $asOf);

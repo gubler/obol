@@ -9,6 +9,7 @@ namespace App\Tests\Unit\Message\Query;
 
 use App\Entity\Category;
 use App\Entity\Subscription;
+use App\Entity\User;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\SubscriptionSort;
@@ -23,6 +24,7 @@ use App\Repository\SubscriptionRepository;
 use App\Service\DisplayCurrencyProvider;
 use App\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Uid\Ulid;
 
 final class FindSubscriptionsForHomepageRunnerTest extends TestCase
 {
@@ -36,6 +38,7 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
         Currency $currency = Currency::USD,
     ): Subscription {
         return new Subscription(
+            owner: new User(email: 'owner@example.com'),
             category: $category,
             name: $name,
             nextRenewal: new \DateTimeImmutable($renewal),
@@ -75,7 +78,7 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
     private function runHomepage(array $subscriptions, FindSubscriptionsForHomepageQuery $query, array $rates = []): HomepageListing
     {
         $repository = self::createStub(SubscriptionRepository::class);
-        $repository->method('findForHomepage')->willReturn($subscriptions);
+        $repository->method('findForHomepageForOwner')->willReturn($subscriptions);
 
         return (new FindSubscriptionsForHomepageRunner($repository, $this->homepageTotaller($rates)))($query);
     }
@@ -92,7 +95,7 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
             self::makeHomepageSubscription($alpha, 'Apple', 1000),
         ];
 
-        $listing = $this->runHomepage($subscriptions, new FindSubscriptionsForHomepageQuery());
+        $listing = $this->runHomepage($subscriptions, new FindSubscriptionsForHomepageQuery(ownerUserId: new Ulid()));
 
         self::assertInstanceOf(HomepageListing::class, $listing);
         self::assertCount(2, $listing->groups);
@@ -112,7 +115,7 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
             self::makeHomepageSubscription($zoo, 'Penguin', 2000),
         ];
 
-        $listing = $this->runHomepage($subscriptions, new FindSubscriptionsForHomepageQuery());
+        $listing = $this->runHomepage($subscriptions, new FindSubscriptionsForHomepageQuery(ownerUserId: new Ulid()));
 
         self::assertCount(2, $listing->groups);
         // The named category sorts ahead of the uncategorized bucket, which always comes last.
@@ -132,7 +135,7 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
             self::makeHomepageSubscription($alpha, 'Mango', 1500),
         ];
 
-        $listing = $this->runHomepage($subscriptions, new FindSubscriptionsForHomepageQuery());
+        $listing = $this->runHomepage($subscriptions, new FindSubscriptionsForHomepageQuery(ownerUserId: new Ulid()));
 
         self::assertSame(['Apple', 'Mango', 'Pear'], self::names($listing->subscriptions));
     }
@@ -148,7 +151,7 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
             self::makeHomepageSubscription($alpha, 'Apple', 1000, renewal: '2024-01-01'),
         ];
 
-        $listing = $this->runHomepage($subscriptions, new FindSubscriptionsForHomepageQuery(sort: SubscriptionSort::Renewal));
+        $listing = $this->runHomepage($subscriptions, new FindSubscriptionsForHomepageQuery(ownerUserId: new Ulid(), sort: SubscriptionSort::Renewal));
 
         self::assertSame(['Apple', 'Pear', 'Mango'], self::names($listing->subscriptions));
         self::assertSame(['Apple', 'Mango'], self::names($listing->groups[0]->subscriptions));
@@ -166,7 +169,7 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
             self::makeHomepageSubscription($alpha, 'Pear', 2000),
         ];
 
-        $listing = $this->runHomepage($subscriptions, new FindSubscriptionsForHomepageQuery(sort: SubscriptionSort::MonthlyCost));
+        $listing = $this->runHomepage($subscriptions, new FindSubscriptionsForHomepageQuery(ownerUserId: new Ulid(), sort: SubscriptionSort::MonthlyCost));
 
         self::assertSame(['Pear', 'Mango', 'Apple'], self::names($listing->subscriptions));
     }
@@ -181,7 +184,7 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
             self::makeHomepageSubscription($alpha, 'Pear', 2000),
         ];
 
-        $listing = $this->runHomepage($subscriptions, new FindSubscriptionsForHomepageQuery(sort: SubscriptionSort::Cost));
+        $listing = $this->runHomepage($subscriptions, new FindSubscriptionsForHomepageQuery(ownerUserId: new Ulid(), sort: SubscriptionSort::Cost));
 
         self::assertSame(['Apple', 'Pear', 'Mango'], self::names($listing->subscriptions));
     }
@@ -195,7 +198,7 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
             self::makeHomepageSubscription($entertainment, 'Spotify', 1000),
         ];
 
-        $listing = $this->runHomepage($subscriptions, new FindSubscriptionsForHomepageQuery());
+        $listing = $this->runHomepage($subscriptions, new FindSubscriptionsForHomepageQuery(ownerUserId: new Ulid()));
 
         self::assertSame(2500, $listing->groups[0]->monthlyTotal->converted->minorAmount);
         self::assertFalse($listing->groups[0]->monthlyTotal->isApproximate);
@@ -214,7 +217,7 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
         $listing = $this->runHomepage([
             self::makeHomepageSubscription($software, 'JetBrains', 1000, renewal: $renewal),
             self::makeHomepageSubscription($software, '1Password', 1000, renewal: $renewal),
-        ], new FindSubscriptionsForHomepageQuery());
+        ], new FindSubscriptionsForHomepageQuery(ownerUserId: new Ulid()));
 
         self::assertGreaterThan(0, $perSubscription);
         self::assertSame(2 * $perSubscription, $listing->groups[0]->savingsTotal->converted->minorAmount);
@@ -229,7 +232,7 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
             self::makeHomepageSubscription($mixed, 'Euro', 3000, currency: Currency::EUR),            // 3000 EUR/mo -> 3240 USD
         ];
 
-        $listing = $this->runHomepage($subscriptions, new FindSubscriptionsForHomepageQuery(), rates: ['EUR' => 1.0, 'USD' => 1.08]);
+        $listing = $this->runHomepage($subscriptions, new FindSubscriptionsForHomepageQuery(ownerUserId: new Ulid()), rates: ['EUR' => 1.0, 'USD' => 1.08]);
 
         $monthly = $listing->groups[0]->monthlyTotal;
         self::assertSame(7240, $monthly->converted->minorAmount);   // 4000 USD + 3240 USD
@@ -242,13 +245,13 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
     {
         $repository = $this->createMock(SubscriptionRepository::class);
         $repository->expects(self::once())
-            ->method('findForHomepage')
-            ->with(true)
+            ->method('findForHomepageForOwner')
+            ->with(self::anything(), true)
             ->willReturn([])
         ;
 
         $runner = new FindSubscriptionsForHomepageRunner($repository, $this->homepageTotaller());
-        $listing = $runner(new FindSubscriptionsForHomepageQuery(includeArchived: true));
+        $listing = $runner(new FindSubscriptionsForHomepageQuery(ownerUserId: new Ulid(), includeArchived: true));
 
         self::assertSame([], $listing->groups);
         self::assertSame([], $listing->subscriptions);

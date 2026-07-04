@@ -12,6 +12,7 @@ use Symfony\Component\Uid\Ulid;
 final readonly class FindPaymentSourceBreakdownQuery
 {
     public function __construct(
+        public Ulid $ownerUserId,
         // Null selects the unassigned drill-down (subscriptions with no payment source).
         public ?Ulid $paymentSourceId,
     ) {

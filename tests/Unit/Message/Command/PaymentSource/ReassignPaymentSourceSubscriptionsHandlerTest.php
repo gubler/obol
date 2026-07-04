@@ -9,6 +9,7 @@ namespace App\Tests\Unit\Message\Command\PaymentSource;
 
 use App\Entity\PaymentSource;
 use App\Entity\Subscription;
+use App\Entity\User;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Message\Command\PaymentSource\ReassignPaymentSourceSubscriptionsCommand;
@@ -79,6 +80,7 @@ final class ReassignPaymentSourceSubscriptionsHandlerTest extends TestCase
     private function subscription(PaymentSource $paymentSource): Subscription
     {
         return new Subscription(
+            owner: new User(email: 'owner@example.com'),
             category: null,
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-01-01'),

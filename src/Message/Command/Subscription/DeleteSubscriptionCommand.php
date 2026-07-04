@@ -12,6 +12,7 @@ use Symfony\Component\Uid\Ulid;
 final readonly class DeleteSubscriptionCommand
 {
     public function __construct(
+        public Ulid $ownerUserId,
         public Ulid $subscriptionId,
     ) {
     }

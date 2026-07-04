@@ -10,6 +10,7 @@ namespace App\Tests\Unit\Entity;
 use App\Entity\Category;
 use App\Entity\Payment;
 use App\Entity\Subscription;
+use App\Entity\User;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\PaymentType;
@@ -29,6 +30,7 @@ final class PaymentTest extends TestCase
 
         $category = new Category(name: 'Test Category');
         $this->subscription = new Subscription(
+            owner: new User(email: 'owner@example.com'),
             category: $category,
             name: 'Test Subscription',
             nextRenewal: new \DateTimeImmutable(),
@@ -49,6 +51,19 @@ final class PaymentTest extends TestCase
         self::assertSame($this->subscription, $payment->subscription);
         self::assertSame(PaymentType::Verified, $payment->type);
         self::assertSame(1000, $payment->amount->minorAmount);
+    }
+
+    public function testDerivesItsOwnerFromItsSubscription(): void
+    {
+        $payment = new Payment(
+            subscription: $this->subscription,
+            type: PaymentType::Verified,
+            amount: new Money(1000, Currency::USD),
+        );
+
+        // Denormalized copy-at-birth: a payment's owner always equals its subscription's owner,
+        // enforced in the constructor so no caller can create a mismatch (see ADR-0015).
+        self::assertSame($this->subscription->owner, $payment->owner);
     }
 
     public function testStoresThePaidDate(): void

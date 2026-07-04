@@ -7,6 +7,8 @@ namespace App\Repository;
 use App\Entity\Payment;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Bridge\Doctrine\Types\UlidType;
+use Symfony\Component\Uid\Ulid;
 
 /**
  * @extends ServiceEntityRepository<Payment>
@@ -18,28 +20,21 @@ class PaymentRepository extends ServiceEntityRepository
         parent::__construct($registry, Payment::class);
     }
 
-    //    /**
-    //     * @return Payment[] Returns an array of Payment objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('p.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * A single payment owned by the given user, or null when it does not exist or belongs to someone
+     * else. The owner is denormalized onto the payment, so this needs no join through Subscription.
+     */
+    public function findForOwner(Ulid $id, Ulid $ownerId): ?Payment
+    {
+        $result = $this->createQueryBuilder('p')
+            ->andWhere('p.id = :id')
+            ->andWhere('p.owner = :owner')
+            ->setParameter('id', $id, UlidType::NAME)
+            ->setParameter('owner', $ownerId, UlidType::NAME)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
 
-    //    public function findOneBySomeField($value): ?Payment
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        return $result instanceof Payment ? $result : null;
+    }
 }

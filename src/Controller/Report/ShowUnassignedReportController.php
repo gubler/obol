@@ -25,7 +25,7 @@ final class ShowUnassignedReportController extends AbstractBaseController
     #[Route(path: '/reports/payment-sources/unassigned', name: 'reports_unassigned', methods: ['GET'], priority: 10)]
     public function __invoke(): Response
     {
-        $composition = $this->queryBus->query(query: new FindPaymentSourceBreakdownQuery(paymentSourceId: null));
+        $composition = $this->queryBus->query(query: new FindPaymentSourceBreakdownQuery(ownerUserId: $this->currentUser()->id, paymentSourceId: null));
         \assert($composition instanceof Composition);
 
         return $this->render(view: 'reports/payment_source.html.twig', parameters: [

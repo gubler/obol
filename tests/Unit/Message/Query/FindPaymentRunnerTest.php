@@ -23,12 +23,12 @@ final class FindPaymentRunnerTest extends TestCase
 
         $repository = $this->createMock(PaymentRepository::class);
         $repository->expects(self::once())
-            ->method('find')
+            ->method('findForOwner')
             ->willReturn($payment)
         ;
 
         $runner = new FindPaymentRunner($repository);
-        $result = $runner(new FindPaymentQuery(paymentId: $ulid));
+        $result = $runner(new FindPaymentQuery(ownerUserId: new Ulid(), paymentId: $ulid));
 
         self::assertSame($payment, $result);
     }
@@ -39,12 +39,12 @@ final class FindPaymentRunnerTest extends TestCase
 
         $repository = $this->createMock(PaymentRepository::class);
         $repository->expects(self::once())
-            ->method('find')
+            ->method('findForOwner')
             ->willReturn(null)
         ;
 
         $runner = new FindPaymentRunner($repository);
-        $result = $runner(new FindPaymentQuery(paymentId: $ulid));
+        $result = $runner(new FindPaymentQuery(ownerUserId: new Ulid(), paymentId: $ulid));
 
         self::assertNull($result);
     }

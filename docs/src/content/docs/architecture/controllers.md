@@ -12,6 +12,7 @@ Every controller extends `AbstractBaseController` (`src/Controller/AbstractBaseC
 - **`LoggerInterface`** — the `appLogger` for structured logging
 - **Flash message constants** — `FLASH_SUCCESS`, `FLASH_WARNING`, `FLASH_ERROR`, `FLASH_NOTICE`
 - **`logFormErrors()`** — logs form validation failures as structured JSON
+- **`currentUser()`** — the authenticated `User`. The app is authenticated-by-default (ADR-0014), so any action that runs has one; owner-scoped commands and queries take `currentUser()->id` as their `ownerUserId` (see [CQRS](./cqrs.md#owner-scoping) and ADR-0015)
 
 ### Why `#[Required]` instead of constructor injection?
 

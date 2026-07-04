@@ -16,7 +16,7 @@ final class ArchiveSubscriptionCommandTest extends TestCase
     public function testCreatesCommandWithSubscriptionId(): void
     {
         $subscriptionId = new Ulid();
-        $command = new ArchiveSubscriptionCommand(subscriptionId: $subscriptionId);
+        $command = new ArchiveSubscriptionCommand(ownerUserId: new Ulid(), subscriptionId: $subscriptionId);
 
         self::assertSame($subscriptionId, $command->subscriptionId);
     }
@@ -24,6 +24,7 @@ final class ArchiveSubscriptionCommandTest extends TestCase
     public function testIsReadonly(): void
     {
         $command = new ArchiveSubscriptionCommand(
+            ownerUserId: new Ulid(),
             subscriptionId: new Ulid()
         );
 

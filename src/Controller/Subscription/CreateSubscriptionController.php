@@ -58,6 +58,7 @@ final class CreateSubscriptionController extends AbstractBaseController
                 : '';
 
             $this->commandBus->dispatch(command: new CreateSubscriptionCommand(
+                ownerUserId: $this->currentUser()->id,
                 categoryId: $data->category?->id,
                 name: $data->name,
                 nextRenewal: $data->nextRenewal,

@@ -18,10 +18,12 @@ final class CreateSubscriptionCommandTest extends TestCase
 {
     public function testCreatesCommandWithAllFields(): void
     {
+        $ownerUserId = new Ulid();
         $categoryId = new Ulid();
         $nextRenewal = new \DateTimeImmutable('2026-01-01');
 
         $command = new CreateSubscriptionCommand(
+            ownerUserId: $ownerUserId,
             categoryId: $categoryId,
             name: 'Netflix',
             nextRenewal: $nextRenewal,
@@ -35,6 +37,7 @@ final class CreateSubscriptionCommandTest extends TestCase
             logo: 'netflix.png',
         );
 
+        self::assertSame($ownerUserId, $command->ownerUserId);
         self::assertSame($categoryId, $command->categoryId);
         self::assertSame('Netflix', $command->name);
         self::assertSame($nextRenewal, $command->nextRenewal);
@@ -54,6 +57,7 @@ final class CreateSubscriptionCommandTest extends TestCase
         $nextRenewal = new \DateTimeImmutable('2026-01-01');
 
         $command = new CreateSubscriptionCommand(
+            ownerUserId: new Ulid(),
             categoryId: $categoryId,
             name: 'Spotify',
             nextRenewal: $nextRenewal,
@@ -78,6 +82,7 @@ final class CreateSubscriptionCommandTest extends TestCase
     public function testIsReadonly(): void
     {
         $command = new CreateSubscriptionCommand(
+            ownerUserId: new Ulid(),
             categoryId: new Ulid(),
             name: 'Test',
             nextRenewal: new \DateTimeImmutable(),

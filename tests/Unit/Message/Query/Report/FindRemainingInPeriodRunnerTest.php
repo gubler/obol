@@ -9,6 +9,7 @@ namespace App\Tests\Unit\Message\Query\Report;
 
 use App\Entity\Category;
 use App\Entity\Subscription;
+use App\Entity\User;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Message\Currency\Converter;
@@ -23,12 +24,14 @@ use App\Service\PeriodBoundaries;
 use App\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Clock\MockClock;
+use Symfony\Component\Uid\Ulid;
 
 final class FindRemainingInPeriodRunnerTest extends TestCase
 {
     private static function remainingSubscription(int $costMinor, string $nextRenewal, Currency $currency = Currency::USD, PaymentPeriod $period = PaymentPeriod::Month, int $count = 1): Subscription
     {
         return new Subscription(
+            owner: new User(email: 'owner@example.com'),
             category: new Category(name: 'Test'),
             name: 'Test',
             nextRenewal: new \DateTimeImmutable($nextRenewal),
@@ -45,7 +48,7 @@ final class FindRemainingInPeriodRunnerTest extends TestCase
     private function runRemaining(array $subscriptions, string $now, array $rates = []): RemainingInPeriod
     {
         $repository = self::createMock(SubscriptionRepository::class);
-        $repository->expects(self::once())->method('findBy')->with(['archived' => false])->willReturn($subscriptions);
+        $repository->expects(self::once())->method('findActiveForOwner')->willReturn($subscriptions);
 
         $exchangeRateRepository = self::createStub(ExchangeRateRepository::class);
         $exchangeRateRepository->method('latestRate')
@@ -55,7 +58,7 @@ final class FindRemainingInPeriodRunnerTest extends TestCase
 
         $runner = new FindRemainingInPeriodRunner($repository, new PeriodBoundaries(0), $totaller, new MockClock(new \DateTimeImmutable($now)));
 
-        return $runner(new FindRemainingInPeriodQuery());
+        return $runner(new FindRemainingInPeriodQuery(ownerUserId: new Ulid()));
     }
 
     public function testProjectsRenewalsAgainstTheWeekMonthAndYearBoundaries(): void

@@ -10,6 +10,7 @@ namespace App\Tests\Unit\Message\Command\Payment;
 use App\Entity\Category;
 use App\Entity\Payment;
 use App\Entity\Subscription;
+use App\Entity\User;
 use App\Enum\Currency;
 use App\Enum\PaymentGeneration;
 use App\Enum\PaymentPeriod;
@@ -29,6 +30,7 @@ final class DeletePaymentHandlerTest extends TestCase
     public function testRemovingAGeneratedPaymentRollsBackTheAnchorAndSwitchesToManualGeneration(): void
     {
         $subscription = new Subscription(
+            owner: new User(email: 'owner@example.com'),
             category: new Category(name: 'Test'),
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-02-01'),
@@ -45,10 +47,10 @@ final class DeletePaymentHandlerTest extends TestCase
         $payment = $subscription->payments->first();
 
         $repository = $this->createMock(PaymentRepository::class);
-        $repository->expects(self::once())->method('find')->willReturn($payment);
+        $repository->expects(self::once())->method('findForOwner')->willReturn($payment);
 
         $handler = new DeletePaymentHandler($repository);
-        $handler(new DeletePaymentCommand(paymentId: $payment->id));
+        $handler(new DeletePaymentCommand(ownerUserId: new Ulid(), paymentId: $payment->id));
 
         self::assertCount(0, $subscription->payments);
         self::assertSameInstant(new \DateTimeImmutable('2024-02-01'), $subscription->nextRenewal);
@@ -58,6 +60,7 @@ final class DeletePaymentHandlerTest extends TestCase
     public function testRemovingAVerifiedPaymentRollsBackTheAnchorButLeavesGenerationAutomated(): void
     {
         $subscription = new Subscription(
+            owner: new User(email: 'owner@example.com'),
             category: new Category(name: 'Test'),
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-02-01'),
@@ -74,10 +77,10 @@ final class DeletePaymentHandlerTest extends TestCase
         $payment = $subscription->payments->first();
 
         $repository = $this->createMock(PaymentRepository::class);
-        $repository->expects(self::once())->method('find')->willReturn($payment);
+        $repository->expects(self::once())->method('findForOwner')->willReturn($payment);
 
         $handler = new DeletePaymentHandler($repository);
-        $handler(new DeletePaymentCommand(paymentId: $payment->id));
+        $handler(new DeletePaymentCommand(ownerUserId: new Ulid(), paymentId: $payment->id));
 
         self::assertCount(0, $subscription->payments);
         self::assertSameInstant(new \DateTimeImmutable('2024-02-01'), $subscription->nextRenewal);
@@ -87,12 +90,12 @@ final class DeletePaymentHandlerTest extends TestCase
     public function testThrowsWhenPaymentNotFound(): void
     {
         $repository = $this->createMock(PaymentRepository::class);
-        $repository->expects(self::once())->method('find')->willReturn(null);
+        $repository->expects(self::once())->method('findForOwner')->willReturn(null);
 
         $handler = new DeletePaymentHandler($repository);
 
         $this->expectException(\InvalidArgumentException::class);
 
-        $handler(new DeletePaymentCommand(paymentId: new Ulid()));
+        $handler(new DeletePaymentCommand(ownerUserId: new Ulid(), paymentId: new Ulid()));
     }
 }

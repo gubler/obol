@@ -32,7 +32,7 @@ final readonly class FindSubscriptionsForHomepageRunner
 
     public function __invoke(FindSubscriptionsForHomepageQuery $query): HomepageListing
     {
-        $subscriptions = $this->subscriptionRepository->findForHomepage($query->includeArchived);
+        $subscriptions = $this->subscriptionRepository->findForHomepageForOwner($query->ownerUserId, $query->includeArchived);
         usort($subscriptions, $this->comparator($query->sort));
 
         $asOf = new \DateTimeImmutable();

@@ -25,7 +25,7 @@ final class ShowUncategorizedReportController extends AbstractBaseController
     #[Route(path: '/reports/categories/uncategorized', name: 'reports_uncategorized', methods: ['GET'], priority: 10)]
     public function __invoke(): Response
     {
-        $composition = $this->queryBus->query(query: new FindCategoryBreakdownQuery(categoryId: null));
+        $composition = $this->queryBus->query(query: new FindCategoryBreakdownQuery(ownerUserId: $this->currentUser()->id, categoryId: null));
         \assert($composition instanceof Composition);
 
         return $this->render(view: 'reports/category.html.twig', parameters: [

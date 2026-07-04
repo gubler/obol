@@ -20,9 +20,9 @@ final readonly class AmendPaymentHandler
 
     public function __invoke(AmendPaymentCommand $command): void
     {
-        $payment = $this->paymentRepository->find($command->paymentId);
+        $payment = $this->paymentRepository->findForOwner($command->paymentId, $command->ownerUserId);
 
-        if (null === $payment) {
+        if (!$payment instanceof \App\Entity\Payment) {
             throw new \InvalidArgumentException(\sprintf('Payment with ID "%s" not found.', $command->paymentId));
         }
 

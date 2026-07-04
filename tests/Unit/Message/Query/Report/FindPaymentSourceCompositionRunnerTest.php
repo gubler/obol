@@ -9,6 +9,7 @@ namespace App\Tests\Unit\Message\Query\Report;
 
 use App\Entity\PaymentSource;
 use App\Entity\Subscription;
+use App\Entity\User;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\TileColor;
@@ -22,6 +23,7 @@ use App\Repository\SubscriptionRepository;
 use App\Service\DisplayCurrencyProvider;
 use App\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Uid\Ulid;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class FindPaymentSourceCompositionRunnerTest extends TestCase
@@ -29,6 +31,7 @@ final class FindPaymentSourceCompositionRunnerTest extends TestCase
     private static function subscription(?PaymentSource $source, int $costMinor, Currency $currency = Currency::USD): Subscription
     {
         return new Subscription(
+            owner: new User(email: 'owner@example.com'),
             category: null,
             name: 'Test',
             nextRenewal: new \DateTimeImmutable('2026-01-01'),
@@ -46,7 +49,7 @@ final class FindPaymentSourceCompositionRunnerTest extends TestCase
     private function runComposition(array $subscriptions, array $rates = []): Composition
     {
         $repository = self::createMock(SubscriptionRepository::class);
-        $repository->expects(self::once())->method('findBy')->with(['archived' => false])->willReturn($subscriptions);
+        $repository->expects(self::once())->method('findActiveForOwner')->willReturn($subscriptions);
 
         $exchangeRateRepository = self::createStub(ExchangeRateRepository::class);
         $exchangeRateRepository->method('latestRate')
@@ -56,7 +59,7 @@ final class FindPaymentSourceCompositionRunnerTest extends TestCase
 
         $runner = new FindPaymentSourceCompositionRunner($repository, $totaller, self::translator());
 
-        return $runner(new FindPaymentSourceCompositionQuery());
+        return $runner(new FindPaymentSourceCompositionQuery(ownerUserId: new Ulid()));
     }
 
     private static function translator(): TranslatorInterface

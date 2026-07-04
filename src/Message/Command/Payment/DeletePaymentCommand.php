@@ -12,6 +12,7 @@ use Symfony\Component\Uid\Ulid;
 final readonly class DeletePaymentCommand
 {
     public function __construct(
+        public Ulid $ownerUserId,
         public Ulid $paymentId,
     ) {
     }

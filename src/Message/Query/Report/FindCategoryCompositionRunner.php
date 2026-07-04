@@ -35,7 +35,7 @@ final readonly class FindCategoryCompositionRunner
     public function __invoke(FindCategoryCompositionQuery $query): Composition
     {
         $asOf = new \DateTimeImmutable();
-        $subscriptions = $this->subscriptionRepository->findBy(['archived' => false]);
+        $subscriptions = $this->subscriptionRepository->findActiveForOwner($query->ownerUserId);
 
         /** @var array<string, array{category: ?Category, costs: list<Money>}> $byCategory */
         $byCategory = [];

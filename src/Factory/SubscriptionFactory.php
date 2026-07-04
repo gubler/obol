@@ -27,6 +27,9 @@ final class SubscriptionFactory extends PersistentObjectFactory
     protected function defaults(): array
     {
         return [
+            // The founder owns factory-built data by default, matching authenticatedClient()'s login
+            // so feature tests see their own subscriptions. Isolation tests override with another owner.
+            'owner' => UserFactory::founder(),
             'category' => CategoryFactory::new(),
             'color' => self::faker()->randomElement(TileColor::cases()),
             'cost' => new Money(self::faker()->numberBetween(500, 3000), Currency::USD),

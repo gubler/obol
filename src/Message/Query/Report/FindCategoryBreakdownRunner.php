@@ -31,7 +31,7 @@ final readonly class FindCategoryBreakdownRunner
         // A null category id is the uncategorized drill-down: the subscriptions with no category.
         if (!$query->categoryId instanceof \Symfony\Component\Uid\Ulid) {
             $title = $this->translator->trans('subscription.group.uncategorized');
-            $filter = ['archived' => false, 'category' => null];
+            $category = null;
         } else {
             $category = $this->categoryRepository->find($query->categoryId);
             if (null === $category) {
@@ -39,11 +39,10 @@ final readonly class FindCategoryBreakdownRunner
             }
 
             $title = $category->name;
-            $filter = ['archived' => false, 'category' => $category];
         }
 
         $asOf = new \DateTimeImmutable();
-        $subscriptions = $this->subscriptionRepository->findBy($filter);
+        $subscriptions = $this->subscriptionRepository->findActiveForOwnerByCategory($query->ownerUserId, $category);
 
         $slices = array_map(
             function (Subscription $subscription) use ($asOf): CompositionSlice {

@@ -10,6 +10,7 @@ namespace App\Tests\Unit\Message\Event;
 use App\Entity\Category;
 use App\Entity\ObligationSnapshot;
 use App\Entity\Subscription;
+use App\Entity\User;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Message\Event\RecordObligationSnapshotHandler;
@@ -26,6 +27,7 @@ final class RecordObligationSnapshotHandlerTest extends TestCase
     private static function makeSubscriptionCosting(Money $cost, PaymentPeriod $period, int $count): Subscription
     {
         return new Subscription(
+            owner: new User(email: 'owner@example.com'),
             category: new Category(name: 'Test Category'),
             name: 'Test',
             nextRenewal: new \DateTimeImmutable('2020-01-01'),

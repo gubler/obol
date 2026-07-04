@@ -35,7 +35,7 @@ final readonly class FindPaymentSourceCompositionRunner
     public function __invoke(FindPaymentSourceCompositionQuery $query): Composition
     {
         $asOf = new \DateTimeImmutable();
-        $subscriptions = $this->subscriptionRepository->findBy(['archived' => false]);
+        $subscriptions = $this->subscriptionRepository->findActiveForOwner($query->ownerUserId);
 
         /** @var array<string, array{source: ?PaymentSource, costs: list<Money>}> $bySource */
         $bySource = [];

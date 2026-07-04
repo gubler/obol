@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Lib\Bus\CommandBus;
 use App\Lib\Bus\QueryBus;
 use Psr\Log\LoggerInterface;
@@ -41,6 +42,19 @@ abstract class AbstractBaseController extends AbstractController
         $this->commandBus = $commandBus;
         $this->queryBus = $queryBus;
         $this->translator = $translator;
+    }
+
+    /**
+     * The authenticated user. The whole app is authenticated-by-default (see ADR-0014), so any
+     * controller action that runs is behind the firewall and always has one; the assertion narrows
+     * the framework's ?UserInterface to our User for the owner-threading call sites.
+     */
+    protected function currentUser(): User
+    {
+        $user = $this->getUser();
+        \assert($user instanceof User);
+
+        return $user;
     }
 
     /**

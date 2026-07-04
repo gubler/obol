@@ -16,7 +16,7 @@ final class FindSubscriptionQueryTest extends TestCase
     public function testCreatesQueryWithSubscriptionId(): void
     {
         $subscriptionId = new Ulid();
-        $query = new FindSubscriptionQuery(subscriptionId: $subscriptionId);
+        $query = new FindSubscriptionQuery(ownerUserId: new Ulid(), subscriptionId: $subscriptionId);
 
         self::assertSame($subscriptionId, $query->subscriptionId);
     }
@@ -24,6 +24,7 @@ final class FindSubscriptionQueryTest extends TestCase
     public function testIsReadonly(): void
     {
         $query = new FindSubscriptionQuery(
+            ownerUserId: new Ulid(),
             subscriptionId: new Ulid()
         );
 

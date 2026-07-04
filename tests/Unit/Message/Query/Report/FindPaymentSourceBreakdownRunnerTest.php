@@ -9,6 +9,7 @@ namespace App\Tests\Unit\Message\Query\Report;
 
 use App\Entity\PaymentSource;
 use App\Entity\Subscription;
+use App\Entity\User;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Message\Currency\Converter;
@@ -30,6 +31,7 @@ final class FindPaymentSourceBreakdownRunnerTest extends TestCase
     private static function subscription(?PaymentSource $source, string $name, int $costMinor): Subscription
     {
         return new Subscription(
+            owner: new User(email: 'owner@example.com'),
             category: null,
             name: $name,
             nextRenewal: new \DateTimeImmutable('2026-01-01'),
@@ -45,15 +47,16 @@ final class FindPaymentSourceBreakdownRunnerTest extends TestCase
      */
     private function runBreakdown(?PaymentSource $source, array $subscriptions = []): ?Composition
     {
+        $ownerUserId = new Ulid();
         $sourceId = $source?->id ?? new Ulid();
 
         $paymentSourceRepository = self::createMock(PaymentSourceRepository::class);
         $paymentSourceRepository->expects(self::once())->method('find')->with($sourceId)->willReturn($source);
 
         $subscriptionRepository = self::createStub(SubscriptionRepository::class);
-        $subscriptionRepository->method('findBy')
+        $subscriptionRepository->method('findActiveForOwnerByPaymentSource')
             ->willReturnMap([
-                [['archived' => false, 'paymentSource' => $source], $subscriptions],
+                [$ownerUserId, $source, $subscriptions],
             ])
         ;
 
@@ -61,7 +64,7 @@ final class FindPaymentSourceBreakdownRunnerTest extends TestCase
 
         $runner = new FindPaymentSourceBreakdownRunner($paymentSourceRepository, $subscriptionRepository, $totaller, self::translator());
 
-        return $runner(new FindPaymentSourceBreakdownQuery($sourceId));
+        return $runner(new FindPaymentSourceBreakdownQuery(ownerUserId: $ownerUserId, paymentSourceId: $sourceId));
     }
 
     private function totaller(): CurrencyTotaller
@@ -107,19 +110,21 @@ final class FindPaymentSourceBreakdownRunnerTest extends TestCase
             self::subscription(null, 'Stray', 1099),
         ];
 
+        $ownerUserId = new Ulid();
+
         // No source is resolved for the unassigned drill-down; it filters on a null payment source.
         $paymentSourceRepository = $this->createMock(PaymentSourceRepository::class);
         $paymentSourceRepository->expects(self::never())->method('find');
 
         $subscriptionRepository = self::createStub(SubscriptionRepository::class);
-        $subscriptionRepository->method('findBy')
+        $subscriptionRepository->method('findActiveForOwnerByPaymentSource')
             ->willReturnMap([
-                [['archived' => false, 'paymentSource' => null], $subscriptions],
+                [$ownerUserId, null, $subscriptions],
             ])
         ;
 
         $runner = new FindPaymentSourceBreakdownRunner($paymentSourceRepository, $subscriptionRepository, $this->totaller(), self::translator());
-        $composition = $runner(new FindPaymentSourceBreakdownQuery(null));
+        $composition = $runner(new FindPaymentSourceBreakdownQuery(ownerUserId: $ownerUserId, paymentSourceId: null));
 
         self::assertInstanceOf(Composition::class, $composition);
         self::assertSame('Unassigned', $composition->title);

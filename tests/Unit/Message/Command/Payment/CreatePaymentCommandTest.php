@@ -19,6 +19,7 @@ final class CreatePaymentCommandTest extends TestCase
         $paidDate = new \DateTimeImmutable('2025-01-15');
 
         $command = new CreatePaymentCommand(
+            ownerUserId: new Ulid(),
             subscriptionId: $subscriptionId,
             amount: 1500,
             paidDate: $paidDate,

@@ -19,7 +19,7 @@ final class ShowSubscriptionController extends AbstractBaseController
     #[Route(path: '/subscriptions/{id}', name: 'subscription_show', methods: ['GET'])]
     public function __invoke(Ulid $id): Response
     {
-        $subscription = $this->queryBus->query(query: new FindSubscriptionQuery(subscriptionId: $id));
+        $subscription = $this->queryBus->query(query: new FindSubscriptionQuery(ownerUserId: $this->currentUser()->id, subscriptionId: $id));
 
         if (null === $subscription) {
             throw new NotFoundHttpException(\sprintf('Subscription with ID "%s" not found.', $id));

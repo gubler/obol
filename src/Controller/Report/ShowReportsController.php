@@ -29,10 +29,12 @@ final class ShowReportsController extends AbstractBaseController
     #[Route(path: '/reports', name: 'reports_index', methods: ['GET'])]
     public function __invoke(Request $request): Response
     {
-        $composition = $this->queryBus->query(query: new FindCategoryCompositionQuery());
+        $ownerUserId = $this->currentUser()->id;
+
+        $composition = $this->queryBus->query(query: new FindCategoryCompositionQuery(ownerUserId: $ownerUserId));
         \assert($composition instanceof Composition);
 
-        $paymentSourceComposition = $this->queryBus->query(query: new FindPaymentSourceCompositionQuery());
+        $paymentSourceComposition = $this->queryBus->query(query: new FindPaymentSourceCompositionQuery(ownerUserId: $ownerUserId));
         \assert($paymentSourceComposition instanceof Composition);
 
         $trendPeriod = ObligationTrendPeriod::fromQuery($request->query->getString('trend'));

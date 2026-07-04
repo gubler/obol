@@ -20,7 +20,7 @@ final class ValidatePaymentController extends AbstractBaseController
     #[Route(path: '/payments/{id}/validate', name: 'payment_validate', methods: ['POST'])]
     public function __invoke(Ulid $id): \Symfony\Component\HttpFoundation\RedirectResponse
     {
-        $payment = $this->queryBus->query(query: new FindPaymentQuery(paymentId: $id));
+        $payment = $this->queryBus->query(query: new FindPaymentQuery(ownerUserId: $this->currentUser()->id, paymentId: $id));
 
         if (null === $payment) {
             throw new NotFoundHttpException(\sprintf('Payment with ID "%s" not found.', $id));
@@ -29,6 +29,7 @@ final class ValidatePaymentController extends AbstractBaseController
         \assert($payment instanceof Payment);
 
         $this->commandBus->dispatch(command: new AmendPaymentCommand(
+            ownerUserId: $this->currentUser()->id,
             paymentId: $id,
             amount: $payment->amount->minorAmount,
             paidDate: $payment->paidDate,

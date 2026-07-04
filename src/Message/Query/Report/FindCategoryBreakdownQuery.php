@@ -12,6 +12,7 @@ use Symfony\Component\Uid\Ulid;
 final readonly class FindCategoryBreakdownQuery
 {
     public function __construct(
+        public Ulid $ownerUserId,
         // Null selects the uncategorized drill-down (subscriptions with no category).
         public ?Ulid $categoryId,
     ) {

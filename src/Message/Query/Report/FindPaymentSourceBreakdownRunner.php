@@ -31,7 +31,7 @@ final readonly class FindPaymentSourceBreakdownRunner
         // A null source id is the unassigned drill-down: the subscriptions with no payment source.
         if (!$query->paymentSourceId instanceof \Symfony\Component\Uid\Ulid) {
             $title = $this->translator->trans('subscription.group.unassigned');
-            $filter = ['archived' => false, 'paymentSource' => null];
+            $source = null;
         } else {
             $source = $this->paymentSourceRepository->find($query->paymentSourceId);
             if (null === $source) {
@@ -39,11 +39,10 @@ final readonly class FindPaymentSourceBreakdownRunner
             }
 
             $title = $source->name;
-            $filter = ['archived' => false, 'paymentSource' => $source];
         }
 
         $asOf = new \DateTimeImmutable();
-        $subscriptions = $this->subscriptionRepository->findBy($filter);
+        $subscriptions = $this->subscriptionRepository->findActiveForOwnerByPaymentSource($query->ownerUserId, $source);
 
         $slices = array_map(
             function (Subscription $subscription) use ($asOf): CompositionSlice {

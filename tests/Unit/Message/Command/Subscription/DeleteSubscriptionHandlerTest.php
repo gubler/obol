@@ -26,7 +26,7 @@ final class DeleteSubscriptionHandlerTest extends TestCase
 
         $repository = $this->createMock(SubscriptionRepository::class);
         $repository->expects(self::once())
-            ->method('find')
+            ->method('findForOwner')
             ->willReturn($subscription)
         ;
 
@@ -42,7 +42,7 @@ final class DeleteSubscriptionHandlerTest extends TestCase
         $notifier->expects(self::once())->method('notifyChanged');
 
         $handler = new DeleteSubscriptionHandler($repository, $entityManager, $notifier);
-        $handler(new DeleteSubscriptionCommand(subscriptionId: $ulid));
+        $handler(new DeleteSubscriptionCommand(ownerUserId: new Ulid(), subscriptionId: $ulid));
     }
 
     public function testHandlerThrowsWhenSubscriptionNotFound(): void
@@ -51,7 +51,7 @@ final class DeleteSubscriptionHandlerTest extends TestCase
 
         $repository = $this->createMock(SubscriptionRepository::class);
         $repository->expects(self::once())
-            ->method('find')
+            ->method('findForOwner')
             ->willReturn(null)
         ;
 
@@ -63,6 +63,6 @@ final class DeleteSubscriptionHandlerTest extends TestCase
         $handler = new DeleteSubscriptionHandler($repository, $entityManager, $notifier);
 
         $this->expectException(\InvalidArgumentException::class);
-        $handler(new DeleteSubscriptionCommand(subscriptionId: $ulid));
+        $handler(new DeleteSubscriptionCommand(ownerUserId: new Ulid(), subscriptionId: $ulid));
     }
 }

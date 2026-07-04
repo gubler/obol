@@ -24,9 +24,9 @@ final readonly class DeleteSubscriptionHandler
 
     public function __invoke(DeleteSubscriptionCommand $command): void
     {
-        $subscription = $this->subscriptionRepository->find($command->subscriptionId);
+        $subscription = $this->subscriptionRepository->findForOwner($command->subscriptionId, $command->ownerUserId);
 
-        if (null === $subscription) {
+        if (!$subscription instanceof \App\Entity\Subscription) {
             throw new \InvalidArgumentException(\sprintf('Subscription with ID "%s" not found.', $command->subscriptionId));
         }
 

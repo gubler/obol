@@ -1,6 +1,6 @@
 # ADR-0004: No authentication (single-tenant)
 
-- Status: Accepted
+- Status: Superseded - authentication by ADR-0014, per-row data ownership by ADR-0015
 - Date: 2026-06-02
 
 ## Context

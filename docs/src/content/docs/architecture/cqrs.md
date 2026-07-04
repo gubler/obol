@@ -66,6 +66,10 @@ Commands are `final readonly` classes with public constructor-promoted propertie
 
 Query handlers are called "Runners" (not "Handlers") to distinguish them from command handlers. Tagged as `#[AsMessageHandler(bus: 'query.bus')]`.
 
+### Owner scoping
+
+Subscription and payment data is per-user (ADR-0015). Every command and query that reads or mutates it carries an `ownerUserId` (a `Ulid`, per ADR-0007) as its first constructor argument. Controllers supply it from `currentUser()->id`; the runner or handler passes it to an owner-scoped repository finder (`findForOwner`, `findActiveForOwner`, …), which returns `null`/empty for another user's data so the controller 404s. Only the create path resolves the id to a `User` (to set the new subscription's owner); every other handler passes the `Ulid` straight through. An architecture test enforces that every owned message carries the field; the global nightly generation sweep and the still-global obligation-over-time series are the documented exemptions.
+
 ## Message Directory Structure
 
 ```

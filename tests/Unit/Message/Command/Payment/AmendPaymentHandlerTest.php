@@ -10,6 +10,7 @@ namespace App\Tests\Unit\Message\Command\Payment;
 use App\Entity\Category;
 use App\Entity\Payment;
 use App\Entity\Subscription;
+use App\Entity\User;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\PaymentType;
@@ -28,6 +29,7 @@ final class AmendPaymentHandlerTest extends TestCase
     public function testAmendsThePayment(): void
     {
         $subscription = new Subscription(
+            owner: new User(email: 'owner@example.com'),
             category: new Category(name: 'Test'),
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-02-01'),
@@ -43,10 +45,11 @@ final class AmendPaymentHandlerTest extends TestCase
         );
 
         $repository = $this->createMock(PaymentRepository::class);
-        $repository->expects(self::once())->method('find')->willReturn($payment);
+        $repository->expects(self::once())->method('findForOwner')->willReturn($payment);
 
         $handler = new AmendPaymentHandler($repository);
         $handler(new AmendPaymentCommand(
+            ownerUserId: new Ulid(),
             paymentId: $payment->id,
             amount: 1200,
             paidDate: new \DateTimeImmutable('2024-01-05'),
@@ -60,13 +63,14 @@ final class AmendPaymentHandlerTest extends TestCase
     public function testThrowsWhenPaymentNotFound(): void
     {
         $repository = $this->createMock(PaymentRepository::class);
-        $repository->expects(self::once())->method('find')->willReturn(null);
+        $repository->expects(self::once())->method('findForOwner')->willReturn(null);
 
         $handler = new AmendPaymentHandler($repository);
 
         $this->expectException(\InvalidArgumentException::class);
 
         $handler(new AmendPaymentCommand(
+            ownerUserId: new Ulid(),
             paymentId: new Ulid(),
             amount: 1200,
             paidDate: new \DateTimeImmutable(),

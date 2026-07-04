@@ -10,6 +10,7 @@ namespace App\Tests\Integration\ValueObject;
 use App\Entity\Category;
 use App\Entity\Payment;
 use App\Entity\Subscription;
+use App\Entity\User;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\PaymentType;
@@ -27,8 +28,10 @@ final class MoneyPersistenceTest extends WebTestCase
         /** @var EntityManagerInterface $entityManager */
         $entityManager = $container->get(id: EntityManagerInterface::class);
 
+        $owner = new User(email: 'owner@example.com');
         $category = new Category(name: 'Entertainment');
         $subscription = new Subscription(
+            owner: $owner,
             category: $category,
             name: 'Manga Box',
             nextRenewal: new \DateTimeImmutable('2024-01-01'),
@@ -39,6 +42,7 @@ final class MoneyPersistenceTest extends WebTestCase
         // A recorded payment inherits the subscription's currency.
         $subscription->recordPayment(paidDate: new \DateTimeImmutable('2024-01-01'), paymentType: PaymentType::Verified);
 
+        $entityManager->persist($owner);
         $entityManager->persist($category);
         $entityManager->persist($subscription);
         $entityManager->flush();

@@ -8,10 +8,12 @@ declare(strict_types=1);
 namespace App\Message\Query\Subscription;
 
 use App\Enum\SubscriptionSort;
+use Symfony\Component\Uid\Ulid;
 
 final readonly class FindSubscriptionsForHomepageQuery
 {
     public function __construct(
+        public Ulid $ownerUserId,
         public bool $includeArchived = false,
         public SubscriptionSort $sort = SubscriptionSort::Name,
     ) {

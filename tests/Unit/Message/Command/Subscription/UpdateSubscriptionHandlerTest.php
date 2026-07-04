@@ -38,7 +38,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
 
         $subscriptionRepository = $this->createMock(SubscriptionRepository::class);
         $subscriptionRepository->expects(self::once())
-            ->method('find')
+            ->method('findForOwner')
             ->willReturn($subscription)
         ;
 
@@ -56,6 +56,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
 
         $handler = new UpdateSubscriptionHandler($subscriptionRepository, $categoryRepository, $paymentSourceRepository, $notifier);
         $handler(new UpdateSubscriptionCommand(
+            ownerUserId: new Ulid(),
             subscriptionId: $subscriptionUlid,
             categoryId: $categoryUlid,
             name: 'Netflix Premium',
@@ -77,7 +78,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
         $subscription->expects(self::once())->method('update');
 
         $subscriptionRepository = $this->createMock(SubscriptionRepository::class);
-        $subscriptionRepository->expects(self::once())->method('find')->willReturn($subscription);
+        $subscriptionRepository->expects(self::once())->method('findForOwner')->willReturn($subscription);
 
         $categoryRepository = $this->createMock(CategoryRepository::class);
         $categoryRepository->expects(self::never())->method('find');
@@ -90,6 +91,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
 
         $handler = new UpdateSubscriptionHandler($subscriptionRepository, $categoryRepository, $paymentSourceRepository, $notifier);
         $handler(new UpdateSubscriptionCommand(
+            ownerUserId: new Ulid(),
             subscriptionId: new Ulid(),
             categoryId: null,
             name: 'Netflix',
@@ -115,7 +117,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
         ;
 
         $subscriptionRepository = $this->createMock(SubscriptionRepository::class);
-        $subscriptionRepository->expects(self::once())->method('find')->willReturn($subscription);
+        $subscriptionRepository->expects(self::once())->method('findForOwner')->willReturn($subscription);
 
         $categoryRepository = $this->createMock(CategoryRepository::class);
         $categoryRepository->expects(self::never())->method('find');
@@ -128,6 +130,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
 
         $handler = new UpdateSubscriptionHandler($subscriptionRepository, $categoryRepository, $paymentSourceRepository, $notifier);
         $handler(new UpdateSubscriptionCommand(
+            ownerUserId: new Ulid(),
             subscriptionId: new Ulid(),
             categoryId: null,
             name: 'Netflix',
@@ -151,7 +154,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
         $subscription = self::createStub(Subscription::class);
 
         $subscriptionRepository = $this->createMock(SubscriptionRepository::class);
-        $subscriptionRepository->expects(self::once())->method('find')->willReturn($subscription);
+        $subscriptionRepository->expects(self::once())->method('findForOwner')->willReturn($subscription);
 
         $categoryRepository = $this->createMock(CategoryRepository::class);
         $categoryRepository->expects(self::never())->method('find');
@@ -166,6 +169,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
 
         $this->expectException(\InvalidArgumentException::class);
         $handler(new UpdateSubscriptionCommand(
+            ownerUserId: new Ulid(),
             subscriptionId: new Ulid(),
             categoryId: null,
             name: 'Netflix',
@@ -195,7 +199,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
         $category = self::createStub(Category::class);
 
         $subscriptionRepository = $this->createMock(SubscriptionRepository::class);
-        $subscriptionRepository->expects(self::once())->method('find')->willReturn($subscription);
+        $subscriptionRepository->expects(self::once())->method('findForOwner')->willReturn($subscription);
 
         $categoryRepository = $this->createMock(CategoryRepository::class);
         $categoryRepository->expects(self::once())->method('find')->willReturn($category);
@@ -208,6 +212,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
 
         $handler = new UpdateSubscriptionHandler($subscriptionRepository, $categoryRepository, $paymentSourceRepository, $notifier);
         $handler(new UpdateSubscriptionCommand(
+            ownerUserId: new Ulid(),
             subscriptionId: $subscriptionUlid,
             categoryId: $categoryUlid,
             name: 'Netflix Premium',
@@ -228,7 +233,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
     {
         $subscriptionRepository = $this->createMock(SubscriptionRepository::class);
         $subscriptionRepository->expects(self::once())
-            ->method('find')
+            ->method('findForOwner')
             ->willReturn(null)
         ;
 
@@ -241,6 +246,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
 
         $this->expectException(\InvalidArgumentException::class);
         $handler(new UpdateSubscriptionCommand(
+            ownerUserId: new Ulid(),
             subscriptionId: new Ulid(),
             categoryId: new Ulid(),
             name: 'Netflix',
@@ -262,7 +268,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
 
         $subscriptionRepository = $this->createMock(SubscriptionRepository::class);
         $subscriptionRepository->expects(self::once())
-            ->method('find')
+            ->method('findForOwner')
             ->willReturn($subscription)
         ;
 
@@ -281,6 +287,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
 
         $this->expectException(\InvalidArgumentException::class);
         $handler(new UpdateSubscriptionCommand(
+            ownerUserId: new Ulid(),
             subscriptionId: new Ulid(),
             categoryId: new Ulid(),
             name: 'Netflix',

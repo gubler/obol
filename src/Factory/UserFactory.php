@@ -21,15 +21,17 @@ final class UserFactory extends PersistentObjectFactory
     }
 
     /**
-     * The founder: the dogfooding admin account (daryl@dev88.co). The default identity for
-     * authenticated feature tests; the data-isolation migration seeds the real one.
+     * The default admin identity for authenticated feature tests and the default owner of
+     * factory-built data. Idempotent, so it is safe to call from both authenticatedClient() and a
+     * factory's owner default within one test. This is a non-personal stand-in; the data-isolation
+     * migration seeds the real founder account.
      */
+    public const string FOUNDER_EMAIL = 'founder@example.com';
+
     public static function founder(): User
     {
-        return self::createOne([
-            'email' => 'daryl@dev88.co',
-            'roles' => ['ROLE_ADMIN'],
-        ]);
+        return self::repository()->findOneBy(['email' => self::FOUNDER_EMAIL])
+            ?? self::createOne(['email' => self::FOUNDER_EMAIL, 'roles' => ['ROLE_ADMIN']]);
     }
 
     /**

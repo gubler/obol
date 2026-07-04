@@ -24,7 +24,7 @@ final class CreatePaymentController extends AbstractBaseController
     public function __invoke(Ulid $subscriptionId, Request $request): Response
     {
         /** @var \App\Entity\Subscription|null $subscription */
-        $subscription = $this->queryBus->query(query: new FindSubscriptionQuery(subscriptionId: $subscriptionId));
+        $subscription = $this->queryBus->query(query: new FindSubscriptionQuery(ownerUserId: $this->currentUser()->id, subscriptionId: $subscriptionId));
 
         if (null === $subscription) {
             throw new NotFoundHttpException(\sprintf('Subscription with ID "%s" not found.', $subscriptionId));
@@ -53,6 +53,7 @@ final class CreatePaymentController extends AbstractBaseController
             \assert(null !== $data->paidDate);
 
             $this->commandBus->dispatch(command: new CreatePaymentCommand(
+                ownerUserId: $this->currentUser()->id,
                 subscriptionId: $subscription->id,
                 amount: $data->amount,
                 paidDate: $data->paidDate,

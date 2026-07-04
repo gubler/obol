@@ -9,6 +9,7 @@ namespace App\Tests\Unit\Entity;
 
 use App\Entity\Category;
 use App\Entity\Subscription;
+use App\Entity\User;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\ValueObject\Money;
@@ -54,6 +55,7 @@ final class SubscriptionRemainingInPeriodTest extends TestCase
     private function makeRemainingSubscription(int $costMinor, PaymentPeriod $period, int $count, string $nextRenewal): Subscription
     {
         return new Subscription(
+            owner: new User(email: 'owner@example.com'),
             category: new Category(name: 'Test'),
             name: 'Test',
             nextRenewal: new \DateTimeImmutable($nextRenewal),

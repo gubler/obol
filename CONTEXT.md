@@ -4,10 +4,11 @@ Obol is a web app for tracking recurring subscriptions and their payments. It re
 each subscription's cost and billing cadence, organizes subscriptions by category, keeps
 a complete audit trail of every change, and helps budget for upcoming renewals.
 
-It is becoming multi-user: accounts exist and the app requires passwordless magic-link
-login (ADR-0014, superseding ADR-0004's no-auth stance). Per-user data isolation is still
-landing - a logged-in user currently sees all data until per-user ownership lands. Still
-deliberately out of scope: team or household sharing, a public API, and bank integration.
+It is multi-user: accounts exist and the app requires passwordless magic-link login
+(ADR-0014), and each subscription and payment belongs to one **owner**, who sees only their
+own (ADR-0015, superseding ADR-0004's single-tenant stance). Isolation of the remaining owned
+data - categories, payment sources, obligation snapshots, per-user settings - is still landing.
+Still deliberately out of scope: team or household sharing, a public API, and bank integration.
 See `reference/out-of-scope/` for what is explicitly not being built, and `reference/adr/`
 for the decisions behind how it is built.
 
@@ -49,6 +50,12 @@ older docs.
 - **User** - a passwordless account and the security identity behind the login wall. Carries a
   ULID, roles, and a denormalized primary **email** (the session identifier). Authentication is
   magic-link only; there is no password. See ADR-0014.
+- **owner** - the User a subscription or payment belongs to, an immutable `owner` foreign key. A
+  subscription is set to its owner at creation and never reassigned; a payment copies its owner from
+  its subscription at creation (denormalized, so a user's payments can be queried without joining
+  through Subscription). Repository finders are owner-scoped (`findForOwner`), so one user's id never
+  resolves another's row - a cross-owner lookup returns null and the controller 404s. Categories,
+  payment sources, and obligation snapshots gain owners in later slices. See ADR-0015.
 - **UserEmail** - one address a User controls, independently verified, with at most one marked
   **primary**. A magic link resolves to its User via any *verified* UserEmail (so a second verified
   address is a recovery credential); the primary is the canonical identity. Unverified rows cannot
@@ -119,7 +126,7 @@ Recorded under `reference/adr/`:
 - ADR-0001 - ULID primary keys
 - ADR-0002 - Event-sourced subscription audit trail
 - ADR-0003 - Rich domain entities with asymmetric-visibility immutability
-- ADR-0004 - No authentication (single-tenant)
+- ADR-0004 - No authentication (single-tenant) - superseded by ADR-0014 (auth) and ADR-0015 (ownership)
 - ADR-0005 - PostgreSQL as the database of record
 - ADR-0006 - CQRS command/query buses; data access confined to the handler layer
 - ADR-0007 - Write-path message conventions (DTOs stay separate from Commands; Commands carry Ulid)
@@ -129,8 +136,10 @@ Recorded under `reference/adr/`:
 - ADR-0011 - Reinstate the synchronous event bus for domain events
 - ADR-0012 - Internationalization conventions
 - ADR-0013 - Payment source tracking (Category-shaped entity; reassign action; by-source report)
+- ADR-0014 - Authentication model (passwordless magic-link floor; multi-email backup credential)
+- ADR-0015 - Multi-user via per-row ownership (immutable owner FK; owner-scoped finders; Payment denormalized)
 
 ADR-0006 records the CQRS-via-Messenger decision (keep the command/query buses; data
-access confined to the handler layer) settled in #79. ADR-0007 extends it with the
-write-path conventions settled in #80: form DTOs stay distinct from Commands, and
-Commands carry Ulid value objects rather than entities or stringified ids.
+access confined to the handler layer). ADR-0007 extends it with the write-path
+conventions: form DTOs stay distinct from Commands, and Commands carry Ulid value
+objects rather than entities or stringified ids.

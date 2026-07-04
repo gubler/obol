@@ -7,6 +7,12 @@ declare(strict_types=1);
 
 namespace App\Message\Query\Report;
 
+use Symfony\Component\Uid\Ulid;
+
 final readonly class FindPaymentSourceCompositionQuery
 {
+    public function __construct(
+        public Ulid $ownerUserId,
+    ) {
+    }
 }

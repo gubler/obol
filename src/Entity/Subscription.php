@@ -81,6 +81,13 @@ class Subscription
     public private(set) TileColor $color;
 
     public function __construct(
+        /**
+         * The user this subscription belongs to. Immutable: a subscription is never reassigned between
+         * users, which is what makes Payment's denormalized owner safe to copy at birth (see ADR-0015).
+         */
+        #[ORM\ManyToOne]
+        #[ORM\JoinColumn(name: 'owner_user_id', nullable: false)]
+        public private(set) User $owner,
         #[ORM\ManyToOne(inversedBy: 'subscriptions')]
         #[ORM\JoinColumn(nullable: true)]
         public private(set) ?Category $category,

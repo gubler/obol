@@ -13,6 +13,7 @@ use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\TileColor;
 use App\Factory\CategoryFactory;
+use App\Factory\UserFactory;
 use App\Message\Command\Subscription\ArchiveSubscriptionCommand;
 use App\Message\Command\Subscription\CreateSubscriptionCommand;
 use App\Message\Command\Subscription\UpdateSubscriptionCommand;
@@ -34,10 +35,12 @@ final class ObligationSnapshotRecordingTest extends WebTestCase
         /** @var ObligationSnapshotRepository $snapshots */
         $snapshots = $entityManager->getRepository(ObligationSnapshot::class);
 
+        $owner = UserFactory::createOne();
         $category = CategoryFactory::createOne();
 
         // Create: obligation goes 0 -> 4000 USD/mo, so one snapshot is recorded.
         $commandBus->dispatch(new CreateSubscriptionCommand(
+            ownerUserId: $owner->id,
             categoryId: $category->id,
             name: 'Streaming',
             nextRenewal: new \DateTimeImmutable('+1 month'),
@@ -56,6 +59,7 @@ final class ObligationSnapshotRecordingTest extends WebTestCase
 
         // No-op update (rename only): obligation is unchanged, so no new snapshot.
         $commandBus->dispatch(new UpdateSubscriptionCommand(
+            ownerUserId: $owner->id,
             subscriptionId: $subscription->id,
             categoryId: $category->id,
             name: 'Renamed',
@@ -73,7 +77,7 @@ final class ObligationSnapshotRecordingTest extends WebTestCase
         self::assertSame(1, $snapshots->count([]));
 
         // Archive: obligation drops to nothing, so a new snapshot with an empty map is recorded.
-        $commandBus->dispatch(new ArchiveSubscriptionCommand($subscription->id));
+        $commandBus->dispatch(new ArchiveSubscriptionCommand(ownerUserId: $owner->id, subscriptionId: $subscription->id));
 
         self::assertSame(2, $snapshots->count([]));
         self::assertSame([], $snapshots->findLatest()?->obligationsByCurrency);

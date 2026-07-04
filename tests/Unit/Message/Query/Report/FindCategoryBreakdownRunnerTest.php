@@ -9,6 +9,7 @@ namespace App\Tests\Unit\Message\Query\Report;
 
 use App\Entity\Category;
 use App\Entity\Subscription;
+use App\Entity\User;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Message\Currency\Converter;
@@ -30,6 +31,7 @@ final class FindCategoryBreakdownRunnerTest extends TestCase
     private static function breakdownSubscription(?Category $category, string $name, int $costMinor, Currency $currency = Currency::USD): Subscription
     {
         return new Subscription(
+            owner: new User(email: 'owner@example.com'),
             category: $category,
             name: $name,
             nextRenewal: new \DateTimeImmutable('2026-01-01'),
@@ -45,18 +47,19 @@ final class FindCategoryBreakdownRunnerTest extends TestCase
      */
     private function runBreakdown(?Category $category, array $subscriptions = [], array $rates = []): ?Composition
     {
+        $ownerUserId = new Ulid();
         $categoryId = $category?->id ?? new Ulid();
 
         $categoryRepository = self::createMock(CategoryRepository::class);
         $categoryRepository->expects(self::once())->method('find')->with($categoryId)->willReturn($category);
 
-        // A stub (not a mock): the missing-category path returns early without querying, so
-        // findBy is called 0 or 1 times. willReturnMap keeps the active-in-category arg match
-        // without asserting a call count (any()/with()-without-expects are deprecated in PHPUnit 13).
+        // A stub (not a mock): the missing-category path returns early without querying, so the finder
+        // is called 0 or 1 times. willReturnMap keeps the owner+category arg match without asserting a
+        // call count (any()/with()-without-expects are deprecated in PHPUnit 13).
         $subscriptionRepository = self::createStub(SubscriptionRepository::class);
-        $subscriptionRepository->method('findBy')
+        $subscriptionRepository->method('findActiveForOwnerByCategory')
             ->willReturnMap([
-                [['archived' => false, 'category' => $category], $subscriptions],
+                [$ownerUserId, $category, $subscriptions],
             ])
         ;
 
@@ -68,7 +71,7 @@ final class FindCategoryBreakdownRunnerTest extends TestCase
 
         $runner = new FindCategoryBreakdownRunner($categoryRepository, $subscriptionRepository, $totaller, self::translator());
 
-        return $runner(new FindCategoryBreakdownQuery($categoryId));
+        return $runner(new FindCategoryBreakdownQuery(ownerUserId: $ownerUserId, categoryId: $categoryId));
     }
 
     /**
@@ -110,14 +113,16 @@ final class FindCategoryBreakdownRunnerTest extends TestCase
             self::breakdownSubscription(null, 'Stray', 1099),
         ];
 
+        $ownerUserId = new Ulid();
+
         // No category is resolved for the uncategorized drill-down; it filters on a null category.
         $categoryRepository = $this->createMock(CategoryRepository::class);
         $categoryRepository->expects(self::never())->method('find');
 
         $subscriptionRepository = self::createStub(SubscriptionRepository::class);
-        $subscriptionRepository->method('findBy')
+        $subscriptionRepository->method('findActiveForOwnerByCategory')
             ->willReturnMap([
-                [['archived' => false, 'category' => null], $subscriptions],
+                [$ownerUserId, null, $subscriptions],
             ])
         ;
 
@@ -126,7 +131,7 @@ final class FindCategoryBreakdownRunnerTest extends TestCase
         $totaller = new CurrencyTotaller(new Converter($exchangeRateRepository), new DisplayCurrencyProvider('USD'));
 
         $runner = new FindCategoryBreakdownRunner($categoryRepository, $subscriptionRepository, $totaller, self::translator());
-        $composition = $runner(new FindCategoryBreakdownQuery(null));
+        $composition = $runner(new FindCategoryBreakdownQuery(ownerUserId: $ownerUserId, categoryId: null));
 
         self::assertInstanceOf(Composition::class, $composition);
         self::assertSame('Uncategorized', $composition->title);

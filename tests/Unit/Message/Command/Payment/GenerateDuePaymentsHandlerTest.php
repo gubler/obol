@@ -10,6 +10,7 @@ namespace App\Tests\Unit\Message\Command\Payment;
 use App\Entity\Category;
 use App\Entity\Payment;
 use App\Entity\Subscription;
+use App\Entity\User;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\PaymentType;
@@ -28,6 +29,7 @@ final class GenerateDuePaymentsHandlerTest extends TestCase
     private static function makeDuePaymentSubscription(PaymentPeriod $period, int $count, \DateTimeImmutable $nextRenewal): Subscription
     {
         return new Subscription(
+            owner: new User(email: 'owner@example.com'),
             category: new Category(name: 'Test Category'),
             name: 'Test',
             nextRenewal: $nextRenewal,

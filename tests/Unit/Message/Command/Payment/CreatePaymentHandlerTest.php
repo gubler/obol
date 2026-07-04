@@ -31,12 +31,13 @@ final class CreatePaymentHandlerTest extends TestCase
 
         $repository = $this->createMock(SubscriptionRepository::class);
         $repository->expects(self::once())
-            ->method('find')
+            ->method('findForOwner')
             ->willReturn($subscription)
         ;
 
         $handler = new CreatePaymentHandler($repository);
         $handler(new CreatePaymentCommand(
+            ownerUserId: new Ulid(),
             subscriptionId: $ulid,
             amount: 1500,
             paidDate: $paidDate,
@@ -60,10 +61,11 @@ final class CreatePaymentHandlerTest extends TestCase
         ;
 
         $repository = $this->createMock(SubscriptionRepository::class);
-        $repository->expects(self::once())->method('find')->willReturn($subscription);
+        $repository->expects(self::once())->method('findForOwner')->willReturn($subscription);
 
         $handler = new CreatePaymentHandler($repository);
         $handler(new CreatePaymentCommand(
+            ownerUserId: new Ulid(),
             subscriptionId: $ulid,
             amount: 1500,
             paidDate: $paidDate,
@@ -78,7 +80,7 @@ final class CreatePaymentHandlerTest extends TestCase
 
         $repository = $this->createMock(SubscriptionRepository::class);
         $repository->expects(self::once())
-            ->method('find')
+            ->method('findForOwner')
             ->willReturn(null)
         ;
 
@@ -87,6 +89,7 @@ final class CreatePaymentHandlerTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
 
         $handler(new CreatePaymentCommand(
+            ownerUserId: new Ulid(),
             subscriptionId: $ulid,
             amount: 1500,
             paidDate: new \DateTimeImmutable(),

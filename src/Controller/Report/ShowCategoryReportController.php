@@ -25,7 +25,7 @@ final class ShowCategoryReportController extends AbstractBaseController
     #[Route(path: '/reports/categories/{id}', name: 'reports_category', methods: ['GET'])]
     public function __invoke(Ulid $id): Response
     {
-        $composition = $this->queryBus->query(query: new FindCategoryBreakdownQuery(categoryId: $id));
+        $composition = $this->queryBus->query(query: new FindCategoryBreakdownQuery(ownerUserId: $this->currentUser()->id, categoryId: $id));
         \assert(null === $composition || $composition instanceof Composition);
 
         if (!$composition instanceof Composition) {

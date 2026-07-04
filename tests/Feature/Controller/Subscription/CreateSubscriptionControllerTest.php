@@ -12,6 +12,7 @@ use App\Enum\Currency;
 use App\Enum\TileColor;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
+use App\Factory\UserFactory;
 use App\Tests\Support\AuthenticatedTestCase;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -126,6 +127,8 @@ final class CreateSubscriptionControllerTest extends AuthenticatedTestCase
         self::assertSame('Streaming service', $subscription->description);
         self::assertSame('https://netflix.com', $subscription->link);
         self::assertSame(TileColor::Blue, $subscription->color);
+        // The new subscription belongs to the logged-in user.
+        self::assertTrue($subscription->owner->id->equals(UserFactory::founder()->id));
     }
 
     /**

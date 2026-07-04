@@ -9,6 +9,7 @@ namespace App\Tests\Unit\Message\Query\Report;
 
 use App\Entity\Category;
 use App\Entity\Subscription;
+use App\Entity\User;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Message\Currency\Converter;
@@ -21,12 +22,14 @@ use App\Repository\SubscriptionRepository;
 use App\Service\DisplayCurrencyProvider;
 use App\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Uid\Ulid;
 
 final class FindTotalObligationRunnerTest extends TestCase
 {
     private static function makeObligationSubscription(Money $cost, PaymentPeriod $period, int $count = 1): Subscription
     {
         return new Subscription(
+            owner: new User(email: 'owner@example.com'),
             category: new Category(name: 'Test'),
             name: 'Test',
             nextRenewal: new \DateTimeImmutable('2020-01-01'),
@@ -43,7 +46,7 @@ final class FindTotalObligationRunnerTest extends TestCase
     private function runTotalObligation(array $subscriptions, array $rates, string $displayCurrency = 'USD'): TotalObligation
     {
         $subscriptionRepository = self::createMock(SubscriptionRepository::class);
-        $subscriptionRepository->expects(self::once())->method('findBy')->with(['archived' => false])->willReturn($subscriptions);
+        $subscriptionRepository->expects(self::once())->method('findActiveForOwner')->willReturn($subscriptions);
 
         $exchangeRateRepository = self::createStub(ExchangeRateRepository::class);
         $exchangeRateRepository->method('latestRate')
@@ -55,7 +58,7 @@ final class FindTotalObligationRunnerTest extends TestCase
             new CurrencyTotaller(new Converter($exchangeRateRepository), new DisplayCurrencyProvider($displayCurrency)),
         );
 
-        return $runner(new FindTotalObligationQuery());
+        return $runner(new FindTotalObligationQuery(ownerUserId: new Ulid()));
     }
 
     public function testSumsActiveSubscriptionsConvertsToTheDisplayCurrencyAndKeepsANativeBreakdown(): void

@@ -25,7 +25,7 @@ final class SubscriptionEventTest extends TestCase
     {
         parent::setUp();
 
-        $category = new Category(name: 'Test Category');
+        $category = new Category(owner: new User(email: 'owner@example.com'), name: 'Test Category');
         $this->subscription = new Subscription(
             owner: new User(email: 'owner@example.com'),
             category: $category,

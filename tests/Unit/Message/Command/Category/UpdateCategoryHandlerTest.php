@@ -20,8 +20,6 @@ final class UpdateCategoryHandlerTest extends TestCase
 {
     public function testHandlerUpdatesCategoryNameColorAndIcon(): void
     {
-        $ulid = new Ulid();
-
         $category = $this->createMock(Category::class);
         $category->expects(self::once())
             ->method('update')
@@ -30,27 +28,25 @@ final class UpdateCategoryHandlerTest extends TestCase
 
         $repository = $this->createMock(CategoryRepository::class);
         $repository->expects(self::once())
-            ->method('find')
+            ->method('findForOwner')
             ->willReturn($category)
         ;
 
         $handler = new UpdateCategoryHandler($repository);
-        $handler(new UpdateCategoryCommand(categoryId: $ulid, name: 'Updated Name', color: TileColor::Teal, icon: CategoryIcon::Film));
+        $handler(new UpdateCategoryCommand(ownerUserId: new Ulid(), categoryId: new Ulid(), name: 'Updated Name', color: TileColor::Teal, icon: CategoryIcon::Film));
     }
 
-    public function testHandlerThrowsWhenCategoryNotFound(): void
+    public function testHandlerThrowsWhenCategoryNotFoundForOwner(): void
     {
-        $ulid = new Ulid();
-
         $repository = $this->createMock(CategoryRepository::class);
         $repository->expects(self::once())
-            ->method('find')
+            ->method('findForOwner')
             ->willReturn(null)
         ;
 
         $handler = new UpdateCategoryHandler($repository);
 
         $this->expectException(\InvalidArgumentException::class);
-        $handler(new UpdateCategoryCommand(categoryId: $ulid, name: 'Updated Name', color: TileColor::Blue, icon: CategoryIcon::Tag));
+        $handler(new UpdateCategoryCommand(ownerUserId: new Ulid(), categoryId: new Ulid(), name: 'Updated Name', color: TileColor::Blue, icon: CategoryIcon::Tag));
     }
 }

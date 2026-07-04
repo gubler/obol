@@ -117,14 +117,18 @@ final class ArchTest extends TestCase
      */
     public function testOwnedMessagesCarryTheOwnerUserId(): void
     {
-        // Message namespaces whose data is owner-scoped in this slice. Category/PaymentSource ownership
-        // (their own namespaces) lands in a later slice, so they are deliberately absent.
+        // Message namespaces whose data is owner-scoped. Every command and query touching per-user data
+        // must carry an ownerUserId so the handler can scope by owner.
         $ownedNamespaces = [
             'App\Message\Command\Subscription',
             'App\Message\Query\Subscription',
             'App\Message\Command\Payment',
             'App\Message\Query\Payment',
             'App\Message\Query\Report',
+            'App\Message\Command\Category',
+            'App\Message\Query\Category',
+            'App\Message\Command\PaymentSource',
+            'App\Message\Query\PaymentSource',
         ];
 
         // Global jobs that legitimately span every user, each documented at its call site:

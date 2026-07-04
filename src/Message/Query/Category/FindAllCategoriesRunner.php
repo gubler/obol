@@ -24,6 +24,6 @@ final readonly class FindAllCategoriesRunner
      */
     public function __invoke(FindAllCategoriesQuery $query): array
     {
-        return $this->categoryRepository->findBy([], ['name' => 'ASC']);
+        return $this->categoryRepository->findAllForOwner($query->ownerUserId);
     }
 }

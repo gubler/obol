@@ -7,7 +7,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Feature\Controller;
 
+use App\Factory\CategoryFactory;
 use App\Factory\PaymentFactory;
+use App\Factory\PaymentSourceFactory;
 use App\Factory\SubscriptionFactory;
 use App\Factory\UserFactory;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -69,6 +71,66 @@ final class OwnerIsolationTest extends WebTestCase
         $client->request(method: Request::METHOD_GET, uri: '/reports');
         self::assertResponseIsSuccessful();
         self::assertSelectorTextNotContains(selector: 'body', text: 'Aardvark Weekly');
+    }
+
+    public function testUserBCannotReadOrMutateUserAsCategory(): void
+    {
+        $client = self::createClient();
+        $userA = UserFactory::createOne();
+        $category = CategoryFactory::createOne(['owner' => $userA, 'name' => 'Aardvark Media']);
+        $this->loginAsAnotherUser($client);
+
+        foreach ([
+            '/categories/' . $category->id,
+            '/categories/' . $category->id . '/edit',
+        ] as $uri) {
+            $client->request(method: Request::METHOD_GET, uri: $uri);
+            self::assertResponseStatusCodeSame(expectedCode: 404, message: $uri . ' must 404 for a non-owner');
+        }
+
+        $client->request(method: Request::METHOD_POST, uri: '/categories/' . $category->id . '/delete');
+        self::assertResponseStatusCodeSame(expectedCode: 404, message: 'deleting a non-owned category must 404');
+    }
+
+    public function testUserBCannotReadOrMutateUserAsPaymentSource(): void
+    {
+        $client = self::createClient();
+        $userA = UserFactory::createOne();
+        $source = PaymentSourceFactory::createOne(['owner' => $userA, 'name' => 'Aardvark Amex']);
+        $this->loginAsAnotherUser($client);
+
+        foreach ([
+            '/payment-sources/' . $source->id,
+            '/payment-sources/' . $source->id . '/edit',
+        ] as $uri) {
+            $client->request(method: Request::METHOD_GET, uri: $uri);
+            self::assertResponseStatusCodeSame(expectedCode: 404, message: $uri . ' must 404 for a non-owner');
+        }
+
+        foreach ([
+            '/payment-sources/' . $source->id . '/delete',
+            '/payment-sources/' . $source->id . '/reassign',
+        ] as $uri) {
+            $client->request(method: Request::METHOD_POST, uri: $uri);
+            self::assertResponseStatusCodeSame(expectedCode: 404, message: $uri . ' must 404 for a non-owner');
+        }
+    }
+
+    public function testUserBsCategoryAndPaymentSourceListingsExcludeUserAsData(): void
+    {
+        $client = self::createClient();
+        $userA = UserFactory::createOne();
+        CategoryFactory::createOne(['owner' => $userA, 'name' => 'Aardvark Media']);
+        PaymentSourceFactory::createOne(['owner' => $userA, 'name' => 'Aardvark Amex']);
+        $this->loginAsAnotherUser($client);
+
+        $client->request(method: Request::METHOD_GET, uri: '/categories');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextNotContains(selector: 'body', text: 'Aardvark Media');
+
+        $client->request(method: Request::METHOD_GET, uri: '/payment-sources');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextNotContains(selector: 'body', text: 'Aardvark Amex');
     }
 
     private function loginAsAnotherUser(KernelBrowser $client): void

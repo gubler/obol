@@ -21,7 +21,8 @@ final class ShowPaymentSourceController extends AbstractBaseController
     #[Route(path: '/payment-sources/{id}', name: 'payment_source_show', methods: ['GET'])]
     public function __invoke(Ulid $id): Response
     {
-        $paymentSource = $this->queryBus->query(query: new FindPaymentSourceQuery(paymentSourceId: $id));
+        $ownerUserId = $this->currentUser()->id;
+        $paymentSource = $this->queryBus->query(query: new FindPaymentSourceQuery(ownerUserId: $ownerUserId, paymentSourceId: $id));
 
         if (null === $paymentSource) {
             throw new NotFoundHttpException(\sprintf('Payment source with ID "%s" not found.', $id));
@@ -31,7 +32,7 @@ final class ShowPaymentSourceController extends AbstractBaseController
 
         // Other sources are the candidate targets for the "move all subscriptions" action.
         /** @var array<PaymentSource> $allSources */
-        $allSources = $this->queryBus->query(query: new FindAllPaymentSourcesQuery());
+        $allSources = $this->queryBus->query(query: new FindAllPaymentSourcesQuery(ownerUserId: $ownerUserId));
         $otherSources = array_filter(
             $allSources,
             static fn (PaymentSource $other): bool => !$other->id->equals($paymentSource->id),

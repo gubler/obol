@@ -33,22 +33,24 @@ final readonly class UpdateSubscriptionHandler
             throw new \InvalidArgumentException(\sprintf('Subscription with ID "%s" not found.', $command->subscriptionId));
         }
 
-        // A subscription may be uncategorized; only a given-but-missing category is an error.
+        // A subscription may be uncategorized; only a given-but-missing category is an error. Scoped to
+        // the owner so a user cannot attach another user's category (cross-owner id reads as missing).
         $category = null;
         if ($command->categoryId instanceof \Symfony\Component\Uid\Ulid) {
-            $category = $this->categoryRepository->find($command->categoryId);
+            $category = $this->categoryRepository->findForOwner($command->categoryId, $command->ownerUserId);
 
-            if (null === $category) {
+            if (!$category instanceof \App\Entity\Category) {
                 throw new \InvalidArgumentException(\sprintf('Category with ID "%s" not found.', $command->categoryId));
             }
         }
 
-        // A subscription may be unassigned; only a given-but-missing payment source is an error.
+        // A subscription may be unassigned; only a given-but-missing payment source is an error. Scoped to
+        // the owner so a user cannot attach another user's payment source.
         $paymentSource = null;
         if ($command->paymentSourceId instanceof \Symfony\Component\Uid\Ulid) {
-            $paymentSource = $this->paymentSourceRepository->find($command->paymentSourceId);
+            $paymentSource = $this->paymentSourceRepository->findForOwner($command->paymentSourceId, $command->ownerUserId);
 
-            if (null === $paymentSource) {
+            if (!$paymentSource instanceof \App\Entity\PaymentSource) {
                 throw new \InvalidArgumentException(\sprintf('Payment source with ID "%s" not found.', $command->paymentSourceId));
             }
         }

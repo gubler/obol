@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace App\Message\Command\Category;
 
 use App\Entity\Category;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -15,13 +16,16 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 final readonly class CreateCategoryHandler
 {
     public function __construct(
+        private UserRepository $userRepository,
         private EntityManagerInterface $entityManager,
     ) {
     }
 
     public function __invoke(CreateCategoryCommand $command): void
     {
-        $category = new Category(name: $command->name, color: $command->color, icon: $command->icon);
+        $owner = $this->userRepository->getForId($command->ownerUserId);
+
+        $category = new Category(owner: $owner, name: $command->name, color: $command->color, icon: $command->icon);
 
         $this->entityManager->persist($category);
     }

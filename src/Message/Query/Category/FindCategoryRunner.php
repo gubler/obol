@@ -21,6 +21,6 @@ final readonly class FindCategoryRunner
 
     public function __invoke(FindCategoryQuery $query): ?Category
     {
-        return $this->categoryRepository->find($query->categoryId);
+        return $this->categoryRepository->findForOwner($query->categoryId, $query->ownerUserId);
     }
 }

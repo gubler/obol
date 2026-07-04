@@ -20,14 +20,14 @@ final class DeletePaymentSourceController extends AbstractBaseController
     #[Route(path: '/payment-sources/{id}/delete', name: 'payment_source_delete', methods: ['POST'])]
     public function __invoke(Ulid $id): RedirectResponse
     {
-        $paymentSource = $this->queryBus->query(query: new FindPaymentSourceQuery(paymentSourceId: $id));
+        $paymentSource = $this->queryBus->query(query: new FindPaymentSourceQuery(ownerUserId: $this->currentUser()->id, paymentSourceId: $id));
 
         if (null === $paymentSource) {
             throw new NotFoundHttpException(\sprintf('Payment source with ID "%s" not found.', $id));
         }
 
         try {
-            $this->commandBus->dispatch(command: new DeletePaymentSourceCommand(paymentSourceId: $id));
+            $this->commandBus->dispatch(command: new DeletePaymentSourceCommand(ownerUserId: $this->currentUser()->id, paymentSourceId: $id));
 
             $this->addFlash(type: self::FLASH_SUCCESS, message: $this->translator->trans('payment_source.flash.deleted'));
         } catch (\Exception) {

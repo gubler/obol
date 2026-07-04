@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Message\Command\PaymentSource;
 
 use App\Entity\PaymentSource;
+use App\Entity\User;
 use App\Exception\PaymentSourceHasSubscriptionsException;
 use App\Message\Command\PaymentSource\DeletePaymentSourceCommand;
 use App\Message\Command\PaymentSource\DeletePaymentSourceHandler;
@@ -21,13 +22,11 @@ final class DeletePaymentSourceHandlerTest extends TestCase
 {
     public function testHandlerRemovesPaymentSourceWithNoSubscriptions(): void
     {
-        $ulid = new Ulid();
-
-        $source = new PaymentSource(name: 'Test');
+        $source = new PaymentSource(owner: new User(email: 'owner@example.com'), name: 'Test');
 
         $repository = $this->createMock(PaymentSourceRepository::class);
         $repository->expects(self::once())
-            ->method('find')
+            ->method('findForOwner')
             ->willReturn($source)
         ;
 
@@ -40,16 +39,14 @@ final class DeletePaymentSourceHandlerTest extends TestCase
         $entityManager->expects(self::never())->method('flush');
 
         $handler = new DeletePaymentSourceHandler($repository, $entityManager);
-        $handler(new DeletePaymentSourceCommand(paymentSourceId: $ulid));
+        $handler(new DeletePaymentSourceCommand(ownerUserId: new Ulid(), paymentSourceId: new Ulid()));
     }
 
-    public function testHandlerThrowsWhenPaymentSourceNotFound(): void
+    public function testHandlerThrowsWhenPaymentSourceNotFoundForOwner(): void
     {
-        $ulid = new Ulid();
-
         $repository = $this->createMock(PaymentSourceRepository::class);
         $repository->expects(self::once())
-            ->method('find')
+            ->method('findForOwner')
             ->willReturn(null)
         ;
 
@@ -58,14 +55,12 @@ final class DeletePaymentSourceHandlerTest extends TestCase
         $handler = new DeletePaymentSourceHandler($repository, $entityManager);
 
         $this->expectException(\InvalidArgumentException::class);
-        $handler(new DeletePaymentSourceCommand(paymentSourceId: $ulid));
+        $handler(new DeletePaymentSourceCommand(ownerUserId: new Ulid(), paymentSourceId: new Ulid()));
     }
 
     public function testHandlerThrowsWhenPaymentSourceHasSubscriptions(): void
     {
-        $ulid = new Ulid();
-
-        $source = new PaymentSource(name: 'Test');
+        $source = new PaymentSource(owner: new User(email: 'owner@example.com'), name: 'Test');
 
         // Use reflection to add items to the private(set) subscriptions collection.
         $reflection = new \ReflectionProperty(PaymentSource::class, 'subscriptions');
@@ -73,7 +68,7 @@ final class DeletePaymentSourceHandlerTest extends TestCase
 
         $repository = $this->createMock(PaymentSourceRepository::class);
         $repository->expects(self::once())
-            ->method('find')
+            ->method('findForOwner')
             ->willReturn($source)
         ;
 
@@ -82,6 +77,6 @@ final class DeletePaymentSourceHandlerTest extends TestCase
         $handler = new DeletePaymentSourceHandler($repository, $entityManager);
 
         $this->expectException(PaymentSourceHasSubscriptionsException::class);
-        $handler(new DeletePaymentSourceCommand(paymentSourceId: $ulid));
+        $handler(new DeletePaymentSourceCommand(ownerUserId: new Ulid(), paymentSourceId: new Ulid()));
     }
 }

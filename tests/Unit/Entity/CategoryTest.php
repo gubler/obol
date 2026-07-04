@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Entity;
 
 use App\Entity\Category;
+use App\Entity\User;
 use App\Enum\CategoryIcon;
 use App\Enum\TileColor;
 use PHPUnit\Framework\TestCase;
@@ -16,14 +17,22 @@ final class CategoryTest extends TestCase
 {
     public function testCreatesCategoryWithValidName(): void
     {
-        $category = new Category(name: 'Entertainment');
+        $category = new Category(owner: new User(email: 'owner@example.com'), name: 'Entertainment');
 
         self::assertSame('Entertainment', $category->name);
     }
 
+    public function testBelongsToItsOwner(): void
+    {
+        $owner = new User(email: 'owner@example.com');
+        $category = new Category(owner: $owner, name: 'Entertainment');
+
+        self::assertSame($owner, $category->owner);
+    }
+
     public function testCreatesCategoryWithAChosenColorAndIcon(): void
     {
-        $category = new Category(name: 'Streaming', color: TileColor::Violet, icon: CategoryIcon::Tv);
+        $category = new Category(owner: new User(email: 'owner@example.com'), name: 'Streaming', color: TileColor::Violet, icon: CategoryIcon::Tv);
 
         self::assertSame(TileColor::Violet, $category->color);
         self::assertSame(CategoryIcon::Tv, $category->icon);
@@ -31,7 +40,7 @@ final class CategoryTest extends TestCase
 
     public function testDefaultsToARandomColorAndTheNeutralTagIcon(): void
     {
-        $category = new Category(name: 'Software');
+        $category = new Category(owner: new User(email: 'owner@example.com'), name: 'Software');
 
         self::assertContains($category->color, TileColor::cases());
         self::assertSame(CategoryIcon::Tag, $category->icon);
@@ -39,7 +48,7 @@ final class CategoryTest extends TestCase
 
     public function testUpdatesNameColorAndIcon(): void
     {
-        $category = new Category(name: 'Original', color: TileColor::Red, icon: CategoryIcon::Tag);
+        $category = new Category(owner: new User(email: 'owner@example.com'), name: 'Original', color: TileColor::Red, icon: CategoryIcon::Tag);
 
         $category->update(name: '  Streaming  ', color: TileColor::Teal, icon: CategoryIcon::Film);
 
@@ -50,14 +59,14 @@ final class CategoryTest extends TestCase
 
     public function testInitializesEmptySubscriptionsCollection(): void
     {
-        $category = new Category(name: 'Software');
+        $category = new Category(owner: new User(email: 'owner@example.com'), name: 'Software');
 
         self::assertCount(0, $category->subscriptions);
     }
 
     public function testUpdateChangesOnlyTheProvidedFields(): void
     {
-        $category = new Category(name: 'Original', color: TileColor::Red, icon: CategoryIcon::Tag);
+        $category = new Category(owner: new User(email: 'owner@example.com'), name: 'Original', color: TileColor::Red, icon: CategoryIcon::Tag);
 
         $category->update(icon: CategoryIcon::Film);
 
@@ -68,7 +77,7 @@ final class CategoryTest extends TestCase
 
     public function testUpdateTrimsTheNameWhenProvided(): void
     {
-        $category = new Category(name: 'Original');
+        $category = new Category(owner: new User(email: 'owner@example.com'), name: 'Original');
 
         $category->update(name: '  Updated  ');
 
@@ -77,7 +86,7 @@ final class CategoryTest extends TestCase
 
     public function testUpdateRejectsWhenNoFieldIsProvided(): void
     {
-        $category = new Category(name: 'Valid');
+        $category = new Category(owner: new User(email: 'owner@example.com'), name: 'Valid');
 
         $this->expectException(\Assert\InvalidArgumentException::class);
 
@@ -86,7 +95,7 @@ final class CategoryTest extends TestCase
 
     public function testUpdateRejectsAnEmptyName(): void
     {
-        $category = new Category(name: 'Valid');
+        $category = new Category(owner: new User(email: 'owner@example.com'), name: 'Valid');
 
         $this->expectException(\Assert\InvalidArgumentException::class);
 
@@ -97,13 +106,13 @@ final class CategoryTest extends TestCase
     {
         $this->expectException(\Assert\InvalidArgumentException::class);
 
-        new Category(name: '');
+        new Category(owner: new User(email: 'owner@example.com'), name: '');
     }
 
     public function testRejectsWhitespaceName(): void
     {
         $this->expectException(\Assert\InvalidArgumentException::class);
 
-        new Category(name: '   ');
+        new Category(owner: new User(email: 'owner@example.com'), name: '   ');
     }
 }

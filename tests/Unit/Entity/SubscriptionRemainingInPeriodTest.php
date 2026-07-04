@@ -56,7 +56,7 @@ final class SubscriptionRemainingInPeriodTest extends TestCase
     {
         return new Subscription(
             owner: new User(email: 'owner@example.com'),
-            category: new Category(name: 'Test'),
+            category: new Category(owner: new User(email: 'owner@example.com'), name: 'Test'),
             name: 'Test',
             nextRenewal: new \DateTimeImmutable($nextRenewal),
             paymentPeriod: $period,

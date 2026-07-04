@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace App\Message\Command\PaymentSource;
 
 use App\Entity\PaymentSource;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -15,13 +16,16 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 final readonly class CreatePaymentSourceHandler
 {
     public function __construct(
+        private UserRepository $userRepository,
         private EntityManagerInterface $entityManager,
     ) {
     }
 
     public function __invoke(CreatePaymentSourceCommand $command): void
     {
-        $source = new PaymentSource(name: $command->name, comment: $command->comment, color: $command->color);
+        $owner = $this->userRepository->getForId($command->ownerUserId);
+
+        $source = new PaymentSource(owner: $owner, name: $command->name, comment: $command->comment, color: $command->color);
 
         $this->entityManager->persist($source);
     }

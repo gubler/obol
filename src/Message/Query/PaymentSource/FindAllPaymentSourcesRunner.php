@@ -24,6 +24,6 @@ final readonly class FindAllPaymentSourcesRunner
      */
     public function __invoke(FindAllPaymentSourcesQuery $query): array
     {
-        return $this->paymentSourceRepository->findBy([], ['name' => 'ASC']);
+        return $this->paymentSourceRepository->findAllForOwner($query->ownerUserId);
     }
 }

@@ -30,6 +30,7 @@ final class CreateCategoryController extends AbstractBaseController
             $data = $form->getData();
 
             $this->commandBus->dispatch(command: new CreateCategoryCommand(
+                ownerUserId: $this->currentUser()->id,
                 name: $data->name,
                 color: $data->color,
                 icon: $data->icon,

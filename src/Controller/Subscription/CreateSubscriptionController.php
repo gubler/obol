@@ -32,10 +32,10 @@ final class CreateSubscriptionController extends AbstractBaseController
         // Pre-select the user's display currency; they can still pick another before the first payment.
         $dto->currency = $this->currentUser()->displayCurrency;
 
-        $categories = $this->queryBus->query(query: new FindAllCategoriesQuery());
+        $categories = $this->queryBus->query(query: new FindAllCategoriesQuery(ownerUserId: $this->currentUser()->id));
         \assert(\is_array($categories));
 
-        $paymentSources = $this->queryBus->query(query: new FindAllPaymentSourcesQuery());
+        $paymentSources = $this->queryBus->query(query: new FindAllPaymentSourcesQuery(ownerUserId: $this->currentUser()->id));
         \assert(\is_array($paymentSources));
 
         $form = $this->createForm(type: CreateSubscriptionFormType::class, data: $dto, options: [

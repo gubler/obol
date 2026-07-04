@@ -13,17 +13,20 @@ use Symfony\Component\Uid\Ulid;
 
 final class DeleteCategoryCommandTest extends TestCase
 {
-    public function testCreatesCommandWithCategoryId(): void
+    public function testCreatesCommandWithOwnerAndCategoryId(): void
     {
+        $ownerUserId = new Ulid();
         $categoryId = new Ulid();
-        $command = new DeleteCategoryCommand(categoryId: $categoryId);
+        $command = new DeleteCategoryCommand(ownerUserId: $ownerUserId, categoryId: $categoryId);
 
+        self::assertSame($ownerUserId, $command->ownerUserId);
         self::assertSame($categoryId, $command->categoryId);
     }
 
     public function testIsReadonly(): void
     {
         $command = new DeleteCategoryCommand(
+            ownerUserId: new Ulid(),
             categoryId: new Ulid()
         );
 

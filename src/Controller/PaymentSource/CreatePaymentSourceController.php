@@ -32,6 +32,7 @@ final class CreatePaymentSourceController extends AbstractBaseController
             $data = $form->getData();
 
             $this->commandBus->dispatch(command: new CreatePaymentSourceCommand(
+                ownerUserId: $this->currentUser()->id,
                 name: $data->name,
                 comment: $data->comment,
                 color: $data->color,

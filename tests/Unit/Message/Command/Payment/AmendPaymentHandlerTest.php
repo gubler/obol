@@ -30,7 +30,7 @@ final class AmendPaymentHandlerTest extends TestCase
     {
         $subscription = new Subscription(
             owner: new User(email: 'owner@example.com'),
-            category: new Category(name: 'Test'),
+            category: new Category(owner: new User(email: 'owner@example.com'), name: 'Test'),
             name: 'Netflix',
             nextRenewal: new \DateTimeImmutable('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,

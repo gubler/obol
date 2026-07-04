@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Entity;
 
 use App\Entity\PaymentSource;
+use App\Entity\User;
 use App\Enum\TileColor;
 use PHPUnit\Framework\TestCase;
 
@@ -15,14 +16,22 @@ final class PaymentSourceTest extends TestCase
 {
     public function testCreatesPaymentSourceWithValidName(): void
     {
-        $source = new PaymentSource(name: 'Amex 1234');
+        $source = new PaymentSource(owner: new User(email: 'owner@example.com'), name: 'Amex 1234');
 
         self::assertSame('Amex 1234', $source->name);
     }
 
+    public function testBelongsToItsOwner(): void
+    {
+        $owner = new User(email: 'owner@example.com');
+        $source = new PaymentSource(owner: $owner, name: 'Amex 1234');
+
+        self::assertSame($owner, $source->owner);
+    }
+
     public function testCreatesPaymentSourceWithAChosenColorAndComment(): void
     {
-        $source = new PaymentSource(name: 'Visa', comment: 'Expires 09/27', color: TileColor::Violet);
+        $source = new PaymentSource(owner: new User(email: 'owner@example.com'), name: 'Visa', comment: 'Expires 09/27', color: TileColor::Violet);
 
         self::assertSame('Expires 09/27', $source->comment);
         self::assertSame(TileColor::Violet, $source->color);
@@ -30,7 +39,7 @@ final class PaymentSourceTest extends TestCase
 
     public function testDefaultsToAnEmptyCommentAndARandomColor(): void
     {
-        $source = new PaymentSource(name: 'Checking');
+        $source = new PaymentSource(owner: new User(email: 'owner@example.com'), name: 'Checking');
 
         self::assertSame('', $source->comment);
         self::assertContains($source->color, TileColor::cases());
@@ -38,14 +47,14 @@ final class PaymentSourceTest extends TestCase
 
     public function testTrimsName(): void
     {
-        $source = new PaymentSource(name: '  PayPal  ');
+        $source = new PaymentSource(owner: new User(email: 'owner@example.com'), name: '  PayPal  ');
 
         self::assertSame('PayPal', $source->name);
     }
 
     public function testUpdatesNameCommentAndColor(): void
     {
-        $source = new PaymentSource(name: 'Original', comment: 'old', color: TileColor::Red);
+        $source = new PaymentSource(owner: new User(email: 'owner@example.com'), name: 'Original', comment: 'old', color: TileColor::Red);
 
         $source->update(name: '  Amex 5678  ', comment: 'reissued', color: TileColor::Teal);
 
@@ -56,14 +65,14 @@ final class PaymentSourceTest extends TestCase
 
     public function testInitializesEmptySubscriptionsCollection(): void
     {
-        $source = new PaymentSource(name: 'Amex');
+        $source = new PaymentSource(owner: new User(email: 'owner@example.com'), name: 'Amex');
 
         self::assertCount(0, $source->subscriptions);
     }
 
     public function testUpdateChangesOnlyTheProvidedFields(): void
     {
-        $source = new PaymentSource(name: 'Original', comment: 'old', color: TileColor::Red);
+        $source = new PaymentSource(owner: new User(email: 'owner@example.com'), name: 'Original', comment: 'old', color: TileColor::Red);
 
         $source->update(comment: 'just the comment');
 
@@ -74,7 +83,7 @@ final class PaymentSourceTest extends TestCase
 
     public function testUpdateTrimsTheNameWhenProvided(): void
     {
-        $source = new PaymentSource(name: 'Original');
+        $source = new PaymentSource(owner: new User(email: 'owner@example.com'), name: 'Original');
 
         $source->update(name: '  Updated  ');
 
@@ -83,7 +92,7 @@ final class PaymentSourceTest extends TestCase
 
     public function testUpdateRejectsWhenNoFieldIsProvided(): void
     {
-        $source = new PaymentSource(name: 'Valid');
+        $source = new PaymentSource(owner: new User(email: 'owner@example.com'), name: 'Valid');
 
         $this->expectException(\Assert\InvalidArgumentException::class);
 
@@ -92,7 +101,7 @@ final class PaymentSourceTest extends TestCase
 
     public function testUpdateRejectsAnEmptyName(): void
     {
-        $source = new PaymentSource(name: 'Valid');
+        $source = new PaymentSource(owner: new User(email: 'owner@example.com'), name: 'Valid');
 
         $this->expectException(\Assert\InvalidArgumentException::class);
 
@@ -103,13 +112,13 @@ final class PaymentSourceTest extends TestCase
     {
         $this->expectException(\Assert\InvalidArgumentException::class);
 
-        new PaymentSource(name: '');
+        new PaymentSource(owner: new User(email: 'owner@example.com'), name: '');
     }
 
     public function testRejectsWhitespaceName(): void
     {
         $this->expectException(\Assert\InvalidArgumentException::class);
 
-        new PaymentSource(name: '   ');
+        new PaymentSource(owner: new User(email: 'owner@example.com'), name: '   ');
     }
 }

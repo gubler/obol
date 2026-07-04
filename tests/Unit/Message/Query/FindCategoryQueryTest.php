@@ -13,17 +13,20 @@ use Symfony\Component\Uid\Ulid;
 
 final class FindCategoryQueryTest extends TestCase
 {
-    public function testCreatesQueryWithCategoryId(): void
+    public function testCreatesQueryWithOwnerAndCategoryId(): void
     {
+        $ownerUserId = new Ulid();
         $categoryId = new Ulid();
-        $query = new FindCategoryQuery(categoryId: $categoryId);
+        $query = new FindCategoryQuery(ownerUserId: $ownerUserId, categoryId: $categoryId);
 
+        self::assertSame($ownerUserId, $query->ownerUserId);
         self::assertSame($categoryId, $query->categoryId);
     }
 
     public function testIsReadonly(): void
     {
         $query = new FindCategoryQuery(
+            ownerUserId: new Ulid(),
             categoryId: new Ulid()
         );
 

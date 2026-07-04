@@ -17,14 +17,17 @@ final class UpdateCategoryCommandTest extends TestCase
 {
     public function testCreatesCommandWithCategoryIdNameColorAndIcon(): void
     {
+        $ownerUserId = new Ulid();
         $categoryId = new Ulid();
         $command = new UpdateCategoryCommand(
+            ownerUserId: $ownerUserId,
             categoryId: $categoryId,
             name: 'Updated Name',
             color: TileColor::Teal,
             icon: CategoryIcon::Film,
         );
 
+        self::assertSame($ownerUserId, $command->ownerUserId);
         self::assertSame($categoryId, $command->categoryId);
         self::assertSame('Updated Name', $command->name);
         self::assertSame(TileColor::Teal, $command->color);
@@ -34,6 +37,7 @@ final class UpdateCategoryCommandTest extends TestCase
     public function testIsReadonly(): void
     {
         $command = new UpdateCategoryCommand(
+            ownerUserId: new Ulid(),
             categoryId: new Ulid(),
             name: 'Software',
             color: TileColor::Blue,

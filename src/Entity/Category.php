@@ -1,5 +1,8 @@
 <?php
 
+// ABOUTME: Doctrine entity for a category grouping subscriptions; a named, colored, icon-tagged bucket.
+// ABOUTME: Owned by one user (immutable owner FK); read-only from outside via update().
+
 declare(strict_types=1);
 
 namespace App\Entity;
@@ -34,6 +37,13 @@ class Category
     public private(set) Collection $subscriptions;
 
     public function __construct(
+        /**
+         * The user this category belongs to. Immutable: a category is never reassigned between users,
+         * so a subscription and its category always share one owner (see ADR-0015).
+         */
+        #[ORM\ManyToOne]
+        #[ORM\JoinColumn(name: 'owner_user_id', nullable: false)]
+        public private(set) User $owner,
         string $name,
         ?TileColor $color = null,
         #[ORM\Column(enumType: CategoryIcon::class)]

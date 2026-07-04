@@ -35,8 +35,8 @@ final readonly class FindPaymentSourceBreakdownRunner
             $title = $this->translator->trans('subscription.group.unassigned');
             $source = null;
         } else {
-            $source = $this->paymentSourceRepository->find($query->paymentSourceId);
-            if (null === $source) {
+            $source = $this->paymentSourceRepository->findForOwner($query->paymentSourceId, $query->ownerUserId);
+            if (!$source instanceof \App\Entity\PaymentSource) {
                 return null;
             }
 

@@ -23,9 +23,9 @@ final readonly class DeletePaymentSourceHandler
 
     public function __invoke(DeletePaymentSourceCommand $command): void
     {
-        $source = $this->paymentSourceRepository->find($command->paymentSourceId);
+        $source = $this->paymentSourceRepository->findForOwner($command->paymentSourceId, $command->ownerUserId);
 
-        if (null === $source) {
+        if (!$source instanceof \App\Entity\PaymentSource) {
             throw new \InvalidArgumentException(\sprintf('Payment source with ID "%s" not found.', $command->paymentSourceId));
         }
 

@@ -19,7 +19,7 @@ final class ShowCategoryController extends AbstractBaseController
     #[Route(path: '/categories/{id}', name: 'category_show', methods: ['GET'])]
     public function __invoke(Ulid $id): Response
     {
-        $category = $this->queryBus->query(query: new FindCategoryQuery(categoryId: $id));
+        $category = $this->queryBus->query(query: new FindCategoryQuery(ownerUserId: $this->currentUser()->id, categoryId: $id));
 
         if (null === $category) {
             throw new NotFoundHttpException(\sprintf('Category with ID "%s" not found.', $id));

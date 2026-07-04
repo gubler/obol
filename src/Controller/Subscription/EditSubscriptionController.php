@@ -42,10 +42,10 @@ final class EditSubscriptionController extends AbstractBaseController
 
         $dto = new UpdateSubscriptionDto(subscription: $subscription);
 
-        $categories = $this->queryBus->query(query: new FindAllCategoriesQuery());
+        $categories = $this->queryBus->query(query: new FindAllCategoriesQuery(ownerUserId: $this->currentUser()->id));
         \assert(\is_array($categories));
 
-        $paymentSources = $this->queryBus->query(query: new FindAllPaymentSourcesQuery());
+        $paymentSources = $this->queryBus->query(query: new FindAllPaymentSourcesQuery(ownerUserId: $this->currentUser()->id));
         \assert(\is_array($paymentSources));
 
         $form = $this->createForm(type: EditSubscriptionFormType::class, data: $dto, options: [

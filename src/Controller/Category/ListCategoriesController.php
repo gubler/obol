@@ -17,7 +17,7 @@ final class ListCategoriesController extends AbstractBaseController
     #[Route(path: '/categories', name: 'category_index', methods: ['GET'])]
     public function __invoke(): Response
     {
-        $categories = $this->queryBus->query(query: new FindAllCategoriesQuery());
+        $categories = $this->queryBus->query(query: new FindAllCategoriesQuery(ownerUserId: $this->currentUser()->id));
 
         return $this->render(view: 'category/index.html.twig', parameters: [
             'categories' => $categories,

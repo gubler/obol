@@ -10,6 +10,7 @@ namespace App\Tests\Unit\Message\Command\Subscription;
 use App\Entity\Category;
 use App\Entity\PaymentSource;
 use App\Entity\Subscription;
+use App\Entity\User;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\TileColor;
@@ -44,12 +45,12 @@ final class UpdateSubscriptionHandlerTest extends TestCase
 
         $categoryRepository = $this->createMock(CategoryRepository::class);
         $categoryRepository->expects(self::once())
-            ->method('find')
+            ->method('findForOwner')
             ->willReturn($category)
         ;
 
         $paymentSourceRepository = $this->createMock(PaymentSourceRepository::class);
-        $paymentSourceRepository->expects(self::never())->method('find');
+        $paymentSourceRepository->expects(self::never())->method('findForOwner');
 
         $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
         $notifier->expects(self::once())->method('notifyChanged');
@@ -81,10 +82,10 @@ final class UpdateSubscriptionHandlerTest extends TestCase
         $subscriptionRepository->expects(self::once())->method('findForOwner')->willReturn($subscription);
 
         $categoryRepository = $this->createMock(CategoryRepository::class);
-        $categoryRepository->expects(self::never())->method('find');
+        $categoryRepository->expects(self::never())->method('findForOwner');
 
         $paymentSourceRepository = $this->createMock(PaymentSourceRepository::class);
-        $paymentSourceRepository->expects(self::never())->method('find');
+        $paymentSourceRepository->expects(self::never())->method('findForOwner');
 
         $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
         $notifier->expects(self::once())->method('notifyChanged');
@@ -109,7 +110,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
 
     public function testHandlerResolvesTheGivenPaymentSource(): void
     {
-        $source = new PaymentSource(name: 'Amex 1234');
+        $source = new PaymentSource(owner: new User(email: 'owner@example.com'), name: 'Amex 1234');
 
         $subscription = $this->createMock(Subscription::class);
         $subscription->expects(self::once())->method('update')
@@ -120,10 +121,10 @@ final class UpdateSubscriptionHandlerTest extends TestCase
         $subscriptionRepository->expects(self::once())->method('findForOwner')->willReturn($subscription);
 
         $categoryRepository = $this->createMock(CategoryRepository::class);
-        $categoryRepository->expects(self::never())->method('find');
+        $categoryRepository->expects(self::never())->method('findForOwner');
 
         $paymentSourceRepository = $this->createMock(PaymentSourceRepository::class);
-        $paymentSourceRepository->expects(self::once())->method('find')->with($source->id)->willReturn($source);
+        $paymentSourceRepository->expects(self::once())->method('findForOwner')->with($source->id, self::anything())->willReturn($source);
 
         $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
         $notifier->expects(self::once())->method('notifyChanged');
@@ -157,10 +158,10 @@ final class UpdateSubscriptionHandlerTest extends TestCase
         $subscriptionRepository->expects(self::once())->method('findForOwner')->willReturn($subscription);
 
         $categoryRepository = $this->createMock(CategoryRepository::class);
-        $categoryRepository->expects(self::never())->method('find');
+        $categoryRepository->expects(self::never())->method('findForOwner');
 
         $paymentSourceRepository = $this->createMock(PaymentSourceRepository::class);
-        $paymentSourceRepository->expects(self::once())->method('find')->with($paymentSourceId)->willReturn(null);
+        $paymentSourceRepository->expects(self::once())->method('findForOwner')->with($paymentSourceId, self::anything())->willReturn(null);
 
         $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
         $notifier->expects(self::never())->method('notifyChanged');
@@ -202,10 +203,10 @@ final class UpdateSubscriptionHandlerTest extends TestCase
         $subscriptionRepository->expects(self::once())->method('findForOwner')->willReturn($subscription);
 
         $categoryRepository = $this->createMock(CategoryRepository::class);
-        $categoryRepository->expects(self::once())->method('find')->willReturn($category);
+        $categoryRepository->expects(self::once())->method('findForOwner')->willReturn($category);
 
         $paymentSourceRepository = $this->createMock(PaymentSourceRepository::class);
-        $paymentSourceRepository->expects(self::never())->method('find');
+        $paymentSourceRepository->expects(self::never())->method('findForOwner');
 
         $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
         $notifier->expects(self::once())->method('notifyChanged');
@@ -274,7 +275,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
 
         $categoryRepository = $this->createMock(CategoryRepository::class);
         $categoryRepository->expects(self::once())
-            ->method('find')
+            ->method('findForOwner')
             ->willReturn(null)
         ;
 

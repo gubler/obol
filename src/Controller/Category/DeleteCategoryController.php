@@ -19,14 +19,14 @@ final class DeleteCategoryController extends AbstractBaseController
     #[Route(path: '/categories/{id}/delete', name: 'category_delete', methods: ['POST'])]
     public function __invoke(Ulid $id): \Symfony\Component\HttpFoundation\RedirectResponse
     {
-        $category = $this->queryBus->query(query: new FindCategoryQuery(categoryId: $id));
+        $category = $this->queryBus->query(query: new FindCategoryQuery(ownerUserId: $this->currentUser()->id, categoryId: $id));
 
         if (null === $category) {
             throw new NotFoundHttpException(\sprintf('Category with ID "%s" not found.', $id));
         }
 
         try {
-            $this->commandBus->dispatch(command: new DeleteCategoryCommand(categoryId: $id));
+            $this->commandBus->dispatch(command: new DeleteCategoryCommand(ownerUserId: $this->currentUser()->id, categoryId: $id));
 
             $this->addFlash(type: self::FLASH_SUCCESS, message: $this->translator->trans('category.flash.deleted'));
         } catch (\Exception) {

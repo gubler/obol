@@ -35,7 +35,7 @@ final class SubscriptionTest extends TestCase
     {
         parent::setUp();
 
-        $this->category = new Category(name: 'Entertainment');
+        $this->category = new Category(owner: new User(email: 'owner@example.com'), name: 'Entertainment');
         $this->owner = new User(email: 'owner@example.com');
     }
 
@@ -157,7 +157,7 @@ final class SubscriptionTest extends TestCase
 
     public function testAssignsAPaymentSourceByUpdatingFromNull(): void
     {
-        $source = new PaymentSource(name: 'Amex 1234');
+        $source = new PaymentSource(owner: new User(email: 'owner@example.com'), name: 'Amex 1234');
 
         $subscription = new Subscription(
             owner: $this->owner,
@@ -197,7 +197,7 @@ final class SubscriptionTest extends TestCase
 
     public function testRemovingThePaymentSourceRecordsAnUnassignedChange(): void
     {
-        $source = new PaymentSource(name: 'Amex 1234');
+        $source = new PaymentSource(owner: new User(email: 'owner@example.com'), name: 'Amex 1234');
 
         $subscription = new Subscription(
             owner: $this->owner,
@@ -233,8 +233,8 @@ final class SubscriptionTest extends TestCase
 
     public function testReassignPaymentSourceMovesTheSourceAndRecordsAnUpdateEvent(): void
     {
-        $from = new PaymentSource(name: 'Amex 1234');
-        $to = new PaymentSource(name: 'Visa 5678');
+        $from = new PaymentSource(owner: new User(email: 'owner@example.com'), name: 'Amex 1234');
+        $to = new PaymentSource(owner: new User(email: 'owner@example.com'), name: 'Visa 5678');
 
         $subscription = new Subscription(
             owner: $this->owner,
@@ -260,7 +260,7 @@ final class SubscriptionTest extends TestCase
 
     public function testReassignPaymentSourceToTheSameSourceIsANoOp(): void
     {
-        $source = new PaymentSource(name: 'Amex 1234');
+        $source = new PaymentSource(owner: new User(email: 'owner@example.com'), name: 'Amex 1234');
 
         $subscription = new Subscription(
             owner: $this->owner,
@@ -377,7 +377,7 @@ final class SubscriptionTest extends TestCase
             cost: new Money(1500, Currency::USD),
         );
 
-        $newCategory = new Category(name: 'Streaming');
+        $newCategory = new Category(owner: new User(email: 'owner@example.com'), name: 'Streaming');
         $subscription->update(
             category: $newCategory,
             name: 'Netflix Premium',
@@ -1656,7 +1656,7 @@ final class SubscriptionTest extends TestCase
     {
         return new Subscription(
             owner: $this->owner,
-            category: new Category(name: 'Entertainment'),
+            category: new Category(owner: $this->owner, name: 'Entertainment'),
             name: 'Example',
             nextRenewal: new \DateTimeImmutable($nextRenewal),
             paymentPeriod: $period,

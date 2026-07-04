@@ -36,7 +36,7 @@ final class ObligationSnapshotRecordingTest extends WebTestCase
         $snapshots = $entityManager->getRepository(ObligationSnapshot::class);
 
         $owner = UserFactory::createOne();
-        $category = CategoryFactory::createOne();
+        $category = CategoryFactory::createOne(['owner' => $owner]);
 
         // Create: obligation goes 0 -> 4000 USD/mo, so one snapshot is recorded.
         $commandBus->dispatch(new CreateSubscriptionCommand(

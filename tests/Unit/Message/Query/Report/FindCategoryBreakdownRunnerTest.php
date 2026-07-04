@@ -51,7 +51,7 @@ final class FindCategoryBreakdownRunnerTest extends TestCase
         $categoryId = $category?->id ?? new Ulid();
 
         $categoryRepository = self::createMock(CategoryRepository::class);
-        $categoryRepository->expects(self::once())->method('find')->with($categoryId)->willReturn($category);
+        $categoryRepository->expects(self::once())->method('findForOwner')->with($categoryId, $ownerUserId)->willReturn($category);
 
         // A stub (not a mock): the missing-category path returns early without querying, so the finder
         // is called 0 or 1 times. willReturnMap keeps the owner+category arg match without asserting a
@@ -97,7 +97,7 @@ final class FindCategoryBreakdownRunnerTest extends TestCase
 
     public function testOneSlicePerSubscriptionSortedBySizeTitledWithTheCategoryName(): void
     {
-        $streaming = new Category(name: 'Streaming');
+        $streaming = new Category(owner: new User(email: 'owner@example.com'), name: 'Streaming');
 
         $composition = $this->runBreakdown($streaming, [
             self::breakdownSubscription($streaming, 'Netflix', 1599),
@@ -125,7 +125,7 @@ final class FindCategoryBreakdownRunnerTest extends TestCase
 
         // No category is resolved for the uncategorized drill-down; it filters on a null category.
         $categoryRepository = $this->createMock(CategoryRepository::class);
-        $categoryRepository->expects(self::never())->method('find');
+        $categoryRepository->expects(self::never())->method('findForOwner');
 
         $subscriptionRepository = self::createStub(SubscriptionRepository::class);
         $subscriptionRepository->method('findActiveForOwnerByCategory')
@@ -155,7 +155,7 @@ final class FindCategoryBreakdownRunnerTest extends TestCase
 
     public function testIsAnEmptyZeroTotalPieForACategoryWithNoActiveSubscriptions(): void
     {
-        $empty = new Category(name: 'Empty');
+        $empty = new Category(owner: new User(email: 'owner@example.com'), name: 'Empty');
 
         $composition = $this->runBreakdown($empty, []);
 

@@ -80,8 +80,8 @@ final class FindCategoryCompositionRunnerTest extends TestCase
 
     public function testOneSlicePerCategorySortedByShareDescendingWithTheOverallTotal(): void
     {
-        $streaming = new Category(name: 'Streaming');
-        $software = new Category(name: 'Software');
+        $streaming = new Category(owner: new User(email: 'owner@example.com'), name: 'Streaming');
+        $software = new Category(owner: new User(email: 'owner@example.com'), name: 'Software');
 
         $composition = $this->runComposition([
             self::compositionSubscription($streaming, 1000),
@@ -103,7 +103,7 @@ final class FindCategoryCompositionRunnerTest extends TestCase
 
     public function testCollectsUncategorizedSubscriptionsIntoASingleUncategorizedSlice(): void
     {
-        $software = new Category(name: 'Software');
+        $software = new Category(owner: new User(email: 'owner@example.com'), name: 'Software');
 
         $composition = $this->runComposition([
             self::compositionSubscription($software, 1000),
@@ -123,7 +123,7 @@ final class FindCategoryCompositionRunnerTest extends TestCase
 
     public function testConvertsAMixedCurrencyCategoryShareAndKeepsTheNativeBreakdown(): void
     {
-        $mixed = new Category(name: 'Mixed');
+        $mixed = new Category(owner: new User(email: 'owner@example.com'), name: 'Mixed');
 
         $composition = $this->runComposition(
             [

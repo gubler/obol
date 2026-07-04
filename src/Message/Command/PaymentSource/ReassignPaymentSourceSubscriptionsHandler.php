@@ -20,15 +20,15 @@ final readonly class ReassignPaymentSourceSubscriptionsHandler
 
     public function __invoke(ReassignPaymentSourceSubscriptionsCommand $command): void
     {
-        $from = $this->paymentSourceRepository->find($command->fromPaymentSourceId);
+        $from = $this->paymentSourceRepository->findForOwner($command->fromPaymentSourceId, $command->ownerUserId);
 
-        if (null === $from) {
+        if (!$from instanceof \App\Entity\PaymentSource) {
             throw new \InvalidArgumentException(\sprintf('Payment source with ID "%s" not found.', $command->fromPaymentSourceId));
         }
 
-        $to = $this->paymentSourceRepository->find($command->toPaymentSourceId);
+        $to = $this->paymentSourceRepository->findForOwner($command->toPaymentSourceId, $command->ownerUserId);
 
-        if (null === $to) {
+        if (!$to instanceof \App\Entity\PaymentSource) {
             throw new \InvalidArgumentException(\sprintf('Payment source with ID "%s" not found.', $command->toPaymentSourceId));
         }
 

@@ -23,6 +23,9 @@ final class PaymentSourceFactory extends PersistentObjectFactory
     protected function defaults(): array
     {
         return [
+            // The founder owns factory-built data by default, matching authenticatedClient()'s login so
+            // feature tests see their own payment sources. Isolation tests override with another owner.
+            'owner' => UserFactory::founder(),
             'name' => self::faker()->words(nb: 2, asText: true),
         ];
     }

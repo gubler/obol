@@ -13,6 +13,7 @@ use Symfony\Component\Uid\Ulid;
 final readonly class UpdatePaymentSourceCommand
 {
     public function __construct(
+        public Ulid $ownerUserId,
         public Ulid $paymentSourceId,
         public string $name,
         public string $comment,

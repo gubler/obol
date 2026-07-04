@@ -21,6 +21,6 @@ final readonly class FindPaymentSourceRunner
 
     public function __invoke(FindPaymentSourceQuery $query): ?PaymentSource
     {
-        return $this->paymentSourceRepository->find($query->paymentSourceId);
+        return $this->paymentSourceRepository->findForOwner($query->paymentSourceId, $query->ownerUserId);
     }
 }

@@ -20,9 +20,9 @@ final readonly class UpdateCategoryHandler
 
     public function __invoke(UpdateCategoryCommand $command): void
     {
-        $category = $this->categoryRepository->find($command->categoryId);
+        $category = $this->categoryRepository->findForOwner($command->categoryId, $command->ownerUserId);
 
-        if (null === $category) {
+        if (!$category instanceof \App\Entity\Category) {
             throw new \InvalidArgumentException(\sprintf('Category with ID "%s" not found.', $command->categoryId));
         }
 

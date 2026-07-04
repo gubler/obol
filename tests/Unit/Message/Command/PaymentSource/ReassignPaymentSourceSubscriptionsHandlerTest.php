@@ -24,8 +24,8 @@ final class ReassignPaymentSourceSubscriptionsHandlerTest extends TestCase
 {
     public function testMovesEverySubscriptionFromTheSourceToTheTarget(): void
     {
-        $from = new PaymentSource(name: 'Amex 1234');
-        $to = new PaymentSource(name: 'Visa 5678');
+        $from = new PaymentSource(owner: new User(email: 'owner@example.com'), name: 'Amex 1234');
+        $to = new PaymentSource(owner: new User(email: 'owner@example.com'), name: 'Visa 5678');
 
         $first = $this->subscription($from);
         $second = $this->subscription($from);
@@ -33,7 +33,7 @@ final class ReassignPaymentSourceSubscriptionsHandlerTest extends TestCase
 
         $repository = $this->createMock(PaymentSourceRepository::class);
         $repository->expects(self::exactly(2))
-            ->method('find')
+            ->method('findForOwner')
             ->willReturnCallback(static fn (Ulid $id): ?PaymentSource => match (true) {
                 $id->equals($from->id) => $from,
                 $id->equals($to->id) => $to,
@@ -42,7 +42,7 @@ final class ReassignPaymentSourceSubscriptionsHandlerTest extends TestCase
         ;
 
         $handler = new ReassignPaymentSourceSubscriptionsHandler($repository);
-        $handler(new ReassignPaymentSourceSubscriptionsCommand(fromPaymentSourceId: $from->id, toPaymentSourceId: $to->id));
+        $handler(new ReassignPaymentSourceSubscriptionsCommand(ownerUserId: new Ulid(), fromPaymentSourceId: $from->id, toPaymentSourceId: $to->id));
 
         self::assertSame($to, $first->paymentSource);
         self::assertSame($to, $second->paymentSource);
@@ -53,28 +53,28 @@ final class ReassignPaymentSourceSubscriptionsHandlerTest extends TestCase
     public function testThrowsWhenTheSourceDoesNotExist(): void
     {
         $repository = $this->createMock(PaymentSourceRepository::class);
-        $repository->expects(self::once())->method('find')->willReturn(null);
+        $repository->expects(self::once())->method('findForOwner')->willReturn(null);
 
         $handler = new ReassignPaymentSourceSubscriptionsHandler($repository);
 
         $this->expectException(\InvalidArgumentException::class);
-        $handler(new ReassignPaymentSourceSubscriptionsCommand(fromPaymentSourceId: new Ulid(), toPaymentSourceId: new Ulid()));
+        $handler(new ReassignPaymentSourceSubscriptionsCommand(ownerUserId: new Ulid(), fromPaymentSourceId: new Ulid(), toPaymentSourceId: new Ulid()));
     }
 
     public function testThrowsWhenTheTargetDoesNotExist(): void
     {
-        $from = new PaymentSource(name: 'Amex 1234');
+        $from = new PaymentSource(owner: new User(email: 'owner@example.com'), name: 'Amex 1234');
 
         $repository = $this->createMock(PaymentSourceRepository::class);
         $repository->expects(self::exactly(2))
-            ->method('find')
+            ->method('findForOwner')
             ->willReturnCallback(static fn (Ulid $id): ?PaymentSource => $id->equals($from->id) ? $from : null)
         ;
 
         $handler = new ReassignPaymentSourceSubscriptionsHandler($repository);
 
         $this->expectException(\InvalidArgumentException::class);
-        $handler(new ReassignPaymentSourceSubscriptionsCommand(fromPaymentSourceId: $from->id, toPaymentSourceId: new Ulid()));
+        $handler(new ReassignPaymentSourceSubscriptionsCommand(ownerUserId: new Ulid(), fromPaymentSourceId: $from->id, toPaymentSourceId: new Ulid()));
     }
 
     private function subscription(PaymentSource $paymentSource): Subscription

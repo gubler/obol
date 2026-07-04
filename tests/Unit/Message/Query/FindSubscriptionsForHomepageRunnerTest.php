@@ -93,8 +93,8 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
 
     public function testGroupsByCategoryOrderedByCategoryNameSortedByNameWithinEachGroup(): void
     {
-        $alpha = new Category(name: 'Alpha');
-        $beta = new Category(name: 'Beta');
+        $alpha = new Category(owner: new User(email: 'owner@example.com'), name: 'Alpha');
+        $beta = new Category(owner: new User(email: 'owner@example.com'), name: 'Beta');
 
         // Repository order is irrelevant - the runner imposes its own ordering.
         $subscriptions = [
@@ -116,7 +116,7 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
 
     public function testGroupsUncategorizedSubscriptionsIntoANullGroupSortedLast(): void
     {
-        $zoo = new Category(name: 'Zoo');
+        $zoo = new Category(owner: new User(email: 'owner@example.com'), name: 'Zoo');
 
         $subscriptions = [
             self::makeHomepageSubscription(null, 'Orphan', 1000),
@@ -134,8 +134,8 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
 
     public function testReturnsAFlatListSortedByNameByDefault(): void
     {
-        $alpha = new Category(name: 'Alpha');
-        $beta = new Category(name: 'Beta');
+        $alpha = new Category(owner: new User(email: 'owner@example.com'), name: 'Alpha');
+        $beta = new Category(owner: new User(email: 'owner@example.com'), name: 'Beta');
 
         $subscriptions = [
             self::makeHomepageSubscription($beta, 'Pear', 2000),
@@ -150,8 +150,8 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
 
     public function testSortsByNextRenewalAscendingAcrossGroupsAndWithinThem(): void
     {
-        $alpha = new Category(name: 'Alpha');
-        $beta = new Category(name: 'Beta');
+        $alpha = new Category(owner: new User(email: 'owner@example.com'), name: 'Alpha');
+        $beta = new Category(owner: new User(email: 'owner@example.com'), name: 'Beta');
 
         $subscriptions = [
             self::makeHomepageSubscription($alpha, 'Mango', 1500, renewal: '2024-03-01'),
@@ -168,7 +168,7 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
 
     public function testSortsByMonthlyCostDescendingDistinctFromPerPeriodCost(): void
     {
-        $alpha = new Category(name: 'Alpha');
+        $alpha = new Category(owner: new User(email: 'owner@example.com'), name: 'Alpha');
 
         $subscriptions = [
             // cost 12000/yr -> 1000/mo; cost 1500/mo -> 1500/mo; cost 2000/mo -> 2000/mo
@@ -184,7 +184,7 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
 
     public function testSortsByPerPeriodCostDescending(): void
     {
-        $alpha = new Category(name: 'Alpha');
+        $alpha = new Category(owner: new User(email: 'owner@example.com'), name: 'Alpha');
 
         $subscriptions = [
             self::makeHomepageSubscription($alpha, 'Apple', 12000, PaymentPeriod::Year),
@@ -199,7 +199,7 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
 
     public function testSumsEachCategoryMonthlyTotal(): void
     {
-        $entertainment = new Category(name: 'Entertainment');
+        $entertainment = new Category(owner: new User(email: 'owner@example.com'), name: 'Entertainment');
 
         $subscriptions = [
             self::makeHomepageSubscription($entertainment, 'Netflix', 1500),
@@ -214,7 +214,7 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
 
     public function testSumsEachCategorySavingsTotalAcrossItsSubscriptions(): void
     {
-        $software = new Category(name: 'Software');
+        $software = new Category(owner: new User(email: 'owner@example.com'), name: 'Software');
 
         // A near renewal so the savings target is non-zero; it is constant within the day, so the runner's
         // "now" matches the value computed here.
@@ -233,7 +233,7 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
 
     public function testConvertsAMixedCurrencyCategoryToTheDisplayCurrencyWithANativeBreakdown(): void
     {
-        $mixed = new Category(name: 'Mixed');
+        $mixed = new Category(owner: new User(email: 'owner@example.com'), name: 'Mixed');
 
         $subscriptions = [
             self::makeHomepageSubscription($mixed, 'Dollar', 4000),                                   // 4000 USD/mo

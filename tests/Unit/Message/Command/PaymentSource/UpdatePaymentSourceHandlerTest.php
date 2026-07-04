@@ -19,8 +19,6 @@ final class UpdatePaymentSourceHandlerTest extends TestCase
 {
     public function testHandlerUpdatesNameCommentAndColor(): void
     {
-        $ulid = new Ulid();
-
         $source = $this->createMock(PaymentSource::class);
         $source->expects(self::once())
             ->method('update')
@@ -29,27 +27,25 @@ final class UpdatePaymentSourceHandlerTest extends TestCase
 
         $repository = $this->createMock(PaymentSourceRepository::class);
         $repository->expects(self::once())
-            ->method('find')
+            ->method('findForOwner')
             ->willReturn($source)
         ;
 
         $handler = new UpdatePaymentSourceHandler($repository);
-        $handler(new UpdatePaymentSourceCommand(paymentSourceId: $ulid, name: 'Updated Name', comment: 'a note', color: TileColor::Teal));
+        $handler(new UpdatePaymentSourceCommand(ownerUserId: new Ulid(), paymentSourceId: new Ulid(), name: 'Updated Name', comment: 'a note', color: TileColor::Teal));
     }
 
-    public function testHandlerThrowsWhenPaymentSourceNotFound(): void
+    public function testHandlerThrowsWhenPaymentSourceNotFoundForOwner(): void
     {
-        $ulid = new Ulid();
-
         $repository = $this->createMock(PaymentSourceRepository::class);
         $repository->expects(self::once())
-            ->method('find')
+            ->method('findForOwner')
             ->willReturn(null)
         ;
 
         $handler = new UpdatePaymentSourceHandler($repository);
 
         $this->expectException(\InvalidArgumentException::class);
-        $handler(new UpdatePaymentSourceCommand(paymentSourceId: $ulid, name: 'Updated Name', comment: '', color: TileColor::Blue));
+        $handler(new UpdatePaymentSourceCommand(ownerUserId: new Ulid(), paymentSourceId: new Ulid(), name: 'Updated Name', comment: '', color: TileColor::Blue));
     }
 }

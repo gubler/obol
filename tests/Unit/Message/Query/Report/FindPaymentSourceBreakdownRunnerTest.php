@@ -51,7 +51,7 @@ final class FindPaymentSourceBreakdownRunnerTest extends TestCase
         $sourceId = $source?->id ?? new Ulid();
 
         $paymentSourceRepository = self::createMock(PaymentSourceRepository::class);
-        $paymentSourceRepository->expects(self::once())->method('find')->with($sourceId)->willReturn($source);
+        $paymentSourceRepository->expects(self::once())->method('findForOwner')->with($sourceId, $ownerUserId)->willReturn($source);
 
         $subscriptionRepository = self::createStub(SubscriptionRepository::class);
         $subscriptionRepository->method('findActiveForOwnerByPaymentSource')
@@ -95,7 +95,7 @@ final class FindPaymentSourceBreakdownRunnerTest extends TestCase
 
     public function testOneSlicePerSubscriptionSortedBySizeTitledWithTheSourceName(): void
     {
-        $amex = new PaymentSource(name: 'Amex 1234');
+        $amex = new PaymentSource(owner: new User(email: 'owner@example.com'), name: 'Amex 1234');
 
         $composition = $this->runBreakdown($amex, [
             self::subscription($amex, 'Netflix', 1599),
@@ -122,7 +122,7 @@ final class FindPaymentSourceBreakdownRunnerTest extends TestCase
 
         // No source is resolved for the unassigned drill-down; it filters on a null payment source.
         $paymentSourceRepository = $this->createMock(PaymentSourceRepository::class);
-        $paymentSourceRepository->expects(self::never())->method('find');
+        $paymentSourceRepository->expects(self::never())->method('findForOwner');
 
         $subscriptionRepository = self::createStub(SubscriptionRepository::class);
         $subscriptionRepository->method('findActiveForOwnerByPaymentSource')
@@ -148,7 +148,7 @@ final class FindPaymentSourceBreakdownRunnerTest extends TestCase
 
     public function testIsAnEmptyZeroTotalPieForASourceWithNoActiveSubscriptions(): void
     {
-        $empty = new PaymentSource(name: 'Empty');
+        $empty = new PaymentSource(owner: new User(email: 'owner@example.com'), name: 'Empty');
 
         $composition = $this->runBreakdown($empty, []);
 

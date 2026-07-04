@@ -29,7 +29,7 @@ final class MoneyPersistenceTest extends WebTestCase
         $entityManager = $container->get(id: EntityManagerInterface::class);
 
         $owner = new User(email: 'owner@example.com');
-        $category = new Category(name: 'Entertainment');
+        $category = new Category(owner: $owner, name: 'Entertainment');
         $subscription = new Subscription(
             owner: $owner,
             category: $category,

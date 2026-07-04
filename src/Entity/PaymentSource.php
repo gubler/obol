@@ -37,6 +37,13 @@ class PaymentSource
     public private(set) Collection $subscriptions;
 
     public function __construct(
+        /**
+         * The user this payment source belongs to. Immutable: a source is never reassigned between users,
+         * so a subscription and its payment source always share one owner (see ADR-0015).
+         */
+        #[ORM\ManyToOne]
+        #[ORM\JoinColumn(name: 'owner_user_id', nullable: false)]
+        public private(set) User $owner,
         string $name,
         #[ORM\Column(type: Types::TEXT)]
         public private(set) string $comment = '',

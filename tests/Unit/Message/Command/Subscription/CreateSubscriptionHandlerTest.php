@@ -84,7 +84,7 @@ final class CreateSubscriptionHandlerTest extends TestCase
         $userRepository->expects(self::once())->method('find')->willReturn(null);
 
         $categoryRepository = $this->createMock(CategoryRepository::class);
-        $categoryRepository->expects(self::never())->method('find');
+        $categoryRepository->expects(self::never())->method('findForOwner');
 
         $entityManager = $this->createMock(EntityManagerInterface::class);
         $entityManager->expects(self::never())->method('persist');
@@ -100,13 +100,13 @@ final class CreateSubscriptionHandlerTest extends TestCase
 
     public function testCreatesSubscriptionWithTheResolvedCategory(): void
     {
-        $category = new Category(name: 'Streaming');
+        $category = new Category(owner: $this->owner, name: 'Streaming');
 
         $categoryRepository = $this->createMock(CategoryRepository::class);
-        $categoryRepository->expects(self::once())->method('find')->with($category->id)->willReturn($category);
+        $categoryRepository->expects(self::once())->method('findForOwner')->with($category->id, $this->owner->id)->willReturn($category);
 
         $paymentSourceRepository = $this->createMock(PaymentSourceRepository::class);
-        $paymentSourceRepository->expects(self::never())->method('find');
+        $paymentSourceRepository->expects(self::never())->method('findForOwner');
 
         $entityManager = $this->createMock(EntityManagerInterface::class);
         $entityManager->expects(self::once())->method('persist')
@@ -122,13 +122,13 @@ final class CreateSubscriptionHandlerTest extends TestCase
 
     public function testCreatesSubscriptionWithTheResolvedPaymentSource(): void
     {
-        $source = new PaymentSource(name: 'Amex 1234');
+        $source = new PaymentSource(owner: $this->owner, name: 'Amex 1234');
 
         $categoryRepository = $this->createMock(CategoryRepository::class);
-        $categoryRepository->expects(self::never())->method('find');
+        $categoryRepository->expects(self::never())->method('findForOwner');
 
         $paymentSourceRepository = $this->createMock(PaymentSourceRepository::class);
-        $paymentSourceRepository->expects(self::once())->method('find')->with($source->id)->willReturn($source);
+        $paymentSourceRepository->expects(self::once())->method('findForOwner')->with($source->id, $this->owner->id)->willReturn($source);
 
         $entityManager = $this->createMock(EntityManagerInterface::class);
         $entityManager->expects(self::once())->method('persist')
@@ -147,10 +147,10 @@ final class CreateSubscriptionHandlerTest extends TestCase
         $paymentSourceId = new Ulid();
 
         $categoryRepository = $this->createMock(CategoryRepository::class);
-        $categoryRepository->expects(self::never())->method('find');
+        $categoryRepository->expects(self::never())->method('findForOwner');
 
         $paymentSourceRepository = $this->createMock(PaymentSourceRepository::class);
-        $paymentSourceRepository->expects(self::once())->method('find')->with($paymentSourceId)->willReturn(null);
+        $paymentSourceRepository->expects(self::once())->method('findForOwner')->with($paymentSourceId, $this->owner->id)->willReturn(null);
 
         $entityManager = $this->createMock(EntityManagerInterface::class);
         $entityManager->expects(self::never())->method('persist');
@@ -167,10 +167,10 @@ final class CreateSubscriptionHandlerTest extends TestCase
     public function testCreatesAnUncategorizedSubscriptionWhenCategoryIdIsNull(): void
     {
         $categoryRepository = $this->createMock(CategoryRepository::class);
-        $categoryRepository->expects(self::never())->method('find');
+        $categoryRepository->expects(self::never())->method('findForOwner');
 
         $paymentSourceRepository = $this->createMock(PaymentSourceRepository::class);
-        $paymentSourceRepository->expects(self::never())->method('find');
+        $paymentSourceRepository->expects(self::never())->method('findForOwner');
 
         $entityManager = $this->createMock(EntityManagerInterface::class);
         $entityManager->expects(self::once())->method('persist')
@@ -189,10 +189,10 @@ final class CreateSubscriptionHandlerTest extends TestCase
         $categoryId = new Ulid();
 
         $categoryRepository = $this->createMock(CategoryRepository::class);
-        $categoryRepository->expects(self::once())->method('find')->with($categoryId)->willReturn(null);
+        $categoryRepository->expects(self::once())->method('findForOwner')->with($categoryId, $this->owner->id)->willReturn(null);
 
         $paymentSourceRepository = $this->createMock(PaymentSourceRepository::class);
-        $paymentSourceRepository->expects(self::never())->method('find');
+        $paymentSourceRepository->expects(self::never())->method('findForOwner');
 
         $entityManager = $this->createMock(EntityManagerInterface::class);
         $entityManager->expects(self::never())->method('persist');

@@ -77,8 +77,8 @@ final class FindPaymentSourceCompositionRunnerTest extends TestCase
 
     public function testOneSlicePerSourceSortedByShareDescendingWithTheOverallTotal(): void
     {
-        $amex = new PaymentSource(name: 'Amex 1234', color: TileColor::Violet);
-        $visa = new PaymentSource(name: 'Visa 5678');
+        $amex = new PaymentSource(owner: new User(email: 'owner@example.com'), name: 'Amex 1234', color: TileColor::Violet);
+        $visa = new PaymentSource(owner: new User(email: 'owner@example.com'), name: 'Visa 5678');
 
         $composition = $this->runComposition([
             self::subscription($amex, 1000),
@@ -98,7 +98,7 @@ final class FindPaymentSourceCompositionRunnerTest extends TestCase
 
     public function testCollectsUnassignedSubscriptionsIntoASingleSliceWithNoId(): void
     {
-        $amex = new PaymentSource(name: 'Amex 1234');
+        $amex = new PaymentSource(owner: new User(email: 'owner@example.com'), name: 'Amex 1234');
 
         $composition = $this->runComposition([
             self::subscription($amex, 1000),

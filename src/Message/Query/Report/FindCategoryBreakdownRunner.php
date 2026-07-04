@@ -35,8 +35,8 @@ final readonly class FindCategoryBreakdownRunner
             $title = $this->translator->trans('subscription.group.uncategorized');
             $category = null;
         } else {
-            $category = $this->categoryRepository->find($query->categoryId);
-            if (null === $category) {
+            $category = $this->categoryRepository->findForOwner($query->categoryId, $query->ownerUserId);
+            if (!$category instanceof \App\Entity\Category) {
                 return null;
             }
 

@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Message\Command\Category;
 
 use App\Entity\Category;
+use App\Entity\User;
 use App\Exception\CategoryHasSubscriptionsException;
 use App\Message\Command\Category\DeleteCategoryCommand;
 use App\Message\Command\Category\DeleteCategoryHandler;
@@ -21,13 +22,11 @@ final class DeleteCategoryHandlerTest extends TestCase
 {
     public function testHandlerRemovesCategoryWithNoSubscriptions(): void
     {
-        $ulid = new Ulid();
-
-        $category = new Category(name: 'Test');
+        $category = new Category(owner: new User(email: 'owner@example.com'), name: 'Test');
 
         $repository = $this->createMock(CategoryRepository::class);
         $repository->expects(self::once())
-            ->method('find')
+            ->method('findForOwner')
             ->willReturn($category)
         ;
 
@@ -40,16 +39,14 @@ final class DeleteCategoryHandlerTest extends TestCase
         $entityManager->expects(self::never())->method('flush');
 
         $handler = new DeleteCategoryHandler($repository, $entityManager);
-        $handler(new DeleteCategoryCommand(categoryId: $ulid));
+        $handler(new DeleteCategoryCommand(ownerUserId: new Ulid(), categoryId: new Ulid()));
     }
 
-    public function testHandlerThrowsWhenCategoryNotFound(): void
+    public function testHandlerThrowsWhenCategoryNotFoundForOwner(): void
     {
-        $ulid = new Ulid();
-
         $repository = $this->createMock(CategoryRepository::class);
         $repository->expects(self::once())
-            ->method('find')
+            ->method('findForOwner')
             ->willReturn(null)
         ;
 
@@ -58,14 +55,12 @@ final class DeleteCategoryHandlerTest extends TestCase
         $handler = new DeleteCategoryHandler($repository, $entityManager);
 
         $this->expectException(\InvalidArgumentException::class);
-        $handler(new DeleteCategoryCommand(categoryId: $ulid));
+        $handler(new DeleteCategoryCommand(ownerUserId: new Ulid(), categoryId: new Ulid()));
     }
 
     public function testHandlerThrowsWhenCategoryHasSubscriptions(): void
     {
-        $ulid = new Ulid();
-
-        $category = new Category(name: 'Test');
+        $category = new Category(owner: new User(email: 'owner@example.com'), name: 'Test');
 
         // Use reflection to add items to the private(set) subscriptions collection
         $reflection = new \ReflectionProperty(Category::class, 'subscriptions');
@@ -73,7 +68,7 @@ final class DeleteCategoryHandlerTest extends TestCase
 
         $repository = $this->createMock(CategoryRepository::class);
         $repository->expects(self::once())
-            ->method('find')
+            ->method('findForOwner')
             ->willReturn($category)
         ;
 
@@ -82,6 +77,6 @@ final class DeleteCategoryHandlerTest extends TestCase
         $handler = new DeleteCategoryHandler($repository, $entityManager);
 
         $this->expectException(CategoryHasSubscriptionsException::class);
-        $handler(new DeleteCategoryCommand(categoryId: $ulid));
+        $handler(new DeleteCategoryCommand(ownerUserId: new Ulid(), categoryId: new Ulid()));
     }
 }

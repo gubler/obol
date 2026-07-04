@@ -13,17 +13,20 @@ use Symfony\Component\Uid\Ulid;
 
 final class FindPaymentSourceQueryTest extends TestCase
 {
-    public function testCreatesQueryWithPaymentSourceId(): void
+    public function testCreatesQueryWithOwnerAndPaymentSourceId(): void
     {
+        $ownerUserId = new Ulid();
         $paymentSourceId = new Ulid();
-        $query = new FindPaymentSourceQuery(paymentSourceId: $paymentSourceId);
+        $query = new FindPaymentSourceQuery(ownerUserId: $ownerUserId, paymentSourceId: $paymentSourceId);
 
+        self::assertSame($ownerUserId, $query->ownerUserId);
         self::assertSame($paymentSourceId, $query->paymentSourceId);
     }
 
     public function testIsReadonly(): void
     {
         $query = new FindPaymentSourceQuery(
+            ownerUserId: new Ulid(),
             paymentSourceId: new Ulid()
         );
 

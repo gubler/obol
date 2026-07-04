@@ -21,7 +21,7 @@ final class ReassignPaymentSourceSubscriptionsController extends AbstractBaseCon
     #[Route(path: '/payment-sources/{id}/reassign', name: 'payment_source_reassign', methods: ['POST'])]
     public function __invoke(Ulid $id, Request $request): RedirectResponse
     {
-        $source = $this->queryBus->query(query: new FindPaymentSourceQuery(paymentSourceId: $id));
+        $source = $this->queryBus->query(query: new FindPaymentSourceQuery(ownerUserId: $this->currentUser()->id, paymentSourceId: $id));
 
         if (null === $source) {
             throw new NotFoundHttpException(\sprintf('Payment source with ID "%s" not found.', $id));
@@ -37,6 +37,7 @@ final class ReassignPaymentSourceSubscriptionsController extends AbstractBaseCon
 
         try {
             $this->commandBus->dispatch(command: new ReassignPaymentSourceSubscriptionsCommand(
+                ownerUserId: $this->currentUser()->id,
                 fromPaymentSourceId: $id,
                 toPaymentSourceId: Ulid::fromString($target),
             ));

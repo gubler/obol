@@ -24,7 +24,7 @@ final class EditPaymentSourceController extends AbstractBaseController
     #[Route(path: '/payment-sources/{id}/edit', name: 'payment_source_edit', methods: ['GET', 'POST'])]
     public function __invoke(Ulid $id, Request $request): Response
     {
-        $paymentSource = $this->queryBus->query(query: new FindPaymentSourceQuery(paymentSourceId: $id));
+        $paymentSource = $this->queryBus->query(query: new FindPaymentSourceQuery(ownerUserId: $this->currentUser()->id, paymentSourceId: $id));
 
         if (null === $paymentSource) {
             throw new NotFoundHttpException(\sprintf('Payment source with ID "%s" not found.', $id));
@@ -45,6 +45,7 @@ final class EditPaymentSourceController extends AbstractBaseController
             $data = $form->getData();
 
             $this->commandBus->dispatch(command: new UpdatePaymentSourceCommand(
+                ownerUserId: $this->currentUser()->id,
                 paymentSourceId: $id,
                 name: $data->name,
                 comment: $data->comment,

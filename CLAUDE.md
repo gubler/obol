@@ -262,6 +262,18 @@ Uses Symfony AssetMapper with:
 
 This project enforces strict quality standards:
 
+### Objects are always in a valid state
+
+The core design rule in this codebase: **an object must never be representable in an invalid state.** A class owns its invariants; no caller can put it into a state its own rules forbid. This is why the domain uses rich entities with methods like `update()`/`archive()` instead of `setName()`/`setStatus()`.
+
+- **Constructors produce complete, valid objects.** No "construct now, finish populating later." If an object is only valid alongside a related object, the constructor creates it - e.g. `User::__construct()` builds its own primary verified `UserEmail`, so a `User` can never exist without one. Don't rely on a caller (a handler, a factory) to complete construction: the caller can forget, and the invariant becomes a multi-step contract any step can break.
+- **Enforce each invariant in exactly one un-bypassable place** - the constructor or a domain method - never split across the object *and* its callers. If validity depends on step A in one file and step B in another, either can be dropped and the object goes invalid.
+- **Mutate through intention-revealing domain methods, never setters.** `update()`, `archive()`, `recordPayment()` take a whole coherent change and enforce the invariants for it. A `setX()` lets a caller change one field and skip the related ones, leaving the object inconsistent. Reaching for a setter usually means you're modeling the wrong operation.
+- **Asymmetric visibility keeps outside code out.** Properties are `public private(set)` - read freely, written only from within (ADR-0003). External code observes state but can only change it through the entity's own methods.
+- **Fail fast at the boundary.** Constructors and domain methods assert their preconditions (beberlei `Assertion`, or throw `\InvalidArgumentException`) and reject bad input rather than storing it. Prefer making an illegal object un-constructable over constructing it and validating afterward.
+- **Make illegal states unrepresentable in the type system** where you can: backed enums over magic strings/bools, value objects (`Money`, `Ulid`) over bare primitives, and model "absent" explicitly (a nullable relation) rather than with sentinel values.
+- **The database mirrors invariants; it doesn't own them.** DB constraints (NOT NULL, FKs, unique and partial indexes) are a backstop that catches bugs at flush time. Enforce the same rule in the object too, so in-memory instances are honest before they touch the database and failures carry domain meaning instead of surfacing as a raw constraint violation. (E.g. `UserEmail` rejects an unverified primary in its constructor *and* a partial unique index enforces one-primary-per-user.)
+
 ### Comments and documentation
 - **No issue/PR numbers in code comments or documentation.** Comments and docs (code comments,
   `README.md`, `docs/`, `docs-user/`, `CONTEXT.md`, ADRs, migration descriptions) must be

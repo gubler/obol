@@ -11,6 +11,7 @@ use App\Entity\ObligationSnapshot;
 use App\Enum\Currency;
 use App\Message\Currency\CurrencyTotaller;
 use App\Repository\ObligationSnapshotRepository;
+use App\Repository\UserRepository;
 use App\Service\PeriodBoundaries;
 use App\ValueObject\Money;
 use Psr\Clock\ClockInterface;
@@ -22,6 +23,7 @@ final readonly class FindObligationOverTimeRunner
     public function __construct(
         private ObligationSnapshotRepository $snapshotRepository,
         private CurrencyTotaller $currencyTotaller,
+        private UserRepository $userRepository,
         private PeriodBoundaries $periodBoundaries,
         private ClockInterface $clock,
     ) {
@@ -30,13 +32,14 @@ final readonly class FindObligationOverTimeRunner
     public function __invoke(FindObligationOverTimeQuery $query): ObligationSeries
     {
         $now = $this->clock->now();
+        $display = $this->userRepository->getForId($query->ownerUserId)->displayCurrency;
         $snapshots = $this->snapshotRepository->findAllOrderedByRecordedAt();
 
         $points = [];
         $approximate = false;
         foreach ($this->anchors($query, $now) as $anchor) {
             $snapshot = $this->latestOnOrBefore($snapshots, $anchor);
-            $total = $this->currencyTotaller->total($this->nativeAmounts($snapshot));
+            $total = $this->currencyTotaller->total($this->nativeAmounts($snapshot), $display);
             $approximate = $approximate || $total->isApproximate;
 
             $points[] = new ObligationPoint(

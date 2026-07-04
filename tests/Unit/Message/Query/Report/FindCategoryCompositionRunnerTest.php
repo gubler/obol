@@ -19,7 +19,7 @@ use App\Message\Query\Report\FindCategoryCompositionQuery;
 use App\Message\Query\Report\FindCategoryCompositionRunner;
 use App\Repository\ExchangeRateRepository;
 use App\Repository\SubscriptionRepository;
-use App\Service\DisplayCurrencyProvider;
+use App\Repository\UserRepository;
 use App\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
@@ -53,9 +53,14 @@ final class FindCategoryCompositionRunnerTest extends TestCase
         $exchangeRateRepository->method('latestRate')
             ->willReturnCallback(static fn (Currency $currency): ?float => $rates[$currency->value] ?? null)
         ;
-        $totaller = new CurrencyTotaller(new Converter($exchangeRateRepository), new DisplayCurrencyProvider($displayCurrency));
+        $totaller = new CurrencyTotaller(new Converter($exchangeRateRepository));
 
-        $runner = new FindCategoryCompositionRunner($repository, $totaller, self::translator());
+        $userRepository = self::createStub(UserRepository::class);
+        $userRepository->method('getForId')
+            ->willReturn(new User(email: 'owner@example.com', displayCurrency: Currency::from($displayCurrency)))
+        ;
+
+        $runner = new FindCategoryCompositionRunner($repository, $totaller, $userRepository, self::translator());
 
         return $runner(new FindCategoryCompositionQuery(ownerUserId: new Ulid()));
     }

@@ -7,21 +7,20 @@ declare(strict_types=1);
 
 namespace App\Message\Currency;
 
-use App\Service\DisplayCurrencyProvider;
+use App\Enum\Currency;
 use App\ValueObject\Money;
 
 final readonly class CurrencyTotaller
 {
     public function __construct(
         private Converter $converter,
-        private DisplayCurrencyProvider $displayCurrencyProvider,
     ) {
     }
 
     /**
      * @param array<Money> $amounts amounts in any mix of currencies; keys and order are irrelevant
      */
-    public function total(array $amounts, ?\DateTimeImmutable $asOf = null): ConvertedTotal
+    public function total(array $amounts, Currency $display, ?\DateTimeImmutable $asOf = null): ConvertedTotal
     {
         $native = [];
         foreach ($amounts as $money) {
@@ -31,7 +30,6 @@ final readonly class CurrencyTotaller
 
         ksort($native);
 
-        $display = $this->displayCurrencyProvider->get();
         $converted = new Money(0, $display);
         $approximate = false;
         foreach ($native as $money) {

@@ -9,10 +9,34 @@ namespace App\Tests\Unit\Entity;
 
 use App\Entity\User;
 use App\Entity\UserEmail;
+use App\Enum\Currency;
 use PHPUnit\Framework\TestCase;
 
 final class UserTest extends TestCase
 {
+    public function testDefaultsToUsdDisplayCurrencyAndAppDefaultLocaleAndTimezone(): void
+    {
+        $user = new User(email: 'magos@dev88.test');
+
+        self::assertSame(Currency::USD, $user->displayCurrency);
+        self::assertSame('en-US', $user->locale);
+        self::assertSame('America/New_York', $user->timezone);
+    }
+
+    public function testCarriesExplicitDisplayCurrencyLocaleAndTimezone(): void
+    {
+        $user = new User(
+            email: 'magos@dev88.test',
+            displayCurrency: Currency::EUR,
+            locale: 'de',
+            timezone: 'Europe/Berlin',
+        );
+
+        self::assertSame(Currency::EUR, $user->displayCurrency);
+        self::assertSame('de', $user->locale);
+        self::assertSame('Europe/Berlin', $user->timezone);
+    }
+
     public function testAlwaysCarriesRoleUserAndDedupesExplicitRoles(): void
     {
         $user = new User(email: 'magos@dev88.test', roles: ['ROLE_ADMIN', 'ROLE_USER']);

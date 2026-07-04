@@ -12,7 +12,6 @@ use App\Message\Currency\ConvertedTotal;
 use App\Message\Currency\Converter;
 use App\Message\Currency\CurrencyTotaller;
 use App\Repository\ExchangeRateRepository;
-use App\Service\DisplayCurrencyProvider;
 use App\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
 
@@ -29,9 +28,9 @@ final class CurrencyTotallerTest extends TestCase
             ->willReturnCallback(static fn (Currency $currency): ?float => $rates[$currency->value] ?? null)
         ;
 
-        $totaller = new CurrencyTotaller(new Converter($exchangeRateRepository), new DisplayCurrencyProvider($displayCurrency));
+        $totaller = new CurrencyTotaller(new Converter($exchangeRateRepository));
 
-        return $totaller->total($amounts);
+        return $totaller->total($amounts, Currency::from($displayCurrency));
     }
 
     public function testTotalsAMixedCurrencyListConvertsToTheDisplayCurrencyAndKeepsAKeySortedBreakdown(): void

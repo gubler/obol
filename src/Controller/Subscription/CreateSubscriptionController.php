@@ -13,7 +13,6 @@ use App\Form\Subscription\CreateSubscriptionFormType;
 use App\Message\Command\Subscription\CreateSubscriptionCommand;
 use App\Message\Query\Category\FindAllCategoriesQuery;
 use App\Message\Query\PaymentSource\FindAllPaymentSourcesQuery;
-use App\Service\DisplayCurrencyProvider;
 use App\Service\FileUploader;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,7 +22,6 @@ final class CreateSubscriptionController extends AbstractBaseController
 {
     public function __construct(
         private readonly FileUploader $fileUploader,
-        private readonly DisplayCurrencyProvider $displayCurrencyProvider,
     ) {
     }
 
@@ -31,8 +29,8 @@ final class CreateSubscriptionController extends AbstractBaseController
     public function __invoke(Request $request): Response
     {
         $dto = new CreateSubscriptionDto();
-        // Pre-select the display currency; the user can still pick another before the first payment.
-        $dto->currency = $this->displayCurrencyProvider->get();
+        // Pre-select the user's display currency; they can still pick another before the first payment.
+        $dto->currency = $this->currentUser()->displayCurrency;
 
         $categories = $this->queryBus->query(query: new FindAllCategoriesQuery());
         \assert(\is_array($categories));

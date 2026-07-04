@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Message\Query\Report;
 
 use App\Entity\ObligationSnapshot;
+use App\Entity\User;
 use App\Enum\Currency;
 use App\Enum\ObligationTrendPeriod;
 use App\Message\Currency\Converter;
@@ -17,10 +18,11 @@ use App\Message\Query\Report\FindObligationOverTimeRunner;
 use App\Message\Query\Report\ObligationSeries;
 use App\Repository\ExchangeRateRepository;
 use App\Repository\ObligationSnapshotRepository;
-use App\Service\DisplayCurrencyProvider;
+use App\Repository\UserRepository;
 use App\Service\PeriodBoundaries;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Clock\MockClock;
+use Symfony\Component\Uid\Ulid;
 
 final class FindObligationOverTimeRunnerTest extends TestCase
 {
@@ -45,11 +47,14 @@ final class FindObligationOverTimeRunnerTest extends TestCase
         $exchangeRateRepository->method('latestRate')
             ->willReturnCallback(static fn (Currency $currency): ?float => $rates[$currency->value] ?? null)
         ;
-        $totaller = new CurrencyTotaller(new Converter($exchangeRateRepository), new DisplayCurrencyProvider('USD'));
+        $totaller = new CurrencyTotaller(new Converter($exchangeRateRepository));
 
-        $runner = new FindObligationOverTimeRunner($repository, $totaller, new PeriodBoundaries(0), new MockClock(new \DateTimeImmutable($now)));
+        $userRepository = self::createStub(UserRepository::class);
+        $userRepository->method('getForId')->willReturn(new User(email: 'owner@example.com'));
 
-        return $runner(new FindObligationOverTimeQuery($period));
+        $runner = new FindObligationOverTimeRunner($repository, $totaller, $userRepository, new PeriodBoundaries(0), new MockClock(new \DateTimeImmutable($now)));
+
+        return $runner(new FindObligationOverTimeQuery($period, new Ulid()));
     }
 
     /**

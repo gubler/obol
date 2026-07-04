@@ -12,6 +12,7 @@ use App\Entity\Subscription;
 use App\Enum\TileColor;
 use App\Message\Currency\CurrencyTotaller;
 use App\Repository\SubscriptionRepository;
+use App\Repository\UserRepository;
 use App\ValueObject\Money;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -28,6 +29,7 @@ final readonly class FindPaymentSourceCompositionRunner
     public function __construct(
         private SubscriptionRepository $subscriptionRepository,
         private CurrencyTotaller $currencyTotaller,
+        private UserRepository $userRepository,
         private TranslatorInterface $translator,
     ) {
     }
@@ -35,6 +37,7 @@ final readonly class FindPaymentSourceCompositionRunner
     public function __invoke(FindPaymentSourceCompositionQuery $query): Composition
     {
         $asOf = new \DateTimeImmutable();
+        $display = $this->userRepository->getForId($query->ownerUserId)->displayCurrency;
         $subscriptions = $this->subscriptionRepository->findActiveForOwner($query->ownerUserId);
 
         /** @var array<string, array{source: ?PaymentSource, costs: list<Money>}> $bySource */
@@ -47,8 +50,8 @@ final readonly class FindPaymentSourceCompositionRunner
         }
 
         $slices = array_map(
-            function (array $group) use ($asOf): CompositionSlice {
-                $share = $this->currencyTotaller->total($group['costs'], $asOf);
+            function (array $group) use ($display, $asOf): CompositionSlice {
+                $share = $this->currencyTotaller->total($group['costs'], $display, $asOf);
                 $source = $group['source'];
 
                 return new CompositionSlice(
@@ -71,6 +74,7 @@ final readonly class FindPaymentSourceCompositionRunner
 
         $total = $this->currencyTotaller->total(
             array_map(static fn (Subscription $s): Money => $s->monthlyCost(), $subscriptions),
+            $display,
             $asOf,
         );
 

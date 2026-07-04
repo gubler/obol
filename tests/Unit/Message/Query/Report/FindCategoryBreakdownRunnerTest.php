@@ -20,7 +20,7 @@ use App\Message\Query\Report\FindCategoryBreakdownRunner;
 use App\Repository\CategoryRepository;
 use App\Repository\ExchangeRateRepository;
 use App\Repository\SubscriptionRepository;
-use App\Service\DisplayCurrencyProvider;
+use App\Repository\UserRepository;
 use App\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
@@ -67,11 +67,19 @@ final class FindCategoryBreakdownRunnerTest extends TestCase
         $exchangeRateRepository->method('latestRate')
             ->willReturnCallback(static fn (Currency $currency): ?float => $rates[$currency->value] ?? null)
         ;
-        $totaller = new CurrencyTotaller(new Converter($exchangeRateRepository), new DisplayCurrencyProvider('USD'));
+        $totaller = new CurrencyTotaller(new Converter($exchangeRateRepository));
 
-        $runner = new FindCategoryBreakdownRunner($categoryRepository, $subscriptionRepository, $totaller, self::translator());
+        $runner = new FindCategoryBreakdownRunner($categoryRepository, $subscriptionRepository, $totaller, self::userRepository(), self::translator());
 
         return $runner(new FindCategoryBreakdownQuery(ownerUserId: $ownerUserId, categoryId: $categoryId));
+    }
+
+    private static function userRepository(): UserRepository
+    {
+        $userRepository = self::createStub(UserRepository::class);
+        $userRepository->method('getForId')->willReturn(new User(email: 'owner@example.com'));
+
+        return $userRepository;
     }
 
     /**
@@ -128,9 +136,9 @@ final class FindCategoryBreakdownRunnerTest extends TestCase
 
         $exchangeRateRepository = self::createStub(ExchangeRateRepository::class);
         $exchangeRateRepository->method('latestRate')->willReturn(null);
-        $totaller = new CurrencyTotaller(new Converter($exchangeRateRepository), new DisplayCurrencyProvider('USD'));
+        $totaller = new CurrencyTotaller(new Converter($exchangeRateRepository));
 
-        $runner = new FindCategoryBreakdownRunner($categoryRepository, $subscriptionRepository, $totaller, self::translator());
+        $runner = new FindCategoryBreakdownRunner($categoryRepository, $subscriptionRepository, $totaller, self::userRepository(), self::translator());
         $composition = $runner(new FindCategoryBreakdownQuery(ownerUserId: $ownerUserId, categoryId: null));
 
         self::assertInstanceOf(Composition::class, $composition);

@@ -8,11 +8,13 @@ declare(strict_types=1);
 namespace App\Message\Query\Report;
 
 use App\Enum\ObligationTrendPeriod;
+use Symfony\Component\Uid\Ulid;
 
 final readonly class FindObligationOverTimeQuery
 {
     public function __construct(
         public ObligationTrendPeriod $period,
+        public Ulid $ownerUserId,
     ) {
     }
 }

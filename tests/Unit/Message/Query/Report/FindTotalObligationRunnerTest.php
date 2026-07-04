@@ -19,7 +19,7 @@ use App\Message\Query\Report\FindTotalObligationRunner;
 use App\Message\Query\Report\TotalObligation;
 use App\Repository\ExchangeRateRepository;
 use App\Repository\SubscriptionRepository;
-use App\Service\DisplayCurrencyProvider;
+use App\Repository\UserRepository;
 use App\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
@@ -53,9 +53,15 @@ final class FindTotalObligationRunnerTest extends TestCase
             ->willReturnCallback(static fn (Currency $currency): ?float => $rates[$currency->value] ?? null)
         ;
 
+        $userRepository = self::createStub(UserRepository::class);
+        $userRepository->method('getForId')
+            ->willReturn(new User(email: 'owner@example.com', displayCurrency: Currency::from($displayCurrency)))
+        ;
+
         $runner = new FindTotalObligationRunner(
             $subscriptionRepository,
-            new CurrencyTotaller(new Converter($exchangeRateRepository), new DisplayCurrencyProvider($displayCurrency)),
+            new CurrencyTotaller(new Converter($exchangeRateRepository)),
+            $userRepository,
         );
 
         return $runner(new FindTotalObligationQuery(ownerUserId: new Ulid()));

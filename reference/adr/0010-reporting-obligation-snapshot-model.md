@@ -70,9 +70,9 @@ event bus, removed in #76 as then-unused, is reinstated for this; see ADR-0011.)
 
 ### Convert at read time, with today's rate
 
-Cross-currency conversion happens at **read** time via #126's `Converter` /
-`DisplayCurrencyProvider`, never at write time. For the over-time series specifically, every
-historical row is converted using **today's** rate, not the rate on its recording date. This is a
+Cross-currency conversion happens at *read* time via #126's `Converter`, targeting the current
+user's display currency, never at write time. For the over-time series specifically, every
+historical row is converted using *today's* rate, not the rate on its recording date. This is a
 deliberate choice: it isolates real obligation change (you added or dropped a subscription) from FX
 noise (the euro moved), and it needs no exchange-rate history - only the latest rate per currency.
 The total-obligation and remaining-in-period headlines are likewise a converted figure plus a

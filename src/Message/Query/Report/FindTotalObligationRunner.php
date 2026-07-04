@@ -11,6 +11,7 @@ use App\Entity\Subscription;
 use App\Enum\PaymentPeriod;
 use App\Message\Currency\CurrencyTotaller;
 use App\Repository\SubscriptionRepository;
+use App\Repository\UserRepository;
 use App\ValueObject\Money;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -20,19 +21,21 @@ final readonly class FindTotalObligationRunner
     public function __construct(
         private SubscriptionRepository $subscriptionRepository,
         private CurrencyTotaller $currencyTotaller,
+        private UserRepository $userRepository,
     ) {
     }
 
     public function __invoke(FindTotalObligationQuery $query): TotalObligation
     {
         $asOf = new \DateTimeImmutable();
+        $display = $this->userRepository->getForId($query->ownerUserId)->displayCurrency;
 
         $monthlyCosts = array_map(
             static fn (Subscription $subscription): Money => $subscription->monthlyCost(),
             $this->subscriptionRepository->findActiveForOwner($query->ownerUserId),
         );
 
-        $monthly = $this->currencyTotaller->total($monthlyCosts, $asOf);
+        $monthly = $this->currencyTotaller->total($monthlyCosts, $display, $asOf);
 
         return new TotalObligation(
             weekly: $this->scale($monthly->converted, PaymentPeriod::Week->monthsPerPeriod()),

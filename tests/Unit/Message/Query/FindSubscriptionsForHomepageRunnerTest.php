@@ -21,7 +21,7 @@ use App\Message\Query\Subscription\FindSubscriptionsForHomepageRunner;
 use App\Message\Query\Subscription\HomepageListing;
 use App\Repository\ExchangeRateRepository;
 use App\Repository\SubscriptionRepository;
-use App\Service\DisplayCurrencyProvider;
+use App\Repository\UserRepository;
 use App\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
@@ -58,7 +58,15 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
             ->willReturnCallback(static fn (Currency $currency): ?float => $rates[$currency->value] ?? null)
         ;
 
-        return new CurrencyTotaller(new Converter($exchangeRateRepository), new DisplayCurrencyProvider('USD'));
+        return new CurrencyTotaller(new Converter($exchangeRateRepository));
+    }
+
+    private static function userRepository(): UserRepository
+    {
+        $userRepository = self::createStub(UserRepository::class);
+        $userRepository->method('getForId')->willReturn(new User(email: 'owner@example.com'));
+
+        return $userRepository;
     }
 
     /**
@@ -80,7 +88,7 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
         $repository = self::createStub(SubscriptionRepository::class);
         $repository->method('findForHomepageForOwner')->willReturn($subscriptions);
 
-        return (new FindSubscriptionsForHomepageRunner($repository, $this->homepageTotaller($rates)))($query);
+        return (new FindSubscriptionsForHomepageRunner($repository, $this->homepageTotaller($rates), self::userRepository()))($query);
     }
 
     public function testGroupsByCategoryOrderedByCategoryNameSortedByNameWithinEachGroup(): void
@@ -250,7 +258,7 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
             ->willReturn([])
         ;
 
-        $runner = new FindSubscriptionsForHomepageRunner($repository, $this->homepageTotaller());
+        $runner = new FindSubscriptionsForHomepageRunner($repository, $this->homepageTotaller(), self::userRepository());
         $listing = $runner(new FindSubscriptionsForHomepageQuery(ownerUserId: new Ulid(), includeArchived: true));
 
         self::assertSame([], $listing->groups);

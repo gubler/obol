@@ -19,7 +19,7 @@ use App\Message\Query\Report\FindRemainingInPeriodRunner;
 use App\Message\Query\Report\RemainingInPeriod;
 use App\Repository\ExchangeRateRepository;
 use App\Repository\SubscriptionRepository;
-use App\Service\DisplayCurrencyProvider;
+use App\Repository\UserRepository;
 use App\Service\PeriodBoundaries;
 use App\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
@@ -54,9 +54,12 @@ final class FindRemainingInPeriodRunnerTest extends TestCase
         $exchangeRateRepository->method('latestRate')
             ->willReturnCallback(static fn (Currency $currency): ?float => $rates[$currency->value] ?? null)
         ;
-        $totaller = new CurrencyTotaller(new Converter($exchangeRateRepository), new DisplayCurrencyProvider('USD'));
+        $totaller = new CurrencyTotaller(new Converter($exchangeRateRepository));
 
-        $runner = new FindRemainingInPeriodRunner($repository, new PeriodBoundaries(0), $totaller, new MockClock(new \DateTimeImmutable($now)));
+        $userRepository = self::createStub(UserRepository::class);
+        $userRepository->method('getForId')->willReturn(new User(email: 'owner@example.com'));
+
+        $runner = new FindRemainingInPeriodRunner($repository, new PeriodBoundaries(0), $totaller, $userRepository, new MockClock(new \DateTimeImmutable($now)));
 
         return $runner(new FindRemainingInPeriodQuery(ownerUserId: new Ulid()));
     }

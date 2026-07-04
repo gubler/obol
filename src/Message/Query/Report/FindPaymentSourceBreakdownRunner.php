@@ -11,6 +11,7 @@ use App\Entity\Subscription;
 use App\Message\Currency\CurrencyTotaller;
 use App\Repository\PaymentSourceRepository;
 use App\Repository\SubscriptionRepository;
+use App\Repository\UserRepository;
 use App\ValueObject\Money;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -22,6 +23,7 @@ final readonly class FindPaymentSourceBreakdownRunner
         private PaymentSourceRepository $paymentSourceRepository,
         private SubscriptionRepository $subscriptionRepository,
         private CurrencyTotaller $currencyTotaller,
+        private UserRepository $userRepository,
         private TranslatorInterface $translator,
     ) {
     }
@@ -42,11 +44,12 @@ final readonly class FindPaymentSourceBreakdownRunner
         }
 
         $asOf = new \DateTimeImmutable();
+        $display = $this->userRepository->getForId($query->ownerUserId)->displayCurrency;
         $subscriptions = $this->subscriptionRepository->findActiveForOwnerByPaymentSource($query->ownerUserId, $source);
 
         $slices = array_map(
-            function (Subscription $subscription) use ($asOf): CompositionSlice {
-                $share = $this->currencyTotaller->total([$subscription->monthlyCost()], $asOf);
+            function (Subscription $subscription) use ($display, $asOf): CompositionSlice {
+                $share = $this->currencyTotaller->total([$subscription->monthlyCost()], $display, $asOf);
 
                 return new CompositionSlice(
                     label: $subscription->name,
@@ -65,6 +68,7 @@ final readonly class FindPaymentSourceBreakdownRunner
 
         $total = $this->currencyTotaller->total(
             array_map(static fn (Subscription $s): Money => $s->monthlyCost(), $subscriptions),
+            $display,
             $asOf,
         );
 

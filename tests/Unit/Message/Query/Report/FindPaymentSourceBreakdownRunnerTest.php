@@ -20,7 +20,7 @@ use App\Message\Query\Report\FindPaymentSourceBreakdownRunner;
 use App\Repository\ExchangeRateRepository;
 use App\Repository\PaymentSourceRepository;
 use App\Repository\SubscriptionRepository;
-use App\Service\DisplayCurrencyProvider;
+use App\Repository\UserRepository;
 use App\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
@@ -62,7 +62,7 @@ final class FindPaymentSourceBreakdownRunnerTest extends TestCase
 
         $totaller = $this->totaller();
 
-        $runner = new FindPaymentSourceBreakdownRunner($paymentSourceRepository, $subscriptionRepository, $totaller, self::translator());
+        $runner = new FindPaymentSourceBreakdownRunner($paymentSourceRepository, $subscriptionRepository, $totaller, self::userRepository(), self::translator());
 
         return $runner(new FindPaymentSourceBreakdownQuery(ownerUserId: $ownerUserId, paymentSourceId: $sourceId));
     }
@@ -72,7 +72,15 @@ final class FindPaymentSourceBreakdownRunnerTest extends TestCase
         $exchangeRateRepository = self::createStub(ExchangeRateRepository::class);
         $exchangeRateRepository->method('latestRate')->willReturn(null);
 
-        return new CurrencyTotaller(new Converter($exchangeRateRepository), new DisplayCurrencyProvider('USD'));
+        return new CurrencyTotaller(new Converter($exchangeRateRepository));
+    }
+
+    private static function userRepository(): UserRepository
+    {
+        $userRepository = self::createStub(UserRepository::class);
+        $userRepository->method('getForId')->willReturn(new User(email: 'owner@example.com'));
+
+        return $userRepository;
     }
 
     private static function translator(): TranslatorInterface
@@ -123,7 +131,7 @@ final class FindPaymentSourceBreakdownRunnerTest extends TestCase
             ])
         ;
 
-        $runner = new FindPaymentSourceBreakdownRunner($paymentSourceRepository, $subscriptionRepository, $this->totaller(), self::translator());
+        $runner = new FindPaymentSourceBreakdownRunner($paymentSourceRepository, $subscriptionRepository, $this->totaller(), self::userRepository(), self::translator());
         $composition = $runner(new FindPaymentSourceBreakdownQuery(ownerUserId: $ownerUserId, paymentSourceId: null));
 
         self::assertInstanceOf(Composition::class, $composition);

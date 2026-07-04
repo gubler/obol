@@ -38,7 +38,7 @@ final class ShowReportsController extends AbstractBaseController
         \assert($paymentSourceComposition instanceof Composition);
 
         $trendPeriod = ObligationTrendPeriod::fromQuery($request->query->getString('trend'));
-        $series = $this->queryBus->query(query: new FindObligationOverTimeQuery(period: $trendPeriod));
+        $series = $this->queryBus->query(query: new FindObligationOverTimeQuery(period: $trendPeriod, ownerUserId: $ownerUserId));
         \assert($series instanceof ObligationSeries);
 
         return $this->render(view: 'reports/index.html.twig', parameters: [

@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace App\Factory;
 
 use App\Entity\User;
+use App\Enum\Currency;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
@@ -42,6 +43,9 @@ final class UserFactory extends PersistentObjectFactory
         return [
             'email' => self::faker()->unique()->safeEmail(),
             'roles' => [],
+            'displayCurrency' => Currency::USD,
+            'locale' => 'en-US',
+            'timezone' => 'America/New_York',
         ];
     }
 }

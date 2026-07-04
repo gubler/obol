@@ -6,8 +6,6 @@
 parameters:
     app.uploads_directory: '%kernel.project_dir%/public/uploads/logos'
     app.uploads_public_path: 'uploads/logos'
-    # The currency converted totals are presented in. One value today; becomes per-user under SaaS.
-    app.display_currency: 'USD'
     # The day the week starts on, as a day-of-week ordinal: 0 = Sunday (US), 1 = Monday (ISO 8601).
     # Drives the "remaining this week" boundary; becomes locale/per-user later. See ADR-0010.
     app.week_start_day: 0
@@ -24,10 +22,6 @@ services:
     # this creates a service per class whose id is the fully-qualified class name
     App\:
         resource: '../src/'
-
-    App\Service\DisplayCurrencyProvider:
-        arguments:
-            $displayCurrency: '%app.display_currency%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

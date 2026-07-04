@@ -9,9 +9,11 @@ namespace App\Message\Query\Subscription;
 
 use App\Entity\Category;
 use App\Entity\Subscription;
+use App\Enum\Currency;
 use App\Enum\SubscriptionSort;
 use App\Message\Currency\CurrencyTotaller;
 use App\Repository\SubscriptionRepository;
+use App\Repository\UserRepository;
 use App\ValueObject\Money;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -27,6 +29,7 @@ final readonly class FindSubscriptionsForHomepageRunner
     public function __construct(
         private SubscriptionRepository $subscriptionRepository,
         private CurrencyTotaller $currencyTotaller,
+        private UserRepository $userRepository,
     ) {
     }
 
@@ -36,9 +39,10 @@ final readonly class FindSubscriptionsForHomepageRunner
         usort($subscriptions, $this->comparator($query->sort));
 
         $asOf = new \DateTimeImmutable();
+        $display = $this->userRepository->getForId($query->ownerUserId)->displayCurrency;
 
         return new HomepageListing(
-            groups: $this->group($subscriptions, $asOf),
+            groups: $this->group($subscriptions, $display, $asOf),
             subscriptions: $subscriptions,
         );
     }
@@ -51,7 +55,7 @@ final readonly class FindSubscriptionsForHomepageRunner
      *
      * @return list<CategoryGroup>
      */
-    private function group(array $subscriptions, \DateTimeImmutable $asOf): array
+    private function group(array $subscriptions, Currency $display, \DateTimeImmutable $asOf): array
     {
         /** @var array<string, array{category: ?Category, subscriptions: list<Subscription>}> $grouped */
         $grouped = [];
@@ -80,10 +84,12 @@ final readonly class FindSubscriptionsForHomepageRunner
                 subscriptions: $group['subscriptions'],
                 monthlyTotal: $this->currencyTotaller->total(
                     array_map(static fn (Subscription $s): Money => $s->monthlyCost(), $group['subscriptions']),
+                    $display,
                     $asOf,
                 ),
                 savingsTotal: $this->currencyTotaller->total(
                     array_map(static fn (Subscription $s): Money => $s->savingsTarget($asOf), $group['subscriptions']),
+                    $display,
                     $asOf,
                 ),
                 asOf: $asOf,

@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\Doctrine\Type\CitextType;
+use App\Enum\Currency;
 use App\Repository\UserRepository;
 use Assert\Assertion;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -41,9 +42,18 @@ class User implements UserInterface, EquatableInterface
     /**
      * @param list<string> $roles
      */
-    public function __construct(string $email, #[ORM\Column(type: Types::JSON)]
-        public private(set) array $roles = [], ?\DateTimeImmutable $createdAt = null)
-    {
+    public function __construct(
+        string $email,
+        #[ORM\Column(type: Types::JSON)]
+        public private(set) array $roles = [],
+        ?\DateTimeImmutable $createdAt = null,
+        #[ORM\Column(enumType: Currency::class)]
+        public private(set) Currency $displayCurrency = Currency::USD,
+        #[ORM\Column]
+        public private(set) string $locale = 'en-US',
+        #[ORM\Column]
+        public private(set) string $timezone = 'America/New_York',
+    ) {
         $this->id = new Ulid();
         $this->emails = new ArrayCollection();
         $this->createdAt = $createdAt ?? new \DateTimeImmutable();

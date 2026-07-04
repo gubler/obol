@@ -8,10 +8,12 @@ declare(strict_types=1);
 namespace App\Message\Query\Report;
 
 use App\Entity\Subscription;
+use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Message\Currency\ConvertedTotal;
 use App\Message\Currency\CurrencyTotaller;
 use App\Repository\SubscriptionRepository;
+use App\Repository\UserRepository;
 use App\Service\PeriodBoundaries;
 use Psr\Clock\ClockInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -23,6 +25,7 @@ final readonly class FindRemainingInPeriodRunner
         private SubscriptionRepository $subscriptionRepository,
         private PeriodBoundaries $periodBoundaries,
         private CurrencyTotaller $currencyTotaller,
+        private UserRepository $userRepository,
         private ClockInterface $clock,
     ) {
     }
@@ -30,12 +33,13 @@ final readonly class FindRemainingInPeriodRunner
     public function __invoke(FindRemainingInPeriodQuery $query): RemainingInPeriod
     {
         $asOf = $this->clock->now();
+        $display = $this->userRepository->getForId($query->ownerUserId)->displayCurrency;
         $subscriptions = $this->subscriptionRepository->findActiveForOwner($query->ownerUserId);
 
         return new RemainingInPeriod(
-            weekly: $this->remaining(PaymentPeriod::Week, $subscriptions, $asOf),
-            monthly: $this->remaining(PaymentPeriod::Month, $subscriptions, $asOf),
-            yearly: $this->remaining(PaymentPeriod::Year, $subscriptions, $asOf),
+            weekly: $this->remaining(PaymentPeriod::Week, $subscriptions, $display, $asOf),
+            monthly: $this->remaining(PaymentPeriod::Month, $subscriptions, $display, $asOf),
+            yearly: $this->remaining(PaymentPeriod::Year, $subscriptions, $display, $asOf),
             asOf: $asOf,
         );
     }
@@ -43,7 +47,7 @@ final readonly class FindRemainingInPeriodRunner
     /**
      * @param array<Subscription> $subscriptions
      */
-    private function remaining(PaymentPeriod $period, array $subscriptions, \DateTimeImmutable $asOf): ConvertedTotal
+    private function remaining(PaymentPeriod $period, array $subscriptions, Currency $display, \DateTimeImmutable $asOf): ConvertedTotal
     {
         $periodEnd = $this->periodBoundaries->endOfPeriod($period, $asOf);
 
@@ -55,6 +59,6 @@ final readonly class FindRemainingInPeriodRunner
             }
         }
 
-        return $this->currencyTotaller->total($amounts, $asOf);
+        return $this->currencyTotaller->total($amounts, $display, $asOf);
     }
 }

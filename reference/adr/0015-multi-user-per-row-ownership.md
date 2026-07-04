@@ -39,9 +39,9 @@ what lets the ownership check be a simple equality rather than a moving target.
 
 ### Which entities own, and how
 
-- **Direct `owner` FK:** `Subscription` and `Payment` (this slice); `Category`, `PaymentSource`, and
-  `ObligationSnapshot` follow in later slices of the same epic. `ExchangeRate` never gets an owner - FX
-  rates are global reference data shared by everyone.
+- **Direct `owner` FK:** `Subscription`, `Payment`, `Category`, `PaymentSource`, and
+  `ObligationSnapshot`. `ExchangeRate` never gets an owner - FX rates are global reference data shared
+  by everyone.
 - **`Payment.owner` is denormalized, derived at construction.** A payment copies its owner from its
   subscription in its own constructor (`$this->owner = $subscription->owner`), so the invariant
   `Payment.owner == Payment.subscription.owner` cannot be violated by any caller: there is no owner

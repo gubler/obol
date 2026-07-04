@@ -75,6 +75,6 @@ final readonly class CreateSubscriptionHandler
 
         $this->entityManager->persist($subscription);
 
-        $this->subscriptionChangeNotifier->notifyChanged();
+        $this->subscriptionChangeNotifier->notifyChanged($command->ownerUserId);
     }
 }

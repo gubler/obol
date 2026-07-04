@@ -74,6 +74,6 @@ final readonly class UpdateSubscriptionHandler
             $subscription->automatePayments($command->nextRenewal);
         }
 
-        $this->subscriptionChangeNotifier->notifyChanged();
+        $this->subscriptionChangeNotifier->notifyChanged($command->ownerUserId);
     }
 }

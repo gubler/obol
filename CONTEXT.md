@@ -6,8 +6,9 @@ a complete audit trail of every change, and helps budget for upcoming renewals.
 
 It is multi-user: accounts exist and the app requires passwordless magic-link login
 (ADR-0014), and each subscription and payment belongs to one **owner**, who sees only their
-own (ADR-0015, superseding ADR-0004's single-tenant stance). Isolation of the remaining owned
-data - categories, payment sources, obligation snapshots, per-user settings - is still landing.
+own (ADR-0015, superseding ADR-0004's single-tenant stance). Categories, payment sources,
+obligation snapshots, and per-user settings are owned the same way, so a user sees only their
+own data end to end.
 Still deliberately out of scope: team or household sharing, a public API, and bank integration.
 See `reference/out-of-scope/` for what is explicitly not being built, and `reference/adr/`
 for the decisions behind how it is built.
@@ -55,7 +56,7 @@ older docs.
   its subscription at creation (denormalized, so a user's payments can be queried without joining
   through Subscription). Repository finders are owner-scoped (`findForOwner`), so one user's id never
   resolves another's row - a cross-owner lookup returns null and the controller 404s. Categories,
-  payment sources, and obligation snapshots gain owners in later slices. See ADR-0015.
+  payment sources, and obligation snapshots carry their own immutable `owner` the same way. See ADR-0015.
 - **UserEmail** - one address a User controls, independently verified, with at most one marked
   **primary**. A magic link resolves to its User via any *verified* UserEmail (so a second verified
   address is a recovery credential); the primary is the canonical identity. Unverified rows cannot
@@ -99,14 +100,15 @@ older docs.
   every active subscription's period-normalized **monthly cost**; it consults neither payments nor
   `nextRenewal`. Archived subscriptions are excluded, and a **Generated** payment counts as paid.
   _Avoid_ "spend" / "expense" - those imply money actually left an account. See ADR-0010.
-- **obligation snapshot** - a recording of the total monthly obligation at a point in time, stored
-  as the `ObligationSnapshot` entity. Each row holds the **native per-currency** obligation as a
-  JSON map (currency code to minor units, e.g. `{"USD":4000,"EUR":3000}`) plus the date recorded.
-  Native, unconverted storage means a row survives subscription deletion and bakes in no FX rate;
-  conversion to a display currency happens at read time using today's rate. Recorded **on change** -
-  every subscription create/update/archive/delete announces a **SubscriptionsChanged** event, and a
-  row is appended only when the obligation differs from the latest. Because obligation moves only on
-  an edit, this captures the series exactly. Feeds the obligations-over-time chart. See ADR-0010.
+- **obligation snapshot** - a recording of one user's total monthly obligation at a point in time,
+  stored as the `ObligationSnapshot` entity, owned by that user. Each row holds the **native
+  per-currency** obligation as a JSON map (currency code to minor units, e.g. `{"USD":4000,"EUR":3000}`)
+  plus the date recorded. Native, unconverted storage means a row survives subscription deletion and
+  bakes in no FX rate; conversion to a display currency happens at read time using today's rate.
+  Recorded **on change** - every subscription create/update/archive/delete announces a
+  **SubscriptionsChanged** event carrying the owner, and a row is appended only when that owner's
+  obligation differs from their latest. Because obligation moves only on an edit, this captures each
+  user's series exactly. Feeds the obligations-over-time chart. See ADR-0010.
 - **savings target** - the amount that should be set aside by now to cover upcoming renewals
   (`Subscription::savingsTarget`), in the currency's minor units. Models a monthly budget saved
   one month ahead: a **monthly cost** is allocated on the first of each calendar month, a renewal

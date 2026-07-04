@@ -23,8 +23,9 @@ use Symfony\Component\Uid\Ulid;
 
 /**
  * Any command handler that creates, mutates, or removes a subscription must announce it via
- * SubscriptionChangeNotifier::notifyChanged() after the change, so the obligation snapshot series
- * stays current (see ADR-0010). The notifier defers the event until the command's transaction commits.
+ * SubscriptionChangeNotifier::notifyChanged(), passing the owner's id, after the change, so that
+ * owner's obligation snapshot series stays current (see ADR-0010). The notifier defers the event
+ * until the command's transaction commits.
  */
 #[ORM\Entity(repositoryClass: SubscriptionRepository::class)]
 class Subscription

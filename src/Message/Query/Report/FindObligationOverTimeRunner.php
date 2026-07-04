@@ -33,7 +33,7 @@ final readonly class FindObligationOverTimeRunner
     {
         $now = $this->clock->now();
         $display = $this->userRepository->getForId($query->ownerUserId)->displayCurrency;
-        $snapshots = $this->snapshotRepository->findAllOrderedByRecordedAt();
+        $snapshots = $this->snapshotRepository->findAllOrderedByRecordedAtForOwner($query->ownerUserId);
 
         $points = [];
         $approximate = false;

@@ -30,6 +30,6 @@ final readonly class UnarchiveSubscriptionHandler
 
         $subscription->unarchive();
 
-        $this->subscriptionChangeNotifier->notifyChanged();
+        $this->subscriptionChangeNotifier->notifyChanged($command->ownerUserId);
     }
 }

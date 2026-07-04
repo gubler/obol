@@ -1,6 +1,6 @@
 <?php
 
-// ABOUTME: A weekly snapshot of the total monthly obligation, stored native per-currency as a JSON map.
+// ABOUTME: A snapshot of one user's total monthly obligation, stored native per-currency as a JSON map.
 // ABOUTME: Native amounts are not converted, so a row survives subscription deletion and carries no FX. See ADR-0010.
 
 declare(strict_types=1);
@@ -35,6 +35,13 @@ class ObligationSnapshot
      * @param array<string, int> $obligationsByCurrency
      */
     public function __construct(
+        /**
+         * The user whose obligation this snapshot records. Immutable: a snapshot belongs to one user's
+         * series and is never reassigned (see ADR-0015).
+         */
+        #[ORM\ManyToOne]
+        #[ORM\JoinColumn(name: 'owner_user_id', nullable: false)]
+        public private(set) User $owner,
         array $obligationsByCurrency,
         #[ORM\Column(type: Types::DATE_IMMUTABLE)]
         public private(set) \DateTimeImmutable $recordedAt = new \DateTimeImmutable('today'),

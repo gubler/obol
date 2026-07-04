@@ -13,23 +13,28 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\DispatchAfterCurrentBusStamp;
+use Symfony\Component\Uid\Ulid;
 
 final class SubscriptionChangeNotifierTest extends TestCase
 {
-    public function testAnnouncesSubscriptionsChangedDeferredUntilTheCurrentBusTransactionCommits(): void
+    public function testAnnouncesSubscriptionsChangedForTheOwnerDeferredUntilTheCurrentBusTransactionCommits(): void
     {
+        $ownerUserId = new Ulid();
+
         $eventBus = $this->createMock(MessageBusInterface::class);
         $eventBus->expects(self::once())->method('dispatch')
-            ->with(self::callback(function (object $message): bool {
+            ->with(self::callback(function (object $message) use ($ownerUserId): bool {
                 self::assertInstanceOf(Envelope::class, $message);
-                self::assertInstanceOf(SubscriptionsChanged::class, $message->getMessage());
+                $event = $message->getMessage();
+                self::assertInstanceOf(SubscriptionsChanged::class, $event);
+                self::assertSame($ownerUserId, $event->ownerUserId);
                 self::assertNotNull($message->last(DispatchAfterCurrentBusStamp::class));
 
                 return true;
             }))
-            ->willReturn(new Envelope(new SubscriptionsChanged()))
+            ->willReturn(new Envelope(new SubscriptionsChanged($ownerUserId)))
         ;
 
-        new SubscriptionChangeNotifier($eventBus)->notifyChanged();
+        new SubscriptionChangeNotifier($eventBus)->notifyChanged($ownerUserId);
     }
 }

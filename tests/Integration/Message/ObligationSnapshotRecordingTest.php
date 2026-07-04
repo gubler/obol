@@ -52,7 +52,7 @@ final class ObligationSnapshotRecordingTest extends WebTestCase
         ));
 
         self::assertSame(1, $snapshots->count([]));
-        self::assertEqualsCanonicalizing(['USD' => 4000], $snapshots->findLatest()?->obligationsByCurrency);
+        self::assertEqualsCanonicalizing(['USD' => 4000], $snapshots->findLatestForOwner($owner->id)?->obligationsByCurrency);
 
         $subscription = $entityManager->getRepository(Subscription::class)->findOneBy([]);
         self::assertInstanceOf(Subscription::class, $subscription);
@@ -80,6 +80,50 @@ final class ObligationSnapshotRecordingTest extends WebTestCase
         $commandBus->dispatch(new ArchiveSubscriptionCommand(ownerUserId: $owner->id, subscriptionId: $subscription->id));
 
         self::assertSame(2, $snapshots->count([]));
-        self::assertSame([], $snapshots->findLatest()?->obligationsByCurrency);
+        self::assertSame([], $snapshots->findLatestForOwner($owner->id)?->obligationsByCurrency);
+    }
+
+    public function testEachOwnerRecordsAnIndependentObligationSeries(): void
+    {
+        self::createClient();
+        $container = self::getContainer();
+        /** @var MessageBusInterface $commandBus */
+        $commandBus = $container->get(MessageBusInterface::class);
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = $container->get(EntityManagerInterface::class);
+        /** @var ObligationSnapshotRepository $snapshots */
+        $snapshots = $entityManager->getRepository(ObligationSnapshot::class);
+
+        $alice = UserFactory::createOne();
+        $bob = UserFactory::createOne();
+
+        $commandBus->dispatch(new CreateSubscriptionCommand(
+            ownerUserId: $alice->id,
+            categoryId: null,
+            name: 'Alice streaming',
+            nextRenewal: new \DateTimeImmutable('+1 month'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 4000,
+            currency: Currency::USD,
+            color: TileColor::cases()[0],
+        ));
+
+        $commandBus->dispatch(new CreateSubscriptionCommand(
+            ownerUserId: $bob->id,
+            categoryId: null,
+            name: 'Bob gym',
+            nextRenewal: new \DateTimeImmutable('+1 month'),
+            paymentPeriod: PaymentPeriod::Month,
+            paymentPeriodCount: 1,
+            cost: 9000,
+            currency: Currency::EUR,
+            color: TileColor::cases()[0],
+        ));
+
+        // Each owner's latest snapshot reflects only their own subscriptions - Bob's obligation never
+        // leaks into Alice's series and vice versa.
+        self::assertEqualsCanonicalizing(['USD' => 4000], $snapshots->findLatestForOwner($alice->id)?->obligationsByCurrency);
+        self::assertEqualsCanonicalizing(['EUR' => 9000], $snapshots->findLatestForOwner($bob->id)?->obligationsByCurrency);
     }
 }

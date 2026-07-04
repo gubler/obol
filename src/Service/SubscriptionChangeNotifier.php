@@ -1,6 +1,6 @@
 <?php
 
-// ABOUTME: The single seam for announcing that the subscription set changed, on the event bus.
+// ABOUTME: The single seam for announcing that a user's subscription set changed, on the event bus.
 // ABOUTME: Defers the event (DispatchAfterCurrentBusStamp) so subscribers read state after the change commits.
 
 declare(strict_types=1);
@@ -11,6 +11,7 @@ use App\Message\Event\SubscriptionsChanged;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\DispatchAfterCurrentBusStamp;
+use Symfony\Component\Uid\Ulid;
 
 final readonly class SubscriptionChangeNotifier implements SubscriptionChangeNotifierInterface
 {
@@ -19,8 +20,8 @@ final readonly class SubscriptionChangeNotifier implements SubscriptionChangeNot
     ) {
     }
 
-    public function notifyChanged(): void
+    public function notifyChanged(Ulid $ownerUserId): void
     {
-        $this->eventBus->dispatch(new Envelope(new SubscriptionsChanged(), [new DispatchAfterCurrentBusStamp()]));
+        $this->eventBus->dispatch(new Envelope(new SubscriptionsChanged($ownerUserId), [new DispatchAfterCurrentBusStamp()]));
     }
 }

@@ -31,7 +31,7 @@ final class FindObligationOverTimeRunnerTest extends TestCase
      */
     private static function trendSnapshot(array $obligationsByCurrency, string $recordedAt): ObligationSnapshot
     {
-        return new ObligationSnapshot($obligationsByCurrency, new \DateTimeImmutable($recordedAt));
+        return new ObligationSnapshot(new User(email: 'owner@example.com'), $obligationsByCurrency, new \DateTimeImmutable($recordedAt));
     }
 
     /**
@@ -41,7 +41,7 @@ final class FindObligationOverTimeRunnerTest extends TestCase
     private function runTrend(array $snapshots, string $now, ObligationTrendPeriod $period = ObligationTrendPeriod::Month, array $rates = []): ObligationSeries
     {
         $repository = self::createStub(ObligationSnapshotRepository::class);
-        $repository->method('findAllOrderedByRecordedAt')->willReturn($snapshots);
+        $repository->method('findAllOrderedByRecordedAtForOwner')->willReturn($snapshots);
 
         $exchangeRateRepository = self::createStub(ExchangeRateRepository::class);
         $exchangeRateRepository->method('latestRate')

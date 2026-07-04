@@ -30,6 +30,6 @@ final readonly class ArchiveSubscriptionHandler
 
         $subscription->archive();
 
-        $this->subscriptionChangeNotifier->notifyChanged();
+        $this->subscriptionChangeNotifier->notifyChanged($command->ownerUserId);
     }
 }

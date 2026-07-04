@@ -134,11 +134,8 @@ final class ArchTest extends TestCase
         // Global jobs that legitimately span every user, each documented at its call site:
         $exemptions = [
             // the nightly generation sweep iterates all users' due subscriptions (owner is stamped on
-            // each payment from its subscription), and
+            // each payment from its subscription).
             \App\Message\Command\Payment\GenerateDuePaymentsCommand::class,
-            // the obligation-over-time series reads ObligationSnapshot, whose per-user isolation is a
-            // later slice; it stays global until then.
-            \App\Message\Query\Report\FindObligationOverTimeQuery::class,
         ];
 
         $checked = 0;

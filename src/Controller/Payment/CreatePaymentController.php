@@ -12,6 +12,7 @@ use App\Dto\Payment\CreatePaymentDto;
 use App\Form\Payment\CreatePaymentFormType;
 use App\Message\Command\Payment\CreatePaymentCommand;
 use App\Message\Query\Subscription\FindSubscriptionQuery;
+use Psr\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -20,6 +21,10 @@ use Symfony\Component\Uid\Ulid;
 
 final class CreatePaymentController extends AbstractBaseController
 {
+    public function __construct(private readonly ClockInterface $clock)
+    {
+    }
+
     #[Route(path: '/subscriptions/{subscriptionId}/payments/new', name: 'payment_new', methods: ['GET', 'POST'])]
     public function __invoke(Ulid $subscriptionId, Request $request): Response
     {
@@ -35,7 +40,7 @@ final class CreatePaymentController extends AbstractBaseController
         $dto = new CreatePaymentDto();
         if ($offerRestart) {
             // Prefill a sensible future anchor should the user choose to resume automated generation.
-            $dto->nextRenewal = $subscription->suggestedResumeRenewal();
+            $dto->nextRenewal = $subscription->suggestedResumeRenewal($this->clock->now());
         }
 
         $form = $this->createForm(type: CreatePaymentFormType::class, data: $dto, options: [

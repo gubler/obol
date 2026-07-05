@@ -24,6 +24,11 @@ doctrine:
         identity_generation_preferences:
             Doctrine\DBAL\Platforms\PostgreSQLPlatform: identity
         auto_mapping: true
+        # Postgres `value AT TIME ZONE zone`, exposed to DQL so owner-scoped finders can resolve a
+        # user's local date in SQL (payment generation keys off it; see ADR-0016).
+        dql:
+            datetime_functions:
+                at_time_zone: App\Doctrine\Query\AtTimeZoneFunction
         mappings:
             App:
                 type: attribute

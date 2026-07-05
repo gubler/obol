@@ -88,7 +88,10 @@ older docs.
   hidden by default but keep their full history. _Avoid_ "soft-delete" / "delete".
 - **renewal** - the point at which a subscription's next charge falls due, stored as the
   `nextRenewal` anchor the scheduler keys off (advanced one interval per payment, not by
-  when the user actually paid). _Avoid_ "payment due date" as a separate term.
+  when the user actually paid). It is a **calendar date in the owner's timezone**, not a UTC
+  instant: stored tz-naive at midnight and interpreted against the owner's *current* timezone at
+  read time, so a timezone change or a DST transition re-reads the same date rather than shifting
+  it. _Avoid_ "payment due date" as a separate term. See ADR-0016.
 - **payment generation** - whether Obol generates a subscription's payments automatically or the
   user manages them, stored as the `paymentGeneration` mode (`Automated` | `Manual`). Deleting a
   subscription's latest payment switches it to **manual**: the scheduler stops generating and the
@@ -140,6 +143,7 @@ Recorded under `reference/adr/`:
 - ADR-0013 - Payment source tracking (Category-shaped entity; reassign action; by-source report)
 - ADR-0014 - Authentication model (passwordless magic-link floor; multi-email backup credential)
 - ADR-0015 - Multi-user via per-row ownership (immutable owner FK; owner-scoped finders; Payment denormalized)
+- ADR-0016 - Renewal dates are timezone-naive, interpreted in the owner's zone at read time
 
 ADR-0006 records the CQRS-via-Messenger decision (keep the command/query buses; data
 access confined to the handler layer). ADR-0007 extends it with the write-path

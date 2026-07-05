@@ -31,8 +31,11 @@ final readonly class FindObligationOverTimeRunner
 
     public function __invoke(FindObligationOverTimeQuery $query): ObligationSeries
     {
-        $now = $this->clock->now();
-        $display = $this->userRepository->getForId($query->ownerUserId)->displayCurrency;
+        // Resolve "now" in the owner's timezone so the period anchors and their labels bucket the series
+        // on the owner's local calendar; the stored recordedAt dates stay UTC (see ADR-0016).
+        $owner = $this->userRepository->getForId($query->ownerUserId);
+        $now = $owner->toLocal($this->clock->now());
+        $display = $owner->displayCurrency;
         $snapshots = $this->snapshotRepository->findAllOrderedByRecordedAtForOwner($query->ownerUserId);
 
         $points = [];

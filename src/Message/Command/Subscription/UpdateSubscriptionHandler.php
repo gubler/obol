@@ -12,6 +12,7 @@ use App\Repository\PaymentSourceRepository;
 use App\Repository\SubscriptionRepository;
 use App\Service\SubscriptionChangeNotifierInterface;
 use App\ValueObject\Money;
+use Psr\Clock\ClockInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(bus: 'command.bus', handles: UpdateSubscriptionCommand::class)]
@@ -22,6 +23,7 @@ final readonly class UpdateSubscriptionHandler
         private CategoryRepository $categoryRepository,
         private PaymentSourceRepository $paymentSourceRepository,
         private SubscriptionChangeNotifierInterface $subscriptionChangeNotifier,
+        private ClockInterface $clock,
     ) {
     }
 
@@ -71,7 +73,7 @@ final readonly class UpdateSubscriptionHandler
 
         // update() has already set the anchor; resuming re-anchors it and flips back to automated.
         if ($command->restartPaymentGeneration) {
-            $subscription->automatePayments($command->nextRenewal);
+            $subscription->automatePayments($command->nextRenewal, $this->clock->now());
         }
 
         $this->subscriptionChangeNotifier->notifyChanged($command->ownerUserId);

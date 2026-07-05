@@ -7,7 +7,9 @@ namespace App\Repository;
 use App\Entity\Category;
 use App\Entity\PaymentSource;
 use App\Entity\Subscription;
+use App\Enum\PaymentGeneration;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bridge\Doctrine\Types\UlidType;
@@ -115,6 +117,32 @@ class SubscriptionRepository extends ServiceEntityRepository
         }
 
         return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Every subscription due for automatic payment generation, resolved in each owner's local timezone.
+     * Due means: not archived, on automatic generation, and its `nextRenewal` reached in the owner's zone.
+     *
+     * `nextRenewal` is a timezone-naive local date (ADR-0016), so the comparison joins the owner and
+     * evaluates `now` in that owner's zone (`AT TIME ZONE`) rather than UTC - a user behind UTC is not
+     * charged a day early. `$now` is the application clock, bound as an instant, so generation keys off
+     * application time regardless of the database clock. Filtering here (not in PHP) also means the
+     * generation sweep loads only the rows it will act on.
+     *
+     * @return list<Subscription>
+     */
+    public function findAllPendingPaymentGeneration(\DateTimeImmutable $now): array
+    {
+        return $this->createQueryBuilder('s')
+            ->join('s.owner', 'u')
+            ->andWhere('s.archived = false')
+            ->andWhere('s.paymentGeneration = :automated')
+            ->andWhere('s.nextRenewal <= AT_TIME_ZONE(:now, u.timezone)')
+            ->setParameter('automated', PaymentGeneration::Automated->value)
+            ->setParameter('now', $now->setTimezone(new \DateTimeZone('UTC')), Types::DATETIMETZ_IMMUTABLE)
+            ->getQuery()
+            ->getResult()
+        ;
     }
 
     private function activeForOwnerQb(Ulid $ownerId): QueryBuilder

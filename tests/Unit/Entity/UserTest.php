@@ -62,6 +62,32 @@ final class UserTest extends TestCase
         self::assertFalse($user->isEqualTo(new User(email: 'other@dev88.test')));
     }
 
+    public function testToLocalReExpressesAnInstantInTheUsersTimezoneWithoutChangingIt(): void
+    {
+        // A user behind UTC: 04:00 UTC is still the small hours of the same local day.
+        $newYorker = new User(email: 'ny@dev88.test', timezone: 'America/New_York');
+        $utc = new \DateTimeImmutable('2026-08-01 04:00:00', new \DateTimeZone('UTC'));
+
+        $local = $newYorker->toLocal($utc);
+
+        // Same instant, re-expressed in the owner's wall clock (00:00 EDT, UTC-4).
+        self::assertSame($utc->getTimestamp(), $local->getTimestamp());
+        self::assertSame('2026-08-01 00:00:00', $local->format('Y-m-d H:i:s'));
+        self::assertSame('America/New_York', $local->getTimezone()->getName());
+    }
+
+    public function testToLocalCrossesTheLocalDayBoundaryForAZoneAheadOfUtc(): void
+    {
+        // A user ahead of UTC: an instant still on Jul 31 in UTC is already Aug 1 locally.
+        $tokyoite = new User(email: 'jp@dev88.test', timezone: 'Asia/Tokyo');
+        $utc = new \DateTimeImmutable('2026-07-31 20:00:00', new \DateTimeZone('UTC'));
+
+        $local = $tokyoite->toLocal($utc);
+
+        self::assertSame($utc->getTimestamp(), $local->getTimestamp());
+        self::assertSame('2026-08-01 05:00:00', $local->format('Y-m-d H:i:s'));
+    }
+
     public function testSyncPrimaryEmailCacheAdoptsThePrimaryRowsAddress(): void
     {
         // A User starts with its constructor-created primary; a primary swap unmarks it and promotes a

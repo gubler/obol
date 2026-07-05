@@ -24,7 +24,7 @@ final class ScheduleTest extends TestCase
         self::assertInstanceOf(SymfonySchedule::class, $result);
     }
 
-    public function testScheduleHasRecurringMessagesConfigured(): void
+    public function testScheduleRunsPaymentGenerationHourlyAndTheExchangeRatePullDaily(): void
     {
         $cache = self::createStub(CacheInterface::class);
         $schedule = new Schedule($cache);
@@ -32,7 +32,11 @@ final class ScheduleTest extends TestCase
         $result = $schedule->getSchedule();
         $messages = $result->getRecurringMessages();
 
-        // Daily payment generation plus the daily exchange-rate pull.
-        self::assertCount(2, $messages);
+        // Payment generation is hourly so each timezone's local-midnight rollover is caught within the
+        // hour (ADR-0016); the exchange-rate pull stays daily.
+        $cadences = array_map(static fn (\Symfony\Component\Scheduler\RecurringMessage $message): string => (string) $message->getTrigger(), $messages);
+        sort($cadences);
+
+        self::assertSame(['every 1 day', 'every 1 hour'], $cadences);
     }
 }

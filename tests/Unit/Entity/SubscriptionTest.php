@@ -952,21 +952,28 @@ final class SubscriptionTest extends TestCase
         $subscription->removeLatestPayment($older);
     }
 
-    public function testAutomatingSetsGenerationToAutomatedAndAnchorsTheFutureRenewal(): void
+    /** A monthly subscription for the given owner and starting renewal (uncategorized, manual-eligible). */
+    private function subscriptionFor(User $owner, string $nextRenewal): Subscription
     {
-        $subscription = new Subscription(
-            owner: $this->owner,
-            category: $this->category,
+        return new Subscription(
+            owner: $owner,
+            category: null,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-02-01'),
+            nextRenewal: new \DateTimeImmutable($nextRenewal),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
         );
+    }
+
+    public function testAutomatingSetsGenerationToAutomatedAndAnchorsTheFutureRenewal(): void
+    {
+        $subscription = $this->subscriptionFor($this->owner, '2024-02-01');
         $subscription->switchToManualPayments();
 
-        $future = new \DateTimeImmutable('tomorrow');
-        $subscription->automatePayments($future);
+        $now = new \DateTimeImmutable('2026-06-15 12:00:00', new \DateTimeZone('UTC'));
+        $future = new \DateTimeImmutable('2026-06-20');
+        $subscription->automatePayments($future, $now);
 
         self::assertSame(PaymentGeneration::Automated, $subscription->paymentGeneration);
         self::assertTrue($subscription->generatesPaymentsAutomatically());
@@ -975,55 +982,73 @@ final class SubscriptionTest extends TestCase
 
     public function testAutomatingWithANonFutureRenewalIsRejected(): void
     {
-        $subscription = new Subscription(
-            owner: $this->owner,
-            category: $this->category,
-            name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-02-01'),
-            paymentPeriod: PaymentPeriod::Month,
-            paymentPeriodCount: 1,
-            cost: new Money(1500, Currency::USD),
-        );
+        $subscription = $this->subscriptionFor($this->owner, '2024-02-01');
         $subscription->switchToManualPayments();
+
+        $now = new \DateTimeImmutable('2026-06-15 12:00:00', new \DateTimeZone('UTC'));
 
         $this->expectException(\Assert\InvalidArgumentException::class);
 
-        $subscription->automatePayments(new \DateTimeImmutable('2020-01-01'));
+        $subscription->automatePayments(new \DateTimeImmutable('2020-01-01'), $now);
     }
 
-    public function testSuggestedResumeRenewalStepsTheCadenceToTheFirstDateAfterToday(): void
+    public function testAutomatingJudgesFutureOnTheOwnersLocalTodayAcceptingADateUtcWouldCallToday(): void
     {
-        $subscription = new Subscription(
-            owner: $this->owner,
-            category: $this->category,
-            name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2020-01-15'),
-            paymentPeriod: PaymentPeriod::Month,
-            paymentPeriodCount: 1,
-            cost: new Money(1500, Currency::USD),
-        );
+        // 06:00 UTC on June 15 is still June 14 in Honolulu (UTC-10), so a June 15 renewal is in the
+        // future for the owner even though UTC would already read it as today.
+        $subscription = $this->subscriptionFor(new User(email: 'hi@example.com', timezone: 'Pacific/Honolulu'), '2024-02-01');
+        $subscription->switchToManualPayments();
 
-        $suggested = $subscription->suggestedResumeRenewal();
+        $now = new \DateTimeImmutable('2026-06-15 06:00:00', new \DateTimeZone('UTC'));
+        $subscription->automatePayments(new \DateTimeImmutable('2026-06-15 00:00:00'), $now);
 
-        // Lands strictly after today and stays on the original day-of-cadence (the 15th).
-        self::assertGreaterThan(new \DateTimeImmutable('today'), $suggested);
-        self::assertSame('15', $suggested->format('d'));
+        self::assertSame(PaymentGeneration::Automated, $subscription->paymentGeneration);
+    }
+
+    public function testAutomatingRejectsADatePassedInTheOwnersTimezoneThatUtcWouldAccept(): void
+    {
+        // 20:00 UTC on June 15 is already June 16 in Tokyo (UTC+9), so a June 16 renewal is today there
+        // and must be rejected, though UTC would still call it tomorrow.
+        $subscription = $this->subscriptionFor(new User(email: 'jp@example.com', timezone: 'Asia/Tokyo'), '2024-02-01');
+        $subscription->switchToManualPayments();
+
+        $now = new \DateTimeImmutable('2026-06-15 20:00:00', new \DateTimeZone('UTC'));
+
+        $this->expectException(\Assert\InvalidArgumentException::class);
+
+        $subscription->automatePayments(new \DateTimeImmutable('2026-06-16 00:00:00'), $now);
+    }
+
+    public function testSuggestedResumeRenewalStepsTheCadenceToTheFirstDateAfterTheOwnersLocalToday(): void
+    {
+        // Owner is on New York; at noon UTC June 15 their local today is June 15, so the June 15 cadence
+        // date is today (not strictly after) and the suggestion steps to the 15th of the next month.
+        $subscription = $this->subscriptionFor($this->owner, '2020-01-15');
+
+        $now = new \DateTimeImmutable('2026-06-15 12:00:00', new \DateTimeZone('UTC'));
+
+        self::assertSame('2026-07-15', $subscription->suggestedResumeRenewal($now)->format('Y-m-d'));
+    }
+
+    public function testSuggestedResumeRenewalStepsRelativeToTheOwnersLocalTodayNotUtc(): void
+    {
+        // 06:00 UTC June 15 is June 14 in Honolulu, so the June 15 cadence date is already strictly after
+        // their local today and is suggested as-is; a UTC reading would have stepped past it to July 15.
+        $subscription = $this->subscriptionFor(new User(email: 'hi@example.com', timezone: 'Pacific/Honolulu'), '2020-01-15');
+
+        $now = new \DateTimeImmutable('2026-06-15 06:00:00', new \DateTimeZone('UTC'));
+
+        self::assertSame('2026-06-15', $subscription->suggestedResumeRenewal($now)->format('Y-m-d'));
     }
 
     public function testSuggestedResumeRenewalKeepsARenewalThatIsAlreadyInTheFuture(): void
     {
-        $future = new \DateTimeImmutable('+40 days');
-        $subscription = new Subscription(
-            owner: $this->owner,
-            category: $this->category,
-            name: 'Netflix',
-            nextRenewal: $future,
-            paymentPeriod: PaymentPeriod::Month,
-            paymentPeriodCount: 1,
-            cost: new Money(1500, Currency::USD),
-        );
+        $future = new \DateTimeImmutable('2027-03-15');
+        $subscription = $this->subscriptionFor($this->owner, '2027-03-15');
 
-        self::assertSameInstant($future, $subscription->suggestedResumeRenewal());
+        $now = new \DateTimeImmutable('2026-06-15 12:00:00', new \DateTimeZone('UTC'));
+
+        self::assertSameInstant($future, $subscription->suggestedResumeRenewal($now));
     }
 
     public function testSetsArchivedToTrue(): void

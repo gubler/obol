@@ -13,6 +13,7 @@ use App\Message\Command\Payment\CreatePaymentCommand;
 use App\Message\Command\Payment\CreatePaymentHandler;
 use App\Repository\SubscriptionRepository;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Clock\MockClock;
 use Symfony\Component\Uid\Ulid;
 
 final class CreatePaymentHandlerTest extends TestCase
@@ -35,7 +36,7 @@ final class CreatePaymentHandlerTest extends TestCase
             ->willReturn($subscription)
         ;
 
-        $handler = new CreatePaymentHandler($repository);
+        $handler = new CreatePaymentHandler($repository, new MockClock());
         $handler(new CreatePaymentCommand(
             ownerUserId: new Ulid(),
             subscriptionId: $ulid,
@@ -55,15 +56,16 @@ final class CreatePaymentHandlerTest extends TestCase
             ->method('recordPayment')
             ->with($paidDate, PaymentType::Verified, 1500)
         ;
+        $clock = new MockClock(new \DateTimeImmutable('2026-06-15 12:00:00', new \DateTimeZone('UTC')));
         $subscription->expects(self::once())
             ->method('automatePayments')
-            ->with($nextRenewal)
+            ->with($nextRenewal, $clock->now())
         ;
 
         $repository = $this->createMock(SubscriptionRepository::class);
         $repository->expects(self::once())->method('findForOwner')->willReturn($subscription);
 
-        $handler = new CreatePaymentHandler($repository);
+        $handler = new CreatePaymentHandler($repository, $clock);
         $handler(new CreatePaymentCommand(
             ownerUserId: new Ulid(),
             subscriptionId: $ulid,
@@ -84,7 +86,7 @@ final class CreatePaymentHandlerTest extends TestCase
             ->willReturn(null)
         ;
 
-        $handler = new CreatePaymentHandler($repository);
+        $handler = new CreatePaymentHandler($repository, new MockClock());
 
         $this->expectException(\InvalidArgumentException::class);
 

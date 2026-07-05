@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Twig;
 
+use App\Entity\User;
 use App\Twig\RenewalLabelExtension;
 use Knp\Bundle\TimeBundle\DateTimeFormatter;
 use PHPUnit\Framework\TestCase;
@@ -20,29 +21,29 @@ final class RenewalLabelExtensionTest extends TestCase
         $renewal = new \DateTimeImmutable('2026-06-18 00:00:00', new \DateTimeZone('UTC'));
 
         // Early morning and late evening on the same calendar day both read "Today".
-        self::assertSame('Today', $this->extensionAt('2026-06-18 00:30:00')->label($renewal));
-        self::assertSame('Today', $this->extensionAt('2026-06-18 23:30:00')->label($renewal));
+        self::assertSame('Today', $this->extensionAt('2026-06-18 00:30:00')->label($renewal, self::utcOwner()));
+        self::assertSame('Today', $this->extensionAt('2026-06-18 23:30:00')->label($renewal, self::utcOwner()));
     }
 
     public function testRenewalDatedTomorrowReadsTomorrow(): void
     {
         $renewal = new \DateTimeImmutable('2026-06-19 00:00:00', new \DateTimeZone('UTC'));
 
-        self::assertSame('Tomorrow', $this->extensionAt('2026-06-18 23:30:00')->label($renewal));
+        self::assertSame('Tomorrow', $this->extensionAt('2026-06-18 23:30:00')->label($renewal, self::utcOwner()));
     }
 
     public function testRenewalTwoOrMoreDaysOutDelegatesToTimeDiff(): void
     {
         $renewal = new \DateTimeImmutable('2026-06-20 00:00:00', new \DateTimeZone('UTC'));
 
-        self::assertSame('diff.in.day:2', $this->extensionAt('2026-06-18 12:00:00')->label($renewal));
+        self::assertSame('diff.in.day:2', $this->extensionAt('2026-06-18 12:00:00')->label($renewal, self::utcOwner()));
     }
 
     public function testPastRenewalDelegatesToTimeDiff(): void
     {
         $renewal = new \DateTimeImmutable('2026-06-17 00:00:00', new \DateTimeZone('UTC'));
 
-        self::assertSame('diff.ago.day:1', $this->extensionAt('2026-06-18 12:00:00')->label($renewal));
+        self::assertSame('diff.ago.day:1', $this->extensionAt('2026-06-18 12:00:00')->label($renewal, self::utcOwner()));
     }
 
     public function testDayCountIncludesTheRenewalDayAndIgnoresTimeOfDay(): void
@@ -52,8 +53,8 @@ final class RenewalLabelExtensionTest extends TestCase
         // of day the page is viewed - morning and evening on the same day read the same.
         $renewal = new \DateTimeImmutable('2026-07-22 00:00:00', new \DateTimeZone('UTC'));
 
-        self::assertSame('diff.in.day:23', $this->extensionAt('2026-06-29 01:00:00')->label($renewal));
-        self::assertSame('diff.in.day:23', $this->extensionAt('2026-06-29 23:00:00')->label($renewal));
+        self::assertSame('diff.in.day:23', $this->extensionAt('2026-06-29 01:00:00')->label($renewal, self::utcOwner()));
+        self::assertSame('diff.in.day:23', $this->extensionAt('2026-06-29 23:00:00')->label($renewal, self::utcOwner()));
     }
 
     public function testLongerHorizonsStillRenderInCoarserUnits(): void
@@ -62,7 +63,23 @@ final class RenewalLabelExtensionTest extends TestCase
         // a renewal two months out still reads in months, not in days.
         $renewal = new \DateTimeImmutable('2026-08-29 00:00:00', new \DateTimeZone('UTC'));
 
-        self::assertSame('diff.in.month:2', $this->extensionAt('2026-06-29 12:00:00')->label($renewal));
+        self::assertSame('diff.in.month:2', $this->extensionAt('2026-06-29 12:00:00')->label($renewal, self::utcOwner()));
+    }
+
+    public function testResolvesTodayInTheOwnersTimezoneNotUtc(): void
+    {
+        // A renewal dated June 18, viewed at 02:00 UTC on June 18. For a UTC owner that is "Today"; for a
+        // Honolulu owner (UTC-10) it is still June 17 locally, so the June 18 renewal reads "Tomorrow".
+        $renewal = new \DateTimeImmutable('2026-06-18 00:00:00', new \DateTimeZone('UTC'));
+        $honolulu = new User(email: 'hi@example.com', timezone: 'Pacific/Honolulu');
+
+        self::assertSame('Today', $this->extensionAt('2026-06-18 02:00:00')->label($renewal, self::utcOwner()));
+        self::assertSame('Tomorrow', $this->extensionAt('2026-06-18 02:00:00')->label($renewal, $honolulu));
+    }
+
+    private static function utcOwner(): User
+    {
+        return new User(email: 'utc@example.com', timezone: 'UTC');
     }
 
     private function extensionAt(string $now): RenewalLabelExtension
@@ -70,7 +87,7 @@ final class RenewalLabelExtensionTest extends TestCase
         $translator = $this->fakeTranslator();
 
         return new RenewalLabelExtension(
-            new MockClock($now),
+            new MockClock(new \DateTimeImmutable($now, new \DateTimeZone('UTC'))),
             $translator,
             new DateTimeFormatter($translator),
         );

@@ -45,7 +45,7 @@ final class FindRemainingInPeriodRunnerTest extends TestCase
      * @param list<Subscription>   $subscriptions
      * @param array<string, float> $rates
      */
-    private function runRemaining(array $subscriptions, string $now, array $rates = []): RemainingInPeriod
+    private function runRemaining(array $subscriptions, string $now, array $rates = [], ?User $viewer = null): RemainingInPeriod
     {
         $repository = self::createMock(SubscriptionRepository::class);
         $repository->expects(self::once())->method('findActiveForOwner')->willReturn($subscriptions);
@@ -56,10 +56,12 @@ final class FindRemainingInPeriodRunnerTest extends TestCase
         ;
         $totaller = new CurrencyTotaller(new Converter($exchangeRateRepository));
 
+        // Default viewer is on UTC so the timezone-agnostic cases below read "now" unchanged; the
+        // timezone case passes an explicit non-UTC viewer.
         $userRepository = self::createStub(UserRepository::class);
-        $userRepository->method('getForId')->willReturn(new User(email: 'owner@example.com'));
+        $userRepository->method('getForId')->willReturn($viewer ?? new User(email: 'owner@example.com', timezone: 'UTC'));
 
-        $runner = new FindRemainingInPeriodRunner($repository, new PeriodBoundaries(0), $totaller, $userRepository, new MockClock(new \DateTimeImmutable($now)));
+        $runner = new FindRemainingInPeriodRunner($repository, new PeriodBoundaries(0), $totaller, $userRepository, new MockClock(new \DateTimeImmutable($now, new \DateTimeZone('UTC'))));
 
         return $runner(new FindRemainingInPeriodQuery(ownerUserId: new Ulid()));
     }
@@ -98,6 +100,19 @@ final class FindRemainingInPeriodRunnerTest extends TestCase
         self::assertSame(15400, $remaining->monthly->converted->minorAmount);   // 10000 USD + 5400 USD
         self::assertTrue($remaining->monthly->isApproximate);
         self::assertCount(2, $remaining->monthly->breakdown);
+    }
+
+    public function testResolvesTheCurrentPeriodInTheViewersTimezoneNotUtc(): void
+    {
+        // 2026-06-30 20:00 UTC is already 2026-07-01 in Tokyo (UTC+9), so a July 1 renewal is in-month
+        // for the Tokyo viewer. A UTC viewer would still be in June and see July 1 as outside the month.
+        $remaining = $this->runRemaining(
+            [self::remainingSubscription(10000, '2026-07-01')],
+            now: '2026-06-30 20:00:00',
+            viewer: new User(email: 'jp@example.com', timezone: 'Asia/Tokyo'),
+        );
+
+        self::assertSame(10000, $remaining->monthly->converted->minorAmount);
     }
 
     public function testIsZeroAcrossAllPeriodsWhenEveryRenewalIsBeyondTheYear(): void

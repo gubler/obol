@@ -76,6 +76,17 @@ class User implements UserInterface, EquatableInterface
     }
 
     /**
+     * Re-express an instant in this user's timezone, leaving the instant itself unchanged. The single
+     * seam for resolving "the user's local now/today": callers pass the application clock's instant and
+     * read the wall-clock date off the result. A `nextRenewal` is a local date, so its zone is the
+     * owner's zone applied here, never a stored offset (see ADR-0016).
+     */
+    public function toLocal(\DateTimeImmutable $instant): \DateTimeImmutable
+    {
+        return $instant->setTimezone(new \DateTimeZone($this->timezone));
+    }
+
+    /**
      * @return list<string>
      */
     public function getRoles(): array

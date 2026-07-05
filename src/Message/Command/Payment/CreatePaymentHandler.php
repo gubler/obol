@@ -9,6 +9,7 @@ namespace App\Message\Command\Payment;
 
 use App\Enum\PaymentType;
 use App\Repository\SubscriptionRepository;
+use Psr\Clock\ClockInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(bus: 'command.bus', handles: CreatePaymentCommand::class)]
@@ -16,6 +17,7 @@ final readonly class CreatePaymentHandler
 {
     public function __construct(
         private SubscriptionRepository $subscriptionRepository,
+        private ClockInterface $clock,
     ) {
     }
 
@@ -37,7 +39,7 @@ final readonly class CreatePaymentHandler
 
         if ($command->restartPaymentGeneration) {
             \assert($command->nextRenewal instanceof \DateTimeImmutable);
-            $subscription->automatePayments($command->nextRenewal);
+            $subscription->automatePayments($command->nextRenewal, $this->clock->now());
         }
     }
 }

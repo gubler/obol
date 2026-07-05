@@ -21,6 +21,7 @@ use App\Repository\PaymentSourceRepository;
 use App\Repository\SubscriptionRepository;
 use App\Service\SubscriptionChangeNotifierInterface;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Clock\MockClock;
 use Symfony\Component\Uid\Ulid;
 
 final class UpdateSubscriptionHandlerTest extends TestCase
@@ -55,7 +56,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
         $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
         $notifier->expects(self::once())->method('notifyChanged');
 
-        $handler = new UpdateSubscriptionHandler($subscriptionRepository, $categoryRepository, $paymentSourceRepository, $notifier);
+        $handler = new UpdateSubscriptionHandler($subscriptionRepository, $categoryRepository, $paymentSourceRepository, $notifier, new MockClock());
         $handler(new UpdateSubscriptionCommand(
             ownerUserId: new Ulid(),
             subscriptionId: $subscriptionUlid,
@@ -90,7 +91,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
         $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
         $notifier->expects(self::once())->method('notifyChanged');
 
-        $handler = new UpdateSubscriptionHandler($subscriptionRepository, $categoryRepository, $paymentSourceRepository, $notifier);
+        $handler = new UpdateSubscriptionHandler($subscriptionRepository, $categoryRepository, $paymentSourceRepository, $notifier, new MockClock());
         $handler(new UpdateSubscriptionCommand(
             ownerUserId: new Ulid(),
             subscriptionId: new Ulid(),
@@ -129,7 +130,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
         $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
         $notifier->expects(self::once())->method('notifyChanged');
 
-        $handler = new UpdateSubscriptionHandler($subscriptionRepository, $categoryRepository, $paymentSourceRepository, $notifier);
+        $handler = new UpdateSubscriptionHandler($subscriptionRepository, $categoryRepository, $paymentSourceRepository, $notifier, new MockClock());
         $handler(new UpdateSubscriptionCommand(
             ownerUserId: new Ulid(),
             subscriptionId: new Ulid(),
@@ -166,7 +167,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
         $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
         $notifier->expects(self::never())->method('notifyChanged');
 
-        $handler = new UpdateSubscriptionHandler($subscriptionRepository, $categoryRepository, $paymentSourceRepository, $notifier);
+        $handler = new UpdateSubscriptionHandler($subscriptionRepository, $categoryRepository, $paymentSourceRepository, $notifier, new MockClock());
 
         $this->expectException(\InvalidArgumentException::class);
         $handler(new UpdateSubscriptionCommand(
@@ -195,7 +196,8 @@ final class UpdateSubscriptionHandlerTest extends TestCase
 
         $subscription = $this->createMock(Subscription::class);
         $subscription->expects(self::once())->method('update');
-        $subscription->expects(self::once())->method('automatePayments')->with($nextRenewal);
+        // The handler passes its clock's current instant as the "now" automatePayments judges against.
+        $subscription->expects(self::once())->method('automatePayments')->with($nextRenewal, self::isInstanceOf(\DateTimeImmutable::class));
 
         $category = self::createStub(Category::class);
 
@@ -211,7 +213,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
         $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
         $notifier->expects(self::once())->method('notifyChanged');
 
-        $handler = new UpdateSubscriptionHandler($subscriptionRepository, $categoryRepository, $paymentSourceRepository, $notifier);
+        $handler = new UpdateSubscriptionHandler($subscriptionRepository, $categoryRepository, $paymentSourceRepository, $notifier, new MockClock());
         $handler(new UpdateSubscriptionCommand(
             ownerUserId: new Ulid(),
             subscriptionId: $subscriptionUlid,
@@ -243,7 +245,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
         $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
         $notifier->expects(self::never())->method('notifyChanged');
 
-        $handler = new UpdateSubscriptionHandler($subscriptionRepository, $categoryRepository, $paymentSourceRepository, $notifier);
+        $handler = new UpdateSubscriptionHandler($subscriptionRepository, $categoryRepository, $paymentSourceRepository, $notifier, new MockClock());
 
         $this->expectException(\InvalidArgumentException::class);
         $handler(new UpdateSubscriptionCommand(
@@ -284,7 +286,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
         $notifier = $this->createMock(SubscriptionChangeNotifierInterface::class);
         $notifier->expects(self::never())->method('notifyChanged');
 
-        $handler = new UpdateSubscriptionHandler($subscriptionRepository, $categoryRepository, $paymentSourceRepository, $notifier);
+        $handler = new UpdateSubscriptionHandler($subscriptionRepository, $categoryRepository, $paymentSourceRepository, $notifier, new MockClock());
 
         $this->expectException(\InvalidArgumentException::class);
         $handler(new UpdateSubscriptionCommand(

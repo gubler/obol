@@ -42,7 +42,7 @@ Three services:
 
 - Same image as `php`, run with `messenger:consume mail async scheduler_default --time-limit=3600`
 - Drains three transports in priority order (mail first): `mail` (outbound transactional email), `async` (general off-request work, empty for now), and `scheduler_default` (the Symfony Scheduler)
-- Drives the daily payment-generation schedule; **without it the scheduler never fires** and queued mail never sends
+- Drives the hourly payment-generation schedule; **without it the scheduler never fires** and queued mail never sends
 - Depends on `php` being healthy (so vendor install and migrations are already done before it boots), and on `database`
 - `restart: unless-stopped`; recycles hourly via the time limit
 - Present in dev too (base + override), so the scheduler and mail delivery run locally

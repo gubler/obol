@@ -38,7 +38,7 @@ final class FindObligationOverTimeRunnerTest extends TestCase
      * @param list<ObligationSnapshot> $snapshots
      * @param array<string, float>     $rates
      */
-    private function runTrend(array $snapshots, string $now, ObligationTrendPeriod $period = ObligationTrendPeriod::Month, array $rates = []): ObligationSeries
+    private function runTrend(array $snapshots, string $now, ObligationTrendPeriod $period = ObligationTrendPeriod::Month, array $rates = [], ?User $viewer = null): ObligationSeries
     {
         $repository = self::createStub(ObligationSnapshotRepository::class);
         $repository->method('findAllOrderedByRecordedAtForOwner')->willReturn($snapshots);
@@ -49,10 +49,12 @@ final class FindObligationOverTimeRunnerTest extends TestCase
         ;
         $totaller = new CurrencyTotaller(new Converter($exchangeRateRepository));
 
+        // Default viewer is on UTC so the timezone-agnostic cases read "now" unchanged; the timezone
+        // case passes an explicit non-UTC viewer.
         $userRepository = self::createStub(UserRepository::class);
-        $userRepository->method('getForId')->willReturn(new User(email: 'owner@example.com'));
+        $userRepository->method('getForId')->willReturn($viewer ?? new User(email: 'owner@example.com', timezone: 'UTC'));
 
-        $runner = new FindObligationOverTimeRunner($repository, $totaller, $userRepository, new PeriodBoundaries(0), new MockClock(new \DateTimeImmutable($now)));
+        $runner = new FindObligationOverTimeRunner($repository, $totaller, $userRepository, new PeriodBoundaries(0), new MockClock(new \DateTimeImmutable($now, new \DateTimeZone('UTC'))));
 
         return $runner(new FindObligationOverTimeQuery($period, new Ulid()));
     }
@@ -127,6 +129,21 @@ final class FindObligationOverTimeRunnerTest extends TestCase
         self::assertSame(15400, $byLabel['Jan 2026']);
         self::assertSame(15400, $byLabel['Jun 2026']);
         self::assertTrue($series->isApproximate);
+    }
+
+    public function testAnchorsTheCurrentBucketInTheViewersTimezoneNotUtc(): void
+    {
+        // 2026-06-30 20:00 UTC is already 2026-07-01 in Tokyo (UTC+9), so the current month bucket the
+        // series ends on is July, not June.
+        $series = $this->runTrend(
+            [],
+            now: '2026-06-30 20:00:00',
+            viewer: new User(email: 'jp@example.com', timezone: 'Asia/Tokyo'),
+        );
+
+        $labels = array_map(static fn (\App\Message\Query\Report\ObligationPoint $point): string => $point->label, $series->points);
+
+        self::assertSame('Jul 2026', end($labels));
     }
 
     public function testAWeeklyTrendLooksBackOver52WeekStartBuckets(): void

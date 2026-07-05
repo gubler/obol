@@ -25,7 +25,9 @@ readonly class Schedule implements ScheduleProviderInterface
         return new SymfonySchedule()
             ->stateful($this->cache) // ensure missed tasks are executed
             ->processOnlyLastMissedRun(true) // ensure only last missed task is run
-            ->add(RecurringMessage::every('1 day', new GeneratePaymentsMessage()))
+            // Hourly, not daily: each timezone crosses its local midnight on a different UTC hour, so an
+            // hourly cadence catches every owner's local renewal rollover within the hour (see ADR-0016).
+            ->add(RecurringMessage::every('1 hour', new GeneratePaymentsMessage()))
             ->add(RecurringMessage::every('1 day', new PullExchangeRatesMessage()))
         ;
     }

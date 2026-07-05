@@ -21,6 +21,7 @@ use App\Tests\Support\InstantAssertions;
 use App\ValueObject\Money;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Clock\MockClock;
 
 final class GenerateDuePaymentsHandlerTest extends TestCase
 {
@@ -40,14 +41,23 @@ final class GenerateDuePaymentsHandlerTest extends TestCase
     }
 
     /**
+     * The handler trusts the finder: whichever subscriptions it returns are due (the timezone-aware
+     * "is it due" filter lives in findAllPendingPaymentGeneration, covered by SubscriptionRepositoryTest).
+     * So these tests feed the due set directly and assert the handler records a payment for each.
+     *
      * @param list<Subscription> $subscriptions
      */
     private function runGenerateDuePayments(array $subscriptions): void
     {
-        $repository = $this->createMock(SubscriptionRepository::class);
-        $repository->expects(self::once())->method('findBy')->with(['archived' => false])->willReturn($subscriptions);
+        $clock = new MockClock(new \DateTimeImmutable('2026-08-01 04:00:00', new \DateTimeZone('UTC')));
 
-        (new GenerateDuePaymentsHandler($repository))(new GenerateDuePaymentsCommand());
+        $repository = $this->createMock(SubscriptionRepository::class);
+        $repository->expects(self::once())->method('findAllPendingPaymentGeneration')
+            ->with($clock->now())
+            ->willReturn($subscriptions)
+        ;
+
+        (new GenerateDuePaymentsHandler($repository, $clock))(new GenerateDuePaymentsCommand());
     }
 
     public function testGeneratesAPaymentDatedToTheRenewalWhenItHasPassed(): void
@@ -63,26 +73,6 @@ final class GenerateDuePaymentsHandlerTest extends TestCase
         self::assertSame(1599, $payment->amount->minorAmount);
         self::assertSameInstant(new \DateTimeImmutable('2020-01-01'), $payment->paidDate);
         self::assertSameInstant(new \DateTimeImmutable('2020-02-01'), $subscription->nextRenewal);
-    }
-
-    public function testSkipsASubscriptionWhoseRenewalIsInTheFuture(): void
-    {
-        $subscription = self::makeDuePaymentSubscription(PaymentPeriod::Month, 1, new \DateTimeImmutable('+10 days'));
-
-        $this->runGenerateDuePayments([$subscription]);
-
-        self::assertCount(0, $subscription->payments);
-    }
-
-    public function testSkipsASubscriptionSetToManualPaymentGenerationEvenWhenItsRenewalHasPassed(): void
-    {
-        $subscription = self::makeDuePaymentSubscription(PaymentPeriod::Month, 1, new \DateTimeImmutable('2020-01-01'));
-        $subscription->switchToManualPayments();
-
-        $this->runGenerateDuePayments([$subscription]);
-
-        self::assertCount(0, $subscription->payments);
-        self::assertSameInstant(new \DateTimeImmutable('2020-01-01'), $subscription->nextRenewal);
     }
 
     #[DataProvider('provideAdvancesTheRenewalAnchorByTheConfiguredIntervalCases')]

@@ -489,13 +489,14 @@ class Subscription
     }
 
     /**
-     * Resumes automated generation, anchored to a future renewal. The anchor must be after today so
-     * resuming never triggers an immediate catch-up generation on the next scheduler run.
+     * Resumes automated generation, anchored to a future renewal. The anchor must be after the owner's
+     * local today (`$now` is the current instant, judged in the owner's zone) so resuming never triggers
+     * an immediate catch-up generation on the next scheduler run.
      */
-    public function automatePayments(\DateTimeImmutable $nextRenewal): void
+    public function automatePayments(\DateTimeImmutable $nextRenewal, \DateTimeImmutable $now): void
     {
         Assertion::true(
-            $nextRenewal > new \DateTimeImmutable('today'),
+            $nextRenewal > $this->localToday($now),
             'Automated payments require a renewal date in the future',
         );
 
@@ -508,14 +509,26 @@ class Subscription
      * forward from the current anchor until it lands strictly after today. A renewal already in the
      * future is returned unchanged.
      */
-    public function suggestedResumeRenewal(): \DateTimeImmutable
+    public function suggestedResumeRenewal(\DateTimeImmutable $now): \DateTimeImmutable
     {
-        $today = new \DateTimeImmutable('today');
+        $today = $this->localToday($now);
         $renewal = $this->nextRenewal;
         while ($renewal <= $today) {
             $renewal = $renewal->add($this->renewalInterval());
         }
 
         return $renewal;
+    }
+
+    /**
+     * Today in the owner's timezone, as a naive midnight matching how `nextRenewal` is stored: a renewal
+     * is a naive local date (ADR-0016), so both sides of the comparison must be in the same naive frame
+     * rather than one naive and one zoned, or the check is off by the owner's offset near midnight. The
+     * caller passes the current instant (from the application clock) so this stays deterministic and
+     * testable; the owner's zone - and so the invariant - is still applied here, not by the caller.
+     */
+    private function localToday(\DateTimeImmutable $now): \DateTimeImmutable
+    {
+        return new \DateTimeImmutable($this->owner->toLocal($now)->format('Y-m-d'));
     }
 }

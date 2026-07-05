@@ -32,8 +32,11 @@ final readonly class FindRemainingInPeriodRunner
 
     public function __invoke(FindRemainingInPeriodQuery $query): RemainingInPeriod
     {
-        $asOf = $this->clock->now();
-        $display = $this->userRepository->getForId($query->ownerUserId)->displayCurrency;
+        // Resolve "now" in the owner's timezone so the calendar-period boundaries land on their local
+        // week/month/year, not UTC's (see ADR-0016).
+        $owner = $this->userRepository->getForId($query->ownerUserId);
+        $asOf = $owner->toLocal($this->clock->now());
+        $display = $owner->displayCurrency;
         $subscriptions = $this->subscriptionRepository->findActiveForOwner($query->ownerUserId);
 
         return new RemainingInPeriod(

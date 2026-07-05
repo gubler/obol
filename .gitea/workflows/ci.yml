@@ -74,8 +74,17 @@ jobs:
               run: npm ci
 
             - name: "Install OS packages and PHP extensions"
+              # Chromium is pinned to the last-known-good version. The current chromium in
+              # trixie-security (150.x) crashes on launch with SIGTRAP on arm64 - a browser subprocess
+              # dies before a session is created - which breaks the Panther browser test. 147.x from
+              # trixie/main predates that regression and is the newest version that still launches on
+              # this runner. Drop the pin once upstream chromium fixes the arm64 crash.
+              env:
+                  CHROMIUM_VERSION: "147.0.7727.137-1~deb13u1"
               run: |
-                  apt-get install -y --no-install-recommends file ca-certificates chromium chromium-driver
+                  apt-get install -y --no-install-recommends file ca-certificates \
+                      chromium="$CHROMIUM_VERSION" chromium-common="$CHROMIUM_VERSION" \
+                      chromium-driver="$CHROMIUM_VERSION" chromium-sandbox="$CHROMIUM_VERSION"
                   install-php-extensions @composer intl mbstring zip pdo_pgsql pcov
 
             - name: "Validate Composer config"

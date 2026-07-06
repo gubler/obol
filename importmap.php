@@ -38,4 +38,6 @@ return [
     'chart.js' => ['version' => '4.5.1'],
     '@kurkle/color' => ['version' => '0.3.4'],
     '@simplewebauthn/browser' => ['version' => '13.3.0'],
+    'driver.js' => ['version' => '1.6.0'],
+    'driver.js/dist/driver.css' => ['version' => '1.6.0', 'type' => 'css'],
 ];

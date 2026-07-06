@@ -23,6 +23,18 @@ A few things worth knowing:
 
 During closed testing, accounts are set up for you - if you can't sign in, ask whoever invited you.
 
+## Welcome and setup
+
+The first time you sign in, Obol asks a couple of quick questions so everything reads the way you expect:
+
+- **What should we call you?** - a name, nickname, or whatever you like. It shows in the top bar. Leave it blank and Obol just uses your email address.
+- **Your default currency** - pre-filled from your device, so it's usually already right. This is the currency your totals are shown in; change it if you'd rather see another.
+- **Your timezone** - pre-filled from your device, so "today" and renewal dates line up with your local day.
+
+You only do this once. You can change these later, along with your language and date formatting, from your account settings.
+
+Right after setup, Obol offers a quick tour of the essentials. You can take it then, or skip it - either way, the **Take the tour** link at the foot of your dashboard starts it again whenever you want.
+
 ## The dashboard
 
 The home page is your dashboard - every subscription you're tracking, at a glance.

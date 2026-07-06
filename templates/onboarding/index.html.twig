@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'onboarding.title'|trans }}{% endblock %}
+
+{% block body %}
+    <div class="mx-auto max-w-lg">
+        <h1 class="text-2xl font-bold text-fg">{{ 'onboarding.heading'|trans }}</h1>
+        <p class="mt-2 text-fg-muted">{{ 'onboarding.intro'|trans }}</p>
+
+        {{ form_start(form, {attr: {class: 'mt-8 space-y-6', 'data-controller': 'timezone-detect'}}) }}
+
+            {{ form_row(form.displayName) }}
+            {{ form_row(form.displayCurrency) }}
+            {{ form_row(form.timezone) }}
+
+            <p class="text-sm text-fg-muted">{{ 'onboarding.form.change_later'|trans }}</p>
+
+            <div class="flex justify-end">
+                <button type="submit" class="rounded bg-brand px-4 py-2 font-bold text-on-brand hover:bg-brand-strong">
+                    {{ 'onboarding.form.submit'|trans }}
+                </button>
+            </div>
+
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

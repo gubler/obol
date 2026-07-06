@@ -12,3 +12,7 @@ declare module '@tailwindplus/elements';
 // later by adding it as a typed devDependency (pinned to the importmap version) if we want genuine
 // coverage of the passkey controllers.
 declare module '@simplewebauthn/browser';
+// driver.js powers the product tour; its stylesheet is a bare CSS import. Both are vendored via
+// importmap. driver.js ships real types; ratchet later with a pinned typed devDependency if wanted.
+declare module 'driver.js';
+declare module 'driver.js/dist/driver.css';

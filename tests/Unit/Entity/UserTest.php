@@ -38,6 +38,52 @@ final class UserTest extends TestCase
         self::assertSame('Europe/Berlin', $user->timezone);
     }
 
+    public function testDisplayNameDefaultsToTheEmailAndIsNotYetOnboarded(): void
+    {
+        // A freshly-created account has never confirmed its first-run settings, and is never nameless:
+        // displayName seeds to the email until onboarding replaces it.
+        $user = new User(email: 'magos@dev88.test');
+
+        self::assertSame('magos@dev88.test', $user->displayName);
+        self::assertFalse($user->hasCompletedOnboarding());
+        self::assertNull($user->onboardingCompletedAt);
+    }
+
+    public function testCompleteOnboardingConfirmsSettingsStampsAndReplacesTheName(): void
+    {
+        $user = new User(email: 'magos@dev88.test');
+        $at = new \DateTimeImmutable('2026-07-06 12:00:00');
+
+        $user->completeOnboarding('Magos', Currency::GBP, 'Europe/London', $at);
+
+        self::assertSame('Magos', $user->displayName);
+        self::assertSame(Currency::GBP, $user->displayCurrency);
+        self::assertSame('Europe/London', $user->timezone);
+        self::assertTrue($user->hasCompletedOnboarding());
+        self::assertSame($at, $user->onboardingCompletedAt);
+    }
+
+    public function testCompleteOnboardingWithABlankNameKeepsTheEmailDefault(): void
+    {
+        $user = new User(email: 'magos@dev88.test');
+
+        $user->completeOnboarding('   ', Currency::EUR, 'Europe/Berlin');
+
+        // The name is optional; leaving it blank keeps the never-nameless email default.
+        self::assertSame('magos@dev88.test', $user->displayName);
+        self::assertSame(Currency::EUR, $user->displayCurrency);
+        self::assertTrue($user->hasCompletedOnboarding());
+    }
+
+    public function testCompleteOnboardingIsRejectedOnceAlreadyComplete(): void
+    {
+        $user = new User(email: 'magos@dev88.test');
+        $user->completeOnboarding('Magos', Currency::GBP, 'Europe/London');
+
+        $this->expectException(\InvalidArgumentException::class);
+        $user->completeOnboarding('Someone Else', Currency::USD, 'America/New_York');
+    }
+
     public function testAlwaysCarriesRoleUserAndDedupesExplicitRoles(): void
     {
         $user = new User(email: 'magos@dev88.test', roles: ['ROLE_ADMIN', 'ROLE_USER']);

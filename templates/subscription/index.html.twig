@@ -7,13 +7,28 @@
         <h1 class="text-3xl font-bold tracking-tight text-header-fg">
             {{ 'subscription.index.heading'|trans }}
         </h1>
-        <a href="{{ path('subscription_new') }}" class="bg-brand hover:bg-brand-strong text-on-brand font-bold py-2 px-4 rounded">
+        <a href="{{ path('subscription_new') }}" data-tour="add" class="bg-brand hover:bg-brand-strong text-on-brand font-bold py-2 px-4 rounded">
             {{ 'subscription.index.new'|trans }}
         </a>
     </div>
 {% endblock %}
 
 {% block body %}
+    {% if app.request.query.get('welcome') %}
+        <div class="tour-welcome mb-6 rounded-lg border border-info bg-info-surface px-4 py-3">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <p class="font-semibold text-fg">{{ 'tour.welcome.heading'|trans }}</p>
+                    <p class="mt-1 text-sm text-fg-muted">{{ 'tour.welcome.body'|trans }}</p>
+                </div>
+                <div class="flex shrink-0 gap-2">
+                    <button type="button" data-action="tour#start" class="rounded bg-brand px-3 py-2 text-sm font-bold text-on-brand hover:bg-brand-strong">{{ 'tour.welcome.start'|trans }}</button>
+                    <a href="{{ path('subscription_index') }}" class="rounded px-3 py-2 text-sm font-medium text-fg-muted hover:bg-surface-2">{{ 'tour.welcome.dismiss'|trans }}</a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
     {% for message in app.flashes('success') %}
         <div class="flash-success bg-success-surface border border-success text-success px-4 py-3 rounded mb-4">
             {{ message }}
@@ -34,7 +49,7 @@
 
         {% set base_params = {view: view, group: grouped ? '1' : '0', archived: includeArchived ? '1' : '0', sort: sort.value, capstone: capstoneMode} %}
 
-        <section class="global-totals mb-6 rounded-lg border border-line bg-surface p-4">
+        <section class="global-totals mb-6 rounded-lg border border-line bg-surface p-4" data-tour="totals">
             <div class="mb-3 inline-flex rounded-md bg-surface-2 p-1">
                 <a href="{{ path('subscription_index', base_params|merge({capstone: 'totals'})) }}"
                    class="{{ toggle_link }} {{ capstoneMode == 'totals' ? toggle_on : toggle_off }}">{{ 'subscription.capstone.global_totals'|trans }}</a>

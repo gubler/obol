@@ -60,4 +60,26 @@ final class LayoutTest extends AuthenticatedTestCase
         self::assertResponseIsSuccessful();
         self::assertSelectorNotExists(selector: 'img[alt="Your Company"]');
     }
+
+    public function testFooterOffersTheTourOnTheDashboard(): void
+    {
+        $client = $this->authenticatedClient();
+
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists(selector: 'footer [data-action="tour#start"]');
+    }
+
+    public function testFooterDoesNotOfferTheTourOffTheDashboard(): void
+    {
+        // The tour highlights the dashboard, so the re-summon link only appears there - elsewhere it
+        // would either hook nothing or force a navigation away.
+        $client = $this->authenticatedClient();
+
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists(selector: 'footer [data-action="tour#start"]');
+    }
 }

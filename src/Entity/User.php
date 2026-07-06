@@ -49,6 +49,13 @@ class User implements UserInterface, EquatableInterface
     public private(set) Collection $emails;
 
     /**
+     * How the account refers to itself in the UI. Seeded to the email at construction so a User is
+     * never nameless, then replaced by the answer to "What should we call you?" during onboarding.
+     */
+    #[ORM\Column]
+    public private(set) string $displayName;
+
+    /**
      * @param list<string> $roles
      */
     public function __construct(
@@ -62,6 +69,13 @@ class User implements UserInterface, EquatableInterface
         public private(set) string $locale = 'en-US',
         #[ORM\Column]
         public private(set) string $timezone = 'America/New_York',
+        /**
+         * When first-run onboarding was completed; null until then. The onboarding gate keys off this.
+         * Normally stamped only by completeOnboarding(); the constructor param lets seeding/fixtures mark
+         * an account already onboarded (mirrors $createdAt), the way the founder backfill does in SQL.
+         */
+        #[ORM\Column(nullable: true)]
+        public private(set) ?\DateTimeImmutable $onboardingCompletedAt = null,
     ) {
         $this->id = new Ulid();
         $this->userHandle = Uuid::v4();
@@ -72,6 +86,8 @@ class User implements UserInterface, EquatableInterface
         Assertion::notEq($email, '', 'User email must not be empty.');
         // The session identifier: a denormalized cache of the primary address.
         $this->email = $email;
+        // Never nameless: seed the display name to the email until onboarding replaces it.
+        $this->displayName = $this->email;
 
         // A User is never valid without its primary address, so it creates one here rather than trusting
         // a caller to remember. Verified on creation because control of the address is always established
@@ -94,6 +110,35 @@ class User implements UserInterface, EquatableInterface
     public function toLocal(\DateTimeImmutable $instant): \DateTimeImmutable
     {
         return $instant->setTimezone(new \DateTimeZone($this->timezone));
+    }
+
+    public function hasCompletedOnboarding(): bool
+    {
+        return $this->onboardingCompletedAt instanceof \DateTimeImmutable;
+    }
+
+    /**
+     * Confirm the first-run settings in one coherent, un-bypassable mutation and mark onboarding done.
+     * The name is optional: a blank answer keeps the email default seeded at construction, so the
+     * account is never nameless. Locale is deliberately untouched here - capturing a language and date
+     * format is deferred until per-user locale application lands.
+     */
+    public function completeOnboarding(
+        ?string $displayName,
+        Currency $displayCurrency,
+        string $timezone,
+        ?\DateTimeImmutable $at = null,
+    ): void {
+        Assertion::null($this->onboardingCompletedAt, 'Onboarding is already complete.');
+
+        $name = trim($displayName ?? '');
+        if ('' !== $name) {
+            $this->displayName = $name;
+        }
+
+        $this->displayCurrency = $displayCurrency;
+        $this->timezone = $timezone;
+        $this->onboardingCompletedAt = $at ?? new \DateTimeImmutable();
     }
 
     /**

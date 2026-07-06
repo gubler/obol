@@ -25,7 +25,17 @@
         {% endblock %}
     </head>
     <body class="h-full">
-    <div class="min-h-full">
+    {% if app.user %}
+        {% set tour_labels = {
+            subscriptions: {title: 'tour.step.subscriptions.title'|trans, body: 'tour.step.subscriptions.body'|trans},
+            add: {title: 'tour.step.add.title'|trans, body: 'tour.step.add.body'|trans},
+            totals: {title: 'tour.step.totals.title'|trans, body: 'tour.step.totals.body'|trans},
+            categories: {title: 'tour.step.categories.title'|trans, body: 'tour.step.categories.body'|trans},
+            reports: {title: 'tour.step.reports.title'|trans, body: 'tour.step.reports.body'|trans},
+            theme: {title: 'tour.step.theme.title'|trans, body: 'tour.step.theme.body'|trans},
+        } %}
+    {% endif %}
+    <div class="min-h-full"{% if app.user %} data-controller="tour" data-tour-labels-value="{{ tour_labels|json_encode }}"{% endif %}>
         <div class="relative bg-header pb-32">
             <nav class="bg-header">
                 <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -40,10 +50,10 @@
                                 {% if app.user %}
                                 <div class="hidden md:block">
                                     <div class="ml-10 flex items-baseline space-x-4">
-                                        <a href="{{ path('subscription_index') }}" class="rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.subscriptions'|trans }}</a>
-                                        <a href="{{ path('category_index') }}" class="rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.categories'|trans }}</a>
+                                        <a href="{{ path('subscription_index') }}" data-tour="subscriptions" class="rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.subscriptions'|trans }}</a>
+                                        <a href="{{ path('category_index') }}" data-tour="categories" class="rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.categories'|trans }}</a>
                                         <a href="{{ path('payment_source_index') }}" class="rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.payment_sources'|trans }}</a>
-                                        <a href="{{ path('reports_index') }}" class="rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.reports'|trans }}</a>
+                                        <a href="{{ path('reports_index') }}" data-tour="reports" class="rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.reports'|trans }}</a>
                                         <a href="{{ path('account_email_index') }}" class="rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.emails'|trans }}</a>
                                         <a href="{{ path('account_passkey_index') }}" class="rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.passkeys'|trans }}</a>
                                     </div>
@@ -52,10 +62,10 @@
                             </div>
                             <div class="-mr-2 flex items-center gap-1">
                                 {% if app.user %}
-                                    <span class="hidden px-2 text-sm text-header-muted md:inline">{{ app.user.userIdentifier }}</span>
+                                    <span class="hidden px-2 text-sm text-header-muted md:inline" title="{{ app.user.userIdentifier }}">{{ app.user.displayName }}</span>
                                     <a href="{{ path('app_logout') }}" class="rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.logout'|trans }}</a>
                                 {% endif %}
-                                <button type="button" data-controller="theme" data-action="theme#toggle" aria-label="{{ 'common.theme.toggle'|trans }}" aria-pressed="false" class="relative inline-flex items-center justify-center rounded-md p-2 text-header-muted hover:bg-white/5 hover:text-header-fg focus:outline-2 focus:outline-offset-2 focus:outline-brand">
+                                <button type="button" data-controller="theme" data-action="theme#toggle" data-tour="theme" aria-label="{{ 'common.theme.toggle'|trans }}" aria-pressed="false" class="relative inline-flex items-center justify-center rounded-md p-2 text-header-muted hover:bg-white/5 hover:text-header-fg focus:outline-2 focus:outline-offset-2 focus:outline-brand">
                                     <span class="sr-only">{{ 'common.theme.toggle'|trans }}</span>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true" class="size-6 dark:hidden">
                                         <path d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" stroke-linecap="round" stroke-linejoin="round" />
@@ -110,6 +120,19 @@
                 </div>
             </div>
         </main>
+
+        {% if app.user %}
+        <footer class="mx-auto max-w-7xl px-4 pb-10 sm:px-6 lg:px-8">
+            <div class="flex flex-col items-center justify-between gap-2 border-t border-line pt-6 text-sm text-fg-muted sm:flex-row">
+                <p>&copy; {{ 'now'|date('Y') }} Obol</p>
+                {# The tour highlights the dashboard, so it can only run there; offer it only there rather
+                   than hook nothing (or force a navigation away) from other pages. #}
+                {% if app.request.attributes.get('_route') == 'subscription_index' %}
+                    <button type="button" data-action="tour#start" class="font-medium text-brand hover:text-brand-strong">{{ 'tour.footer.link'|trans }}</button>
+                {% endif %}
+            </div>
+        </footer>
+        {% endif %}
     </div>
     </body>
 </html>

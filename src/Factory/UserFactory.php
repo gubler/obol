@@ -36,6 +36,15 @@ final class UserFactory extends PersistentObjectFactory
     }
 
     /**
+     * A user who has not yet been through first-run onboarding, for exercising the onboarding flow and
+     * its gate. The default factory user is onboarded (see defaults()) so it lands straight in the app.
+     */
+    public function notOnboarded(): static
+    {
+        return $this->with(['onboardingCompletedAt' => null]);
+    }
+
+    /**
      * @return array<string, mixed>
      */
     protected function defaults(): array
@@ -46,6 +55,9 @@ final class UserFactory extends PersistentObjectFactory
             'displayCurrency' => Currency::USD,
             'locale' => 'en-US',
             'timezone' => 'America/New_York',
+            // Onboarded by default: keeps existing feature tests past the onboarding gate. Use
+            // notOnboarded() for the first-run flow itself.
+            'onboardingCompletedAt' => new \DateTimeImmutable(),
         ];
     }
 }

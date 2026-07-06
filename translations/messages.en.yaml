@@ -126,6 +126,46 @@ auth:
             button: Sign in with a passkey
             error: We could not sign you in with a passkey. Try again or use a magic link.
 
+onboarding:
+    title: Welcome to Obol
+    heading: Welcome to Obol
+    intro: Let's set a couple of basics so everything reads the way you expect.
+    form:
+        display_name: What should we call you?
+        display_name_placeholder: A name, a nickname, whatever you like
+        currency: Your default currency
+        timezone: Your timezone
+        change_later: You can change your language, currency, or date formatting later in your account settings.
+        submit: Get started
+
+tour:
+    footer:
+        link: Take the tour
+    welcome:
+        heading: Want a quick tour?
+        body: Take a 60-second walk through the essentials. You can start it again anytime from the link at the foot of your dashboard.
+        start: Take the tour
+        dismiss: No thanks
+    step:
+        subscriptions:
+            title: Your subscriptions
+            body: This is your dashboard - every subscription you track, with its next renewal and cost.
+        add:
+            title: Add a subscription
+            body: Start here to track a new recurring payment.
+        totals:
+            title: What you are spending
+            body: Your combined outlay, converted to your default currency.
+        categories:
+            title: Categories
+            body: Group subscriptions - streaming, utilities, tools - to see where the money goes.
+        reports:
+            title: Reports
+            body: Break your spending down over time and by category.
+        theme:
+            title: Light or dark
+            body: Switch between light and dark whenever you like.
+
 account:
     passkey:
         new:

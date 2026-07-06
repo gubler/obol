@@ -11,6 +11,9 @@ parameters:
     app.week_start_day: 0
     # How long a magic-link login is valid, in seconds (15 minutes).
     app.login_link.lifetime_seconds: 900
+    # How long a secondary-email verification link is valid, in seconds (24 hours). Longer than a login
+    # link because the person may not open the mailbox they are adding right away.
+    app.secondary_email.verify_ttl_seconds: 86400
 
 services:
     # default configuration for services in *this* file

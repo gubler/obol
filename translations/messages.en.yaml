@@ -7,6 +7,7 @@ common:
         categories: Categories
         payment_sources: Payment Sources
         reports: Reports
+        emails: Email addresses
         passkeys: Passkeys
         logout: Log out
     theme:
@@ -160,6 +161,60 @@ account:
             confirm: 'Remove the passkey "%name%"? You will no longer be able to sign in with it.'
             success: Passkey removed.
             last_removed: Passkey removed. You have no passkeys left, so sign in with a magic-link email.
+    email:
+        index:
+            title: Your email addresses
+            heading: Your email addresses
+            intro: Add a second address as a backup - a magic link to any verified address signs you in, so you are not locked out if you lose access to one mailbox.
+            primary_badge: Primary
+            verified_badge: Verified
+            pending_badge: Pending verification
+            added: 'Added %date%'
+            empty_secondary: You have not added any other addresses yet.
+            back: Back to Obol
+        add:
+            label: Add an email address
+            placeholder: you@example.com
+            submit: Send verification link
+            invalid: That does not look like a valid email address.
+        promote:
+            submit: Make primary
+            confirm: 'Make "%address%" your primary address? Other signed-in devices will need to sign in again.'
+        remove:
+            submit: Remove
+            confirm: 'Remove "%address%" from your account?'
+        resend:
+            submit: Resend link
+        flash:
+            verify_sent: If that address is free, we have sent it a verification link. Check that inbox to confirm it.
+            promoted: Primary address updated.
+            removed: Address removed.
+            resent: Verification link sent.
+        error:
+            verified_elsewhere: That address is already verified on another account.
+            cannot_promote_unverified: Verify that address before making it your primary.
+            already_primary: That address is already your primary.
+            cannot_remove_primary: You cannot remove your primary address. Make another address primary first.
+        verify:
+            subject: Confirm your email address
+            heading: Confirm your email address
+            body: Confirm this address so it can be used to sign in to your Obol account.
+            cta: Confirm this address
+            expiry: 'This link expires %when%.'
+            ignore: If you did not add this address, you can ignore this email.
+        verified:
+            title: Address confirmed
+            heading: Address confirmed
+            body: '%address% is now verified and can be used to sign in.'
+            manage: Manage your addresses
+            login: Sign in
+        verify_error:
+            title: Link problem
+            heading: We could not confirm that address
+            invalid: This confirmation link is invalid or has expired. Request a fresh one from your account.
+            not_found: This confirmation link no longer points to an address on any account.
+            verified_elsewhere: That address is already verified on another account.
+            back: Back to sign in
 
 subscription:
     flash:

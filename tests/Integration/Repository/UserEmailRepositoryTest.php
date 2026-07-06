@@ -68,4 +68,62 @@ final class UserEmailRepositoryTest extends WebTestCase
         $this->expectException(UniqueConstraintViolationException::class);
         $this->entityManager->flush();
     }
+
+    public function testFindForOwnerIdReturnsTheUsersRowsPrimaryThenVerifiedThenPending(): void
+    {
+        $user = new User(email: 'primary@dev88.test');
+        new UserEmail(user: $user, email: 'pending@dev88.test', isPrimary: false, verifiedAt: null);
+        new UserEmail(user: $user, email: 'verified@dev88.test', isPrimary: false, verifiedAt: new \DateTimeImmutable());
+        // A second user's address must never leak into the first user's list.
+        $other = new User(email: 'other@dev88.test');
+        $this->entityManager->persist($user);
+        $this->entityManager->persist($other);
+        $this->entityManager->flush();
+
+        $rows = $this->repository->findForOwnerId($user->id);
+
+        $addresses = array_map(static fn (UserEmail $row): string => $row->email, $rows);
+        self::assertSame(['primary@dev88.test', 'verified@dev88.test', 'pending@dev88.test'], $addresses);
+    }
+
+    public function testFindForOwnerScopesToTheOwner(): void
+    {
+        $user = new User(email: 'owner@dev88.test');
+        $secondary = new UserEmail(user: $user, email: 'secondary@dev88.test', isPrimary: false, verifiedAt: null);
+        $other = new User(email: 'intruder@dev88.test');
+        $this->entityManager->persist($user);
+        $this->entityManager->persist($other);
+        $this->entityManager->flush();
+
+        self::assertNotNull($this->repository->findForOwner($secondary->id, $user->id));
+        self::assertNull($this->repository->findForOwner($secondary->id, $other->id));
+    }
+
+    public function testFindPrimaryForUserReturnsThePrimaryRow(): void
+    {
+        $user = new User(email: 'primary@dev88.test');
+        new UserEmail(user: $user, email: 'secondary@dev88.test', isPrimary: false, verifiedAt: new \DateTimeImmutable());
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
+
+        $primary = $this->repository->findPrimaryForUser($user);
+
+        self::assertSame('primary@dev88.test', $primary->email);
+        self::assertTrue($primary->isPrimary);
+    }
+
+    public function testFindForUserByEmailMatchesAnyRowCaseInsensitively(): void
+    {
+        $user = new User(email: 'owner@dev88.test');
+        new UserEmail(user: $user, email: 'pending@dev88.test', isPrimary: false, verifiedAt: null);
+        $other = new User(email: 'other@dev88.test');
+        $this->entityManager->persist($user);
+        $this->entityManager->persist($other);
+        $this->entityManager->flush();
+
+        self::assertNotNull($this->repository->findForUserByEmail($user, 'PENDING@DEV88.TEST'));
+        self::assertNotNull($this->repository->findForUserByEmail($user, 'owner@dev88.test'));
+        // The same address on a different user is not "on this user's account".
+        self::assertNull($this->repository->findForUserByEmail($other, 'pending@dev88.test'));
+    }
 }

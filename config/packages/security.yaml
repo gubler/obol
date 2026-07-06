@@ -57,6 +57,10 @@ security:
     access_control:
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/logout, roles: PUBLIC_ACCESS }
+        # The secondary-email verification link is clicked from the target mailbox, possibly on a device
+        # where the user is not signed in. The signed URL is the authority, so the endpoint is public;
+        # every other /account/emails route stays behind the firewall.
+        - { path: '^/account/emails/[0-9A-HJKMNP-TV-Z]{26}/verify$', roles: PUBLIC_ACCESS }
         # Non-prod login bypass for Panther browser tests (TestLoginAsController 404s outside dev/test).
         - { path: ^/_test, roles: PUBLIC_ACCESS }
         - { path: ^/, roles: ROLE_USER }

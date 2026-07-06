@@ -1,0 +1,10 @@
+{# Secondary-email verification email (plain text). All copy is translatable per ADR-0012. #}
+{{ 'account.email.verify.heading'|trans }}
+
+{{ 'account.email.verify.body'|trans }}
+
+{{ verifyUrl }}
+
+{{ 'account.email.verify.expiry'|trans({'%when%': expiresAt|time_diff}) }}
+
+{{ 'account.email.verify.ignore'|trans }}

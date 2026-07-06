@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'account.email.verified.title'|trans }}{% endblock %}
+
+{% block body %}
+    <div class="container mx-auto max-w-md px-4 py-8">
+        <h1 class="mb-2 text-3xl font-bold">{{ 'account.email.verified.heading'|trans }}</h1>
+        <p class="mb-6 text-fg/70" data-test="email-verified">
+            {{ 'account.email.verified.body'|trans({'%address%': address}) }}
+        </p>
+
+        {% if app.user %}
+            <a href="{{ path('account_email_index') }}"
+               class="inline-block bg-brand hover:bg-brand-strong text-on-brand text-sm font-medium py-2 px-3 rounded">
+                {{ 'account.email.verified.manage'|trans }}
+            </a>
+        {% else %}
+            <a href="{{ path('app_login') }}"
+               class="inline-block bg-brand hover:bg-brand-strong text-on-brand text-sm font-medium py-2 px-3 rounded">
+                {{ 'account.email.verified.login'|trans }}
+            </a>
+        {% endif %}
+    </div>
+{% endblock %}

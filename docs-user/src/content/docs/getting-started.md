@@ -19,6 +19,7 @@ A few things worth knowing:
 - For your privacy, the "check your email" message looks the same whether or not an account exists for that address - so the page never reveals who has an account.
 - Obol keeps you signed in on that device, so day to day you won't need to repeat this. Select **Log out** in the top bar to end the session.
 - Prefer to skip the email round trip? Once you're signed in you can add a [passkey](/obol-user/passkeys/) and sign in with your fingerprint, face, or device PIN.
+- Add a backup [email address](/obol-user/emails/) so you're never locked out if you lose access to one mailbox - a magic link to any verified address signs you in.
 
 During closed testing, accounts are set up for you - if you can't sign in, ask whoever invited you.
 

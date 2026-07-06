@@ -1,0 +1,113 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'account.passkey.index.title'|trans }}{% endblock %}
+
+{% block header %}
+    <h1 class="text-3xl font-bold tracking-tight text-header-fg">{{ 'account.passkey.index.heading'|trans }}</h1>
+{% endblock %}
+
+{% block body %}
+    <div class="container mx-auto max-w-2xl px-4 py-8">
+        {% for message in app.flashes('success') %}
+            <div class="flash-success bg-success-surface border border-success text-success px-4 py-3 rounded mb-4">{{ message }}</div>
+        {% endfor %}
+        {% for message in app.flashes('warning') %}
+            <div class="flash-warning bg-warning-surface border border-warning text-warning px-4 py-3 rounded mb-4">{{ message }}</div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="flash-error bg-danger-surface border border-danger text-danger px-4 py-3 rounded mb-4">{{ message }}</div>
+        {% endfor %}
+
+        <section class="bg-surface shadow-md rounded p-6">
+            <p class="mb-4 text-sm text-fg/70">{{ 'account.passkey.index.intro'|trans }}</p>
+
+            {% if credentials is empty %}
+                <p class="mb-4 text-sm text-fg/70" data-test="passkey-index-empty">
+                    {{ 'account.passkey.index.empty'|trans }}
+                </p>
+            {% else %}
+                <ul class="mb-4 space-y-3" data-test="passkey-index-list">
+                    {% for credential in credentials %}
+                        {% set just_registered = just_registered_id and just_registered_id == credential.id ~ '' %}
+                        <li class="rounded border {{ just_registered ? 'border-brand' : 'border-line' }} bg-surface-2 px-3 py-3"
+                            data-test="passkey-row"
+                            data-test-passkey-id="{{ credential.id }}">
+
+                            {% if just_registered %}
+                                <p class="mb-2 text-xs font-medium text-brand" data-test="passkey-just-registered">
+                                    {{ 'account.passkey.index.just_registered'|trans }}
+                                </p>
+                            {% endif %}
+
+                            <form method="post"
+                                  action="{{ path('account_passkey_rename', {id: credential.id}) }}"
+                                  class="flex flex-wrap items-center gap-2"
+                                  data-test="passkey-rename-form">
+                                {# RenamePasskeyFormType is CSRF-protected (token_id: submit); render the token here
+                                   since the row is hand-built rather than via form_widget. #}
+                                <input type="hidden" name="rename_passkey[_token]" value="{{ csrf_token('submit') }}">
+                                <label class="sr-only" for="passkey-name-{{ credential.id }}">
+                                    {{ 'account.passkey.name.label'|trans }}
+                                </label>
+                                <input type="text"
+                                       id="passkey-name-{{ credential.id }}"
+                                       name="rename_passkey[name]"
+                                       value="{{ credential.name }}"
+                                       maxlength="{{ name_max_length }}"
+                                       class="grow rounded border border-line bg-surface px-2 py-1 text-sm text-fg"
+                                       data-test="passkey-name-input"
+                                       {% if just_registered %}autofocus{% endif %}>
+                                <button type="submit"
+                                        class="bg-brand hover:bg-brand-strong text-on-brand text-sm font-medium py-1 px-3 rounded"
+                                        data-test="passkey-rename-submit">
+                                    {{ 'account.passkey.rename.submit'|trans }}
+                                </button>
+                            </form>
+
+                            <p class="mt-2 text-xs text-fg/60">
+                                {{ 'account.passkey.index.created'|trans({'%date%': credential.createdAt|date('M j, Y')}) }}
+                                {% if credential.lastUsedAt %}
+                                    &middot; {{ 'account.passkey.index.last_used'|trans({'%date%': credential.lastUsedAt|date('M j, Y')}) }}
+                                {% else %}
+                                    &middot; {{ 'account.passkey.index.never_used'|trans }}
+                                {% endif %}
+                            </p>
+
+                            {% if credential.userAgentAtRegistration %}
+                                <p class="mt-1 truncate text-xs text-fg/50"
+                                   title="{{ credential.userAgentAtRegistration }}"
+                                   data-test="passkey-user-agent">
+                                    {{ credential.userAgentAtRegistration }}
+                                </p>
+                            {% endif %}
+
+                            <form method="post"
+                                  action="{{ path('account_passkey_revoke', {id: credential.id}) }}"
+                                  class="mt-2"
+                                  data-turbo-confirm="{{ 'account.passkey.revoke.confirm'|trans({'%name%': credential.name}) }}"
+                                  data-test="passkey-revoke-form">
+                                <button type="submit"
+                                        class="border border-danger text-danger text-xs font-medium py-1 px-3 rounded hover:bg-danger-surface"
+                                        data-test="passkey-revoke-submit">
+                                    {{ 'account.passkey.revoke.submit'|trans }}
+                                </button>
+                            </form>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            <a href="{{ path('account_passkey_new') }}"
+               class="inline-block bg-brand hover:bg-brand-strong text-on-brand text-sm font-medium py-2 px-3 rounded"
+               data-test="passkey-index-add">
+                {{ 'account.passkey.index.add'|trans }}
+            </a>
+
+            <p class="mt-4">
+                <a href="{{ path('subscription_index') }}" class="text-sm text-brand hover:text-brand-strong hover:underline">
+                    {{ 'account.passkey.index.back'|trans }}
+                </a>
+            </p>
+        </section>
+    </div>
+{% endblock %}

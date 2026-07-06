@@ -34,7 +34,13 @@ parameters:
         property: 100
         declare: 100
         constant: 100
-#    ignoreErrors:
+    ignoreErrors:
+        # The WebAuthn bundle unconditionally aliases the deprecated PublicKeyCredentialSourceRepositoryInterface
+        # (as well as its non-deprecated successor) to our credential repository, so the class must implement it
+        # for the container alias to validate. Drop this once the bundle removes the interface in 6.0.
+        -
+            identifier: class.implementsDeprecatedInterface
+            path: src/Repository/PasskeyCredentialRepository.php
 #        -
 #            identifier: symplify.classNameRespectsParentSuffix
 #            path: src/Twig/Components/*

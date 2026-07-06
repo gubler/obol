@@ -12,43 +12,30 @@ declare(strict_types=1);
  *     be used as an "entrypoint" (and passed to the importmap() Twig function).
  *
  * The "importmap:require" command can be used to add new entries to this file.
+ *
+ * @return array<string, array{    // Import name as key, description of the imported file as value
+ *     path: string,               // Logical, relative or absolute path to the file
+ *     type?: 'js'|'css'|'json',   // Type of the file, defaults to 'js'
+ *     entrypoint?: bool,          // Whether the file is an entrypoint, for 'js' only
+ * }|array{
+ *     version: string,            // Version of the remote package
+ *     package_specifier?: string, // Remote "package-name/path" specifier, defaults to the import name
+ *     type?: 'js'|'css'|'json',
+ *     entrypoint?: bool,
+ * }>
  */
 return [
-    'app' => [
-        'path' => './assets/app.js',
-        'entrypoint' => true,
-    ],
-    '@symfony/stimulus-bundle' => [
-        'path' => './vendor/symfony/stimulus-bundle/assets/dist/loader.js',
-    ],
-    '@hotwired/stimulus' => [
-        'version' => '3.2.2',
-    ],
-    '@hotwired/turbo' => [
-        'version' => '8.0.20',
-    ],
-    '@popperjs/core' => [
-        'version' => '2.11.8',
-    ],
-    'mini-svg-data-uri' => [
-        'version' => '1.4.4',
-    ],
-    'tailwindcss/plugin' => [
-        'version' => '4.1.17',
-    ],
-    'tailwindcss/defaultTheme' => [
-        'version' => '4.1.17',
-    ],
-    'tailwindcss/colors' => [
-        'version' => '4.1.17',
-    ],
-    '@tailwindplus/elements' => [
-        'version' => '1.0.18',
-    ],
-    'chart.js' => [
-        'version' => '4.5.1',
-    ],
-    '@kurkle/color' => [
-        'version' => '0.3.4',
-    ],
+    'app' => ['path' => './assets/app.js', 'entrypoint' => true],
+    '@symfony/stimulus-bundle' => ['path' => './vendor/symfony/stimulus-bundle/assets/dist/loader.js'],
+    '@hotwired/stimulus' => ['version' => '3.2.2'],
+    '@hotwired/turbo' => ['version' => '8.0.20'],
+    '@popperjs/core' => ['version' => '2.11.8'],
+    'mini-svg-data-uri' => ['version' => '1.4.4'],
+    'tailwindcss/plugin' => ['version' => '4.1.17'],
+    'tailwindcss/defaultTheme' => ['version' => '4.1.17'],
+    'tailwindcss/colors' => ['version' => '4.1.17'],
+    '@tailwindplus/elements' => ['version' => '1.0.18'],
+    'chart.js' => ['version' => '4.5.1'],
+    '@kurkle/color' => ['version' => '0.3.4'],
+    '@simplewebauthn/browser' => ['version' => '13.3.0'],
 ];

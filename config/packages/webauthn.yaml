@@ -1,0 +1,49 @@
+# Base configuration for `web-auth/webauthn-symfony-bundle` - passkeys as an opt-in fast path on top
+# of the always-available magic-link floor.
+#
+# Apple AAGUID note: Apple devices report an all-zero AAGUID. The bundle's metadata service is opt-in
+# (the `metadata:` node is left disabled), so attestation isn't enforced and unknown / all-zero AAGUIDs
+# pass through - this is "allow unknown authenticators", achieved by not enabling the metadata service.
+
+webauthn:
+    # Bundle-wide origin allowlist. Browsers send the request's `Origin` header during WebAuthn
+    # ceremonies; the bundle rejects anything not in this list. Dev / test default to the Lolly host via
+    # WEBAUTHN_ALLOWED_ORIGINS; production sets the real host.
+    allowed_origins:
+        - '%env(WEBAUTHN_ALLOWED_ORIGINS)%'
+
+    # App-owned repositories. PasskeyCredentialRepository implements the credential-record interfaces;
+    # UserRepository implements the user-entity interfaces. The bundle aliases both the deprecated and
+    # non-deprecated interfaces to whatever service ID is listed here.
+    credential_repository: App\Repository\PasskeyCredentialRepository
+    user_repository: App\Repository\UserRepository
+
+    creation_profiles:
+        default:
+            rp:
+                id: '%env(WEBAUTHN_RP_ID)%'
+                # The WebAuthn spec requires rp.name to be a non-empty DOMString. Real browsers tolerate
+                # an empty value, but Chromium's WebDriver virtual authenticator (Panther E2E) rejects it.
+                name: 'Obol'
+            # Prefer platform authenticators (Touch ID / Face ID / Windows Hello) without enforcing;
+            # cross-platform keys (YubiKey-class) still register fine.
+            authenticator_selection_criteria:
+                user_verification: preferred
+                resident_key: preferred
+            attestation_conveyance: none
+
+    request_profiles:
+        default:
+            rp_id: '%env(WEBAUTHN_RP_ID)%'
+
+    # Bundle-provided ceremony controllers. The named entry under `controllers.creation` wires an
+    # AttestationRequestController + AttestationResponseController to the paths the JS calls - the bundle
+    # handles the cryptographic side (options, response validation, credential save); we own the UX.
+    controllers:
+        enabled: true
+        creation:
+            account_passkey:
+                options_path: /account/passkeys/options
+                result_path: /account/passkeys/result
+                profile: default
+                user_entity_guesser: Webauthn\Bundle\Security\Guesser\CurrentUserEntityGuesser

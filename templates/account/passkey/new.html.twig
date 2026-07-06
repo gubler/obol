@@ -1,0 +1,53 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'account.passkey.new.title'|trans }}{% endblock %}
+
+{% block header %}
+    <h1 class="text-3xl font-bold tracking-tight text-header-fg">{{ 'account.passkey.new.heading'|trans }}</h1>
+{% endblock %}
+
+{% block body %}
+    <div class="container mx-auto max-w-xl px-4 py-8">
+        <section class="bg-surface shadow-md rounded p-6"
+                 data-controller="passkey-register"
+                 data-passkey-register-options-url-value="{{ path('webauthn.controller.creation.request.account_passkey') }}"
+                 data-passkey-register-result-url-value="{{ path('webauthn.controller.creation.response.account_passkey') }}"
+                 data-passkey-register-success-url-value="{{ path('account_passkey_index') }}"
+                 data-passkey-register-exclude-credentials-value="{{ excludeCredentialsJson }}"
+                 data-passkey-register-unsupported-message-value="{{ 'account.passkey.new.unsupported'|trans }}"
+                 data-passkey-register-cancelled-message-value="{{ 'account.passkey.new.cancelled'|trans }}"
+                 data-passkey-register-generic-error-message-value="{{ 'account.passkey.new.generic_error'|trans }}">
+
+            <p class="mb-4 text-sm text-fg/70">{{ 'account.passkey.new.intro'|trans }}</p>
+
+            <p class="mb-4 hidden text-sm text-danger"
+               data-passkey-register-target="status"
+               role="status"
+               hidden></p>
+
+            <button type="button"
+                    class="hidden bg-brand hover:bg-brand-strong text-on-brand font-bold py-2 px-4 rounded disabled:opacity-50"
+                    data-passkey-register-target="button"
+                    data-action="passkey-register#register"
+                    data-test="passkey-register-submit"
+                    disabled>
+                {{ 'account.passkey.new.submit'|trans }}
+            </button>
+
+            <noscript>
+                <p class="mt-2 bg-warning-surface border border-warning text-warning px-4 py-3 rounded text-sm"
+                   data-test="passkey-register-no-js">
+                    {{ 'account.passkey.new.no_js'|trans }}
+                </p>
+            </noscript>
+
+            <p class="mt-4 text-xs text-fg/60">{{ 'account.passkey.new.https_note'|trans }}</p>
+
+            <p class="mt-4">
+                <a href="{{ path('account_passkey_index') }}" class="text-sm text-brand hover:text-brand-strong hover:underline">
+                    {{ 'account.passkey.new.back'|trans }}
+                </a>
+            </p>
+        </section>
+    </div>
+{% endblock %}

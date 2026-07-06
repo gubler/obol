@@ -22,6 +22,21 @@ security:
                 lifetime: '%app.login_link.lifetime_seconds%'
                 provider: app_user_provider
 
+            # Passkey (WebAuthn) login - an opt-in fast path; magic-link stays the always-available
+            # floor. The webauthn security factory wires an assertion request + response controller to
+            # the paths below. The handlers return JSON (not a 302): the Stimulus controller reads
+            # `redirect` on success and surfaces `error` on failure. Registration lives on the
+            # standalone /account/passkeys/* routes (webauthn.yaml controllers.creation); this block
+            # only enables assertion (login).
+            webauthn:
+                success_handler: App\Security\PasskeyAuthSuccessHandler
+                failure_handler: App\Security\PasskeyAuthFailureHandler
+                authentication:
+                    profile: default
+                    routes:
+                        options_path: /login/passkey/options
+                        result_path: /login/passkey/result
+
             # Keep sessions alive across browser restarts. No tokensInvalidatedAt yet (server-side
             # force-logout is Stage 2), so the cookie signs on the primary email - a primary-email
             # change invalidates outstanding cookies.

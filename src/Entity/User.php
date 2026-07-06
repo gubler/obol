@@ -16,9 +16,11 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
+use Symfony\Bridge\Doctrine\Types\UuidType;
 use Symfony\Component\Security\Core\User\EquatableInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Uid\Ulid;
+use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
@@ -31,6 +33,13 @@ class User implements UserInterface, EquatableInterface
 
     #[ORM\Column(type: CitextType::NAME)]
     public private(set) string $email;
+
+    /**
+     * The stable, opaque WebAuthn user handle. Passkeys bind to this rather than to the email (which
+     * can change) so a primary-email swap never orphans a credential. Generated once at construction.
+     */
+    #[ORM\Column(type: UuidType::NAME, unique: true)]
+    public private(set) Uuid $userHandle;
 
     #[ORM\Column]
     public private(set) \DateTimeImmutable $createdAt;
@@ -55,6 +64,7 @@ class User implements UserInterface, EquatableInterface
         public private(set) string $timezone = 'America/New_York',
     ) {
         $this->id = new Ulid();
+        $this->userHandle = Uuid::v4();
         $this->emails = new ArrayCollection();
         $this->createdAt = $createdAt ?? new \DateTimeImmutable();
 

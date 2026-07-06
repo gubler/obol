@@ -11,6 +11,7 @@ import starlightLinksValidator from 'starlight-links-validator';
 // Curated reading order rather than alphabetical; labels come from each page's frontmatter title.
 const sidebar = [
   { slug: 'getting-started' },
+  { slug: 'passkeys' },
   { slug: 'subscriptions' },
   { slug: 'categories' },
   { slug: 'payment-sources' },

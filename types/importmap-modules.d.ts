@@ -8,3 +8,7 @@
 // importmap version) for any specifier whose own types we want genuine coverage of.
 declare module '@symfony/stimulus-bundle';
 declare module '@tailwindplus/elements';
+// @simplewebauthn/browser drives the passkey register/login ceremonies. It ships real types; ratchet
+// later by adding it as a typed devDependency (pinned to the importmap version) if we want genuine
+// coverage of the passkey controllers.
+declare module '@simplewebauthn/browser';

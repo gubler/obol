@@ -19,13 +19,33 @@
             </div>
         {% endif %}
 
-        <div class="bg-surface shadow-md rounded p-6">
+        <div class="bg-surface shadow-md rounded p-6"
+             data-controller="passkey-login"
+             data-passkey-login-options-url-value="{{ path('webauthn.controller.security.main.request.options') }}"
+             data-passkey-login-result-url-value="{{ path('webauthn.controller.security.main.request.result') }}"
+             data-passkey-login-error-message-value="{{ 'auth.passkey.login.error'|trans }}">
             {{ form_start(form, {attr: {class: 'space-y-6'}}) }}
-                {{ form_row(form.email) }}
+                {# autocomplete="username webauthn" lets the browser offer registered passkeys in the
+                   email field's autofill dropdown (conditional UI), driven by passkey_login_controller. #}
+                {{ form_row(form.email, {attr: {autocomplete: 'username webauthn'}}) }}
                 <button type="submit" class="w-full bg-brand hover:bg-brand-strong text-on-brand font-bold py-2 px-4 rounded">
                     {{ 'auth.login.submit'|trans }}
                 </button>
             {{ form_end(form) }}
+
+            {# Opt-in fast path. Hidden until Stimulus confirms JS + WebAuthn are available; the magic-link
+               form above stays the always-working fallback. #}
+            <button type="button"
+                    class="hidden mt-3 w-full border border-brand text-brand hover:bg-brand/10 font-medium py-2 px-4 rounded"
+                    data-passkey-login-target="button"
+                    data-action="passkey-login#authenticate"
+                    data-test="passkey-login-submit">
+                {{ 'auth.passkey.login.button'|trans }}
+            </button>
+
+            <p hidden role="status"
+               class="mt-2 text-center text-sm text-danger"
+               data-passkey-login-target="status"></p>
         </div>
     </div>
 {% endblock %}

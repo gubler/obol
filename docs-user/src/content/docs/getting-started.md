@@ -18,6 +18,7 @@ A few things worth knowing:
 - The link is valid for **15 minutes** and works once. If it expires, just request a new one.
 - For your privacy, the "check your email" message looks the same whether or not an account exists for that address - so the page never reveals who has an account.
 - Obol keeps you signed in on that device, so day to day you won't need to repeat this. Select **Log out** in the top bar to end the session.
+- Prefer to skip the email round trip? Once you're signed in you can add a [passkey](/obol-user/passkeys/) and sign in with your fingerprint, face, or device PIN.
 
 During closed testing, accounts are set up for you - if you can't sign in, ask whoever invited you.
 

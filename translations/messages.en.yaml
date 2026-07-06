@@ -7,6 +7,7 @@ common:
         categories: Categories
         payment_sources: Payment Sources
         reports: Reports
+        passkeys: Passkeys
         logout: Log out
     theme:
         toggle: Toggle dark mode
@@ -119,6 +120,46 @@ auth:
             cta: Sign in to Obol
             expiry: This link expires %when%.
             ignore: If you did not request this, you can safely ignore this email.
+    passkey:
+        login:
+            button: Sign in with a passkey
+            error: We could not sign you in with a passkey. Try again or use a magic link.
+
+account:
+    passkey:
+        new:
+            title: Add a passkey
+            heading: Add a passkey
+            intro: A passkey lets you sign in with your fingerprint, face, or device PIN instead of waiting for a magic-link email.
+            submit: Add a passkey
+            unsupported: This browser does not support passkeys. You can still sign in with a magic link.
+            cancelled: Passkey setup was cancelled.
+            generic_error: Something went wrong adding the passkey. Please try again.
+            no_js: Adding a passkey needs JavaScript. You can still sign in with a magic link.
+            https_note: Passkeys work only over a secure (HTTPS) connection.
+            back: Back to your passkeys
+        index:
+            title: Your passkeys
+            heading: Your passkeys
+            intro: Passkeys are an optional fast sign-in. You can always fall back to a magic-link email.
+            empty: You have not added any passkeys yet.
+            just_registered: Passkey added. Rename it below if you like.
+            created: 'Added %date%'
+            last_used: 'last used %date%'
+            never_used: never used
+            add: Add a passkey
+            back: Back to Obol
+        name:
+            label: Passkey name
+        rename:
+            submit: Rename
+            success: Passkey renamed.
+            invalid: That passkey name is not valid.
+        revoke:
+            submit: Remove
+            confirm: 'Remove the passkey "%name%"? You will no longer be able to sign in with it.'
+            success: Passkey removed.
+            last_removed: Passkey removed. You have no passkeys left, so sign in with a magic-link email.
 
 subscription:
     flash:

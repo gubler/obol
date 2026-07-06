@@ -15,3 +15,9 @@ auth:
             not_blank: Enter your email address.
             invalid: Enter a valid email address.
             too_long: That email address is too long.
+
+account:
+    passkey:
+        name:
+            not_blank: Enter a name for this passkey.
+            too_long: That passkey name is too long.

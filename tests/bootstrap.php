@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Dotenv\Dotenv;
+use Symfony\Component\Panther\PantherTestCase;
 
 require dirname(path: __DIR__) . '/vendor/autoload.php';
 
@@ -18,6 +19,20 @@ new Dotenv()->bootEnv(path: dirname(path: __DIR__) . '/.env');
 if ($_SERVER['APP_DEBUG']) {
     umask(mask: 0000);
 }
+
+/*
+ * Pin Panther's spawned PHP CLI server to `localhost` rather than the 127.0.0.1 default. Chromium
+ * rejects IP addresses as WebAuthn RP IDs (startRegistration throws SecurityError "127.0.0.1 is an
+ * invalid domain"), which PasskeyFlowTest hits directly. Setting this once means every Panther client
+ * uses localhost:9080, so WEBAUTHN_RP_ID stays `localhost` and only WEBAUTHN_ALLOWED_ORIGINS needs the
+ * spawned-server URL. Reflection because PantherTestCase::$defaultOptions is protected.
+ */
+(static function (): void {
+    $property = new ReflectionProperty(PantherTestCase::class, 'defaultOptions');
+    $options = $property->getValue();
+    $options['hostname'] = 'localhost';
+    $property->setValue(null, $options);
+})();
 
 // Create and boot 'test' kernel
 $kernel = new Kernel(environment: 'test', debug: true);

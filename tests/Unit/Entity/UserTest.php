@@ -11,6 +11,7 @@ use App\Entity\User;
 use App\Entity\UserEmail;
 use App\Enum\Currency;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Uid\Uuid;
 
 final class UserTest extends TestCase
 {
@@ -60,6 +61,18 @@ final class UserTest extends TestCase
 
         self::assertTrue($user->isEqualTo($user));
         self::assertFalse($user->isEqualTo(new User(email: 'other@dev88.test')));
+    }
+
+    public function testCarriesAStableWebAuthnUserHandleGeneratedAtConstruction(): void
+    {
+        // The userHandle is the stable, opaque identifier passkeys bind to: distinct from the email
+        // (which can change) and distinct per user. Generated in the constructor so a User is never
+        // without one.
+        $user = new User(email: 'magos@dev88.test');
+        $other = new User(email: 'other@dev88.test');
+
+        self::assertInstanceOf(Uuid::class, $user->userHandle);
+        self::assertFalse($user->userHandle->equals($other->userHandle));
     }
 
     public function testToLocalReExpressesAnInstantInTheUsersTimezoneWithoutChangingIt(): void

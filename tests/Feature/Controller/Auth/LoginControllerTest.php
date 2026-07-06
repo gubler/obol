@@ -34,6 +34,18 @@ final class LoginControllerTest extends WebTestCase
         self::assertSelectorExists('input[name="login_request[email]"]');
     }
 
+    public function testTheLoginPageOffersThePasskeyFastPath(): void
+    {
+        $this->client->request(method: Request::METHOD_GET, uri: '/login');
+
+        self::assertResponseIsSuccessful();
+        // The passkey controller is wired and the email field carries the WebAuthn autofill hint; the
+        // magic-link form stays the no-JS fallback.
+        self::assertSelectorExists('[data-controller="passkey-login"]');
+        self::assertSelectorExists('[data-test="passkey-login-submit"]');
+        self::assertSelectorExists('input[name="login_request[email]"][autocomplete="username webauthn"]');
+    }
+
     public function testSubmittingAnEmailQueuesTheRequestOffRequestAndRedirects(): void
     {
         UserFactory::createOne(['email' => 'known@dev88.test']);

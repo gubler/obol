@@ -70,9 +70,15 @@ Three services:
 | `POSTGRES_PASSWORD` | Yes | `!ChangeMe!` | PostgreSQL password |
 | `POSTGRES_DB` | Yes | `app` | PostgreSQL database name |
 | `MAILER_DSN` | Yes (prod) | `null://null` | Outbound mail transport. Set to a real SMTP DSN (e.g. Fastmail app password) in prod and `.env.local`; the `null://null` default silently drops mail. URL-encode reserved characters in the username (`@` becomes `%40`). Verify with `app:mailer:smoke`. |
+| `WEBAUTHN_RP_ID` | Yes (prod) | `localhost` | Passkey relying-party id: a registrable-domain suffix of the site's origin, **without** scheme or port (e.g. `obol.dev88.co`). Passkeys bind to this, so it must be set correctly at first launch and stay stable across deploys - changing it invalidates every existing passkey. The committed default (`localhost`) covers local dev only. |
+| `WEBAUTHN_ALLOWED_ORIGINS` | Yes (prod) | `https://obol.lolly.localhost` | The exact origin(s) browsers send during a passkey ceremony (scheme + host + port). Must match the deployed site's origin (e.g. `https://obol.dev88.co`). |
 
 :::caution
 Change `APP_SECRET` and `POSTGRES_PASSWORD` from their defaults before deploying to production.
+:::
+
+:::caution
+Set `WEBAUTHN_RP_ID` and `WEBAUTHN_ALLOWED_ORIGINS` to the real deployed host before anyone registers a passkey. The RP id in particular is a permanent binding: if it changes later, every passkey registered under the old value stops working and users fall back to magic-link email. Magic-link login does not depend on these variables, so a misconfiguration never locks anyone out - it only disables the passkey fast path.
 :::
 
 ## Entrypoint

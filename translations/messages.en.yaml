@@ -47,7 +47,7 @@ enum:
         violet: Violet
         purple: Purple
         slate: Slate
-        grey: Grey
+        grey: Gray
         charcoal: Charcoal
     category_icon:
         tag: Tag

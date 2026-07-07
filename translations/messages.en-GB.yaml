@@ -1,0 +1,20 @@
+# ABOUTME: British English variant of the `messages` domain - overrides only the strings that differ
+# ABOUTME: from the en base (-our and -ise spellings); everything else falls back to en (ADR-0012).
+
+enum:
+    tile_color:
+        grey: Grey
+
+subscription:
+    group:
+        uncategorized: Uncategorised
+    form:
+        color: Colour
+
+category:
+    form:
+        color: Colour
+
+payment_source:
+    form:
+        color: Colour

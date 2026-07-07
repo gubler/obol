@@ -1,0 +1,18 @@
+# ABOUTME: Canadian English variant of the `messages` domain - takes the -our spelling but keeps the
+# ABOUTME: -ize/-ized ending, so only "colour" overrides the en base; the rest falls back (ADR-0012).
+
+enum:
+    tile_color:
+        grey: Grey
+
+subscription:
+    form:
+        color: Colour
+
+category:
+    form:
+        color: Colour
+
+payment_source:
+    form:
+        color: Colour

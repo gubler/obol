@@ -81,7 +81,7 @@ final class EnumCatalogTest extends KernelTestCase
      */
     public static function provideLabelEnglishSpotCheckCases(): iterable
     {
-        yield 'grey swatch' => ['enum.tile_color.grey', 'Grey'];
+        yield 'grey swatch' => ['enum.tile_color.grey', 'Gray'];
         yield 'book-open icon' => ['enum.category_icon.book_open', 'Book Open'];
         yield 'gamepad icon' => ['enum.category_icon.gamepad_2', 'Gamepad 2'];
         yield 'weekly trend' => ['enum.obligation_trend_period.week', 'Weekly'];

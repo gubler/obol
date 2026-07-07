@@ -72,9 +72,9 @@ class User implements UserInterface, EquatableInterface
         public private(set) ?string $locale = null,
         #[ORM\Column]
         public private(set) string $timezone = 'America/New_York',
-        // How this user reads dates, independent of locale (some want ISO regardless); see DateFormat.
+        // How this user reads dates: a locale-aware Long/Medium/Short style or fixed ISO (see DateFormat).
         #[ORM\Column(enumType: DateFormat::class)]
-        public private(set) DateFormat $dateFormat = DateFormat::LocaleDefault,
+        public private(set) DateFormat $dateFormat = DateFormat::Medium,
         /**
          * When first-run onboarding was completed; null until then. The onboarding gate keys off this.
          * Normally stamped only by completeOnboarding(); the constructor param lets seeding/fixtures mark
@@ -158,6 +158,34 @@ class User implements UserInterface, EquatableInterface
         $this->displayCurrency = $displayCurrency;
         $this->timezone = $timezone;
         $this->onboardingCompletedAt = $at ?? new \DateTimeImmutable();
+    }
+
+    /**
+     * Change the display name from the account settings hub. A blank answer reverts to the
+     * primary-email default seeded at construction, so the account is never nameless. Distinct from
+     * completeOnboarding(), which captures the name once; this edit runs any time afterwards.
+     */
+    public function changeDisplayName(?string $displayName): void
+    {
+        $name = trim($displayName ?? '');
+        $this->displayName = '' !== $name ? $name : $this->email;
+    }
+
+    /**
+     * Update the formatting/locale preferences in one coherent mutation from the account settings hub.
+     * Unlike resolveLocale() (the one-shot initial inference, which refuses to overwrite), this is the
+     * picker that deliberately changes an already-resolved locale.
+     */
+    public function changePreferences(
+        Currency $displayCurrency,
+        string $timezone,
+        string $locale,
+        DateFormat $dateFormat,
+    ): void {
+        $this->displayCurrency = $displayCurrency;
+        $this->timezone = $timezone;
+        $this->locale = $locale;
+        $this->dateFormat = $dateFormat;
     }
 
     /**

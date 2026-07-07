@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace App\Tests\Feature\Twig;
 
 use App\Enum\DateFormat;
+use App\Factory\SubscriptionEventFactory;
 use App\Factory\SubscriptionFactory;
 use App\Factory\UserFactory;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -17,10 +18,10 @@ final class UserDateExtensionTest extends WebTestCase
 {
     public function testAnExplicitDateFormatIsAppliedRegardlessOfLocale(): void
     {
-        // A British user (whose locale renders dates day-first) with the ISO pattern still sees ISO -
-        // the explicit pattern fixes the order independent of locale.
+        // A British user (whose locale renders dates day-first) with the ISO style still sees ISO -
+        // the fixed pattern fixes the order independent of locale.
         $client = self::createClient();
-        $user = UserFactory::createOne(['dateFormat' => DateFormat::YearMonthDayDash, 'locale' => 'en-GB']);
+        $user = UserFactory::createOne(['dateFormat' => DateFormat::Iso, 'locale' => 'en-GB']);
         SubscriptionFactory::createOne(['owner' => $user, 'nextRenewal' => new \DateTimeImmutable('2027-03-09')]);
 
         $client->loginUser($user);
@@ -30,12 +31,12 @@ final class UserDateExtensionTest extends WebTestCase
         self::assertStringContainsString('2027-03-09', (string) $client->getResponse()->getContent());
     }
 
-    public function testLocaleDefaultFollowsTheUsersLocaleDateOrder(): void
+    public function testALocaleAwareStyleFollowsTheUsersLocaleDateOrder(): void
     {
-        // LocaleDefault defers to the locale: a British user reads the medium form day-first ("9 Mar
-        // 2027"), not the American month-first form, proving the ambient locale drives it.
+        // Medium defers to the locale: a British user reads the medium form day-first ("9 Mar 2027"),
+        // not the American month-first form, proving the ambient locale drives it.
         $client = self::createClient();
-        $user = UserFactory::createOne(['dateFormat' => DateFormat::LocaleDefault, 'locale' => 'en-GB']);
+        $user = UserFactory::createOne(['dateFormat' => DateFormat::Medium, 'locale' => 'en-GB']);
         SubscriptionFactory::createOne(['owner' => $user, 'nextRenewal' => new \DateTimeImmutable('2027-03-09')]);
 
         $client->loginUser($user);
@@ -46,5 +47,44 @@ final class UserDateExtensionTest extends WebTestCase
         self::assertStringContainsString('9 Mar 2027', $content);
         self::assertStringNotContainsString('Mar 9, 2027', $content);
         self::assertStringNotContainsString('2027-03-09', $content);
+    }
+
+    public function testTheAuditLogTimestampFollowsTheLocaleHourCycle(): void
+    {
+        // An American on a locale-aware style reads the history time on a 12-hour clock (AM/PM).
+        $client = self::createClient();
+        $user = UserFactory::createOne(['dateFormat' => DateFormat::Medium, 'locale' => 'en-US']);
+        $subscription = SubscriptionFactory::createOne(['owner' => $user]);
+        SubscriptionEventFactory::new()->update()->create([
+            'subscription' => $subscription,
+            'createdAt' => new \DateTimeImmutable('2024-02-15 14:30'),
+        ]);
+
+        $client->loginUser($user);
+        $client->request(method: Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id);
+
+        self::assertResponseIsSuccessful();
+        $content = (string) $client->getResponse()->getContent();
+        self::assertStringContainsString('Feb 15, 2024', $content);
+        self::assertStringContainsString('2:30', $content);
+        self::assertStringContainsString('PM', $content);
+    }
+
+    public function testTheAuditLogTimestampIsFixed24HourForTheIsoStyle(): void
+    {
+        // The ISO style pins a 24-hour timestamp regardless of locale.
+        $client = self::createClient();
+        $user = UserFactory::createOne(['dateFormat' => DateFormat::Iso, 'locale' => 'en-US']);
+        $subscription = SubscriptionFactory::createOne(['owner' => $user]);
+        SubscriptionEventFactory::new()->update()->create([
+            'subscription' => $subscription,
+            'createdAt' => new \DateTimeImmutable('2024-02-15 14:30'),
+        ]);
+
+        $client->loginUser($user);
+        $client->request(method: Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id);
+
+        self::assertResponseIsSuccessful();
+        self::assertStringContainsString('2024-02-15 14:30', (string) $client->getResponse()->getContent());
     }
 }

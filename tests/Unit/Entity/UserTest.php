@@ -16,7 +16,7 @@ use Symfony\Component\Uid\Uuid;
 
 final class UserTest extends TestCase
 {
-    public function testDefaultsToUsdCurrencyUnresolvedLocaleAppTimezoneAndLocaleDefaultDates(): void
+    public function testDefaultsToUsdCurrencyUnresolvedLocaleAppTimezoneAndMediumDates(): void
     {
         $user = new User(email: 'magos@dev88.test');
 
@@ -24,7 +24,7 @@ final class UserTest extends TestCase
         // Locale is unresolved until the browser guess (or the user) sets it.
         self::assertNull($user->locale);
         self::assertSame('America/New_York', $user->timezone);
-        self::assertSame(DateFormat::LocaleDefault, $user->dateFormat);
+        self::assertSame(DateFormat::Medium, $user->dateFormat);
     }
 
     public function testResolveLocaleSetsTheLocale(): void
@@ -103,6 +103,50 @@ final class UserTest extends TestCase
 
         $this->expectException(\InvalidArgumentException::class);
         $user->completeOnboarding('Someone Else', Currency::USD, 'America/New_York');
+    }
+
+    public function testChangeDisplayNameReplacesTheName(): void
+    {
+        $user = new User(email: 'magos@dev88.test');
+
+        $user->changeDisplayName('  Magos  ');
+
+        // Trimmed, and applied even after onboarding (unlike completeOnboarding, which is one-shot).
+        self::assertSame('Magos', $user->displayName);
+    }
+
+    public function testChangeDisplayNameToBlankRevertsToTheEmailDefault(): void
+    {
+        // Clearing the name is a real intent: fall back to the never-nameless email seed.
+        $user = new User(email: 'magos@dev88.test');
+        $user->changeDisplayName('Magos');
+
+        $user->changeDisplayName('   ');
+
+        self::assertSame('magos@dev88.test', $user->displayName);
+    }
+
+    public function testChangePreferencesUpdatesCurrencyTimezoneLocaleAndDateFormat(): void
+    {
+        $user = new User(email: 'magos@dev88.test');
+
+        $user->changePreferences(Currency::GBP, 'Europe/London', 'en-GB', DateFormat::Short);
+
+        self::assertSame(Currency::GBP, $user->displayCurrency);
+        self::assertSame('Europe/London', $user->timezone);
+        self::assertSame('en-GB', $user->locale);
+        self::assertSame(DateFormat::Short, $user->dateFormat);
+    }
+
+    public function testChangePreferencesOverwritesAnAlreadyResolvedLocale(): void
+    {
+        // Unlike resolveLocale (one-shot inference), the settings picker deliberately changes an
+        // existing locale - that is exactly its job.
+        $user = new User(email: 'magos@dev88.test', locale: 'en-US');
+
+        $user->changePreferences(Currency::USD, 'America/New_York', 'en-CA', DateFormat::Medium);
+
+        self::assertSame('en-CA', $user->locale);
     }
 
     public function testAlwaysCarriesRoleUserAndDedupesExplicitRoles(): void

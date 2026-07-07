@@ -1,0 +1,176 @@
+{% extends 'account/_hub.html.twig' %}
+
+{% block section %}
+    <section class="bg-surface shadow-md rounded p-6">
+        <h2 class="text-lg font-semibold text-fg">{{ 'account.email.index.heading'|trans }}</h2>
+        <p class="mt-1 mb-4 text-sm text-fg/70">{{ 'account.email.index.intro'|trans }}</p>
+
+        <ul class="mb-6 space-y-3" data-test="email-index-list">
+            {% for email in emails %}
+                <li class="rounded border border-line bg-surface-2 px-3 py-3"
+                    data-test="email-row"
+                    data-test-email-id="{{ email.id }}"
+                    data-test-email-address="{{ email.email }}">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="font-medium text-fg">{{ email.email }}</span>
+                        {% if email.isPrimary %}
+                            <span class="rounded bg-brand/10 px-2 py-0.5 text-xs font-medium text-brand" data-test="email-badge-primary">
+                                {{ 'account.email.index.primary_badge'|trans }}
+                            </span>
+                        {% elseif email.isVerified %}
+                            <span class="rounded bg-success-surface px-2 py-0.5 text-xs font-medium text-success" data-test="email-badge-verified">
+                                {{ 'account.email.index.verified_badge'|trans }}
+                            </span>
+                        {% else %}
+                            <span class="rounded bg-warning-surface px-2 py-0.5 text-xs font-medium text-warning" data-test="email-badge-pending">
+                                {{ 'account.email.index.pending_badge'|trans }}
+                            </span>
+                        {% endif %}
+                    </div>
+                    <p class="mt-1 text-xs text-fg/60">
+                        {{ 'account.email.index.added'|trans({'%date%': email.createdAt|user_date}) }}
+                    </p>
+
+                    {% if not email.isPrimary %}
+                        <div class="mt-2 flex flex-wrap gap-2">
+                            {% if email.isVerified %}
+                                <form method="post"
+                                      action="{{ path('account_email_promote', {id: email.id}) }}"
+                                      data-turbo-confirm="{{ 'account.email.promote.confirm'|trans({'%address%': email.email}) }}"
+                                      data-test="email-promote-form">
+                                    <button type="submit"
+                                            class="bg-brand hover:bg-brand-strong text-on-brand text-xs font-medium py-1 px-3 rounded"
+                                            data-test="email-promote-submit">
+                                        {{ 'account.email.promote.submit'|trans }}
+                                    </button>
+                                </form>
+                            {% else %}
+                                <form method="post"
+                                      action="{{ path('account_email_resend', {id: email.id}) }}"
+                                      data-test="email-resend-form">
+                                    <button type="submit"
+                                            class="border border-line text-fg text-xs font-medium py-1 px-3 rounded hover:bg-surface"
+                                            data-test="email-resend-submit">
+                                        {{ 'account.email.resend.submit'|trans }}
+                                    </button>
+                                </form>
+                            {% endif %}
+
+                            <form method="post"
+                                  action="{{ path('account_email_remove', {id: email.id}) }}"
+                                  data-turbo-confirm="{{ 'account.email.remove.confirm'|trans({'%address%': email.email}) }}"
+                                  data-test="email-remove-form">
+                                <button type="submit"
+                                        class="border border-danger text-danger text-xs font-medium py-1 px-3 rounded hover:bg-danger-surface"
+                                        data-test="email-remove-submit">
+                                    {{ 'account.email.remove.submit'|trans }}
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+
+        {{ form_start(form, {action: path('account_email_add'), attr: {'data-test': 'email-add-form'}}) }}
+            <div class="flex flex-wrap items-end gap-2">
+                <div class="grow">
+                    {{ form_label(form.email) }}
+                    {{ form_widget(form.email, {attr: {placeholder: 'account.email.add.placeholder'|trans, 'data-test': 'email-add-input'}}) }}
+                </div>
+                <button type="submit"
+                        class="bg-brand hover:bg-brand-strong text-on-brand text-sm font-medium py-2 px-3 rounded"
+                        data-test="email-add-submit">
+                    {{ 'account.email.add.submit'|trans }}
+                </button>
+            </div>
+        {{ form_end(form) }}
+    </section>
+
+    <section class="bg-surface shadow-md rounded p-6 mt-6">
+        <h2 class="text-lg font-semibold text-fg">{{ 'account.passkey.index.heading'|trans }}</h2>
+        <p class="mt-1 mb-4 text-sm text-fg/70">{{ 'account.passkey.index.intro'|trans }}</p>
+
+        {% if credentials is empty %}
+            <p class="mb-4 text-sm text-fg/70" data-test="passkey-index-empty">
+                {{ 'account.passkey.index.empty'|trans }}
+            </p>
+        {% else %}
+            <ul class="mb-4 space-y-3" data-test="passkey-index-list">
+                {% for credential in credentials %}
+                    {% set just_registered = just_registered_id and just_registered_id == credential.id ~ '' %}
+                    <li class="rounded border {{ just_registered ? 'border-brand' : 'border-line' }} bg-surface-2 px-3 py-3"
+                        data-test="passkey-row"
+                        data-test-passkey-id="{{ credential.id }}">
+
+                        {% if just_registered %}
+                            <p class="mb-2 text-xs font-medium text-brand" data-test="passkey-just-registered">
+                                {{ 'account.passkey.index.just_registered'|trans }}
+                            </p>
+                        {% endif %}
+
+                        <form method="post"
+                              action="{{ path('account_passkey_rename', {id: credential.id}) }}"
+                              class="flex flex-wrap items-center gap-2"
+                              data-test="passkey-rename-form">
+                            {# RenamePasskeyFormType is CSRF-protected (token_id: submit); render the token here
+                               since the row is hand-built rather than via form_widget. #}
+                            <input type="hidden" name="rename_passkey[_token]" value="{{ csrf_token('submit') }}">
+                            <label class="sr-only" for="passkey-name-{{ credential.id }}">
+                                {{ 'account.passkey.name.label'|trans }}
+                            </label>
+                            <input type="text"
+                                   id="passkey-name-{{ credential.id }}"
+                                   name="rename_passkey[name]"
+                                   value="{{ credential.name }}"
+                                   maxlength="{{ name_max_length }}"
+                                   class="grow rounded border border-line bg-surface px-2 py-1 text-sm text-fg"
+                                   data-test="passkey-name-input"
+                                   {% if just_registered %}autofocus{% endif %}>
+                            <button type="submit"
+                                    class="bg-brand hover:bg-brand-strong text-on-brand text-sm font-medium py-1 px-3 rounded"
+                                    data-test="passkey-rename-submit">
+                                {{ 'account.passkey.rename.submit'|trans }}
+                            </button>
+                        </form>
+
+                        <p class="mt-2 text-xs text-fg/60">
+                            {{ 'account.passkey.index.created'|trans({'%date%': credential.createdAt|user_date}) }}
+                            {% if credential.lastUsedAt %}
+                                &middot; {{ 'account.passkey.index.last_used'|trans({'%date%': credential.lastUsedAt|user_date}) }}
+                            {% else %}
+                                &middot; {{ 'account.passkey.index.never_used'|trans }}
+                            {% endif %}
+                        </p>
+
+                        {% if credential.userAgentAtRegistration %}
+                            <p class="mt-1 truncate text-xs text-fg/50"
+                               title="{{ credential.userAgentAtRegistration }}"
+                               data-test="passkey-user-agent">
+                                {{ credential.userAgentAtRegistration }}
+                            </p>
+                        {% endif %}
+
+                        <form method="post"
+                              action="{{ path('account_passkey_revoke', {id: credential.id}) }}"
+                              class="mt-2"
+                              data-turbo-confirm="{{ 'account.passkey.revoke.confirm'|trans({'%name%': credential.name}) }}"
+                              data-test="passkey-revoke-form">
+                            <button type="submit"
+                                    class="border border-danger text-danger text-xs font-medium py-1 px-3 rounded hover:bg-danger-surface"
+                                    data-test="passkey-revoke-submit">
+                                {{ 'account.passkey.revoke.submit'|trans }}
+                            </button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <a href="{{ path('account_passkey_new') }}"
+           class="inline-block bg-brand hover:bg-brand-strong text-on-brand text-sm font-medium py-2 px-3 rounded"
+           data-test="passkey-index-add">
+            {{ 'account.passkey.index.add'|trans }}
+        </a>
+    </section>
+{% endblock %}

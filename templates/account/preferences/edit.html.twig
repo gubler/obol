@@ -1,0 +1,48 @@
+{% extends 'account/_hub.html.twig' %}
+
+{% block section %}
+    <turbo-frame id="account-preferences">
+        <section class="bg-surface shadow-md rounded p-6">
+            <h2 class="text-lg font-semibold text-fg">{{ 'account.preferences.edit_heading'|trans }}</h2>
+            <p class="mt-1 mb-4 text-sm text-fg/70">{{ 'account.preferences.intro'|trans }}</p>
+
+            {{ form_start(form, {attr: {'data-test': 'preferences-form', 'data-controller': 'timezone-detect'}}) }}
+                <div class="space-y-4">
+                    <div>
+                        {{ form_label(form.displayName) }}
+                        {{ form_widget(form.displayName, {attr: {'data-test': 'preferences-display-name'}}) }}
+                    </div>
+                    <div>
+                        {{ form_label(form.displayCurrency) }}
+                        {{ form_widget(form.displayCurrency, {attr: {'data-test': 'preferences-currency'}}) }}
+                    </div>
+                    <div>
+                        {{ form_label(form.language) }}
+                        {{ form_widget(form.language, {attr: {'data-test': 'preferences-language'}}) }}
+                    </div>
+                    <div>
+                        {{ form_label(form.dateFormat) }}
+                        {{ form_widget(form.dateFormat, {attr: {'data-test': 'preferences-date-format'}}) }}
+                    </div>
+                    <div>
+                        {{ form_label(form.timezone) }}
+                        {{ form_widget(form.timezone, {attr: {'data-test': 'preferences-timezone'}}) }}
+                    </div>
+                </div>
+
+                <div class="mt-6 flex flex-wrap items-center gap-3">
+                    <button type="submit"
+                            class="bg-brand hover:bg-brand-strong text-on-brand text-sm font-medium py-2 px-3 rounded"
+                            data-test="preferences-submit">
+                        {{ 'account.preferences.submit'|trans }}
+                    </button>
+                    <a href="{{ path('account_preferences') }}"
+                       class="text-sm text-brand hover:text-brand-strong hover:underline"
+                       data-test="preferences-cancel">
+                        {{ 'common.action.cancel'|trans }}
+                    </a>
+                </div>
+            {{ form_end(form) }}
+        </section>
+    </turbo-frame>
+{% endblock %}

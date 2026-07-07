@@ -5,7 +5,7 @@ description: Add a backup email address so you're never locked out - add, verify
 
 Obol signs you in with a magic link sent to your email, so your email address *is* your key to the account. Adding a second verified address gives you a backup: if you ever lose access to one mailbox, a magic link to the other still gets you in.
 
-You manage your addresses from **Email addresses** in the top bar.
+You manage your addresses under **[Account](account.md)** in the top bar, in the **Access** section.
 
 ## Your addresses at a glance
 
@@ -17,7 +17,7 @@ Every address on your account is listed with a label:
 
 ## Add an address
 
-1. Open **Email addresses**.
+1. Open your **Account** and select **Access**.
 2. Type the address in the box and select **Send verification link**.
 3. Open that mailbox and click the link to confirm it.
 
@@ -37,7 +37,7 @@ If the link has expired or been used, request a new one with **Resend link**.
 
 Once an address is verified, you can promote it to primary - handy if you're changing which mailbox is your main one:
 
-1. Open **Email addresses**.
+1. Open your **Account** and select **Access**.
 2. Select **Make primary** next to a verified address and confirm.
 
 Your primary address updates immediately, and you stay signed in on this device. For your security, any *other* devices that were kept signed in will need to sign in again.
@@ -46,7 +46,7 @@ Your primary address updates immediately, and you stay signed in on this device.
 
 Remove a backup address you no longer want:
 
-1. Open **Email addresses**.
+1. Open your **Account** and select **Access**.
 2. Select **Remove** next to the address and confirm.
 
 You can't remove your primary address - it's your account identity. To retire it, make another verified address your primary first, then remove the old one.

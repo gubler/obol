@@ -12,7 +12,7 @@
                  data-controller="passkey-register"
                  data-passkey-register-options-url-value="{{ path('webauthn.controller.creation.request.account_passkey') }}"
                  data-passkey-register-result-url-value="{{ path('webauthn.controller.creation.response.account_passkey') }}"
-                 data-passkey-register-success-url-value="{{ path('account_passkey_index') }}"
+                 data-passkey-register-success-url-value="{{ path('account_access') }}"
                  data-passkey-register-exclude-credentials-value="{{ excludeCredentialsJson }}"
                  data-passkey-register-unsupported-message-value="{{ 'account.passkey.new.unsupported'|trans }}"
                  data-passkey-register-cancelled-message-value="{{ 'account.passkey.new.cancelled'|trans }}"
@@ -44,7 +44,7 @@
             <p class="mt-4 text-xs text-fg/60">{{ 'account.passkey.new.https_note'|trans }}</p>
 
             <p class="mt-4">
-                <a href="{{ path('account_passkey_index') }}" class="text-sm text-brand hover:text-brand-strong hover:underline">
+                <a href="{{ path('account_access') }}" class="text-sm text-brand hover:text-brand-strong hover:underline">
                     {{ 'account.passkey.new.back'|trans }}
                 </a>
             </p>

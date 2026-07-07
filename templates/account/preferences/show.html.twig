@@ -1,0 +1,46 @@
+{% extends 'account/_hub.html.twig' %}
+
+{% block section %}
+    {# The frame lets the Edit link swap the form in place with JS; without JS the link is a normal
+       navigation to the edit page. Both the view and the edit page carry a matching frame id. #}
+    <turbo-frame id="account-preferences">
+        <section class="bg-surface shadow-md rounded p-6">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <h2 class="text-lg font-semibold text-fg">{{ 'account.preferences.heading'|trans }}</h2>
+                <a href="{{ path('account_preferences_edit') }}"
+                   class="bg-brand hover:bg-brand-strong text-on-brand text-sm font-medium py-2 px-3 rounded"
+                   data-test="preferences-edit-link">
+                    {{ 'account.preferences.edit'|trans }}
+                </a>
+            </div>
+            <p class="mt-1 mb-4 text-sm text-fg/70">{{ 'account.preferences.intro'|trans }}</p>
+
+            <dl class="divide-y divide-line" data-test="preferences-summary">
+                <div class="flex flex-wrap justify-between gap-2 py-3">
+                    <dt class="text-sm font-medium text-fg-muted">{{ 'account.preferences.display_name'|trans }}</dt>
+                    <dd class="text-sm text-fg" data-test="pref-display-name">{{ user.displayName }}</dd>
+                </div>
+                <div class="flex flex-wrap justify-between gap-2 py-3">
+                    <dt class="text-sm font-medium text-fg-muted">{{ 'account.preferences.currency'|trans }}</dt>
+                    <dd class="text-sm text-fg" data-test="pref-currency">{{ user.displayCurrency.symbol }} {{ user.displayCurrency.value }}</dd>
+                </div>
+                <div class="flex flex-wrap justify-between gap-2 py-3">
+                    <dt class="text-sm font-medium text-fg-muted">{{ 'account.preferences.language'|trans }}</dt>
+                    <dd class="text-sm text-fg" data-test="pref-language">
+                        {{ language ? language.label|trans : (user.locale ?? 'account.preferences.language_unset'|trans) }}
+                    </dd>
+                </div>
+                <div class="flex flex-wrap justify-between gap-2 py-3">
+                    <dt class="text-sm font-medium text-fg-muted">{{ 'account.preferences.date_time_format'|trans }}</dt>
+                    <dd class="text-sm text-fg" data-test="pref-date-format">
+                        {{ user.dateFormat.label|trans({'%example%': sampleDateTime|user_datetime}) }}
+                    </dd>
+                </div>
+                <div class="flex flex-wrap justify-between gap-2 py-3">
+                    <dt class="text-sm font-medium text-fg-muted">{{ 'account.preferences.timezone'|trans }}</dt>
+                    <dd class="text-sm text-fg" data-test="pref-timezone">{{ user.timezone }}</dd>
+                </div>
+            </dl>
+        </section>
+    </turbo-frame>
+{% endblock %}

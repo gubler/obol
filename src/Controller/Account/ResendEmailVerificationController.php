@@ -37,6 +37,6 @@ final class ResendEmailVerificationController extends AbstractBaseController
         $this->commandBus->dispatch(new ResendEmailVerificationCommand(ownerUserId: $user->id, userEmailId: $id));
         $this->addFlash(self::FLASH_NOTICE, $this->translator->trans('account.email.flash.resent'));
 
-        return $this->redirectToRoute('account_email_index');
+        return $this->redirectToRoute('account_access');
     }
 }

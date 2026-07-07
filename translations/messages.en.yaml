@@ -7,8 +7,7 @@ common:
         categories: Categories
         payment_sources: Payment Sources
         reports: Reports
-        emails: Email addresses
-        passkeys: Passkeys
+        account: Account
         logout: Log out
     theme:
         toggle: Toggle dark mode
@@ -103,10 +102,15 @@ enum:
         archive: archive
         unarchive: unarchive
     date_format:
-        locale_default: Locale default
-        year_month_day_dash: YYYY-MM-DD
-        month_day_year_slash: MM/DD/YYYY
-        day_month_year_slash: DD/MM/YYYY
+        # Each %example% is today rendered in that style, so the option shows what dates will look like.
+        long: 'Long (%example%)'
+        medium: 'Medium (%example%)'
+        short: 'Short (%example%)'
+        iso: 'YYYY-MM-DD (%example%)'
+    locale:
+        en_us: English (United States)
+        en_gb: English (United Kingdom)
+        en_ca: English (Canada)
 
 auth:
     login:
@@ -172,6 +176,26 @@ tour:
             body: Switch between light and dark whenever you like.
 
 account:
+    hub:
+        title: Account
+        nav:
+            preferences: Preferences
+            access: Access
+    preferences:
+        heading: Preferences
+        intro: How Obol displays information for you - your name, default currency, language, date and time formatting, and timezone.
+        edit: Edit
+        edit_heading: Edit preferences
+        display_name: Display name
+        display_name_placeholder: A name, a nickname, whatever you like
+        currency: Default currency
+        language: Language
+        language_placeholder: Choose a language
+        language_unset: Not set
+        date_time_format: Date & time format
+        timezone: Timezone
+        submit: Save preferences
+        updated: Your preferences have been updated.
     passkey:
         new:
             title: Add a passkey

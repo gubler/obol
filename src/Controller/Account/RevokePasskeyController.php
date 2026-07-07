@@ -39,6 +39,6 @@ final class RevokePasskeyController extends AbstractBaseController
             $this->addFlash(self::FLASH_SUCCESS, $this->translator->trans('account.passkey.revoke.success'));
         }
 
-        return $this->redirectToRoute('account_passkey_index');
+        return $this->redirectToRoute('account_access');
     }
 }

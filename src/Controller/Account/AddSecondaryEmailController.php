@@ -28,7 +28,7 @@ final class AddSecondaryEmailController extends AbstractBaseController
             $this->logFormErrors($form);
             $this->addFlash(self::FLASH_ERROR, $this->translator->trans('account.email.add.invalid'));
 
-            return $this->redirectToRoute('account_email_index');
+            return $this->redirectToRoute('account_access');
         }
 
         $this->commandBus->dispatch(new AddSecondaryEmailCommand(
@@ -40,6 +40,6 @@ final class AddSecondaryEmailController extends AbstractBaseController
         // elsewhere - the response never reveals who holds an address (parallels the /login flow).
         $this->addFlash(self::FLASH_NOTICE, $this->translator->trans('account.email.flash.verify_sent'));
 
-        return $this->redirectToRoute('account_email_index');
+        return $this->redirectToRoute('account_access');
     }
 }

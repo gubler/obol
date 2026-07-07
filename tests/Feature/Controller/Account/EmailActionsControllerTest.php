@@ -26,7 +26,7 @@ final class EmailActionsControllerTest extends WebTestCase
         $client->loginUser($user);
 
         $client->request(Request::METHOD_POST, '/account/emails/' . $secondary->id . '/promote');
-        self::assertResponseRedirects('/account/emails');
+        self::assertResponseRedirects('/account/access');
 
         // Following the redirect hits an authenticated-by-default route. A successful render (not a bounce
         // to /login) proves the acting session survived the primary-email change.
@@ -46,7 +46,7 @@ final class EmailActionsControllerTest extends WebTestCase
         $client->loginUser($user);
 
         $client->request(Request::METHOD_POST, '/account/emails/' . $pending->id . '/promote');
-        self::assertResponseRedirects('/account/emails');
+        self::assertResponseRedirects('/account/access');
         $client->followRedirect();
         self::assertSelectorExists('.flash-error');
 
@@ -75,7 +75,7 @@ final class EmailActionsControllerTest extends WebTestCase
         $client->loginUser($user);
 
         $client->request(Request::METHOD_POST, '/account/emails/' . $id . '/remove');
-        self::assertResponseRedirects('/account/emails');
+        self::assertResponseRedirects('/account/access');
 
         $em = self::getContainer()->get(EntityManagerInterface::class);
         self::assertNull($em->getRepository(UserEmail::class)->find($id));
@@ -90,7 +90,7 @@ final class EmailActionsControllerTest extends WebTestCase
         $primary = self::getContainer()->get(UserEmailRepository::class)->findPrimaryForUser($user);
         $client->request(Request::METHOD_POST, '/account/emails/' . $primary->id . '/remove');
 
-        self::assertResponseRedirects('/account/emails');
+        self::assertResponseRedirects('/account/access');
         $client->followRedirect();
         self::assertSelectorExists('.flash-error');
 
@@ -118,7 +118,7 @@ final class EmailActionsControllerTest extends WebTestCase
         $client->loginUser($user);
 
         $client->request(Request::METHOD_POST, '/account/emails/' . $pending->id . '/resend');
-        self::assertResponseRedirects('/account/emails');
+        self::assertResponseRedirects('/account/access');
         $client->followRedirect();
         self::assertSelectorExists('.flash-notice');
     }

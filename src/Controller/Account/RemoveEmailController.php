@@ -42,6 +42,6 @@ final class RemoveEmailController extends AbstractBaseController
             $this->addFlash(self::FLASH_ERROR, $this->translator->trans($secondaryEmailException->translationKey()));
         }
 
-        return $this->redirectToRoute('account_email_index');
+        return $this->redirectToRoute('account_access');
     }
 }

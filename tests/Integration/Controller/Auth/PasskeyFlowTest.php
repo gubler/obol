@@ -75,10 +75,11 @@ final class PasskeyFlowTest extends PantherTestCase
             return '' !== $class && !str_contains($class, 'hidden');
         });
 
-        // 2. Register. The virtual authenticator auto-consents; the controller redirects to the list.
+        // 2. Register. The virtual authenticator auto-consents; the controller redirects to the Access
+        //    section, where the passkey list lives.
         $client->executeScript('document.querySelector(\'[data-test="passkey-register-submit"]\').click();');
         try {
-            $client->wait(10)->until(static fn (): bool => str_contains($client->getCurrentURL(), '/account/passkeys') && !str_contains($client->getCurrentURL(), '/new'));
+            $client->wait(10)->until(static fn (): bool => str_contains($client->getCurrentURL(), '/account/access'));
         } catch (TimeoutException $timeoutException) {
             self::fail(self::diagnosticFailure($client, 'registration redirect timed out', $timeoutException));
         }

@@ -18,7 +18,7 @@ Because a passkey is tied to your device, it's both quicker and harder to phish 
 You add a passkey while you're signed in:
 
 1. Sign in as usual (a magic link is fine).
-2. Open **Passkeys** from the top bar.
+2. Open your **[Account](account.md)** and select **Access**.
 3. Select **Add a passkey**.
 4. Your device or browser prompts you to confirm with your fingerprint, face, or PIN. Approve it.
 
@@ -43,7 +43,7 @@ If passkeys aren't available on the device you're using, the email sign-in is ri
 
 Give each passkey a name you'll recognize later - "Work laptop", "Personal phone", and so on:
 
-1. Open **Passkeys**.
+1. Open your **Account** and select **Access**.
 2. Change the name in the box next to the passkey.
 3. Select **Rename**.
 
@@ -51,7 +51,7 @@ Give each passkey a name you'll recognize later - "Work laptop", "Personal phone
 
 Remove a passkey you no longer use - or one on a device you've lost:
 
-1. Open **Passkeys**.
+1. Open your **Account** and select **Access**.
 2. Select **Remove** next to the passkey and confirm.
 
 Removing a passkey only affects sign-in from that credential. Your subscriptions and everything else stay exactly as they are. If you remove your last passkey, you'll simply sign in with a magic-link email again - and you can always add a new passkey later.

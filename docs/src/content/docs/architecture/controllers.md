@@ -90,3 +90,29 @@ Key points:
 2. On valid submission: dispatch a command, flash a message, redirect
 3. On invalid submission: log errors (form re-renders with validation messages automatically)
 4. On GET: render the form template
+
+## The account hub (sidebar sections)
+
+The account settings hub (`/account/*`) is a two-column shell: a left sidebar lists the
+sections, and the selected section renders on the right. The shell lives in
+`templates/account/_hub.html.twig`; each section template extends it and fills
+`{% block section %}`.
+
+The sidebar is **data-driven**. Adding a section is three small steps, not a layout change:
+
+1. Add a controller + route for the section (e.g. `account_billing`), rendering a template
+   that extends `account/_hub.html.twig`.
+2. Add one entry to the `sections` list in `_hub.html.twig` - its label, its route, and the
+   route-name prefixes (`match`) that light the item up as active.
+3. Add the sidebar label to the `account.hub.nav.*` translation keys.
+
+The existing sections are **Preferences** (display name, currency, language, date & time
+format, timezone) and **Access** (email addresses + passkeys). Flash messages for every
+section render once in the shell, so section templates do not repeat the flash loop.
+
+**Preferences is view-then-edit.** The section shows the settings read-only (so nothing
+changes by accident) with an **Edit** link to `account_preferences_edit`. Both the view and the
+edit page render a matching `<turbo-frame id="account-preferences">`, so with JS the edit form
+swaps in place and on save the read-only view swaps back; without JS the link is a plain
+navigation and the form posts and redirects normally. The edit form saves the display name and
+the formatting settings in one `ChangePreferencesCommand`.

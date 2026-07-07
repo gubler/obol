@@ -39,7 +39,7 @@ final class RenamePasskeyController extends AbstractBaseController
             $this->logFormErrors($form);
             $this->addFlash(self::FLASH_ERROR, $this->translator->trans('account.passkey.rename.invalid'));
 
-            return $this->redirectToRoute('account_passkey_index');
+            return $this->redirectToRoute('account_access');
         }
 
         $renamed = $this->commandBus->dispatch(new RenamePasskeyCommand(
@@ -52,6 +52,6 @@ final class RenamePasskeyController extends AbstractBaseController
             $this->addFlash(self::FLASH_SUCCESS, $this->translator->trans('account.passkey.rename.success'));
         }
 
-        return $this->redirectToRoute('account_passkey_index');
+        return $this->redirectToRoute('account_access');
     }
 }

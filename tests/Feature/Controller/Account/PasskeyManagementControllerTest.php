@@ -21,7 +21,7 @@ final class PasskeyManagementControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(Request::METHOD_GET, '/account/passkeys');
+        $client->request(Request::METHOD_GET, '/account/access');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('[data-test="passkey-index-empty"]');
@@ -32,7 +32,7 @@ final class PasskeyManagementControllerTest extends AuthenticatedTestCase
         $client = $this->authenticatedClient();
         PasskeyCredentialFactory::createOne(['user' => UserFactory::founder(), 'name' => 'My Phone']);
 
-        $crawler = $client->request(Request::METHOD_GET, '/account/passkeys');
+        $crawler = $client->request(Request::METHOD_GET, '/account/access');
 
         self::assertResponseIsSuccessful();
         self::assertCount(1, $crawler->filter('[data-test="passkey-row"]'));
@@ -59,7 +59,7 @@ final class PasskeyManagementControllerTest extends AuthenticatedTestCase
 
         $client->request(Request::METHOD_POST, '/account/passkeys/' . $id . '/delete');
 
-        self::assertResponseRedirects('/account/passkeys');
+        self::assertResponseRedirects('/account/access');
 
         /** @var EntityManagerInterface $em */
         $em = self::getContainer()->get(EntityManagerInterface::class);
@@ -109,12 +109,12 @@ final class PasskeyManagementControllerTest extends AuthenticatedTestCase
         $passkey = PasskeyCredentialFactory::createOne(['user' => UserFactory::founder(), 'name' => 'Old Name']);
         $id = $passkey->id;
 
-        $crawler = $client->request(Request::METHOD_GET, '/account/passkeys');
+        $crawler = $client->request(Request::METHOD_GET, '/account/access');
         $form = $crawler->filter('form[action="/account/passkeys/' . $id . '/name"]')->form();
         $form['rename_passkey[name]'] = 'New Name';
         $client->submit($form);
 
-        self::assertResponseRedirects('/account/passkeys');
+        self::assertResponseRedirects('/account/access');
 
         /** @var EntityManagerInterface $em */
         $em = self::getContainer()->get(EntityManagerInterface::class);
@@ -142,7 +142,7 @@ final class PasskeyManagementControllerTest extends AuthenticatedTestCase
     {
         $client = self::createClient();
 
-        $client->request(Request::METHOD_GET, '/account/passkeys');
+        $client->request(Request::METHOD_GET, '/account/access');
 
         self::assertResponseRedirects();
         self::assertStringContainsString('/login', (string) $client->getResponse()->headers->get('Location'));

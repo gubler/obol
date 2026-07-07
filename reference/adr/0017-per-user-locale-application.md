@@ -30,14 +30,15 @@ separate preference.**
   So "falls back to English" means "falls back to US English", and a language-only guess like `en` is
   filled to `en-US` (see `LocaleGuesser`).
 
-- **`User.dateFormat` is independent of locale** (`DateFormat` enum: `LocaleDefault`, `YearMonthDayDash`,
-  `MonthDayYearSlash`, `DayMonthYearSlash`). Most users want their locale's date order, but some want a
-  fixed order (e.g. ISO `yyyy-MM-dd`) regardless of locale, so dates do not follow `locale`. The cases are
-  named for the pattern and separator, not a region, and each case's *value is its ICU pattern*;
-  `LocaleDefault` has no pattern and renders the locale's medium form. Applied through the `user_date`
-  Twig filter (`App\Twig\UserDateExtension`), which replaced the `format_date('medium')` call sites. An
-  independent currency-format preference is intentionally *not* added - formatting follows the locale
-  until a real need appears.
+- **`User.dateFormat` is a rendering style, independent of locale** (`DateFormat` enum: `Long`, `Medium`,
+  `Short`, `Iso`, defaulting to `Medium`). `Long`/`Medium`/`Short` follow the ambient locale's own form
+  via an `IntlDateFormatter` length - so a British user reads `Medium` day-first and an American reads it
+  month-first - while `Iso` pins `yyyy-MM-dd` regardless of locale, for those who want a fixed order.
+  Formatting flows through a single seam,
+  `App\Service\DateFormatter` (locale length or the ISO pattern), used by both the `user_date` Twig filter
+  (`App\Twig\UserDateExtension`) and the account preferences picker, so every date display honors the
+  preference. An independent currency-format preference is intentionally *not* added - number formatting
+  follows the locale until a real need appears.
 
 - **`LocaleSwitcher` is the application seam - never raw `\Locale::*`.** `App\EventListener\UserLocaleListener`
   runs on `kernel.request` at priority 7 - after the firewall (so the authenticated user is available)

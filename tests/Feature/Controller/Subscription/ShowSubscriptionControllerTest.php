@@ -103,7 +103,8 @@ final class ShowSubscriptionControllerTest extends AuthenticatedTestCase
 
         self::assertResponseIsSuccessful();
         $confirm = $crawler->filter('.payment-delete-form')->attr('data-turbo-confirm');
-        self::assertStringContainsString('rolls the next renewal back from 2024-03-01 to 2024-02-01', (string) $confirm);
+        // Dates render in the viewer's format preference (the default founder is Medium: "Mar 1, 2024").
+        self::assertStringContainsString('rolls the next renewal back from Mar 1, 2024 to Feb 1, 2024', (string) $confirm);
         self::assertStringContainsString('switches this subscription to manual payments', (string) $confirm);
     }
 

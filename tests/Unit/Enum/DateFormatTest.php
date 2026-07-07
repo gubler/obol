@@ -1,7 +1,7 @@
 <?php
 
-// ABOUTME: Unit tests for the DateFormat enum - the ICU pattern per case and its translation key.
-// ABOUTME: LocaleDefault has no pattern (defers to the locale's medium length); the rest are explicit.
+// ABOUTME: Unit tests for the DateFormat enum - the ICU length per style and the one fixed ISO pattern.
+// ABOUTME: Long/Medium/Short follow the locale via an IntlDateFormatter length; Iso pins yyyy-MM-dd.
 
 declare(strict_types=1);
 
@@ -13,29 +13,47 @@ use PHPUnit\Framework\TestCase;
 
 final class DateFormatTest extends TestCase
 {
-    #[DataProvider('provideMapsEachCaseToItsIcuPatternCases')]
-    public function testMapsEachCaseToItsIcuPattern(DateFormat $format, ?string $expected): void
+    #[DataProvider('provideMapsEachStyleToItsIcuLengthCases')]
+    public function testMapsEachStyleToItsIcuLength(DateFormat $format, int $expected): void
     {
-        self::assertSame($expected, $format->pattern());
+        self::assertSame($expected, $format->length());
     }
 
     /**
-     * @return iterable<string, array{DateFormat, ?string}>
+     * @return iterable<string, array{DateFormat, int}>
      */
-    public static function provideMapsEachCaseToItsIcuPatternCases(): iterable
+    public static function provideMapsEachStyleToItsIcuLengthCases(): iterable
     {
-        yield 'locale default has no pattern' => [DateFormat::LocaleDefault, null];
-        // The case value is the ICU pattern for the explicit formats.
-        yield 'year-month-day dash' => [DateFormat::YearMonthDayDash, 'yyyy-MM-dd'];
-        yield 'month/day/year slash' => [DateFormat::MonthDayYearSlash, 'MM/dd/yyyy'];
-        yield 'day/month/year slash' => [DateFormat::DayMonthYearSlash, 'dd/MM/yyyy'];
+        yield 'long' => [DateFormat::Long, \IntlDateFormatter::LONG];
+        yield 'medium' => [DateFormat::Medium, \IntlDateFormatter::MEDIUM];
+        yield 'short' => [DateFormat::Short, \IntlDateFormatter::SHORT];
+        // Iso ignores the length (it uses a fixed pattern) but still returns a valid one.
+        yield 'iso' => [DateFormat::Iso, \IntlDateFormatter::MEDIUM];
     }
 
-    public function testReturnsATranslationKeyPerCase(): void
+    public function testOnlyIsoCarriesAFixedPattern(): void
     {
-        self::assertSame('enum.date_format.locale_default', DateFormat::LocaleDefault->label());
-        self::assertSame('enum.date_format.year_month_day_dash', DateFormat::YearMonthDayDash->label());
-        self::assertSame('enum.date_format.month_day_year_slash', DateFormat::MonthDayYearSlash->label());
-        self::assertSame('enum.date_format.day_month_year_slash', DateFormat::DayMonthYearSlash->label());
+        self::assertSame('yyyy-MM-dd', DateFormat::Iso->pattern());
+        // The locale-aware styles defer to their length in the ambient locale, so carry no pattern.
+        self::assertNull(DateFormat::Long->pattern());
+        self::assertNull(DateFormat::Medium->pattern());
+        self::assertNull(DateFormat::Short->pattern());
+    }
+
+    public function testOnlyIsoCarriesAFixedDateTimePattern(): void
+    {
+        // The audit log renders a datetime; ISO pins a 24h order, the locale-aware styles defer.
+        self::assertSame('yyyy-MM-dd HH:mm', DateFormat::Iso->dateTimePattern());
+        self::assertNull(DateFormat::Long->dateTimePattern());
+        self::assertNull(DateFormat::Medium->dateTimePattern());
+        self::assertNull(DateFormat::Short->dateTimePattern());
+    }
+
+    public function testReturnsATranslationKeyPerStyle(): void
+    {
+        self::assertSame('enum.date_format.long', DateFormat::Long->label());
+        self::assertSame('enum.date_format.medium', DateFormat::Medium->label());
+        self::assertSame('enum.date_format.short', DateFormat::Short->label());
+        self::assertSame('enum.date_format.iso', DateFormat::Iso->label());
     }
 }

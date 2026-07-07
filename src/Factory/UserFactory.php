@@ -68,7 +68,7 @@ final class UserFactory extends PersistentObjectFactory
             // for the browser-inference path.
             'locale' => 'en-US',
             'timezone' => 'America/New_York',
-            'dateFormat' => DateFormat::LocaleDefault,
+            'dateFormat' => DateFormat::Medium,
             // Onboarded by default: keeps existing feature tests past the onboarding gate. Use
             // notOnboarded() for the first-run flow itself.
             'onboardingCompletedAt' => new \DateTimeImmutable(),

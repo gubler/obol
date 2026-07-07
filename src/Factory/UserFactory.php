@@ -9,6 +9,7 @@ namespace App\Factory;
 
 use App\Entity\User;
 use App\Enum\Currency;
+use App\Enum\DateFormat;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
@@ -45,6 +46,16 @@ final class UserFactory extends PersistentObjectFactory
     }
 
     /**
+     * A user whose locale has not been resolved yet, for exercising the browser-inference path in
+     * UserLocaleListener. The default factory user has a concrete 'en-US' locale (see defaults()) so
+     * money/date output stays deterministic in feature tests.
+     */
+    public function unresolvedLocale(): static
+    {
+        return $this->with(['locale' => null]);
+    }
+
+    /**
      * @return array<string, mixed>
      */
     protected function defaults(): array
@@ -53,8 +64,11 @@ final class UserFactory extends PersistentObjectFactory
             'email' => self::faker()->unique()->safeEmail(),
             'roles' => [],
             'displayCurrency' => Currency::USD,
+            // A concrete locale by default so money/date output is deterministic; use unresolvedLocale()
+            // for the browser-inference path.
             'locale' => 'en-US',
             'timezone' => 'America/New_York',
+            'dateFormat' => DateFormat::LocaleDefault,
             // Onboarded by default: keeps existing feature tests past the onboarding gate. Use
             // notOnboarded() for the first-run flow itself.
             'onboardingCompletedAt' => new \DateTimeImmutable(),

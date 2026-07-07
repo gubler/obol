@@ -9,6 +9,7 @@ namespace App\Entity;
 
 use App\Doctrine\Type\CitextType;
 use App\Enum\Currency;
+use App\Enum\DateFormat;
 use App\Repository\UserRepository;
 use Assert\Assertion;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -65,10 +66,15 @@ class User implements UserInterface, EquatableInterface
         ?\DateTimeImmutable $createdAt = null,
         #[ORM\Column(enumType: Currency::class)]
         public private(set) Currency $displayCurrency = Currency::USD,
-        #[ORM\Column]
-        public private(set) string $locale = 'en-US',
+        // Null until resolved from the browser (or set by the user). The locale drives translation
+        // (falling back to the en catalog) and money/number formatting; see UserLocaleListener.
+        #[ORM\Column(nullable: true)]
+        public private(set) ?string $locale = null,
         #[ORM\Column]
         public private(set) string $timezone = 'America/New_York',
+        // How this user reads dates, independent of locale (some want ISO regardless); see DateFormat.
+        #[ORM\Column(enumType: DateFormat::class)]
+        public private(set) DateFormat $dateFormat = DateFormat::LocaleDefault,
         /**
          * When first-run onboarding was completed; null until then. The onboarding gate keys off this.
          * Normally stamped only by completeOnboarding(); the constructor param lets seeding/fixtures mark
@@ -115,6 +121,19 @@ class User implements UserInterface, EquatableInterface
     public function hasCompletedOnboarding(): bool
     {
         return $this->onboardingCompletedAt instanceof \DateTimeImmutable;
+    }
+
+    /**
+     * Adopt a locale (a BCP-47 tag) inferred from the browser, replacing the unresolved null. This is
+     * strictly the one-time initial resolution: it refuses to run once a locale is set, so it can never
+     * silently overwrite a value. Changing an already-resolved locale is the account-settings picker's
+     * job (a later slice), which will carry its own intention-revealing mutation.
+     */
+    public function resolveLocale(string $locale): void
+    {
+        Assertion::null($this->locale, 'Locale is already resolved.');
+
+        $this->locale = $locale;
     }
 
     /**

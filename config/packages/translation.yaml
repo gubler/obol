@@ -2,4 +2,10 @@ framework:
     default_locale: en
     translator:
         default_path: '%kernel.project_dir%/translations'
+        # `en` is the base catalog and is effectively US English; en-GB/en-CA carry only their divergent
+        # strings and fall back to `en` automatically (ICU parent-shortening). This fallback is for
+        # languages with no catalog at all: a per-user locale like de-DE formats money/dates natively but
+        # has no messages, so its UI text falls back to `en` here rather than leaking message keys.
+        fallbacks:
+            - en
         providers:

@@ -102,6 +102,11 @@ enum:
         update: update
         archive: archive
         unarchive: unarchive
+    date_format:
+        locale_default: Locale default
+        year_month_day_dash: YYYY-MM-DD
+        month_day_year_slash: MM/DD/YYYY
+        day_month_year_slash: DD/MM/YYYY
 
 auth:
     login:

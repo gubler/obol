@@ -10,18 +10,39 @@ namespace App\Tests\Unit\Entity;
 use App\Entity\User;
 use App\Entity\UserEmail;
 use App\Enum\Currency;
+use App\Enum\DateFormat;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Uuid;
 
 final class UserTest extends TestCase
 {
-    public function testDefaultsToUsdDisplayCurrencyAndAppDefaultLocaleAndTimezone(): void
+    public function testDefaultsToUsdCurrencyUnresolvedLocaleAppTimezoneAndLocaleDefaultDates(): void
     {
         $user = new User(email: 'magos@dev88.test');
 
         self::assertSame(Currency::USD, $user->displayCurrency);
-        self::assertSame('en-US', $user->locale);
+        // Locale is unresolved until the browser guess (or the user) sets it.
+        self::assertNull($user->locale);
         self::assertSame('America/New_York', $user->timezone);
+        self::assertSame(DateFormat::LocaleDefault, $user->dateFormat);
+    }
+
+    public function testResolveLocaleSetsTheLocale(): void
+    {
+        $user = new User(email: 'magos@dev88.test');
+
+        $user->resolveLocale('de-DE');
+
+        self::assertSame('de-DE', $user->locale);
+    }
+
+    public function testResolveLocaleIsRejectedOnceAlreadyResolved(): void
+    {
+        // Strictly the one-time initial resolution: it must never silently overwrite an existing locale.
+        $user = new User(email: 'magos@dev88.test', locale: 'en-US');
+
+        $this->expectException(\InvalidArgumentException::class);
+        $user->resolveLocale('de-DE');
     }
 
     public function testCarriesExplicitDisplayCurrencyLocaleAndTimezone(): void

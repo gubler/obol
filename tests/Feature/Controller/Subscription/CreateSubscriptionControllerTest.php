@@ -24,7 +24,7 @@ final class CreateSubscriptionControllerTest extends AuthenticatedTestCase
         // The category picker only appears when at least one category exists.
         CategoryFactory::createOne(['name' => 'Entertainment']);
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/new');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'h1', text: 'New Subscription');
@@ -43,7 +43,7 @@ final class CreateSubscriptionControllerTest extends AuthenticatedTestCase
         CategoryFactory::createOne(['name' => 'Apple']);
         CategoryFactory::createOne(['name' => 'Microsoft']);
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/new');
 
         self::assertResponseIsSuccessful();
         $options = $crawler
@@ -60,7 +60,7 @@ final class CreateSubscriptionControllerTest extends AuthenticatedTestCase
         $client = $this->authenticatedClient();
         CategoryFactory::createOne(['name' => 'Apple', 'color' => TileColor::Teal]);
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/new');
 
         self::assertResponseIsSuccessful();
         // The form drives the color-sync controller; the category select feeds it, each option carries
@@ -75,7 +75,7 @@ final class CreateSubscriptionControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/new');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorNotExists(selector: 'select[name="create_subscription[category]"]');
@@ -85,10 +85,10 @@ final class CreateSubscriptionControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/new');
 
         self::assertResponseIsSuccessful();
-        self::assertSelectorExists(selector: 'a[href="/"]');
+        self::assertSelectorExists(selector: 'a[href="/app"]');
     }
 
     public function testPostRequestWithValidDataCreatesSubscription(): void
@@ -96,7 +96,7 @@ final class CreateSubscriptionControllerTest extends AuthenticatedTestCase
         $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/new');
 
         $form = $crawler->selectButton(value: 'Save')->form([
             'create_subscription[category]' => $category->id->toBase32(),
@@ -112,7 +112,7 @@ final class CreateSubscriptionControllerTest extends AuthenticatedTestCase
 
         $client->submit(form: $form);
 
-        self::assertResponseRedirects(expectedLocation: '/');
+        self::assertResponseRedirects(expectedLocation: '/app');
 
         $container = self::getContainer();
         /** @var EntityManagerInterface $entityManager */
@@ -159,14 +159,14 @@ final class CreateSubscriptionControllerTest extends AuthenticatedTestCase
         // The bug report: a cost of 35.50 was saved as 35 and rendered as $0.35.
         $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/new');
 
         $form = $crawler->selectButton(value: 'Save')->form(
             $this->validSubscriptionForm($category->id->toBase32(), 'Disney Plus', '35.50'),
         );
         $client->submit(form: $form);
 
-        self::assertResponseRedirects(expectedLocation: '/');
+        self::assertResponseRedirects(expectedLocation: '/app');
         $subscription = $this->storedSubscription('Disney Plus');
         self::assertNotNull($subscription);
         self::assertSame(3550, $subscription->cost->minorAmount);
@@ -176,7 +176,7 @@ final class CreateSubscriptionControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/new');
 
         // A thousands separator must not trip validation, and the decimal must scale to minor units.
         $form = $crawler->selectButton(value: 'Save')->form(
@@ -184,7 +184,7 @@ final class CreateSubscriptionControllerTest extends AuthenticatedTestCase
         );
         $client->submit(form: $form);
 
-        self::assertResponseRedirects(expectedLocation: '/');
+        self::assertResponseRedirects(expectedLocation: '/app');
         $subscription = $this->storedSubscription('Big Plan');
         self::assertNotNull($subscription);
         self::assertSame(123456, $subscription->cost->minorAmount);
@@ -194,7 +194,7 @@ final class CreateSubscriptionControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/new');
 
         // Yen has no minor unit: 2,000 yen is 2000 minor, not 200000.
         $fields = $this->validSubscriptionForm($category->id->toBase32(), 'Manga Box JP', '2,000');
@@ -202,7 +202,7 @@ final class CreateSubscriptionControllerTest extends AuthenticatedTestCase
         $form = $crawler->selectButton(value: 'Save')->form($fields);
         $client->submit(form: $form);
 
-        self::assertResponseRedirects(expectedLocation: '/');
+        self::assertResponseRedirects(expectedLocation: '/app');
         $subscription = $this->storedSubscription('Manga Box JP');
         self::assertNotNull($subscription);
         self::assertSame(Currency::JPY, $subscription->cost->currency);
@@ -213,7 +213,7 @@ final class CreateSubscriptionControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/new');
 
         $form = $crawler->selectButton(value: 'Save')->form(
             $this->validSubscriptionForm($category->id->toBase32(), 'Bogus', 'not money'),
@@ -230,7 +230,7 @@ final class CreateSubscriptionControllerTest extends AuthenticatedTestCase
         $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/new');
 
         $form = $crawler->selectButton(value: 'Save')->form([
             'create_subscription[category]' => $category->id->toBase32(),
@@ -243,7 +243,7 @@ final class CreateSubscriptionControllerTest extends AuthenticatedTestCase
         ]);
 
         $client->submit(form: $form);
-        self::assertResponseRedirects(expectedLocation: '/');
+        self::assertResponseRedirects(expectedLocation: '/app');
 
         $container = self::getContainer();
         /** @var EntityManagerInterface $entityManager */
@@ -255,7 +255,7 @@ final class CreateSubscriptionControllerTest extends AuthenticatedTestCase
         self::assertSame(1500, $subscription->cost->minorAmount);
 
         // The chosen currency drives rendering on the detail page.
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id);
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/' . $subscription->id);
         self::assertSelectorTextContains(selector: 'body', text: '€15.00');
     }
 
@@ -264,7 +264,7 @@ final class CreateSubscriptionControllerTest extends AuthenticatedTestCase
         $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/new');
 
         $form = $crawler->selectButton(value: 'Save')->form([
             'create_subscription[category]' => $category->id->toBase32(),
@@ -286,7 +286,7 @@ final class CreateSubscriptionControllerTest extends AuthenticatedTestCase
         $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/new');
 
         $form = $crawler->selectButton(value: 'Save')->form([
             'create_subscription[category]' => $category->id->toBase32(),
@@ -309,7 +309,7 @@ final class CreateSubscriptionControllerTest extends AuthenticatedTestCase
         $client = $this->authenticatedClient();
         CategoryFactory::createOne(['name' => 'Entertainment']);
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/new');
 
         $form = $crawler->selectButton(value: 'Save')->form([
             'create_subscription[name]' => 'Test Sub',
@@ -323,7 +323,7 @@ final class CreateSubscriptionControllerTest extends AuthenticatedTestCase
 
         $client->submit(form: $form);
 
-        self::assertResponseRedirects(expectedLocation: '/');
+        self::assertResponseRedirects(expectedLocation: '/app');
         $subscription = $this->storedSubscription('Test Sub');
         self::assertNotNull($subscription);
         self::assertNull($subscription->category);
@@ -334,7 +334,7 @@ final class CreateSubscriptionControllerTest extends AuthenticatedTestCase
         $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/new');
 
         $form = $crawler->selectButton(value: 'Save')->form([
             'create_subscription[category]' => $category->id->toBase32(),
@@ -355,7 +355,7 @@ final class CreateSubscriptionControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/new');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'input[name="create_subscription[_token]"]');
@@ -366,7 +366,7 @@ final class CreateSubscriptionControllerTest extends AuthenticatedTestCase
         $client = $this->authenticatedClient();
         CategoryFactory::createOne(['name' => 'Entertainment']);
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/new');
 
         $initialCount = SubscriptionFactory::count();
 

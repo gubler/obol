@@ -22,7 +22,7 @@ final class ShowPaymentSourceReportController extends AbstractBaseController
     {
     }
 
-    #[Route(path: '/reports/payment-sources/{id}', name: 'reports_payment_source', methods: ['GET'])]
+    #[Route(path: '/app/reports/payment-sources/{id}', name: 'reports_payment_source', methods: ['GET'])]
     public function __invoke(Ulid $id): Response
     {
         $composition = $this->queryBus->query(query: new FindPaymentSourceBreakdownQuery(ownerUserId: $this->currentUser()->id, paymentSourceId: $id));

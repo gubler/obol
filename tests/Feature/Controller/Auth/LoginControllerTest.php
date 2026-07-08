@@ -82,7 +82,7 @@ final class LoginControllerTest extends WebTestCase
 
     public function testProtectedRoutesRedirectAnonymousUsersToLogin(): void
     {
-        $this->client->request(method: Request::METHOD_GET, uri: '/');
+        $this->client->request(method: Request::METHOD_GET, uri: '/app');
 
         self::assertResponseRedirects('/login');
     }
@@ -91,7 +91,7 @@ final class LoginControllerTest extends WebTestCase
     {
         $this->client->loginUser(UserFactory::founder());
 
-        $this->client->request(method: Request::METHOD_GET, uri: '/');
+        $this->client->request(method: Request::METHOD_GET, uri: '/app');
 
         self::assertResponseIsSuccessful();
     }

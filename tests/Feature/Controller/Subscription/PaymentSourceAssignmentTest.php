@@ -22,7 +22,7 @@ final class PaymentSourceAssignmentTest extends AuthenticatedTestCase
 
         PaymentSourceFactory::createOne(['name' => 'Amex 1234']);
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/new');
 
         self::assertResponseIsSuccessful();
         $select = $crawler->filter('select[name="create_subscription[paymentSource]"]');
@@ -34,7 +34,7 @@ final class PaymentSourceAssignmentTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/new');
 
         self::assertResponseIsSuccessful();
         self::assertCount(0, $crawler->filter('select[name="create_subscription[paymentSource]"]'));
@@ -48,12 +48,12 @@ final class PaymentSourceAssignmentTest extends AuthenticatedTestCase
         $subscription = SubscriptionFactory::createOne(['name' => 'Netflix']);
         $subscriptionId = $subscription->id;
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscriptionId . '/edit');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/' . $subscriptionId . '/edit');
         $form = $crawler->selectButton(value: 'Save')->form();
         $form['edit_subscription[paymentSource]'] = (string) $source->id;
         $client->submit(form: $form);
 
-        self::assertResponseRedirects(expectedLocation: '/subscriptions/' . $subscriptionId);
+        self::assertResponseRedirects(expectedLocation: '/app/subscriptions/' . $subscriptionId);
 
         /** @var EntityManagerInterface $entityManager */
         $entityManager = self::getContainer()->get(id: EntityManagerInterface::class);

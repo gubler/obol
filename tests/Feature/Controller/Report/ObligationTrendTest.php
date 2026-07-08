@@ -1,6 +1,6 @@
 <?php
 
-// ABOUTME: Feature tests for the obligations-over-time trend on /reports and its week/month/year toggle.
+// ABOUTME: Feature tests for the obligations-over-time trend on /app/reports and its week/month/year toggle.
 // ABOUTME: Verifies the trend section renders its own line chart and that the selected granularity is marked active.
 
 declare(strict_types=1);
@@ -23,13 +23,13 @@ final class ObligationTrendTest extends AuthenticatedTestCase
         $category = CategoryFactory::createOne(['name' => 'Streaming']);
         SubscriptionFactory::createOne(['category' => $category, 'cost' => new Money(4000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/reports');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/reports');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: '.obligation-trend canvas');                 // the line chart
-        self::assertSelectorExists(selector: 'a[href="/reports?trend=week"]');
-        self::assertSelectorExists(selector: 'a[href="/reports?trend=month"]');
-        self::assertSelectorExists(selector: 'a[href="/reports?trend=year"]');
+        self::assertSelectorExists(selector: 'a[href="/app/reports?trend=week"]');
+        self::assertSelectorExists(selector: 'a[href="/app/reports?trend=month"]');
+        self::assertSelectorExists(selector: 'a[href="/app/reports?trend=year"]');
         self::assertSelectorTextContains(selector: '.obligation-trend [aria-current="page"]', text: 'Monthly');
     }
 
@@ -37,7 +37,7 @@ final class ObligationTrendTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/reports?trend=week');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/reports?trend=week');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: '.obligation-trend [aria-current="page"]', text: 'Weekly');

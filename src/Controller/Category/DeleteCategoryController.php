@@ -16,7 +16,7 @@ use Symfony\Component\Uid\Ulid;
 
 final class DeleteCategoryController extends AbstractBaseController
 {
-    #[Route(path: '/categories/{id}/delete', name: 'category_delete', methods: ['POST'])]
+    #[Route(path: '/app/categories/{id}/delete', name: 'category_delete', methods: ['POST'])]
     public function __invoke(Ulid $id): \Symfony\Component\HttpFoundation\RedirectResponse
     {
         $category = $this->queryBus->query(query: new FindCategoryQuery(ownerUserId: $this->currentUser()->id, categoryId: $id));

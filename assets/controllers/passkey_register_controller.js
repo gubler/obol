@@ -1,4 +1,4 @@
-// ABOUTME: Drives the WebAuthn registration ceremony at /account/passkeys/new.
+// ABOUTME: Drives the WebAuthn registration ceremony at /app/account/passkeys/new.
 // ABOUTME: Calls the bundle's options + result endpoints; relays the browser's response back for verification.
 
 import { Controller } from '@hotwired/stimulus';

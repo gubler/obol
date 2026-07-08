@@ -29,7 +29,7 @@ final class EditSubscriptionController extends AbstractBaseController
     ) {
     }
 
-    #[Route(path: '/subscriptions/{id}/edit', name: 'subscription_edit', methods: ['GET', 'POST'])]
+    #[Route(path: '/app/subscriptions/{id}/edit', name: 'subscription_edit', methods: ['GET', 'POST'])]
     public function __invoke(Ulid $id, Request $request): Response
     {
         $subscription = $this->queryBus->query(query: new FindSubscriptionQuery(ownerUserId: $this->currentUser()->id, subscriptionId: $id));

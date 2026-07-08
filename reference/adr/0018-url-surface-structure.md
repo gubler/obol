@@ -37,9 +37,12 @@ This ADR settles how the surfaces are addressed.
   stay memorable, are linked from emails and marketing CTAs, and redirect into the application on
   success.
 - **`/app/...` - the authenticated application.** The dashboard, subscriptions, categories, payment
-  sources, reports, payments, account, and onboarding all move under `/app`. The firewall collapses to
-  a single rule: `^/app` requires `ROLE_USER`; everything else is public by default, with a small,
-  explicit set of public root endpoints. Route *names* do not change, so generated links keep working;
+  sources, reports, payments, account, and onboarding all move under `/app`. The firewall keeps its
+  deny-by-default posture - the `^/` catch-all requires `ROLE_USER`, so every `/app` route is protected
+  without per-route wiring - and the public surfaces are the small, explicit set of carve-outs listed
+  above the catch-all (landing, login/magic-link, the signed email-verify link). Deny-by-default is kept
+  deliberately over a lone `^/app` rule: it fails closed, so a new app route left unlisted is still
+  protected. Route *names* do not change, so generated links keep working;
   only the paths gain the prefix.
 - **`/help/...` - the static help manual.** Served as files by the web server (Caddy/FrankenPHP) from
   `public/help` before a request ever reaches PHP. Symfony carries no route for it. The site is built
@@ -60,9 +63,11 @@ is the one part of this decision that is expensive to reverse once testers hold 
 
 ## Consequences
 
-- The firewall reduces from "authenticated-by-default, then carve out public exceptions" to one
-  `^/app` rule plus a short, explicit public-root set (landing, login/magic-link, email-verify,
-  the updates form, health). Simpler to read and to reason about.
+- The firewall keeps its authenticated-by-default (deny-by-default) posture: the `^/` catch-all
+  requires `ROLE_USER`, with a short, explicit public set carved out above it (landing, login/magic-link,
+  the signed email-verify link, the updates form, health). The `/app` prefix makes the boundary legible
+  without weakening the fail-closed default - an app route left unlisted stays protected, so we keep it
+  over a single `^/app`-only rule that would fail open.
 - Moving the application under `/app` is broad but mechanical: every application route path gains the
   prefix; `path()`/`redirectToRoute()` calls regenerate automatically because route names are unchanged;
   redirect targets, the onboarding gate's allowlist, and passkey/login success redirects update; and

@@ -26,7 +26,7 @@ final class ShowReportsController extends AbstractBaseController
     {
     }
 
-    #[Route(path: '/reports', name: 'reports_index', methods: ['GET'])]
+    #[Route(path: '/app/reports', name: 'reports_index', methods: ['GET'])]
     public function __invoke(Request $request): Response
     {
         $ownerUserId = $this->currentUser()->id;

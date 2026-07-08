@@ -20,7 +20,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class AccessController extends AbstractBaseController
 {
-    #[Route(path: '/account/access', name: 'account_access', methods: ['GET'])]
+    #[Route(path: '/app/account/access', name: 'account_access', methods: ['GET'])]
     public function __invoke(Request $request): Response
     {
         $user = $this->currentUser();

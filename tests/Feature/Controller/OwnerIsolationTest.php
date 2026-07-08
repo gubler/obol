@@ -28,9 +28,9 @@ final class OwnerIsolationTest extends WebTestCase
         $this->loginAsAnotherUser($client);
 
         foreach ([
-            '/subscriptions/' . $subscription->id,
-            '/subscriptions/' . $subscription->id . '/edit',
-            '/payments/' . $payment->id . '/edit',
+            '/app/subscriptions/' . $subscription->id,
+            '/app/subscriptions/' . $subscription->id . '/edit',
+            '/app/payments/' . $payment->id . '/edit',
         ] as $uri) {
             $client->request(method: Request::METHOD_GET, uri: $uri);
             self::assertResponseStatusCodeSame(expectedCode: 404, message: $uri . ' must 404 for a non-owner');
@@ -46,11 +46,11 @@ final class OwnerIsolationTest extends WebTestCase
         $this->loginAsAnotherUser($client);
 
         foreach ([
-            '/subscriptions/' . $subscription->id . '/archive',
-            '/subscriptions/' . $subscription->id . '/unarchive',
-            '/subscriptions/' . $subscription->id . '/delete',
-            '/payments/' . $payment->id . '/validate',
-            '/payments/' . $payment->id . '/delete',
+            '/app/subscriptions/' . $subscription->id . '/archive',
+            '/app/subscriptions/' . $subscription->id . '/unarchive',
+            '/app/subscriptions/' . $subscription->id . '/delete',
+            '/app/payments/' . $payment->id . '/validate',
+            '/app/payments/' . $payment->id . '/delete',
         ] as $uri) {
             $client->request(method: Request::METHOD_POST, uri: $uri);
             self::assertResponseStatusCodeSame(expectedCode: 404, message: $uri . ' must 404 for a non-owner');
@@ -64,11 +64,11 @@ final class OwnerIsolationTest extends WebTestCase
         SubscriptionFactory::createOne(['owner' => $userA, 'name' => 'Aardvark Weekly']);
         $this->loginAsAnotherUser($client);
 
-        $client->request(method: Request::METHOD_GET, uri: '/');
+        $client->request(method: Request::METHOD_GET, uri: '/app');
         self::assertResponseIsSuccessful();
         self::assertSelectorTextNotContains(selector: 'body', text: 'Aardvark Weekly');
 
-        $client->request(method: Request::METHOD_GET, uri: '/reports');
+        $client->request(method: Request::METHOD_GET, uri: '/app/reports');
         self::assertResponseIsSuccessful();
         self::assertSelectorTextNotContains(selector: 'body', text: 'Aardvark Weekly');
     }
@@ -81,14 +81,14 @@ final class OwnerIsolationTest extends WebTestCase
         $this->loginAsAnotherUser($client);
 
         foreach ([
-            '/categories/' . $category->id,
-            '/categories/' . $category->id . '/edit',
+            '/app/categories/' . $category->id,
+            '/app/categories/' . $category->id . '/edit',
         ] as $uri) {
             $client->request(method: Request::METHOD_GET, uri: $uri);
             self::assertResponseStatusCodeSame(expectedCode: 404, message: $uri . ' must 404 for a non-owner');
         }
 
-        $client->request(method: Request::METHOD_POST, uri: '/categories/' . $category->id . '/delete');
+        $client->request(method: Request::METHOD_POST, uri: '/app/categories/' . $category->id . '/delete');
         self::assertResponseStatusCodeSame(expectedCode: 404, message: 'deleting a non-owned category must 404');
     }
 
@@ -100,16 +100,16 @@ final class OwnerIsolationTest extends WebTestCase
         $this->loginAsAnotherUser($client);
 
         foreach ([
-            '/payment-sources/' . $source->id,
-            '/payment-sources/' . $source->id . '/edit',
+            '/app/payment-sources/' . $source->id,
+            '/app/payment-sources/' . $source->id . '/edit',
         ] as $uri) {
             $client->request(method: Request::METHOD_GET, uri: $uri);
             self::assertResponseStatusCodeSame(expectedCode: 404, message: $uri . ' must 404 for a non-owner');
         }
 
         foreach ([
-            '/payment-sources/' . $source->id . '/delete',
-            '/payment-sources/' . $source->id . '/reassign',
+            '/app/payment-sources/' . $source->id . '/delete',
+            '/app/payment-sources/' . $source->id . '/reassign',
         ] as $uri) {
             $client->request(method: Request::METHOD_POST, uri: $uri);
             self::assertResponseStatusCodeSame(expectedCode: 404, message: $uri . ' must 404 for a non-owner');
@@ -124,11 +124,11 @@ final class OwnerIsolationTest extends WebTestCase
         PaymentSourceFactory::createOne(['owner' => $userA, 'name' => 'Aardvark Amex']);
         $this->loginAsAnotherUser($client);
 
-        $client->request(method: Request::METHOD_GET, uri: '/categories');
+        $client->request(method: Request::METHOD_GET, uri: '/app/categories');
         self::assertResponseIsSuccessful();
         self::assertSelectorTextNotContains(selector: 'body', text: 'Aardvark Media');
 
-        $client->request(method: Request::METHOD_GET, uri: '/payment-sources');
+        $client->request(method: Request::METHOD_GET, uri: '/app/payment-sources');
         self::assertResponseIsSuccessful();
         self::assertSelectorTextNotContains(selector: 'body', text: 'Aardvark Amex');
     }

@@ -18,7 +18,7 @@ use Symfony\Component\Uid\Ulid;
 
 final class ShowPaymentSourceController extends AbstractBaseController
 {
-    #[Route(path: '/payment-sources/{id}', name: 'payment_source_show', methods: ['GET'])]
+    #[Route(path: '/app/payment-sources/{id}', name: 'payment_source_show', methods: ['GET'])]
     public function __invoke(Ulid $id): Response
     {
         $ownerUserId = $this->currentUser()->id;

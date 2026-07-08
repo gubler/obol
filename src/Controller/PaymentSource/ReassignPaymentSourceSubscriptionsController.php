@@ -18,7 +18,7 @@ use Symfony\Component\Uid\Ulid;
 
 final class ReassignPaymentSourceSubscriptionsController extends AbstractBaseController
 {
-    #[Route(path: '/payment-sources/{id}/reassign', name: 'payment_source_reassign', methods: ['POST'])]
+    #[Route(path: '/app/payment-sources/{id}/reassign', name: 'payment_source_reassign', methods: ['POST'])]
     public function __invoke(Ulid $id, Request $request): RedirectResponse
     {
         $source = $this->queryBus->query(query: new FindPaymentSourceQuery(ownerUserId: $this->currentUser()->id, paymentSourceId: $id));

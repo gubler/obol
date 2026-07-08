@@ -29,7 +29,7 @@ final readonly class OnboardingGateListener
      *
      * @var list<string>
      */
-    private const array ALLOWLIST_PREFIXES = ['/onboarding', '/logout', '/_', '/assets'];
+    private const array ALLOWLIST_PREFIXES = ['/app/onboarding', '/logout', '/_', '/assets'];
 
     public function __construct(
         private Security $security,

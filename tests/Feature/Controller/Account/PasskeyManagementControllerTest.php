@@ -1,6 +1,6 @@
 <?php
 
-// ABOUTME: Feature tests for the /account/passkeys management surface - list, register page, rename, revoke.
+// ABOUTME: Feature tests for the /app/account/passkeys management surface - list, register page, rename, revoke.
 // ABOUTME: Covers owner isolation (a passkey owned by another user 404s) and the empty/populated list states.
 
 declare(strict_types=1);
@@ -21,7 +21,7 @@ final class PasskeyManagementControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(Request::METHOD_GET, '/account/access');
+        $client->request(Request::METHOD_GET, '/app/account/access');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('[data-test="passkey-index-empty"]');
@@ -32,7 +32,7 @@ final class PasskeyManagementControllerTest extends AuthenticatedTestCase
         $client = $this->authenticatedClient();
         PasskeyCredentialFactory::createOne(['user' => UserFactory::founder(), 'name' => 'My Phone']);
 
-        $crawler = $client->request(Request::METHOD_GET, '/account/access');
+        $crawler = $client->request(Request::METHOD_GET, '/app/account/access');
 
         self::assertResponseIsSuccessful();
         self::assertCount(1, $crawler->filter('[data-test="passkey-row"]'));
@@ -44,7 +44,7 @@ final class PasskeyManagementControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(Request::METHOD_GET, '/account/passkeys/new');
+        $client->request(Request::METHOD_GET, '/app/account/passkeys/new');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('[data-controller="passkey-register"]');
@@ -57,9 +57,9 @@ final class PasskeyManagementControllerTest extends AuthenticatedTestCase
         $passkey = PasskeyCredentialFactory::createOne(['user' => UserFactory::founder(), 'name' => 'Doomed']);
         $id = $passkey->id;
 
-        $client->request(Request::METHOD_POST, '/account/passkeys/' . $id . '/delete');
+        $client->request(Request::METHOD_POST, '/app/account/passkeys/' . $id . '/delete');
 
-        self::assertResponseRedirects('/account/access');
+        self::assertResponseRedirects('/app/account/access');
 
         /** @var EntityManagerInterface $em */
         $em = self::getContainer()->get(EntityManagerInterface::class);
@@ -71,7 +71,7 @@ final class PasskeyManagementControllerTest extends AuthenticatedTestCase
         $client = $this->authenticatedClient();
         $passkey = PasskeyCredentialFactory::createOne(['user' => UserFactory::founder(), 'name' => 'Only One']);
 
-        $client->request(Request::METHOD_POST, '/account/passkeys/' . $passkey->id . '/delete');
+        $client->request(Request::METHOD_POST, '/app/account/passkeys/' . $passkey->id . '/delete');
         $client->followRedirect();
 
         self::assertSelectorExists('.flash-warning');
@@ -84,7 +84,7 @@ final class PasskeyManagementControllerTest extends AuthenticatedTestCase
         $passkey = PasskeyCredentialFactory::createOne(['user' => $otherUser, 'name' => 'Not Yours']);
         $id = $passkey->id;
 
-        $client->request(Request::METHOD_POST, '/account/passkeys/' . $id . '/delete');
+        $client->request(Request::METHOD_POST, '/app/account/passkeys/' . $id . '/delete');
 
         self::assertResponseStatusCodeSame(404);
 
@@ -98,7 +98,7 @@ final class PasskeyManagementControllerTest extends AuthenticatedTestCase
         $client = $this->authenticatedClient();
         $passkey = PasskeyCredentialFactory::createOne(['user' => UserFactory::founder()]);
 
-        $client->request(Request::METHOD_GET, '/account/passkeys/' . $passkey->id . '/delete');
+        $client->request(Request::METHOD_GET, '/app/account/passkeys/' . $passkey->id . '/delete');
 
         self::assertResponseStatusCodeSame(405);
     }
@@ -109,12 +109,12 @@ final class PasskeyManagementControllerTest extends AuthenticatedTestCase
         $passkey = PasskeyCredentialFactory::createOne(['user' => UserFactory::founder(), 'name' => 'Old Name']);
         $id = $passkey->id;
 
-        $crawler = $client->request(Request::METHOD_GET, '/account/access');
-        $form = $crawler->filter('form[action="/account/passkeys/' . $id . '/name"]')->form();
+        $crawler = $client->request(Request::METHOD_GET, '/app/account/access');
+        $form = $crawler->filter('form[action="/app/account/passkeys/' . $id . '/name"]')->form();
         $form['rename_passkey[name]'] = 'New Name';
         $client->submit($form);
 
-        self::assertResponseRedirects('/account/access');
+        self::assertResponseRedirects('/app/account/access');
 
         /** @var EntityManagerInterface $em */
         $em = self::getContainer()->get(EntityManagerInterface::class);
@@ -131,7 +131,7 @@ final class PasskeyManagementControllerTest extends AuthenticatedTestCase
         $otherUser = UserFactory::createOne();
         $passkey = PasskeyCredentialFactory::createOne(['user' => $otherUser, 'name' => 'Not Yours']);
 
-        $client->request(Request::METHOD_POST, '/account/passkeys/' . $passkey->id . '/name', [
+        $client->request(Request::METHOD_POST, '/app/account/passkeys/' . $passkey->id . '/name', [
             'rename_passkey' => ['name' => 'Hijacked'],
         ]);
 
@@ -142,7 +142,7 @@ final class PasskeyManagementControllerTest extends AuthenticatedTestCase
     {
         $client = self::createClient();
 
-        $client->request(Request::METHOD_GET, '/account/access');
+        $client->request(Request::METHOD_GET, '/app/account/access');
 
         self::assertResponseRedirects();
         self::assertStringContainsString('/login', (string) $client->getResponse()->headers->get('Location'));
@@ -152,7 +152,7 @@ final class PasskeyManagementControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(Request::METHOD_POST, '/account/passkeys/' . new Ulid() . '/name', [
+        $client->request(Request::METHOD_POST, '/app/account/passkeys/' . new Ulid() . '/name', [
             'rename_passkey' => ['name' => 'Ghost'],
         ]);
 

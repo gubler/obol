@@ -1,6 +1,6 @@
 <?php
 
-// ABOUTME: Feature tests for the onboarding gate - un-onboarded users are routed to /onboarding.
+// ABOUTME: Feature tests for the onboarding gate - un-onboarded users are routed to /app/onboarding.
 // ABOUTME: Covers the redirect, the onboarded pass-through, and the allowlist that avoids a redirect loop.
 
 declare(strict_types=1);
@@ -18,9 +18,9 @@ final class OnboardingGateListenerTest extends AuthenticatedTestCase
         $client = self::createClient();
         $client->loginUser(UserFactory::new()->notOnboarded()->create());
 
-        $client->request(method: Request::METHOD_GET, uri: '/');
+        $client->request(method: Request::METHOD_GET, uri: '/app');
 
-        self::assertResponseRedirects('/onboarding');
+        self::assertResponseRedirects('/app/onboarding');
     }
 
     public function testAnOnboardedUserReachesTheAppDirectly(): void
@@ -28,7 +28,7 @@ final class OnboardingGateListenerTest extends AuthenticatedTestCase
         // The founder is onboarded by default; the gate lets them straight through.
         $client = $this->authenticatedClient();
 
-        $client->request(method: Request::METHOD_GET, uri: '/');
+        $client->request(method: Request::METHOD_GET, uri: '/app');
 
         self::assertResponseIsSuccessful();
     }
@@ -38,7 +38,7 @@ final class OnboardingGateListenerTest extends AuthenticatedTestCase
         $client = self::createClient();
         $client->loginUser(UserFactory::new()->notOnboarded()->create());
 
-        $client->request(method: Request::METHOD_GET, uri: '/onboarding');
+        $client->request(method: Request::METHOD_GET, uri: '/app/onboarding');
 
         self::assertResponseIsSuccessful();
     }
@@ -51,6 +51,6 @@ final class OnboardingGateListenerTest extends AuthenticatedTestCase
         $client->request(method: Request::METHOD_GET, uri: '/logout');
 
         self::assertResponseRedirects();
-        self::assertNotSame('/onboarding', $client->getResponse()->headers->get('Location'));
+        self::assertNotSame('/app/onboarding', $client->getResponse()->headers->get('Location'));
     }
 }

@@ -25,7 +25,7 @@ final class CreatePaymentController extends AbstractBaseController
     {
     }
 
-    #[Route(path: '/subscriptions/{subscriptionId}/payments/new', name: 'payment_new', methods: ['GET', 'POST'])]
+    #[Route(path: '/app/subscriptions/{subscriptionId}/payments/new', name: 'payment_new', methods: ['GET', 'POST'])]
     public function __invoke(Ulid $subscriptionId, Request $request): Response
     {
         /** @var \App\Entity\Subscription|null $subscription */

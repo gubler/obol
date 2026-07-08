@@ -15,7 +15,7 @@ final class DarkModeTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/new');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'button[data-controller="theme"][data-action="theme#toggle"]');
@@ -26,7 +26,7 @@ final class DarkModeTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/new');
 
         self::assertResponseIsSuccessful();
         $head = $crawler->filter(selector: 'head')->html();

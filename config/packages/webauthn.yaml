@@ -43,7 +43,7 @@ webauthn:
         enabled: true
         creation:
             account_passkey:
-                options_path: /account/passkeys/options
-                result_path: /account/passkeys/result
+                options_path: /app/account/passkeys/options
+                result_path: /app/account/passkeys/result
                 profile: default
                 user_entity_guesser: Webauthn\Bundle\Security\Guesser\CurrentUserEntityGuesser

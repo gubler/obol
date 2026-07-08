@@ -30,9 +30,9 @@ final class ValidatePaymentControllerTest extends AuthenticatedTestCase
             'amount' => new Money(1599, Currency::USD),
         ]);
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/payments/' . $payment->id . '/validate');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/payments/' . $payment->id . '/validate');
 
-        self::assertResponseRedirects(expectedLocation: '/subscriptions/' . $subscription->id);
+        self::assertResponseRedirects(expectedLocation: '/app/subscriptions/' . $subscription->id);
 
         $container = self::getContainer();
         /** @var EntityManagerInterface $entityManager */
@@ -49,7 +49,7 @@ final class ValidatePaymentControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/payments/01JKXXXXXXXXXXXXXXXXXXXXXXX/validate');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/payments/01JKXXXXXXXXXXXXXXXXXXXXXXX/validate');
 
         self::assertResponseStatusCodeSame(expectedCode: 404);
     }

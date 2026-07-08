@@ -21,7 +21,7 @@ use Symfony\Component\Uid\Ulid;
 final class RemoveEmailController extends AbstractBaseController
 {
     #[Route(
-        path: '/account/emails/{id}/remove',
+        path: '/app/account/emails/{id}/remove',
         name: 'account_email_remove',
         requirements: ['id' => Requirement::ULID],
         methods: ['POST'],

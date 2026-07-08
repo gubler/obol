@@ -17,7 +17,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class CreatePaymentSourceController extends AbstractBaseController
 {
-    #[Route(path: '/payment-sources/new', name: 'payment_source_new', methods: ['GET', 'POST'])]
+    #[Route(path: '/app/payment-sources/new', name: 'payment_source_new', methods: ['GET', 'POST'])]
     public function __invoke(Request $request): Response
     {
         $dto = new CreatePaymentSourceDto();

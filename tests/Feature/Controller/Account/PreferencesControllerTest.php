@@ -29,7 +29,7 @@ final class PreferencesControllerTest extends WebTestCase
         ]);
         $client->loginUser($user);
 
-        $crawler = $client->request(Request::METHOD_GET, '/account/preferences');
+        $crawler = $client->request(Request::METHOD_GET, '/app/account/preferences');
 
         self::assertResponseIsSuccessful();
         self::assertCount(1, $crawler->filter('[data-test="preferences-summary"]'));
@@ -37,7 +37,7 @@ final class PreferencesControllerTest extends WebTestCase
         self::assertStringContainsString('GBP', $crawler->filter('[data-test="pref-currency"]')->text());
         self::assertStringContainsString('English (United Kingdom)', $crawler->filter('[data-test="pref-language"]')->text());
         // The Edit link points at the edit page; there is no editable form on the view itself.
-        self::assertSame('/account/preferences/edit', $crawler->filter('[data-test="preferences-edit-link"]')->attr('href'));
+        self::assertSame('/app/account/preferences/edit', $crawler->filter('[data-test="preferences-edit-link"]')->attr('href'));
         self::assertCount(0, $crawler->filter('[data-test="preferences-form"]'));
     }
 
@@ -51,7 +51,7 @@ final class PreferencesControllerTest extends WebTestCase
         ]);
         $client->loginUser($user);
 
-        $crawler = $client->request(Request::METHOD_GET, '/account/preferences/edit');
+        $crawler = $client->request(Request::METHOD_GET, '/app/account/preferences/edit');
 
         self::assertResponseIsSuccessful();
         self::assertCount(1, $crawler->filter('[data-test="preferences-form"]'));
@@ -72,7 +72,7 @@ final class PreferencesControllerTest extends WebTestCase
         ]);
         $client->loginUser($user);
 
-        $crawler = $client->request(Request::METHOD_GET, '/account/preferences/edit');
+        $crawler = $client->request(Request::METHOD_GET, '/app/account/preferences/edit');
         $form = $crawler->filter('[data-test="preferences-form"]')->form();
         $form['change_preferences[displayName]'] = 'Magos';
         $form['change_preferences[displayCurrency]'] = Currency::GBP->value;
@@ -81,7 +81,7 @@ final class PreferencesControllerTest extends WebTestCase
         $form['change_preferences[timezone]'] = 'Europe/London';
         $client->submit($form);
 
-        self::assertResponseRedirects('/account/preferences');
+        self::assertResponseRedirects('/app/account/preferences');
         $client->followRedirect();
         self::assertSelectorExists('.flash-success');
 
@@ -100,7 +100,7 @@ final class PreferencesControllerTest extends WebTestCase
         $client = self::createClient();
         $client->loginUser(UserFactory::createOne(['locale' => 'en-US']));
 
-        $crawler = $client->request(Request::METHOD_GET, '/account/preferences/edit');
+        $crawler = $client->request(Request::METHOD_GET, '/app/account/preferences/edit');
 
         self::assertResponseIsSuccessful();
         $values = $crawler->filter('[data-test="preferences-date-format"] option')->each(
@@ -121,7 +121,7 @@ final class PreferencesControllerTest extends WebTestCase
         $client = self::createClient();
         $client->loginUser(UserFactory::createOne(['locale' => 'de-DE']));
 
-        $crawler = $client->request(Request::METHOD_GET, '/account/preferences/edit');
+        $crawler = $client->request(Request::METHOD_GET, '/app/account/preferences/edit');
 
         self::assertResponseIsSuccessful();
         self::assertSame('', $crawler->filter('[data-test="preferences-language"] option[selected]')->attr('value'));
@@ -131,7 +131,7 @@ final class PreferencesControllerTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request(Request::METHOD_GET, '/account/preferences');
+        $client->request(Request::METHOD_GET, '/app/account/preferences');
 
         self::assertResponseRedirects();
         self::assertStringContainsString('/login', (string) $client->getResponse()->headers->get('Location'));
@@ -141,7 +141,7 @@ final class PreferencesControllerTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request(Request::METHOD_GET, '/account/preferences/edit');
+        $client->request(Request::METHOD_GET, '/app/account/preferences/edit');
 
         self::assertResponseRedirects();
         self::assertStringContainsString('/login', (string) $client->getResponse()->headers->get('Location'));

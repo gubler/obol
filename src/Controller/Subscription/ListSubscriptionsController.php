@@ -18,7 +18,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class ListSubscriptionsController extends AbstractBaseController
 {
-    #[Route(path: '/', name: 'subscription_index', methods: ['GET'])]
+    #[Route(path: '/app', name: 'subscription_index', methods: ['GET'])]
     public function __invoke(Request $request): Response
     {
         $view = 'list' === $request->query->get('view') ? 'list' : 'tiles';

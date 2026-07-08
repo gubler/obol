@@ -21,7 +21,7 @@ use Symfony\Component\Uid\Ulid;
 
 final class EditPaymentSourceController extends AbstractBaseController
 {
-    #[Route(path: '/payment-sources/{id}/edit', name: 'payment_source_edit', methods: ['GET', 'POST'])]
+    #[Route(path: '/app/payment-sources/{id}/edit', name: 'payment_source_edit', methods: ['GET', 'POST'])]
     public function __invoke(Ulid $id, Request $request): Response
     {
         $paymentSource = $this->queryBus->query(query: new FindPaymentSourceQuery(ownerUserId: $this->currentUser()->id, paymentSourceId: $id));

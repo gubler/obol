@@ -15,7 +15,7 @@ final class LayoutTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'head link[rel="icon"][type="image/svg+xml"]');
@@ -25,7 +25,7 @@ final class LayoutTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'head link[rel="icon"][type="image/png"]');
@@ -35,7 +35,7 @@ final class LayoutTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'head link[rel="apple-touch-icon"]');
@@ -45,7 +45,7 @@ final class LayoutTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'nav img[alt="Obol"]');
@@ -55,7 +55,7 @@ final class LayoutTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorNotExists(selector: 'img[alt="Your Company"]');
@@ -65,7 +65,7 @@ final class LayoutTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'footer [data-action="tour#start"]');
@@ -77,7 +77,7 @@ final class LayoutTest extends AuthenticatedTestCase
         // would either hook nothing or force a navigation away.
         $client = $this->authenticatedClient();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorNotExists(selector: 'footer [data-action="tour#start"]');

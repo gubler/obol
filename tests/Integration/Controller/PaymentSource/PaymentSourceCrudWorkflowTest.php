@@ -19,12 +19,12 @@ final class PaymentSourceCrudWorkflowTest extends AuthenticatedTestCase
         $client = $this->authenticatedClient();
 
         // Create
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/payment-sources/new');
         $form = $crawler->selectButton(value: 'Save')->form();
         $form['payment_source[name]'] = 'Workflow Source';
         $client->submit(form: $form);
 
-        self::assertResponseRedirects(expectedLocation: '/payment-sources');
+        self::assertResponseRedirects(expectedLocation: '/app/payment-sources');
         $client->followRedirect();
 
         /** @var EntityManagerInterface $entityManager */
@@ -36,12 +36,12 @@ final class PaymentSourceCrudWorkflowTest extends AuthenticatedTestCase
         $sourceId = $source->id;
 
         // Edit
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/' . $sourceId . '/edit');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/payment-sources/' . $sourceId . '/edit');
         $form = $crawler->selectButton(value: 'Save')->form();
         $form['payment_source[name]'] = 'Updated Source';
         $client->submit(form: $form);
 
-        self::assertResponseRedirects(expectedLocation: '/payment-sources/' . $sourceId);
+        self::assertResponseRedirects(expectedLocation: '/app/payment-sources/' . $sourceId);
         $client->followRedirect();
 
         $entityManager->clear();
@@ -50,8 +50,8 @@ final class PaymentSourceCrudWorkflowTest extends AuthenticatedTestCase
         self::assertSame('Updated Source', $updated->name);
 
         // Delete
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/payment-sources/' . $sourceId . '/delete');
-        self::assertResponseRedirects(expectedLocation: '/payment-sources');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/payment-sources/' . $sourceId . '/delete');
+        self::assertResponseRedirects(expectedLocation: '/app/payment-sources');
 
         $entityManager->clear();
         self::assertNull($repository->find($sourceId));
@@ -62,14 +62,14 @@ final class PaymentSourceCrudWorkflowTest extends AuthenticatedTestCase
         $client = $this->authenticatedClient();
 
         foreach (['Zebra Card', 'Alpha Card', 'Beta Card'] as $name) {
-            $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/new');
+            $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/payment-sources/new');
             $form = $crawler->selectButton(value: 'Save')->form();
             $form['payment_source[name]'] = $name;
             $client->submit(form: $form);
             $client->followRedirect();
         }
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/payment-sources');
 
         $names = $crawler->filter('table tbody tr td:first-child')->each(
             fn (Crawler $node): string => trim($node->text())

@@ -16,7 +16,7 @@ use Symfony\Component\Uid\Ulid;
 
 final class DeletePaymentController extends AbstractBaseController
 {
-    #[Route(path: '/payments/{id}/delete', name: 'payment_delete', methods: ['POST'])]
+    #[Route(path: '/app/payments/{id}/delete', name: 'payment_delete', methods: ['POST'])]
     public function __invoke(Ulid $id): \Symfony\Component\HttpFoundation\RedirectResponse
     {
         /** @var \App\Entity\Payment|null $payment */

@@ -25,7 +25,7 @@ final class UserDateExtensionTest extends WebTestCase
         SubscriptionFactory::createOne(['owner' => $user, 'nextRenewal' => new \DateTimeImmutable('2027-03-09')]);
 
         $client->loginUser($user);
-        $client->request(method: Request::METHOD_GET, uri: '/?view=list');
+        $client->request(method: Request::METHOD_GET, uri: '/app?view=list');
 
         self::assertResponseIsSuccessful();
         self::assertStringContainsString('2027-03-09', (string) $client->getResponse()->getContent());
@@ -40,7 +40,7 @@ final class UserDateExtensionTest extends WebTestCase
         SubscriptionFactory::createOne(['owner' => $user, 'nextRenewal' => new \DateTimeImmutable('2027-03-09')]);
 
         $client->loginUser($user);
-        $client->request(method: Request::METHOD_GET, uri: '/?view=list');
+        $client->request(method: Request::METHOD_GET, uri: '/app?view=list');
 
         self::assertResponseIsSuccessful();
         $content = (string) $client->getResponse()->getContent();
@@ -61,7 +61,7 @@ final class UserDateExtensionTest extends WebTestCase
         ]);
 
         $client->loginUser($user);
-        $client->request(method: Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id);
+        $client->request(method: Request::METHOD_GET, uri: '/app/subscriptions/' . $subscription->id);
 
         self::assertResponseIsSuccessful();
         $content = (string) $client->getResponse()->getContent();
@@ -82,7 +82,7 @@ final class UserDateExtensionTest extends WebTestCase
         ]);
 
         $client->loginUser($user);
-        $client->request(method: Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id);
+        $client->request(method: Request::METHOD_GET, uri: '/app/subscriptions/' . $subscription->id);
 
         self::assertResponseIsSuccessful();
         self::assertStringContainsString('2024-02-15 14:30', (string) $client->getResponse()->getContent());

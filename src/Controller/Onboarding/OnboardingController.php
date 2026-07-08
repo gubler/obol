@@ -22,7 +22,7 @@ final class OnboardingController extends AbstractBaseController
     {
     }
 
-    #[Route(path: '/onboarding', name: 'onboarding', methods: ['GET', 'POST'])]
+    #[Route(path: '/app/onboarding', name: 'onboarding', methods: ['GET', 'POST'])]
     public function __invoke(Request $request): Response
     {
         // Onboarding runs once. An already-onboarded user reaching here (they are not gated) is sent

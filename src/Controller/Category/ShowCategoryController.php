@@ -16,7 +16,7 @@ use Symfony\Component\Uid\Ulid;
 
 final class ShowCategoryController extends AbstractBaseController
 {
-    #[Route(path: '/categories/{id}', name: 'category_show', methods: ['GET'])]
+    #[Route(path: '/app/categories/{id}', name: 'category_show', methods: ['GET'])]
     public function __invoke(Ulid $id): Response
     {
         $category = $this->queryBus->query(query: new FindCategoryQuery(ownerUserId: $this->currentUser()->id, categoryId: $id));

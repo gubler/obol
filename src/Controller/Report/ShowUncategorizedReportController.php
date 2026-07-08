@@ -22,7 +22,7 @@ final class ShowUncategorizedReportController extends AbstractBaseController
 
     // Higher priority than the `{id}` drill-down so the literal "uncategorized" segment is never
     // resolved as a category Ulid.
-    #[Route(path: '/reports/categories/uncategorized', name: 'reports_uncategorized', methods: ['GET'], priority: 10)]
+    #[Route(path: '/app/reports/categories/uncategorized', name: 'reports_uncategorized', methods: ['GET'], priority: 10)]
     public function __invoke(): Response
     {
         $composition = $this->queryBus->query(query: new FindCategoryBreakdownQuery(ownerUserId: $this->currentUser()->id, categoryId: null));

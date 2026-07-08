@@ -21,7 +21,7 @@ use Symfony\Component\Uid\Ulid;
 
 final class RenamePasskeyController extends AbstractBaseController
 {
-    #[Route(path: '/account/passkeys/{id}/name', name: 'account_passkey_rename', methods: ['POST'])]
+    #[Route(path: '/app/account/passkeys/{id}/name', name: 'account_passkey_rename', methods: ['POST'])]
     public function __invoke(Ulid $id, Request $request): RedirectResponse
     {
         $user = $this->currentUser();

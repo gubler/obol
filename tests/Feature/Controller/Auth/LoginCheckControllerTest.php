@@ -39,7 +39,7 @@ final class LoginCheckControllerTest extends WebTestCase
         self::assertNotNull($this->client->getCookieJar()->get('REMEMBERME'));
 
         // ...and the session is now authenticated: a protected page is reachable.
-        $this->client->request(method: Request::METHOD_GET, uri: '/');
+        $this->client->request(method: Request::METHOD_GET, uri: '/app');
         self::assertResponseIsSuccessful();
     }
 

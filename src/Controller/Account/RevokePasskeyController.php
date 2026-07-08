@@ -19,7 +19,7 @@ use Symfony\Component\Uid\Ulid;
 
 final class RevokePasskeyController extends AbstractBaseController
 {
-    #[Route(path: '/account/passkeys/{id}/delete', name: 'account_passkey_revoke', methods: ['POST'])]
+    #[Route(path: '/app/account/passkeys/{id}/delete', name: 'account_passkey_revoke', methods: ['POST'])]
     public function __invoke(Ulid $id): RedirectResponse
     {
         $user = $this->currentUser();

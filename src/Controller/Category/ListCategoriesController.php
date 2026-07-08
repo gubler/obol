@@ -14,7 +14,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class ListCategoriesController extends AbstractBaseController
 {
-    #[Route(path: '/categories', name: 'category_index', methods: ['GET'])]
+    #[Route(path: '/app/categories', name: 'category_index', methods: ['GET'])]
     public function __invoke(): Response
     {
         $categories = $this->queryBus->query(query: new FindAllCategoriesQuery(ownerUserId: $this->currentUser()->id));

@@ -17,7 +17,7 @@ use Symfony\Component\Uid\Ulid;
 
 final class ValidatePaymentController extends AbstractBaseController
 {
-    #[Route(path: '/payments/{id}/validate', name: 'payment_validate', methods: ['POST'])]
+    #[Route(path: '/app/payments/{id}/validate', name: 'payment_validate', methods: ['POST'])]
     public function __invoke(Ulid $id): \Symfony\Component\HttpFoundation\RedirectResponse
     {
         $payment = $this->queryBus->query(query: new FindPaymentQuery(ownerUserId: $this->currentUser()->id, paymentId: $id));

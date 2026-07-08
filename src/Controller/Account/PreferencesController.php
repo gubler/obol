@@ -14,7 +14,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class PreferencesController extends AbstractBaseController
 {
-    #[Route(path: '/account/preferences', name: 'account_preferences', methods: ['GET'])]
+    #[Route(path: '/app/account/preferences', name: 'account_preferences', methods: ['GET'])]
     public function __invoke(): Response
     {
         $user = $this->currentUser();

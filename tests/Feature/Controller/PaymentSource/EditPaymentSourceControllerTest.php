@@ -22,7 +22,7 @@ final class EditPaymentSourceControllerTest extends AuthenticatedTestCase
 
         $source = PaymentSourceFactory::createOne(['name' => 'Amex 1234', 'comment' => 'old note']);
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/' . $source->id . '/edit');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/payment-sources/' . $source->id . '/edit');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'h1', text: 'Edit Payment Source');
@@ -37,7 +37,7 @@ final class EditPaymentSourceControllerTest extends AuthenticatedTestCase
         $source = PaymentSourceFactory::createOne(['name' => 'Old Name', 'comment' => 'old']);
         $sourceId = $source->id;
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/' . $sourceId . '/edit');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/payment-sources/' . $sourceId . '/edit');
         $form = $crawler->selectButton(value: 'Save')->form();
         $form['payment_source[name]'] = 'Amex 5678';
         $form['payment_source[comment]'] = 'reissued';
@@ -45,7 +45,7 @@ final class EditPaymentSourceControllerTest extends AuthenticatedTestCase
 
         $client->submit(form: $form);
 
-        self::assertResponseRedirects(expectedLocation: '/payment-sources/' . $sourceId);
+        self::assertResponseRedirects(expectedLocation: '/app/payment-sources/' . $sourceId);
 
         /** @var EntityManagerInterface $entityManager */
         $entityManager = self::getContainer()->get(id: EntityManagerInterface::class);
@@ -65,7 +65,7 @@ final class EditPaymentSourceControllerTest extends AuthenticatedTestCase
 
         $source = PaymentSourceFactory::createOne(['name' => 'Source']);
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/' . $source->id . '/edit');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/payment-sources/' . $source->id . '/edit');
         $form = $crawler->selectButton(value: 'Save')->form();
         $form['payment_source[name]'] = 'Renamed';
         $client->submit(form: $form);
@@ -78,7 +78,7 @@ final class EditPaymentSourceControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/' . new Ulid() . '/edit');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/payment-sources/' . new Ulid() . '/edit');
 
         self::assertResponseStatusCodeSame(expectedCode: 404);
     }

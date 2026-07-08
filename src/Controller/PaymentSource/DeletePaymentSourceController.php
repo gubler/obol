@@ -17,7 +17,7 @@ use Symfony\Component\Uid\Ulid;
 
 final class DeletePaymentSourceController extends AbstractBaseController
 {
-    #[Route(path: '/payment-sources/{id}/delete', name: 'payment_source_delete', methods: ['POST'])]
+    #[Route(path: '/app/payment-sources/{id}/delete', name: 'payment_source_delete', methods: ['POST'])]
     public function __invoke(Ulid $id): RedirectResponse
     {
         $paymentSource = $this->queryBus->query(query: new FindPaymentSourceQuery(ownerUserId: $this->currentUser()->id, paymentSourceId: $id));

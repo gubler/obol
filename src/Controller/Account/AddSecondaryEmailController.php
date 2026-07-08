@@ -17,7 +17,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class AddSecondaryEmailController extends AbstractBaseController
 {
-    #[Route(path: '/account/emails', name: 'account_email_add', methods: ['POST'])]
+    #[Route(path: '/app/account/emails', name: 'account_email_add', methods: ['POST'])]
     public function __invoke(Request $request): RedirectResponse
     {
         $dto = new AddSecondaryEmailDto();

@@ -21,7 +21,7 @@ use Symfony\Component\Uid\Ulid;
 
 final class EditCategoryController extends AbstractBaseController
 {
-    #[Route(path: '/categories/{id}/edit', name: 'category_edit', methods: ['GET', 'POST'])]
+    #[Route(path: '/app/categories/{id}/edit', name: 'category_edit', methods: ['GET', 'POST'])]
     public function __invoke(Ulid $id, Request $request): Response
     {
         $category = $this->queryBus->query(query: new FindCategoryQuery(ownerUserId: $this->currentUser()->id, categoryId: $id));

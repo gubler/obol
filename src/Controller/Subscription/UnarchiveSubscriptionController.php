@@ -16,7 +16,7 @@ use Symfony\Component\Uid\Ulid;
 
 final class UnarchiveSubscriptionController extends AbstractBaseController
 {
-    #[Route(path: '/subscriptions/{id}/unarchive', name: 'subscription_unarchive', methods: ['POST'])]
+    #[Route(path: '/app/subscriptions/{id}/unarchive', name: 'subscription_unarchive', methods: ['POST'])]
     public function __invoke(Ulid $id): \Symfony\Component\HttpFoundation\RedirectResponse
     {
         $subscription = $this->queryBus->query(query: new FindSubscriptionQuery(ownerUserId: $this->currentUser()->id, subscriptionId: $id));

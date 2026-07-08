@@ -23,9 +23,9 @@ final class DeletePaymentSourceControllerTest extends AuthenticatedTestCase
         $source = PaymentSourceFactory::createOne(['name' => 'Empty Source']);
         $sourceId = $source->id;
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/payment-sources/' . $sourceId . '/delete');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/payment-sources/' . $sourceId . '/delete');
 
-        self::assertResponseRedirects(expectedLocation: '/payment-sources');
+        self::assertResponseRedirects(expectedLocation: '/app/payment-sources');
 
         /** @var EntityManagerInterface $entityManager */
         $entityManager = self::getContainer()->get(id: EntityManagerInterface::class);
@@ -38,7 +38,7 @@ final class DeletePaymentSourceControllerTest extends AuthenticatedTestCase
 
         $source = PaymentSourceFactory::createOne(['name' => 'Test Source']);
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/payment-sources/' . $source->id . '/delete');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/payment-sources/' . $source->id . '/delete');
         $client->followRedirect();
 
         self::assertSelectorTextContains(selector: '.flash-success', text: 'Payment source deleted successfully');
@@ -52,7 +52,7 @@ final class DeletePaymentSourceControllerTest extends AuthenticatedTestCase
         SubscriptionFactory::createOne(['paymentSource' => $source, 'name' => 'Netflix']);
         $sourceId = $source->id;
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/payment-sources/' . $sourceId . '/delete');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/payment-sources/' . $sourceId . '/delete');
 
         self::assertResponseRedirects();
 
@@ -68,7 +68,7 @@ final class DeletePaymentSourceControllerTest extends AuthenticatedTestCase
         $source = PaymentSourceFactory::createOne(['name' => 'In-Use Source']);
         SubscriptionFactory::createOne(['paymentSource' => $source, 'name' => 'Spotify']);
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/payment-sources/' . $source->id . '/delete');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/payment-sources/' . $source->id . '/delete');
         $client->followRedirect();
 
         self::assertSelectorTextContains(selector: '.flash-error', text: 'Cannot delete payment source with subscriptions');
@@ -78,7 +78,7 @@ final class DeletePaymentSourceControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/payment-sources/' . new Ulid() . '/delete');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/payment-sources/' . new Ulid() . '/delete');
 
         self::assertResponseStatusCodeSame(expectedCode: 404);
     }
@@ -89,7 +89,7 @@ final class DeletePaymentSourceControllerTest extends AuthenticatedTestCase
 
         $source = PaymentSourceFactory::createOne(['name' => 'Test Source']);
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/' . $source->id . '/delete');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/payment-sources/' . $source->id . '/delete');
 
         self::assertResponseStatusCodeSame(expectedCode: 405);
     }

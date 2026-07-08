@@ -22,7 +22,7 @@ final class ShowCategoryReportController extends AbstractBaseController
     {
     }
 
-    #[Route(path: '/reports/categories/{id}', name: 'reports_category', methods: ['GET'])]
+    #[Route(path: '/app/reports/categories/{id}', name: 'reports_category', methods: ['GET'])]
     public function __invoke(Ulid $id): Response
     {
         $composition = $this->queryBus->query(query: new FindCategoryBreakdownQuery(ownerUserId: $this->currentUser()->id, categoryId: $id));

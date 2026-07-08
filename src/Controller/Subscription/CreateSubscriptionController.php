@@ -25,7 +25,7 @@ final class CreateSubscriptionController extends AbstractBaseController
     ) {
     }
 
-    #[Route(path: '/subscriptions/new', name: 'subscription_new', methods: ['GET', 'POST'])]
+    #[Route(path: '/app/subscriptions/new', name: 'subscription_new', methods: ['GET', 'POST'])]
     public function __invoke(Request $request): Response
     {
         $dto = new CreateSubscriptionDto();

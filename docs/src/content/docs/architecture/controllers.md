@@ -22,8 +22,9 @@ PHPStan enforces a rule that `AbstractController` subclasses must not define a c
 
 - **Method-level `#[Route]` attributes only** — no class-level route prefixes (enforced by PHPStan)
 - **Named routes required** — every route must have a `name` parameter for URL generation
-- **No trailing slashes** — routes like `/subscriptions/` are forbidden
+- **No trailing slashes** — routes like `/app/subscriptions/` are forbidden
 - **HTTP method restrictions** — every route specifies `methods: ['GET']`, `methods: ['POST']`, or `methods: ['GET', 'POST']`
+- **URL surfaces (ADR-0018)** — authenticated application routes live under `/app` (protected by the `^/` deny-by-default firewall). Public routes stay at the root: login/magic-link, and the signed email-verification link (`/account/emails/{id}/verify`), which sits deliberately outside `/app` so it works from a logged-out mailbox. `/` redirects into `/app` until the public landing takes it over.
 
 ## Controller Inventory
 
@@ -31,37 +32,37 @@ PHPStan enforces a rule that `AbstractController` subclasses must not define a c
 
 | Controller | Route | Methods | Action |
 |-----------|-------|---------|--------|
-| `ListCategoriesController` | `/categories` (`category_index`) | GET | List all categories |
-| `ShowCategoryController` | `/categories/{id}` (`category_show`) | GET | Show one category |
-| `CreateCategoryController` | `/categories/new` (`category_new`) | GET, POST | Create form + submit |
-| `EditCategoryController` | `/categories/{id}/edit` (`category_edit`) | GET, POST | Edit form + submit |
-| `DeleteCategoryController` | `/categories/{id}/delete` (`category_delete`) | POST | Delete |
+| `ListCategoriesController` | `/app/categories` (`category_index`) | GET | List all categories |
+| `ShowCategoryController` | `/app/categories/{id}` (`category_show`) | GET | Show one category |
+| `CreateCategoryController` | `/app/categories/new` (`category_new`) | GET, POST | Create form + submit |
+| `EditCategoryController` | `/app/categories/{id}/edit` (`category_edit`) | GET, POST | Edit form + submit |
+| `DeleteCategoryController` | `/app/categories/{id}/delete` (`category_delete`) | POST | Delete |
 
 ### Subscription (`src/Controller/Subscription/`)
 
 | Controller | Route | Methods | Action |
 |-----------|-------|---------|--------|
-| `ListSubscriptionsController` | `/` (`subscription_index`) | GET | List all (homepage) |
-| `ShowSubscriptionController` | `/subscriptions/{id}` (`subscription_show`) | GET | Show one |
-| `CreateSubscriptionController` | `/subscriptions/new` (`subscription_new`) | GET, POST | Create form + submit |
-| `EditSubscriptionController` | `/subscriptions/{id}/edit` (`subscription_edit`) | GET, POST | Edit form + submit |
-| `DeleteSubscriptionController` | `/subscriptions/{id}/delete` (`subscription_delete`) | POST | Delete |
-| `ArchiveSubscriptionController` | `/subscriptions/{id}/archive` (`subscription_archive`) | POST | Archive |
-| `UnarchiveSubscriptionController` | `/subscriptions/{id}/unarchive` (`subscription_unarchive`) | POST | Unarchive |
+| `ListSubscriptionsController` | `/app` (`subscription_index`) | GET | Dashboard (the app home) |
+| `ShowSubscriptionController` | `/app/subscriptions/{id}` (`subscription_show`) | GET | Show one |
+| `CreateSubscriptionController` | `/app/subscriptions/new` (`subscription_new`) | GET, POST | Create form + submit |
+| `EditSubscriptionController` | `/app/subscriptions/{id}/edit` (`subscription_edit`) | GET, POST | Edit form + submit |
+| `DeleteSubscriptionController` | `/app/subscriptions/{id}/delete` (`subscription_delete`) | POST | Delete |
+| `ArchiveSubscriptionController` | `/app/subscriptions/{id}/archive` (`subscription_archive`) | POST | Archive |
+| `UnarchiveSubscriptionController` | `/app/subscriptions/{id}/unarchive` (`subscription_unarchive`) | POST | Unarchive |
 
 ### Payment (`src/Controller/Payment/`)
 
 | Controller | Route | Methods | Action |
 |-----------|-------|---------|--------|
-| `CreatePaymentController` | `/subscriptions/{id}/payments/new` (`payment_new`) | GET, POST | Record payment |
-| `DeletePaymentController` | `/subscriptions/{subscriptionId}/payments/{id}/delete` (`payment_delete`) | POST | Delete payment |
+| `CreatePaymentController` | `/app/subscriptions/{id}/payments/new` (`payment_new`) | GET, POST | Record payment |
+| `DeletePaymentController` | `/app/payments/{id}/delete` (`payment_delete`) | POST | Delete payment |
 
 ## Typical Controller Pattern
 
 ```php
 final class CreateSubscriptionController extends AbstractBaseController
 {
-    #[Route(path: '/subscriptions/new', name: 'subscription_new', methods: ['GET', 'POST'])]
+    #[Route(path: '/app/subscriptions/new', name: 'subscription_new', methods: ['GET', 'POST'])]
     public function __invoke(Request $request, FileUploader $fileUploader): Response
     {
         $dto = new CreateSubscriptionDto();
@@ -93,7 +94,7 @@ Key points:
 
 ## The account hub (sidebar sections)
 
-The account settings hub (`/account/*`) is a two-column shell: a left sidebar lists the
+The account settings hub (`/app/account/*`) is a two-column shell: a left sidebar lists the
 sections, and the selected section renders on the right. The shell lives in
 `templates/account/_hub.html.twig`; each section template extends it and fills
 `{% block section %}`.

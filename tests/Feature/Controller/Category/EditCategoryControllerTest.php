@@ -25,7 +25,7 @@ final class EditCategoryControllerTest extends AuthenticatedTestCase
         $category = CategoryFactory::createOne(['name' => 'Original Name']);
         $categoryId = $category->id;
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/' . $categoryId . '/edit');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories/' . $categoryId . '/edit');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'h1', text: 'Edit Category');
@@ -42,10 +42,10 @@ final class EditCategoryControllerTest extends AuthenticatedTestCase
         $category = CategoryFactory::createOne(['name' => 'Test Category']);
         $categoryId = $category->id;
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/' . $categoryId . '/edit');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories/' . $categoryId . '/edit');
 
         self::assertResponseIsSuccessful();
-        self::assertSelectorExists(selector: 'a[href="/categories/' . $categoryId . '"]');
+        self::assertSelectorExists(selector: 'a[href="/app/categories/' . $categoryId . '"]');
     }
 
     public function testPostRequestWithValidDataUpdatesCategory(): void
@@ -55,14 +55,14 @@ final class EditCategoryControllerTest extends AuthenticatedTestCase
         $category = CategoryFactory::createOne(['name' => 'Old Name']);
         $categoryId = $category->id;
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/' . $categoryId . '/edit');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories/' . $categoryId . '/edit');
 
         $form = $crawler->selectButton(value: 'Save')->form();
         $form['edit_category[name]'] = 'Updated Name';
 
         $client->submit(form: $form);
 
-        self::assertResponseRedirects(expectedLocation: '/categories/' . $categoryId);
+        self::assertResponseRedirects(expectedLocation: '/app/categories/' . $categoryId);
 
         $container = self::getContainer();
         /** @var EntityManagerInterface $entityManager */
@@ -82,7 +82,7 @@ final class EditCategoryControllerTest extends AuthenticatedTestCase
         $category = CategoryFactory::createOne(['name' => 'Test Category']);
         $categoryId = $category->id;
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/' . $categoryId . '/edit');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories/' . $categoryId . '/edit');
 
         $form = $crawler->selectButton(value: 'Save')->form();
         $form['edit_category[name]'] = 'Updated Category';
@@ -100,7 +100,7 @@ final class EditCategoryControllerTest extends AuthenticatedTestCase
         $category = CategoryFactory::createOne(['name' => 'Test Category']);
         $categoryId = $category->id;
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/' . $categoryId . '/edit');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories/' . $categoryId . '/edit');
 
         $form = $crawler->selectButton(value: 'Save')->form();
         $form['edit_category[name]'] = '';
@@ -119,7 +119,7 @@ final class EditCategoryControllerTest extends AuthenticatedTestCase
         $category = CategoryFactory::createOne(['name' => 'Test Category']);
         $categoryId = $category->id;
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/' . $categoryId . '/edit');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories/' . $categoryId . '/edit');
 
         $form = $crawler->selectButton(value: 'Save')->form();
         $form['edit_category[name]'] = str_repeat(string: 'a', times: 256);
@@ -137,7 +137,7 @@ final class EditCategoryControllerTest extends AuthenticatedTestCase
 
         $nonExistentId = new Ulid();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/' . $nonExistentId . '/edit');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories/' . $nonExistentId . '/edit');
 
         self::assertResponseStatusCodeSame(expectedCode: 404);
     }
@@ -149,7 +149,7 @@ final class EditCategoryControllerTest extends AuthenticatedTestCase
         $category = CategoryFactory::createOne(['name' => 'Test Category']);
         $categoryId = $category->id;
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/' . $categoryId . '/edit');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories/' . $categoryId . '/edit');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'input[name="edit_category[_token]"]');

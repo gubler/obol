@@ -14,7 +14,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class ListPaymentSourcesController extends AbstractBaseController
 {
-    #[Route(path: '/payment-sources', name: 'payment_source_index', methods: ['GET'])]
+    #[Route(path: '/app/payment-sources', name: 'payment_source_index', methods: ['GET'])]
     public function __invoke(): Response
     {
         $paymentSources = $this->queryBus->query(query: new FindAllPaymentSourcesQuery(ownerUserId: $this->currentUser()->id));

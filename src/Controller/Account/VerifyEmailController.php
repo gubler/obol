@@ -26,6 +26,9 @@ final class VerifyEmailController extends AbstractBaseController
     ) {
     }
 
+    // Public and deliberately outside /app: this link is clicked from a mailbox, often on a device where
+    // the user is not signed in, so it must not sit behind the ^/app firewall wall (ADR-0018). The signed
+    // URL is the authority.
     #[Route(
         path: '/account/emails/{id}/verify',
         name: 'account_email_verify',

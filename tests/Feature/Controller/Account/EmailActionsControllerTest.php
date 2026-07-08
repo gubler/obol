@@ -1,6 +1,6 @@
 <?php
 
-// ABOUTME: Feature tests for the /account/emails per-row actions - promote, remove, resend - through the firewall.
+// ABOUTME: Feature tests for the /app/account/emails per-row actions - promote, remove, resend - through the firewall.
 // ABOUTME: The promote test pins the key property: swapping your own primary keeps the acting session signed in.
 
 declare(strict_types=1);
@@ -25,8 +25,8 @@ final class EmailActionsControllerTest extends WebTestCase
         $secondary = UserEmailFactory::createOne(['user' => $user, 'email' => 'new@dev88.test', 'verifiedAt' => new \DateTimeImmutable()]);
         $client->loginUser($user);
 
-        $client->request(Request::METHOD_POST, '/account/emails/' . $secondary->id . '/promote');
-        self::assertResponseRedirects('/account/access');
+        $client->request(Request::METHOD_POST, '/app/account/emails/' . $secondary->id . '/promote');
+        self::assertResponseRedirects('/app/account/access');
 
         // Following the redirect hits an authenticated-by-default route. A successful render (not a bounce
         // to /login) proves the acting session survived the primary-email change.
@@ -45,8 +45,8 @@ final class EmailActionsControllerTest extends WebTestCase
         $pending = UserEmailFactory::new()->unverified()->create(['user' => $user, 'email' => 'pending@dev88.test']);
         $client->loginUser($user);
 
-        $client->request(Request::METHOD_POST, '/account/emails/' . $pending->id . '/promote');
-        self::assertResponseRedirects('/account/access');
+        $client->request(Request::METHOD_POST, '/app/account/emails/' . $pending->id . '/promote');
+        self::assertResponseRedirects('/app/account/access');
         $client->followRedirect();
         self::assertSelectorExists('.flash-error');
 
@@ -62,7 +62,7 @@ final class EmailActionsControllerTest extends WebTestCase
         $theirs = UserEmailFactory::createOne(['user' => $other, 'email' => 'theirs@dev88.test', 'verifiedAt' => new \DateTimeImmutable()]);
         $client->loginUser($user);
 
-        $client->request(Request::METHOD_POST, '/account/emails/' . $theirs->id . '/promote');
+        $client->request(Request::METHOD_POST, '/app/account/emails/' . $theirs->id . '/promote');
         self::assertResponseStatusCodeSame(404);
     }
 
@@ -74,8 +74,8 @@ final class EmailActionsControllerTest extends WebTestCase
         $id = $secondary->id;
         $client->loginUser($user);
 
-        $client->request(Request::METHOD_POST, '/account/emails/' . $id . '/remove');
-        self::assertResponseRedirects('/account/access');
+        $client->request(Request::METHOD_POST, '/app/account/emails/' . $id . '/remove');
+        self::assertResponseRedirects('/app/account/access');
 
         $em = self::getContainer()->get(EntityManagerInterface::class);
         self::assertNull($em->getRepository(UserEmail::class)->find($id));
@@ -88,9 +88,9 @@ final class EmailActionsControllerTest extends WebTestCase
         $client->loginUser($user);
 
         $primary = self::getContainer()->get(UserEmailRepository::class)->findPrimaryForUser($user);
-        $client->request(Request::METHOD_POST, '/account/emails/' . $primary->id . '/remove');
+        $client->request(Request::METHOD_POST, '/app/account/emails/' . $primary->id . '/remove');
 
-        self::assertResponseRedirects('/account/access');
+        self::assertResponseRedirects('/app/account/access');
         $client->followRedirect();
         self::assertSelectorExists('.flash-error');
 
@@ -106,7 +106,7 @@ final class EmailActionsControllerTest extends WebTestCase
         $theirs = UserEmailFactory::createOne(['user' => $other, 'email' => 'theirs@dev88.test', 'verifiedAt' => new \DateTimeImmutable()]);
         $client->loginUser($user);
 
-        $client->request(Request::METHOD_POST, '/account/emails/' . $theirs->id . '/remove');
+        $client->request(Request::METHOD_POST, '/app/account/emails/' . $theirs->id . '/remove');
         self::assertResponseStatusCodeSame(404);
     }
 
@@ -117,8 +117,8 @@ final class EmailActionsControllerTest extends WebTestCase
         $pending = UserEmailFactory::new()->unverified()->create(['user' => $user, 'email' => 'pending@dev88.test']);
         $client->loginUser($user);
 
-        $client->request(Request::METHOD_POST, '/account/emails/' . $pending->id . '/resend');
-        self::assertResponseRedirects('/account/access');
+        $client->request(Request::METHOD_POST, '/app/account/emails/' . $pending->id . '/resend');
+        self::assertResponseRedirects('/app/account/access');
         $client->followRedirect();
         self::assertSelectorExists('.flash-notice');
     }
@@ -130,7 +130,7 @@ final class EmailActionsControllerTest extends WebTestCase
         $secondary = UserEmailFactory::createOne(['user' => $user, 'email' => 'spare@dev88.test', 'verifiedAt' => new \DateTimeImmutable()]);
         $client->loginUser($user);
 
-        $client->request(Request::METHOD_GET, '/account/emails/' . $secondary->id . '/promote');
+        $client->request(Request::METHOD_GET, '/app/account/emails/' . $secondary->id . '/promote');
         self::assertResponseStatusCodeSame(405);
     }
 }

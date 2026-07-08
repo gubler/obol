@@ -30,7 +30,7 @@ final class CreatePaymentControllerTest extends AuthenticatedTestCase
             'name' => 'Netflix',
         ]);
 
-        $client->request(\Symfony\Component\HttpFoundation\Request::METHOD_GET, '/subscriptions/' . $subscription->id . '/payments/new');
+        $client->request(\Symfony\Component\HttpFoundation\Request::METHOD_GET, '/app/subscriptions/' . $subscription->id . '/payments/new');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('form');
@@ -50,13 +50,13 @@ final class CreatePaymentControllerTest extends AuthenticatedTestCase
 
         $initialPaymentCount = \count($subscription->payments);
 
-        $client->request(\Symfony\Component\HttpFoundation\Request::METHOD_GET, '/subscriptions/' . $subscription->id . '/payments/new');
+        $client->request(\Symfony\Component\HttpFoundation\Request::METHOD_GET, '/app/subscriptions/' . $subscription->id . '/payments/new');
         $client->submitForm('Save', [
             'create_payment[amount]' => '15.99',
             'create_payment[paidDate]' => '2025-01-15',
         ]);
 
-        self::assertResponseRedirects('/subscriptions/' . $subscription->id);
+        self::assertResponseRedirects('/app/subscriptions/' . $subscription->id);
 
         $container = self::getContainer();
         /** @var EntityManagerInterface $entityManager */
@@ -78,7 +78,7 @@ final class CreatePaymentControllerTest extends AuthenticatedTestCase
             'name' => 'Netflix',
         ]);
 
-        $client->request(\Symfony\Component\HttpFoundation\Request::METHOD_GET, '/subscriptions/' . $subscription->id . '/payments/new');
+        $client->request(\Symfony\Component\HttpFoundation\Request::METHOD_GET, '/app/subscriptions/' . $subscription->id . '/payments/new');
         $client->submitForm('Save', [
             'create_payment[amount]' => '15.99',
             'create_payment[paidDate]' => '2025-01-15',
@@ -97,7 +97,7 @@ final class CreatePaymentControllerTest extends AuthenticatedTestCase
             'name' => 'Netflix',
         ]);
 
-        $client->request(\Symfony\Component\HttpFoundation\Request::METHOD_GET, '/subscriptions/' . $subscription->id . '/payments/new');
+        $client->request(\Symfony\Component\HttpFoundation\Request::METHOD_GET, '/app/subscriptions/' . $subscription->id . '/payments/new');
         $client->submitForm('Save', [
             'create_payment[amount]' => '',
             'create_payment[paidDate]' => '',
@@ -112,7 +112,7 @@ final class CreatePaymentControllerTest extends AuthenticatedTestCase
         $client = $this->authenticatedClient();
         $subscription = SubscriptionFactory::createOne(['name' => 'Netflix']);
 
-        $client->request(\Symfony\Component\HttpFoundation\Request::METHOD_GET, '/subscriptions/' . $subscription->id . '/payments/new');
+        $client->request(\Symfony\Component\HttpFoundation\Request::METHOD_GET, '/app/subscriptions/' . $subscription->id . '/payments/new');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorNotExists('#create_payment_restartPaymentGeneration');
@@ -123,7 +123,7 @@ final class CreatePaymentControllerTest extends AuthenticatedTestCase
         $client = $this->authenticatedClient();
         $subscription = SubscriptionFactory::new()->manual()->create(['name' => 'Netflix']);
 
-        $client->request(\Symfony\Component\HttpFoundation\Request::METHOD_GET, '/subscriptions/' . $subscription->id . '/payments/new');
+        $client->request(\Symfony\Component\HttpFoundation\Request::METHOD_GET, '/app/subscriptions/' . $subscription->id . '/payments/new');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('#create_payment_restartPaymentGeneration');
@@ -141,7 +141,7 @@ final class CreatePaymentControllerTest extends AuthenticatedTestCase
 
         $future = new \DateTimeImmutable('+40 days')->format('Y-m-d');
 
-        $client->request(\Symfony\Component\HttpFoundation\Request::METHOD_GET, '/subscriptions/' . $subscription->id . '/payments/new');
+        $client->request(\Symfony\Component\HttpFoundation\Request::METHOD_GET, '/app/subscriptions/' . $subscription->id . '/payments/new');
         $client->submitForm('Save', [
             'create_payment[amount]' => '15.99',
             'create_payment[paidDate]' => '2025-01-15',
@@ -149,7 +149,7 @@ final class CreatePaymentControllerTest extends AuthenticatedTestCase
             'create_payment[nextRenewal]' => $future,
         ]);
 
-        self::assertResponseRedirects('/subscriptions/' . $subscription->id);
+        self::assertResponseRedirects('/app/subscriptions/' . $subscription->id);
 
         $container = self::getContainer();
         /** @var EntityManagerInterface $entityManager */
@@ -170,13 +170,13 @@ final class CreatePaymentControllerTest extends AuthenticatedTestCase
             'cost' => new Money(1599, Currency::USD),
         ]);
 
-        $client->request(\Symfony\Component\HttpFoundation\Request::METHOD_GET, '/subscriptions/' . $subscription->id . '/payments/new');
+        $client->request(\Symfony\Component\HttpFoundation\Request::METHOD_GET, '/app/subscriptions/' . $subscription->id . '/payments/new');
         $client->submitForm('Save', [
             'create_payment[amount]' => '15.99',
             'create_payment[paidDate]' => '2025-01-15',
         ]);
 
-        self::assertResponseRedirects('/subscriptions/' . $subscription->id);
+        self::assertResponseRedirects('/app/subscriptions/' . $subscription->id);
 
         $container = self::getContainer();
         /** @var EntityManagerInterface $entityManager */
@@ -192,7 +192,7 @@ final class CreatePaymentControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(\Symfony\Component\HttpFoundation\Request::METHOD_GET, '/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/payments/new');
+        $client->request(\Symfony\Component\HttpFoundation\Request::METHOD_GET, '/app/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/payments/new');
 
         self::assertResponseStatusCodeSame(404);
     }

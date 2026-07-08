@@ -24,7 +24,7 @@ final class OnboardingControllerTest extends AuthenticatedTestCase
 
         $crawler = $client->request(
             method: Request::METHOD_GET,
-            uri: '/onboarding',
+            uri: '/app/onboarding',
             server: ['HTTP_ACCEPT_LANGUAGE' => 'de-DE,de;q=0.9'],
         );
 
@@ -40,13 +40,13 @@ final class OnboardingControllerTest extends AuthenticatedTestCase
 
     public function testAnAlreadyOnboardedUserIsRedirectedAwayFromOnboarding(): void
     {
-        // The founder is onboarded; hitting /onboarding again should bounce to the app rather than
+        // The founder is onboarded; hitting /app/onboarding again should bounce to the app rather than
         // re-render the form (and a re-submit would trip completeOnboarding's idempotency guard).
         $client = $this->authenticatedClient();
 
-        $client->request(method: Request::METHOD_GET, uri: '/onboarding');
+        $client->request(method: Request::METHOD_GET, uri: '/app/onboarding');
 
-        self::assertResponseRedirects('/');
+        self::assertResponseRedirects('/app');
     }
 
     public function testCompletingOnboardingPersistsTheSettingsAndOffersTheTour(): void
@@ -55,7 +55,7 @@ final class OnboardingControllerTest extends AuthenticatedTestCase
         $user = UserFactory::new()->notOnboarded()->create();
         $client->loginUser($user);
 
-        $crawler = $client->request(method: Request::METHOD_GET, uri: '/onboarding');
+        $crawler = $client->request(method: Request::METHOD_GET, uri: '/app/onboarding');
         $form = $crawler->selectButton('Get started')->form();
         $form['onboarding[displayName]'] = 'Magos';
         $form['onboarding[displayCurrency]'] = 'GBP';
@@ -64,7 +64,7 @@ final class OnboardingControllerTest extends AuthenticatedTestCase
         $client->submit($form);
 
         // Lands on the dashboard with the tour offer flagged.
-        self::assertResponseRedirects('/?welcome=1');
+        self::assertResponseRedirects('/app?welcome=1');
 
         $entityManager = self::getContainer()->get(EntityManagerInterface::class);
         self::assertInstanceOf(EntityManagerInterface::class, $entityManager);

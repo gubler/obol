@@ -20,7 +20,7 @@ use Symfony\Component\Uid\Ulid;
 final class ResendEmailVerificationController extends AbstractBaseController
 {
     #[Route(
-        path: '/account/emails/{id}/resend',
+        path: '/app/account/emails/{id}/resend',
         name: 'account_email_resend',
         requirements: ['id' => Requirement::ULID],
         methods: ['POST'],

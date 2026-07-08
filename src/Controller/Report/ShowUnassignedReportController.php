@@ -22,7 +22,7 @@ final class ShowUnassignedReportController extends AbstractBaseController
 
     // Higher priority than the `{id}` drill-down so the literal "unassigned" segment is never
     // resolved as a payment-source Ulid.
-    #[Route(path: '/reports/payment-sources/unassigned', name: 'reports_unassigned', methods: ['GET'], priority: 10)]
+    #[Route(path: '/app/reports/payment-sources/unassigned', name: 'reports_unassigned', methods: ['GET'], priority: 10)]
     public function __invoke(): Response
     {
         $composition = $this->queryBus->query(query: new FindPaymentSourceBreakdownQuery(ownerUserId: $this->currentUser()->id, paymentSourceId: null));

@@ -26,9 +26,9 @@ final class DeleteSubscriptionControllerTest extends AuthenticatedTestCase
 
         $subscriptionId = $subscription->id;
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/subscriptions/' . $subscriptionId . '/delete');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/subscriptions/' . $subscriptionId . '/delete');
 
-        self::assertResponseRedirects(expectedLocation: '/');
+        self::assertResponseRedirects(expectedLocation: '/app');
 
         $container = self::getContainer();
         /** @var EntityManagerInterface $entityManager */
@@ -50,7 +50,7 @@ final class DeleteSubscriptionControllerTest extends AuthenticatedTestCase
             'name' => 'Spotify',
         ]);
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/subscriptions/' . $subscription->id . '/delete');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/subscriptions/' . $subscription->id . '/delete');
         $client->followRedirect();
 
         self::assertSelectorTextContains(selector: '.flash-success', text: 'Subscription deleted successfully');
@@ -60,7 +60,7 @@ final class DeleteSubscriptionControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/delete');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/delete');
 
         self::assertResponseStatusCodeSame(expectedCode: 404);
     }
@@ -74,7 +74,7 @@ final class DeleteSubscriptionControllerTest extends AuthenticatedTestCase
             'name' => 'Netflix',
         ]);
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id . '/delete');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/' . $subscription->id . '/delete');
 
         self::assertResponseStatusCodeSame(expectedCode: 405);
     }
@@ -90,7 +90,7 @@ final class DeleteSubscriptionControllerTest extends AuthenticatedTestCase
 
         $initialCount = SubscriptionFactory::count();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/subscriptions/' . $subscription->id . '/delete');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/subscriptions/' . $subscription->id . '/delete');
 
         $finalCount = SubscriptionFactory::count();
 

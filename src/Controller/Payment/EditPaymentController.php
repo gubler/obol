@@ -21,7 +21,7 @@ use Symfony\Component\Uid\Ulid;
 
 final class EditPaymentController extends AbstractBaseController
 {
-    #[Route(path: '/payments/{id}/edit', name: 'payment_edit', methods: ['GET', 'POST'])]
+    #[Route(path: '/app/payments/{id}/edit', name: 'payment_edit', methods: ['GET', 'POST'])]
     public function __invoke(Ulid $id, Request $request): Response
     {
         $payment = $this->queryBus->query(query: new FindPaymentQuery(ownerUserId: $this->currentUser()->id, paymentId: $id));

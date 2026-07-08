@@ -16,7 +16,7 @@ use Symfony\Component\Uid\Ulid;
 
 final class ShowSubscriptionController extends AbstractBaseController
 {
-    #[Route(path: '/subscriptions/{id}', name: 'subscription_show', methods: ['GET'])]
+    #[Route(path: '/app/subscriptions/{id}', name: 'subscription_show', methods: ['GET'])]
     public function __invoke(Ulid $id): Response
     {
         $subscription = $this->queryBus->query(query: new FindSubscriptionQuery(ownerUserId: $this->currentUser()->id, subscriptionId: $id));

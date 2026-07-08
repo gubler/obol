@@ -17,7 +17,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class CreateCategoryController extends AbstractBaseController
 {
-    #[Route(path: '/categories/new', name: 'category_new', methods: ['GET', 'POST'])]
+    #[Route(path: '/app/categories/new', name: 'category_new', methods: ['GET', 'POST'])]
     public function __invoke(Request $request): Response
     {
         $dto = new CreateCategoryDto();

@@ -16,7 +16,7 @@ use Symfony\Component\Uid\Ulid;
 
 final class DeleteSubscriptionController extends AbstractBaseController
 {
-    #[Route(path: '/subscriptions/{id}/delete', name: 'subscription_delete', methods: ['POST'])]
+    #[Route(path: '/app/subscriptions/{id}/delete', name: 'subscription_delete', methods: ['POST'])]
     public function __invoke(Ulid $id): \Symfony\Component\HttpFoundation\RedirectResponse
     {
         $subscription = $this->queryBus->query(query: new FindSubscriptionQuery(ownerUserId: $this->currentUser()->id, subscriptionId: $id));

@@ -64,7 +64,7 @@ final class PasskeyFlowTest extends PantherTestCase
         // 1. Log in via the non-prod bypass (Panther can't drive the magic-link email loop), then open
         //    the register page.
         $client->request('GET', '/_test/login-as/' . $founder->email);
-        $client->request('GET', '/account/passkeys/new');
+        $client->request('GET', '/app/account/passkeys/new');
 
         // Wait until the Stimulus connect() callback reveals the register button - the JS-readiness signal.
         $client->wait(5)->until(static function () use ($client): bool {
@@ -79,7 +79,7 @@ final class PasskeyFlowTest extends PantherTestCase
         //    section, where the passkey list lives.
         $client->executeScript('document.querySelector(\'[data-test="passkey-register-submit"]\').click();');
         try {
-            $client->wait(10)->until(static fn (): bool => str_contains($client->getCurrentURL(), '/account/access'));
+            $client->wait(10)->until(static fn (): bool => str_contains($client->getCurrentURL(), '/app/account/access'));
         } catch (TimeoutException $timeoutException) {
             self::fail(self::diagnosticFailure($client, 'registration redirect timed out', $timeoutException));
         }

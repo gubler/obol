@@ -19,7 +19,7 @@ final class ShowPaymentSourceControllerTest extends AuthenticatedTestCase
 
         $source = PaymentSourceFactory::createOne(['name' => 'Amex 1234', 'comment' => 'Primary card']);
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/' . $source->id);
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/payment-sources/' . $source->id);
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'h1', text: 'Amex 1234');
@@ -30,7 +30,7 @@ final class ShowPaymentSourceControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/' . new Ulid());
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/payment-sources/' . new Ulid());
 
         self::assertResponseStatusCodeSame(expectedCode: 404);
     }

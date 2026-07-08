@@ -41,7 +41,7 @@ final class PerUserDisplayCurrencyTest extends WebTestCase
         ]);
 
         $client->loginUser($userEur);
-        $client->request(method: Request::METHOD_GET, uri: '/reports');
+        $client->request(method: Request::METHOD_GET, uri: '/app/reports');
         self::assertResponseIsSuccessful();
         // The USD subscription is presented converted into the user's EUR - the euro glyph proves it.
         self::assertStringContainsString('€', (string) $client->getResponse()->getContent());
@@ -56,7 +56,7 @@ final class PerUserDisplayCurrencyTest extends WebTestCase
         ]);
 
         $client->loginUser($userUsd);
-        $client->request(method: Request::METHOD_GET, uri: '/reports');
+        $client->request(method: Request::METHOD_GET, uri: '/app/reports');
         self::assertResponseIsSuccessful();
         $usdContent = (string) $client->getResponse()->getContent();
         self::assertStringContainsString('$', $usdContent);

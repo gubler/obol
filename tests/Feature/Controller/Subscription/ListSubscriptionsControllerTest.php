@@ -33,7 +33,7 @@ final class ListSubscriptionsControllerTest extends AuthenticatedTestCase
             'name' => 'Spotify',
         ]);
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'body', text: 'Netflix');
@@ -48,7 +48,7 @@ final class ListSubscriptionsControllerTest extends AuthenticatedTestCase
             'nextRenewal' => new \DateTimeImmutable('today'),
         ]);
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: '.subscription-tile', text: 'Today');
@@ -63,7 +63,7 @@ final class ListSubscriptionsControllerTest extends AuthenticatedTestCase
             'nextRenewal' => new \DateTimeImmutable('tomorrow'),
         ]);
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: '.subscription-tile', text: 'Tomorrow');
@@ -74,17 +74,17 @@ final class ListSubscriptionsControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
 
         self::assertResponseIsSuccessful();
-        self::assertSelectorExists(selector: 'a[href="/subscriptions/new"]');
+        self::assertSelectorExists(selector: 'a[href="/app/subscriptions/new"]');
     }
 
     public function testShowsPageTitle(): void
     {
         $client = $this->authenticatedClient();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'h1', text: 'Subscriptions');
@@ -108,7 +108,7 @@ final class ListSubscriptionsControllerTest extends AuthenticatedTestCase
             'name' => 'Beta Subscription',
         ]);
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/?view=list');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app?view=list');
 
         $subscriptionNames = $crawler->filter('table tbody tr')->each(
             fn (Crawler $node) => $node->filter('td')->first()->text()
@@ -132,7 +132,7 @@ final class ListSubscriptionsControllerTest extends AuthenticatedTestCase
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         SubscriptionFactory::createOne(['category' => $category, 'name' => 'Netflix']);
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
 
         self::assertResponseIsSuccessful();
         $sortControls = $crawler->filter('.sort-controls');
@@ -160,7 +160,7 @@ final class ListSubscriptionsControllerTest extends AuthenticatedTestCase
             'nextRenewal' => new \DateTimeImmutable('+2 days'),
         ]);
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/?view=list&sort=renewal');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app?view=list&sort=renewal');
 
         $names = $crawler->filter('table tbody tr')->each(
             fn (Crawler $node) => $node->filter('td')->first()->text()
@@ -177,7 +177,7 @@ final class ListSubscriptionsControllerTest extends AuthenticatedTestCase
         SubscriptionFactory::createOne(['category' => $category, 'name' => 'Alfa', 'cost' => new Money(100, Currency::USD)]);
         SubscriptionFactory::createOne(['category' => $category, 'name' => 'Zulu', 'cost' => new Money(9999, Currency::USD)]);
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/?view=list&sort=cost');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app?view=list&sort=cost');
 
         $names = $crawler->filter('table tbody tr')->each(
             fn (Crawler $node) => $node->filter('td')->first()->text()
@@ -192,7 +192,7 @@ final class ListSubscriptionsControllerTest extends AuthenticatedTestCase
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         SubscriptionFactory::createOne(['category' => $category, 'name' => 'Netflix']);
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/?sort=cost');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app?sort=cost');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'a[href*="view=list"][href*="sort=cost"]');
@@ -207,17 +207,17 @@ final class ListSubscriptionsControllerTest extends AuthenticatedTestCase
             'name' => 'Netflix',
         ]);
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
 
         self::assertResponseIsSuccessful();
-        self::assertSelectorExists(selector: 'a[href="/subscriptions/' . $subscription->id . '"]');
+        self::assertSelectorExists(selector: 'a[href="/app/subscriptions/' . $subscription->id . '"]');
     }
 
     public function testDisplaysEmptyStateWhenNoSubscriptions(): void
     {
         $client = $this->authenticatedClient();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: '.empty-state');
@@ -229,7 +229,7 @@ final class ListSubscriptionsControllerTest extends AuthenticatedTestCase
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         SubscriptionFactory::createOne(['category' => $category, 'name' => 'Netflix']);
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: '.subscription-tile');
@@ -242,7 +242,7 @@ final class ListSubscriptionsControllerTest extends AuthenticatedTestCase
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         SubscriptionFactory::createOne(['category' => $category, 'name' => 'Netflix']);
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/?view=list');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app?view=list');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'table');
@@ -258,7 +258,7 @@ final class ListSubscriptionsControllerTest extends AuthenticatedTestCase
         SubscriptionFactory::createOne(['category' => $entertainment, 'name' => 'Netflix']);
         SubscriptionFactory::createOne(['category' => $utilities, 'name' => 'Backblaze']);
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
 
         self::assertResponseIsSuccessful();
         self::assertCount(2, $crawler->filter('.category-group'));
@@ -274,7 +274,7 @@ final class ListSubscriptionsControllerTest extends AuthenticatedTestCase
         // A null-category subscription gives the Uncategorized group its neutral badge.
         SubscriptionFactory::createOne(['category' => null, 'name' => 'Orphan']);
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
 
         self::assertResponseIsSuccessful();
         $badges = $crawler->filter('.category-header .category-badge');
@@ -294,7 +294,7 @@ final class ListSubscriptionsControllerTest extends AuthenticatedTestCase
         SubscriptionFactory::createOne(['category' => $entertainment, 'name' => 'Netflix']);
         SubscriptionFactory::createOne(['category' => null, 'name' => 'Orphan']);
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
 
         self::assertResponseIsSuccessful();
         $headers = $crawler->filter('.category-header')->each(static fn (Crawler $node): string => $node->text());
@@ -310,7 +310,7 @@ final class ListSubscriptionsControllerTest extends AuthenticatedTestCase
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         SubscriptionFactory::createOne(['category' => $category, 'name' => 'Netflix']);
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/?group=0');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app?group=0');
 
         self::assertResponseIsSuccessful();
         self::assertCount(0, $crawler->filter('.category-group'));
@@ -337,7 +337,7 @@ final class ListSubscriptionsControllerTest extends AuthenticatedTestCase
             'paymentPeriodCount' => 1,
         ]);
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
 
         self::assertResponseIsSuccessful();
         // 1500 + 1000 cents per month = $25.00.
@@ -359,7 +359,7 @@ final class ListSubscriptionsControllerTest extends AuthenticatedTestCase
             'nextRenewal' => new \DateTimeImmutable()->add(new \DateInterval('P1M')),
         ]);
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
 
         self::assertResponseIsSuccessful();
         self::assertCount(1, $crawler->filter('.category-savings-total'));
@@ -383,7 +383,7 @@ final class ListSubscriptionsControllerTest extends AuthenticatedTestCase
             'nextRenewal' => new \DateTimeImmutable()->add(new \DateInterval('P1D')),
         ]);
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: '.category-savings-total', text: '$');
@@ -398,7 +398,7 @@ final class ListSubscriptionsControllerTest extends AuthenticatedTestCase
         SubscriptionFactory::createOne(['category' => $category, 'name' => 'Active Sub']);
         SubscriptionFactory::new(['category' => $category, 'name' => 'Archived Sub'])->archived()->create();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'body', text: 'Active Sub');
@@ -412,7 +412,7 @@ final class ListSubscriptionsControllerTest extends AuthenticatedTestCase
 
         SubscriptionFactory::new(['category' => $category, 'name' => 'Archived Sub'])->archived()->create();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/?archived=1');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app?archived=1');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'body', text: 'Archived Sub');
@@ -433,7 +433,7 @@ final class ListSubscriptionsControllerTest extends AuthenticatedTestCase
             'nextRenewal' => new \DateTimeImmutable('today +2 days'),
         ]);
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
 
         self::assertResponseIsSuccessful();
         // KnpTimeBundle renders the renewal as a rolled-up relative span ("in 2 days").

@@ -1,6 +1,6 @@
 <?php
 
-// ABOUTME: Feature tests for the /reports page and its category drill-down.
+// ABOUTME: Feature tests for the /app/reports page and its category drill-down.
 // ABOUTME: Covers the category-composition overview (archived excluded), drill-down, and a 404 for an unknown category.
 
 declare(strict_types=1);
@@ -36,7 +36,7 @@ final class ReportsControllerTest extends AuthenticatedTestCase
         SubscriptionFactory::new()->archived()->create(['category' => $streaming, 'name' => 'Old Hulu', 'cost' => new Money(9900, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
         SubscriptionFactory::new()->archived()->create(['category' => $defunct, 'name' => 'Dead App', 'cost' => new Money(5000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/reports');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/reports');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'canvas');                                 // the pie is rendered
@@ -48,7 +48,7 @@ final class ReportsControllerTest extends AuthenticatedTestCase
         self::assertNotContains('Defunct', $names);
 
         // Each category links to its server-navigated drill-down (base32, as path() generates from a Ulid).
-        self::assertSelectorExists(selector: \sprintf('a[href="/reports/categories/%s"]', $streaming->id->toBase32()));
+        self::assertSelectorExists(selector: \sprintf('a[href="/app/reports/categories/%s"]', $streaming->id->toBase32()));
     }
 
     public function testCategoryDrillDownShowsThatCategorySubscriptionsExcludingArchived(): void
@@ -59,7 +59,7 @@ final class ReportsControllerTest extends AuthenticatedTestCase
         SubscriptionFactory::createOne(['category' => $streaming, 'name' => 'Netflix', 'cost' => new Money(4000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
         SubscriptionFactory::new()->archived()->create(['category' => $streaming, 'name' => 'Old Hulu', 'cost' => new Money(9900, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/reports/categories/' . $streaming->id->toRfc4122());
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/reports/categories/' . $streaming->id->toRfc4122());
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'canvas');
@@ -79,7 +79,7 @@ final class ReportsControllerTest extends AuthenticatedTestCase
         SubscriptionFactory::createOne(['category' => $streaming, 'name' => 'Netflix', 'cost' => new Money(4000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
         SubscriptionFactory::createOne(['category' => null, 'name' => 'Orphan', 'cost' => new Money(1000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/reports');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/reports');
 
         self::assertResponseIsSuccessful();
         // The legend shows each slice's flat color + icon badge.
@@ -101,12 +101,12 @@ final class ReportsControllerTest extends AuthenticatedTestCase
         SubscriptionFactory::createOne(['category' => $streaming, 'name' => 'Netflix', 'cost' => new Money(4000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
         SubscriptionFactory::createOne(['category' => null, 'name' => 'Orphan', 'cost' => new Money(1000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/reports');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/reports');
 
         self::assertResponseIsSuccessful();
         $names = $crawler->filter('.report-category')->each(static fn ($node): string => $node->text());
         self::assertContains('Uncategorized', $names);
-        self::assertSelectorExists(selector: 'a[href="/reports/categories/uncategorized"]');
+        self::assertSelectorExists(selector: 'a[href="/app/reports/categories/uncategorized"]');
     }
 
     public function testUncategorizedDrillDownShowsSubscriptionsWithNoCategoryExcludingArchived(): void
@@ -118,7 +118,7 @@ final class ReportsControllerTest extends AuthenticatedTestCase
         SubscriptionFactory::createOne(['category' => null, 'name' => 'Orphan', 'cost' => new Money(1000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
         SubscriptionFactory::new()->archived()->create(['category' => null, 'name' => 'Dead Orphan', 'cost' => new Money(5000, Currency::USD), 'paymentPeriod' => PaymentPeriod::Month, 'paymentPeriodCount' => 1]);
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/reports/categories/uncategorized');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/reports/categories/uncategorized');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'canvas');
@@ -134,7 +134,7 @@ final class ReportsControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/reports/categories/' . new Ulid()->toRfc4122());
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/reports/categories/' . new Ulid()->toRfc4122());
 
         self::assertResponseStatusCodeSame(expectedCode: 404);
     }

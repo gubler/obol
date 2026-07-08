@@ -18,7 +18,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class EditPreferencesController extends AbstractBaseController
 {
-    #[Route(path: '/account/preferences/edit', name: 'account_preferences_edit', methods: ['GET', 'POST'])]
+    #[Route(path: '/app/account/preferences/edit', name: 'account_preferences_edit', methods: ['GET', 'POST'])]
     public function __invoke(Request $request): Response
     {
         $user = $this->currentUser();

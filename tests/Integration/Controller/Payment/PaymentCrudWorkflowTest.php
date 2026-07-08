@@ -26,12 +26,12 @@ final class PaymentCrudWorkflowTest extends AuthenticatedTestCase
         ]);
 
         // Visit subscription show page — no payments yet
-        $client->request(\Symfony\Component\HttpFoundation\Request::METHOD_GET, '/subscriptions/' . $subscription->id);
+        $client->request(\Symfony\Component\HttpFoundation\Request::METHOD_GET, '/app/subscriptions/' . $subscription->id);
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('.payments-section', 'No payments recorded');
 
         // Navigate to create payment form
-        $client->request(\Symfony\Component\HttpFoundation\Request::METHOD_GET, '/subscriptions/' . $subscription->id . '/payments/new');
+        $client->request(\Symfony\Component\HttpFoundation\Request::METHOD_GET, '/app/subscriptions/' . $subscription->id . '/payments/new');
         self::assertResponseIsSuccessful();
 
         // Submit payment form
@@ -39,7 +39,7 @@ final class PaymentCrudWorkflowTest extends AuthenticatedTestCase
             'create_payment[amount]' => '15.99',
             'create_payment[paidDate]' => '2025-01-15',
         ]);
-        self::assertResponseRedirects('/subscriptions/' . $subscription->id);
+        self::assertResponseRedirects('/app/subscriptions/' . $subscription->id);
         $client->followRedirect();
 
         // Verify payment appears on show page
@@ -51,7 +51,7 @@ final class PaymentCrudWorkflowTest extends AuthenticatedTestCase
         $deleteForm = $crawler->filter('.payment-delete-form')->first()->form();
         $client->submit($deleteForm);
 
-        self::assertResponseRedirects('/subscriptions/' . $subscription->id);
+        self::assertResponseRedirects('/app/subscriptions/' . $subscription->id);
         $client->followRedirect();
 
         self::assertSelectorTextContains('.flash-success', 'Payment deleted successfully');

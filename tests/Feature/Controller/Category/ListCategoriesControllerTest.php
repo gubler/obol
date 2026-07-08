@@ -17,7 +17,7 @@ final class ListCategoriesControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'h1', text: 'Categories');
@@ -27,7 +27,7 @@ final class ListCategoriesControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: '.empty-state');
@@ -42,7 +42,7 @@ final class ListCategoriesControllerTest extends AuthenticatedTestCase
         CategoryFactory::createOne(['name' => 'Software']);
         CategoryFactory::createOne(['name' => 'Utilities']);
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'body', text: 'Entertainment');
@@ -63,7 +63,7 @@ final class ListCategoriesControllerTest extends AuthenticatedTestCase
         \Zenstruck\Foundry\Persistence\refresh($entertainment);
         \Zenstruck\Foundry\Persistence\refresh($software);
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'body', text: '3');
@@ -74,11 +74,11 @@ final class ListCategoriesControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories');
 
         self::assertResponseIsSuccessful();
-        self::assertSelectorExists(selector: 'a[href="/categories/new"]');
-        self::assertSelectorTextContains(selector: 'a[href="/categories/new"]', text: 'New Category');
+        self::assertSelectorExists(selector: 'a[href="/app/categories/new"]');
+        self::assertSelectorTextContains(selector: 'a[href="/app/categories/new"]', text: 'New Category');
     }
 
     public function testShowsViewLinksForEachCategory(): void
@@ -88,9 +88,9 @@ final class ListCategoriesControllerTest extends AuthenticatedTestCase
         $category = CategoryFactory::createOne(['name' => 'Test Category']);
         $categoryId = $category->id;
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories');
 
         self::assertResponseIsSuccessful();
-        self::assertSelectorExists(selector: 'a[href="/categories/' . $categoryId . '"]');
+        self::assertSelectorExists(selector: 'a[href="/app/categories/' . $categoryId . '"]');
     }
 }

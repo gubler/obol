@@ -61,7 +61,7 @@ final class ColorSyncBrowserTest extends PantherTestCase
         // The app is authenticated-by-default; log the browser in via the non-prod bypass before
         // reaching the protected form.
         $client->request('GET', '/_test/login-as/' . $founder->email);
-        $client->request('GET', '/subscriptions/new');
+        $client->request('GET', '/app/subscriptions/new');
         $client->waitForVisibility('select[name="create_subscription[category]"]', 10);
 
         $selectCategory = static function (string $id) use ($client): void {

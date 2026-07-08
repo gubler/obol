@@ -24,10 +24,10 @@ final class ReassignPaymentSourceSubscriptionsControllerTest extends Authenticat
         PaymentSourceFactory::createOne(['name' => 'Visa 5678']);
         SubscriptionFactory::createOne(['paymentSource' => $source, 'name' => 'Netflix']);
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/' . $source->id);
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/payment-sources/' . $source->id);
 
         self::assertResponseIsSuccessful();
-        self::assertCount(1, $crawler->filter('form[action="/payment-sources/' . $source->id . '/reassign"]'));
+        self::assertCount(1, $crawler->filter('form[action="/app/payment-sources/' . $source->id . '/reassign"]'));
         self::assertStringContainsString('Visa 5678', $crawler->filter('select[name="target"]')->text());
     }
 
@@ -38,7 +38,7 @@ final class ReassignPaymentSourceSubscriptionsControllerTest extends Authenticat
         $source = PaymentSourceFactory::createOne(['name' => 'Amex 1234']);
         SubscriptionFactory::createOne(['paymentSource' => $source, 'name' => 'Netflix']);
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/payment-sources/' . $source->id);
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/payment-sources/' . $source->id);
 
         self::assertResponseIsSuccessful();
         self::assertCount(0, $crawler->filter('select[name="target"]'));
@@ -54,9 +54,9 @@ final class ReassignPaymentSourceSubscriptionsControllerTest extends Authenticat
         SubscriptionFactory::createOne(['paymentSource' => $from, 'name' => 'Spotify']);
         $toId = $to->id;
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/payment-sources/' . $from->id . '/reassign', parameters: ['target' => (string) $to->id]);
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/payment-sources/' . $from->id . '/reassign', parameters: ['target' => (string) $to->id]);
 
-        self::assertResponseRedirects(expectedLocation: '/payment-sources/' . $from->id);
+        self::assertResponseRedirects(expectedLocation: '/app/payment-sources/' . $from->id);
         $client->followRedirect();
         self::assertSelectorTextContains(selector: '.flash-success', text: 'Subscriptions moved successfully');
 
@@ -85,7 +85,7 @@ final class ReassignPaymentSourceSubscriptionsControllerTest extends Authenticat
 
         $source = PaymentSourceFactory::createOne(['name' => 'Amex 1234']);
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/payment-sources/' . $source->id . '/reassign', parameters: ['target' => 'not-a-ulid']);
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/payment-sources/' . $source->id . '/reassign', parameters: ['target' => 'not-a-ulid']);
         $client->followRedirect();
 
         self::assertSelectorTextContains(selector: '.flash-error', text: 'Could not move the subscriptions');

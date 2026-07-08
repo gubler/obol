@@ -26,7 +26,7 @@ final class UserLocaleListenerTest extends WebTestCase
         $client = self::createClient();
         $client->loginUser(UserFactory::createOne(['locale' => 'en-GB']));
 
-        $client->request(method: Request::METHOD_GET, uri: '/subscriptions/new');
+        $client->request(method: Request::METHOD_GET, uri: '/app/subscriptions/new');
 
         self::assertResponseIsSuccessful();
         self::assertStringContainsString('Colour', (string) $client->getResponse()->getContent());
@@ -46,7 +46,7 @@ final class UserLocaleListenerTest extends WebTestCase
         ]);
 
         $client->loginUser($german);
-        $client->request(method: Request::METHOD_GET, uri: '/');
+        $client->request(method: Request::METHOD_GET, uri: '/app');
         self::assertResponseIsSuccessful();
         self::assertStringContainsString('1.500,00', (string) $client->getResponse()->getContent());
 
@@ -61,7 +61,7 @@ final class UserLocaleListenerTest extends WebTestCase
         ]);
 
         $client->loginUser($american);
-        $client->request(method: Request::METHOD_GET, uri: '/');
+        $client->request(method: Request::METHOD_GET, uri: '/app');
         self::assertResponseIsSuccessful();
         $content = (string) $client->getResponse()->getContent();
         self::assertStringContainsString('1,500.00', $content);
@@ -81,7 +81,7 @@ final class UserLocaleListenerTest extends WebTestCase
         ]);
 
         $client->loginUser($user);
-        $client->request(method: Request::METHOD_GET, uri: '/', server: ['HTTP_ACCEPT_LANGUAGE' => 'de-DE,de;q=0.9']);
+        $client->request(method: Request::METHOD_GET, uri: '/app', server: ['HTTP_ACCEPT_LANGUAGE' => 'de-DE,de;q=0.9']);
 
         self::assertResponseIsSuccessful();
         self::assertStringContainsString('1.500,00', (string) $client->getResponse()->getContent());
@@ -94,7 +94,7 @@ final class UserLocaleListenerTest extends WebTestCase
         self::assertSame('de-DE', $persisted->locale);
 
         // A later request with a different Accept-Language must not re-guess - the locale is resolved.
-        $client->request(method: Request::METHOD_GET, uri: '/', server: ['HTTP_ACCEPT_LANGUAGE' => 'fr-FR']);
+        $client->request(method: Request::METHOD_GET, uri: '/app', server: ['HTTP_ACCEPT_LANGUAGE' => 'fr-FR']);
         $entityManager->clear();
         $stillGerman = $entityManager->find(User::class, $user->id);
         self::assertInstanceOf(User::class, $stillGerman);

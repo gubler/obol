@@ -21,7 +21,7 @@ use Symfony\Component\Uid\Ulid;
 final class PromotePrimaryEmailController extends AbstractBaseController
 {
     #[Route(
-        path: '/account/emails/{id}/promote',
+        path: '/app/account/emails/{id}/promote',
         name: 'account_email_promote',
         requirements: ['id' => Requirement::ULID],
         methods: ['POST'],

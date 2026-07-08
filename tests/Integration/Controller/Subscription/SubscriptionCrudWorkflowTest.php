@@ -25,7 +25,7 @@ final class SubscriptionCrudWorkflowTest extends AuthenticatedTestCase
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
 
         // Create
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/new');
         $form = $crawler->selectButton(value: 'Save')->form([
             'create_subscription[category]' => $category->id->toBase32(),
             'create_subscription[name]' => 'Workflow Test Subscription',
@@ -38,7 +38,7 @@ final class SubscriptionCrudWorkflowTest extends AuthenticatedTestCase
         ]);
         $client->submit(form: $form);
 
-        self::assertResponseRedirects(expectedLocation: '/');
+        self::assertResponseRedirects(expectedLocation: '/app');
         $client->followRedirect();
 
         $container = self::getContainer();
@@ -51,19 +51,19 @@ final class SubscriptionCrudWorkflowTest extends AuthenticatedTestCase
         $subscriptionId = $subscription->id;
 
         // Read
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscriptionId);
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/' . $subscriptionId);
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'h1', text: 'Workflow Test Subscription');
 
         // Update
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscriptionId . '/edit');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/' . $subscriptionId . '/edit');
         $form = $crawler->selectButton(value: 'Save')->form([
             'edit_subscription[name]' => 'Updated Workflow Subscription',
             'edit_subscription[cost]' => '19.99',
         ]);
         $client->submit(form: $form);
 
-        self::assertResponseRedirects(expectedLocation: '/subscriptions/' . $subscriptionId);
+        self::assertResponseRedirects(expectedLocation: '/app/subscriptions/' . $subscriptionId);
         $client->followRedirect();
 
         $entityManager->clear();
@@ -73,9 +73,9 @@ final class SubscriptionCrudWorkflowTest extends AuthenticatedTestCase
         self::assertSame(1999, $updatedSubscription->cost->minorAmount);
 
         // Delete
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/subscriptions/' . $subscriptionId . '/delete');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/subscriptions/' . $subscriptionId . '/delete');
 
-        self::assertResponseRedirects(expectedLocation: '/');
+        self::assertResponseRedirects(expectedLocation: '/app');
 
         $entityManager->clear();
         $deletedSubscription = $repository->find($subscriptionId);
@@ -95,7 +95,7 @@ final class SubscriptionCrudWorkflowTest extends AuthenticatedTestCase
         $initialEventCount = $subscription->subscriptionEvents->count();
 
         // Update the subscription
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id . '/edit');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/' . $subscription->id . '/edit');
         $form = $crawler->selectButton(value: 'Save')->form([
             'edit_subscription[name]' => 'Netflix Premium',
             'edit_subscription[cost]' => '19.99',
@@ -132,7 +132,7 @@ final class SubscriptionCrudWorkflowTest extends AuthenticatedTestCase
         $subscriptions = ['Zebra Service', 'Alpha Service', 'Beta Service'];
 
         foreach ($subscriptions as $name) {
-            $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/new');
+            $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/new');
             $form = $crawler->selectButton(value: 'Save')->form([
                 'create_subscription[category]' => $category->id->toBase32(),
                 'create_subscription[name]' => $name,
@@ -145,7 +145,7 @@ final class SubscriptionCrudWorkflowTest extends AuthenticatedTestCase
             $client->followRedirect();
         }
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/?view=list');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app?view=list');
 
         $subscriptionNames = $crawler->filter('table tbody tr td:first-child')->each(
             fn (Crawler $node) => $node->text()
@@ -175,7 +175,7 @@ final class SubscriptionCrudWorkflowTest extends AuthenticatedTestCase
             'name' => 'Test Service',
         ]);
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/subscriptions/' . $subscription->id . '/edit');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/' . $subscription->id . '/edit');
         $form = $crawler->selectButton(value: 'Save')->form([
             'edit_subscription[category]' => $category2->id->toBase32(),
         ]);

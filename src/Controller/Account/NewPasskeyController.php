@@ -15,7 +15,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class NewPasskeyController extends AbstractBaseController
 {
-    #[Route(path: '/account/passkeys/new', name: 'account_passkey_new', methods: ['GET'])]
+    #[Route(path: '/app/account/passkeys/new', name: 'account_passkey_new', methods: ['GET'])]
     public function __invoke(): Response
     {
         /** @var list<PasskeyCredential> $credentials */

@@ -20,7 +20,7 @@ final class CreateCategoryControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/new');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories/new');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'h1', text: 'New Category');
@@ -33,7 +33,7 @@ final class CreateCategoryControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories/new');
 
         self::assertResponseIsSuccessful();
         // The swatch picker mirrors the subscription form: one radio per TileColor, one pre-selected.
@@ -50,7 +50,7 @@ final class CreateCategoryControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories/new');
 
         $form = $crawler->selectButton(value: 'Save')->form();
         $form['create_category[name]'] = 'Streaming';
@@ -59,7 +59,7 @@ final class CreateCategoryControllerTest extends AuthenticatedTestCase
 
         $client->submit(form: $form);
 
-        self::assertResponseRedirects(expectedLocation: '/categories');
+        self::assertResponseRedirects(expectedLocation: '/app/categories');
 
         /** @var EntityManagerInterface $entityManager */
         $entityManager = self::getContainer()->get(id: EntityManagerInterface::class);
@@ -74,24 +74,24 @@ final class CreateCategoryControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/new');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories/new');
 
         self::assertResponseIsSuccessful();
-        self::assertSelectorExists(selector: 'a[href="/categories"]');
+        self::assertSelectorExists(selector: 'a[href="/app/categories"]');
     }
 
     public function testPostRequestWithValidDataCreatesCategory(): void
     {
         $client = $this->authenticatedClient();
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories/new');
 
         $form = $crawler->selectButton(value: 'Save')->form();
         $form['create_category[name]'] = 'New Test Category';
 
         $client->submit(form: $form);
 
-        self::assertResponseRedirects(expectedLocation: '/categories');
+        self::assertResponseRedirects(expectedLocation: '/app/categories');
 
         $container = self::getContainer();
         /** @var EntityManagerInterface $entityManager */
@@ -108,7 +108,7 @@ final class CreateCategoryControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories/new');
 
         $form = $crawler->selectButton(value: 'Save')->form();
         $form['create_category[name]'] = 'Flash Test Category';
@@ -123,7 +123,7 @@ final class CreateCategoryControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories/new');
 
         $form = $crawler->selectButton(value: 'Save')->form();
         $form['create_category[name]'] = '';
@@ -139,7 +139,7 @@ final class CreateCategoryControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories/new');
 
         $form = $crawler->selectButton(value: 'Save')->form();
         $form['create_category[name]'] = str_repeat(string: 'a', times: 256);
@@ -155,7 +155,7 @@ final class CreateCategoryControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories/new');
 
         $form = $crawler->selectButton(value: 'Save')->form();
         $form['create_category[name]'] = '   ';
@@ -170,7 +170,7 @@ final class CreateCategoryControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/new');
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories/new');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'input[name="create_category[_token]"]');
@@ -180,7 +180,7 @@ final class CreateCategoryControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/new');
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories/new');
 
         $initialCount = CategoryFactory::count();
 

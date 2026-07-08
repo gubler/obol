@@ -18,12 +18,12 @@ final class AccountHubNavTest extends WebTestCase
         $client = self::createClient();
         $client->loginUser(UserFactory::createOne());
 
-        $crawler = $client->request(Request::METHOD_GET, '/');
+        $crawler = $client->request(Request::METHOD_GET, '/app');
 
         self::assertResponseIsSuccessful();
         $account = $crawler->filter('[data-test="nav-account"]');
         self::assertCount(1, $account);
-        self::assertSame('/account/preferences', $account->attr('href'));
+        self::assertSame('/app/account/preferences', $account->attr('href'));
     }
 
     public function testHubSidebarListsPreferencesAndAccess(): void
@@ -31,7 +31,7 @@ final class AccountHubNavTest extends WebTestCase
         $client = self::createClient();
         $client->loginUser(UserFactory::createOne());
 
-        $crawler = $client->request(Request::METHOD_GET, '/account/preferences');
+        $crawler = $client->request(Request::METHOD_GET, '/app/account/preferences');
 
         self::assertResponseIsSuccessful();
         self::assertCount(2, $crawler->filter('[data-test="account-hub-nav-link"]'));
@@ -42,12 +42,12 @@ final class AccountHubNavTest extends WebTestCase
         $client = self::createClient();
         $client->loginUser(UserFactory::createOne());
 
-        $crawler = $client->request(Request::METHOD_GET, '/account/access');
+        $crawler = $client->request(Request::METHOD_GET, '/app/account/access');
 
         self::assertResponseIsSuccessful();
         $active = $crawler->filter('[data-test="account-hub-nav-link"][aria-current="page"]');
         self::assertCount(1, $active);
-        self::assertSame('/account/access', $active->attr('href'));
+        self::assertSame('/app/account/access', $active->attr('href'));
     }
 
     public function testTheAccessSectionIsActiveOnAPerEmailActionToo(): void
@@ -56,7 +56,7 @@ final class AccountHubNavTest extends WebTestCase
         $client = self::createClient();
         $client->loginUser(UserFactory::createOne());
 
-        $client->request(Request::METHOD_GET, '/account/access');
+        $client->request(Request::METHOD_GET, '/app/account/access');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('[data-test="email-add-form"]');

@@ -26,7 +26,7 @@ final class ShowCategoryControllerTest extends AuthenticatedTestCase
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $categoryId = $category->id;
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/' . $categoryId);
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories/' . $categoryId);
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'h1', text: 'Entertainment');
@@ -38,7 +38,7 @@ final class ShowCategoryControllerTest extends AuthenticatedTestCase
         $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Streaming', 'color' => TileColor::Teal, 'icon' => CategoryIcon::Film]);
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/' . $category->id);
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories/' . $category->id);
 
         self::assertResponseIsSuccessful();
         $badge = $client->getCrawler()->filter('h1 .category-badge');
@@ -58,7 +58,7 @@ final class ShowCategoryControllerTest extends AuthenticatedTestCase
 
         $categoryId = $category->id;
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/' . $categoryId);
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories/' . $categoryId);
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'body', text: 'Netflix');
@@ -74,7 +74,7 @@ final class ShowCategoryControllerTest extends AuthenticatedTestCase
         $category = CategoryFactory::createOne(['name' => 'Test Category']);
         $categoryId = $category->id;
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/' . $categoryId);
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories/' . $categoryId);
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'h2', text: 'Category Details');
@@ -87,10 +87,10 @@ final class ShowCategoryControllerTest extends AuthenticatedTestCase
         $category = CategoryFactory::createOne(['name' => 'Test Category']);
         $categoryId = $category->id;
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/' . $categoryId);
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories/' . $categoryId);
 
         self::assertResponseIsSuccessful();
-        self::assertSelectorExists(selector: 'a[href="/categories"]');
+        self::assertSelectorExists(selector: 'a[href="/app/categories"]');
     }
 
     public function testReturns404ForNonExistentCategory(): void
@@ -99,7 +99,7 @@ final class ShowCategoryControllerTest extends AuthenticatedTestCase
 
         $nonExistentId = new Ulid();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/' . $nonExistentId);
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories/' . $nonExistentId);
 
         self::assertResponseStatusCodeSame(expectedCode: 404);
     }
@@ -111,7 +111,7 @@ final class ShowCategoryControllerTest extends AuthenticatedTestCase
         $category = CategoryFactory::createOne(['name' => 'Empty Category']);
         $categoryId = $category->id;
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/categories/' . $categoryId);
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories/' . $categoryId);
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: 'body', text: 'No subscriptions in this category');

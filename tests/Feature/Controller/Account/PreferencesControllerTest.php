@@ -63,6 +63,20 @@ final class PreferencesControllerTest extends WebTestCase
         self::assertSame('GBP', $crawler->filter('[data-test="preferences-currency"] option[selected]')->attr('value'));
     }
 
+    public function testTheEditFormPostsToTheEditRouteNotTheReadOnlyView(): void
+    {
+        // The form lives inside a Turbo Frame; frame-link navigation leaves the address bar on the
+        // read-only view URL, so without an explicit action the browser would POST there (GET-only)
+        // and Turbo would render "Content missing". The action must be the edit route.
+        $client = self::createClient();
+        $client->loginUser(UserFactory::createOne());
+
+        $crawler = $client->request(Request::METHOD_GET, '/app/account/preferences/edit');
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('/app/account/preferences/edit', $crawler->filter('[data-test="preferences-form"]')->attr('action'));
+    }
+
     public function testSavingTheEditFormPersistsNameAndSettingsThenRedirectsToTheView(): void
     {
         $client = self::createClient();

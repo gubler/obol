@@ -6,7 +6,10 @@
             <h2 class="text-lg font-semibold text-fg">{{ 'account.preferences.edit_heading'|trans }}</h2>
             <p class="mt-1 mb-4 text-sm text-fg/70">{{ 'account.preferences.intro'|trans }}</p>
 
-            {{ form_start(form, {attr: {'data-test': 'preferences-form', 'data-controller': 'timezone-detect'}}) }}
+            {# Explicit action: the form loads inside a Turbo Frame, so the address bar stays on the
+               read-only view URL. Without this the browser would POST there (GET-only) and Turbo would
+               render "Content missing". #}
+            {{ form_start(form, {action: path('account_preferences_edit'), attr: {'data-test': 'preferences-form', 'data-controller': 'timezone-detect'}}) }}
                 <div class="space-y-4">
                     <div>
                         {{ form_label(form.displayName) }}

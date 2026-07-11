@@ -3,13 +3,3 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
-
-# Interim root redirect. The application moved under /app (ADR-0018); the public landing that will own
-# `/` lands separately. Until then, `/` forwards to the dashboard (anonymous visitors are bounced to
-# login by the firewall before this runs).
-root_redirect:
-    path: /
-    controller: Symfony\Bundle\FrameworkBundle\Controller\RedirectController::redirectAction
-    defaults:
-        route: subscription_index
-        permanent: false

@@ -55,6 +55,11 @@ security:
 
     # Note: Only the *first* access control that matches will be used.
     access_control:
+        # The public front door: logged-out `/` renders the landing, logged-in `/` the dashboard. The
+        # `$` anchors this to the root only, so every deeper route still falls to the ROLE_USER catch-all.
+        - { path: ^/$, roles: PUBLIC_ACCESS }
+        # The landing "sign up for updates" form posts here from anonymous visitors.
+        - { path: ^/updates$, roles: PUBLIC_ACCESS }
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/logout, roles: PUBLIC_ACCESS }
         # The secondary-email verification link is clicked from the target mailbox, possibly on a device

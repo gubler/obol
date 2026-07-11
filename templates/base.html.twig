@@ -110,7 +110,7 @@
                 </el-disclosure>
                 {% endif %}
             </nav>
-            <header class="py-10">
+            <header class="{% block header_padding %}py-10{% endblock %}">
                 <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     {% block header %} {% endblock %}
                 </div>

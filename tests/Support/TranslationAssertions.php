@@ -21,6 +21,7 @@ trait TranslationAssertions
         'enum',
         'common',
         'validation',
+        'landing',
     ];
 
     /**

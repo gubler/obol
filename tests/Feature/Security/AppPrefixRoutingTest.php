@@ -33,13 +33,15 @@ final class AppPrefixRoutingTest extends AuthenticatedTestCase
         self::assertSelectorTextContains(selector: 'h1', text: 'Subscriptions');
     }
 
-    public function testTheRootRedirectsIntoTheApp(): void
+    public function testTheRootIsPublicAndOutsideTheAppWall(): void
     {
-        $client = $this->authenticatedClient();
+        // `/` is the public landing, not part of the ^/app surface: an anonymous visitor reaches it
+        // with 200 rather than being bounced to /login.
+        $client = self::createClient();
 
         $client->request(method: Request::METHOD_GET, uri: '/');
 
-        self::assertResponseRedirects('/app');
+        self::assertResponseIsSuccessful();
     }
 
     public function testTheEmailVerificationLinkStaysPublicOutsideApp(): void

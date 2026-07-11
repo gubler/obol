@@ -112,6 +112,21 @@ enum:
         en_gb: English (United Kingdom)
         en_ca: English (Canada)
 
+landing:
+    title: Obol - know what your subscriptions cost
+    heading: Every subscription, one clear picture.
+    intro: Obol tracks your recurring payments, shows what you actually spend, and tells you what is due next. No spreadsheets.
+    login_prompt: Already have an account?
+    login_cta: Sign in
+    updates:
+        heading: Stay in the loop
+        intro: Obol is in closed testing. Leave your email and we'll let you know when you can sign up.
+        thanks: Thanks - we'll be in touch.
+        submit: Notify me
+        email:
+            label: Email address
+            placeholder: you@example.com
+
 auth:
     login:
         title: Log in

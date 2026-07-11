@@ -16,6 +16,13 @@ auth:
             invalid: Enter a valid email address.
             too_long: That email address is too long.
 
+landing:
+    updates:
+        email:
+            not_blank: Enter your email address.
+            invalid: Enter a valid email address.
+            too_long: That email address is too long.
+
 account:
     passkey:
         name:

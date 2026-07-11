@@ -24,7 +24,7 @@ PHPStan enforces a rule that `AbstractController` subclasses must not define a c
 - **Named routes required** — every route must have a `name` parameter for URL generation
 - **No trailing slashes** — routes like `/app/subscriptions/` are forbidden
 - **HTTP method restrictions** — every route specifies `methods: ['GET']`, `methods: ['POST']`, or `methods: ['GET', 'POST']`
-- **URL surfaces (ADR-0018)** — authenticated application routes live under `/app` (protected by the `^/` deny-by-default firewall). Public routes stay at the root: login/magic-link, and the signed email-verification link (`/account/emails/{id}/verify`), which sits deliberately outside `/app` so it works from a logged-out mailbox. `/` redirects into `/app` until the public landing takes it over.
+- **URL surfaces (ADR-0018)** — authenticated application routes live under `/app` (protected by the `^/` deny-by-default firewall). Public routes stay at the root: the landing (`/`), login/magic-link, and the signed email-verification link (`/account/emails/{id}/verify`), which sits deliberately outside `/app` so it works from a logged-out mailbox.
 
 ## Controller Inventory
 
@@ -56,6 +56,16 @@ PHPStan enforces a rule that `AbstractController` subclasses must not define a c
 |-----------|-------|---------|--------|
 | `CreatePaymentController` | `/app/subscriptions/{id}/payments/new` (`payment_new`) | GET, POST | Record payment |
 | `DeletePaymentController` | `/app/payments/{id}/delete` (`payment_delete`) | POST | Delete payment |
+
+### Landing (`src/Controller/Landing/`)
+
+The public front door, at the root and outside `/app` (ADR-0018). A single invokable owns both routes: `GET /` renders the landing (the same page for anonymous and signed-in visitors), and `POST /updates` captures the "sign up for updates" email.
+
+| Controller | Route | Methods | Action |
+|-----------|-------|---------|--------|
+| `LandingController` | `/` (`landing`), `/updates` (`updates_subscribe`) | GET, POST | Render the landing; capture an updates-signup email |
+
+The updates-signup email is dispatched as `SubscribeToUpdatesCommand`, whose handler currently only logs the interest - the seam for a future mailing-list integration.
 
 ## Typical Controller Pattern
 

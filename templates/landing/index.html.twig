@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'landing.title'|trans }}{% endblock %}
+
+{# The landing has no header title, so the band/overlap pair cancels out and the visible gap above the
+   card is just this empty header's padding. Halve it to tighten that gap. #}
+{% block header_padding %}py-5{% endblock %}
+
+{% block body %}
+    <div data-test="landing" class="mx-auto max-w-2xl px-4 py-10 text-center sm:py-16">
+        <img src="{{ asset('icons/obol-coin.svg') }}" alt="" class="mx-auto mb-6 size-16" />
+
+        <h1 class="text-3xl font-bold tracking-tight text-fg sm:text-4xl">{{ 'landing.heading'|trans }}</h1>
+        <p class="mx-auto mt-4 max-w-xl text-lg text-fg-muted">{{ 'landing.intro'|trans }}</p>
+
+        <div class="mx-auto mt-10 max-w-md rounded-lg border border-line bg-surface-2 p-6 text-left">
+            <h2 class="text-lg font-semibold text-fg">{{ 'landing.updates.heading'|trans }}</h2>
+            <p class="mt-1 text-sm text-fg-muted">{{ 'landing.updates.intro'|trans }}</p>
+
+            {% for message in app.flashes('success') %}
+                <div class="flash-success mt-4 rounded border border-success bg-success-surface px-4 py-3 text-success">
+                    {{ message }}
+                </div>
+            {% endfor %}
+
+            {{ form_start(form, {action: path('updates_subscribe'), method: 'POST', attr: {class: 'mt-4 flex flex-col gap-3 sm:flex-row sm:items-end'}}) }}
+                <div class="flex-1">
+                    {{ form_row(form.email, {row_class: 'mb-0', attr: {autocomplete: 'email'}}) }}
+                </div>
+                <button type="submit" class="rounded-md border border-brand px-4 py-2 font-medium text-brand hover:bg-brand/10 focus:outline-2 focus:outline-offset-2 focus:outline-brand">
+                    {{ 'landing.updates.submit'|trans }}
+                </button>
+            {{ form_end(form) }}
+        </div>
+
+        <p class="mt-8 text-sm text-fg-muted">
+            {{ 'landing.login_prompt'|trans }}
+            <a href="{{ path('app_login') }}" class="font-medium text-brand hover:text-brand-strong focus:outline-2 focus:outline-offset-2 focus:outline-brand">{{ 'landing.login_cta'|trans }}</a>
+        </p>
+    </div>
+{% endblock %}

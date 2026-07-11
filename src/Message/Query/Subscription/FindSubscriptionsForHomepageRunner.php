@@ -39,10 +39,13 @@ final readonly class FindSubscriptionsForHomepageRunner
         usort($subscriptions, $this->comparator($query->sort));
 
         $asOf = new \DateTimeImmutable();
-        $display = $this->userRepository->getForId($query->ownerUserId)->displayCurrency;
+        $owner = $this->userRepository->getForId($query->ownerUserId);
+        $display = $owner->displayCurrency;
+        // The owner's savings-target lead: 0 funds by the due month, 1 a month ahead (see ADR-0009).
+        $leadMonths = $owner->savingsDisplay->leadMonths();
 
         return new HomepageListing(
-            groups: $this->group($subscriptions, $display, $asOf),
+            groups: $this->group($subscriptions, $display, $asOf, $leadMonths),
             subscriptions: $subscriptions,
         );
     }
@@ -55,7 +58,7 @@ final readonly class FindSubscriptionsForHomepageRunner
      *
      * @return list<CategoryGroup>
      */
-    private function group(array $subscriptions, Currency $display, \DateTimeImmutable $asOf): array
+    private function group(array $subscriptions, Currency $display, \DateTimeImmutable $asOf, int $leadMonths): array
     {
         /** @var array<string, array{category: ?Category, subscriptions: list<Subscription>}> $grouped */
         $grouped = [];
@@ -88,7 +91,7 @@ final readonly class FindSubscriptionsForHomepageRunner
                     $asOf,
                 ),
                 savingsTotal: $this->currencyTotaller->total(
-                    array_map(static fn (Subscription $s): Money => $s->savingsTarget($asOf), $group['subscriptions']),
+                    array_map(static fn (Subscription $s): Money => $s->savingsTarget($asOf, $leadMonths), $group['subscriptions']),
                     $display,
                     $asOf,
                 ),

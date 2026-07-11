@@ -40,6 +40,10 @@
                     <dt class="text-sm font-medium text-fg-muted">{{ 'account.preferences.timezone'|trans }}</dt>
                     <dd class="text-sm text-fg" data-test="pref-timezone">{{ user.timezone }}</dd>
                 </div>
+                <div class="flex flex-wrap justify-between gap-2 py-3">
+                    <dt class="text-sm font-medium text-fg-muted">{{ 'account.preferences.savings_display'|trans }}</dt>
+                    <dd class="text-sm text-fg" data-test="pref-savings-display">{{ user.savingsDisplay.label|trans }}</dd>
+                </div>
             </dl>
         </section>
     </turbo-frame>

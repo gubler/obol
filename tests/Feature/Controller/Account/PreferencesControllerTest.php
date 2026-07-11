@@ -10,6 +10,7 @@ namespace App\Tests\Feature\Controller\Account;
 use App\Entity\User;
 use App\Enum\Currency;
 use App\Enum\DateFormat;
+use App\Enum\SavingsDisplay;
 use App\Factory\UserFactory;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -26,6 +27,7 @@ final class PreferencesControllerTest extends WebTestCase
             'email' => 'magos@dev88.test',
             'locale' => 'en-GB',
             'displayCurrency' => Currency::GBP,
+            'savingsDisplay' => SavingsDisplay::MonthBefore,
         ]);
         $client->loginUser($user);
 
@@ -36,6 +38,7 @@ final class PreferencesControllerTest extends WebTestCase
         self::assertSame('magos@dev88.test', trim($crawler->filter('[data-test="pref-display-name"]')->text()));
         self::assertStringContainsString('GBP', $crawler->filter('[data-test="pref-currency"]')->text());
         self::assertStringContainsString('English (United Kingdom)', $crawler->filter('[data-test="pref-language"]')->text());
+        self::assertStringContainsString('Saved the month before due', $crawler->filter('[data-test="pref-savings-display"]')->text());
         // The Edit link points at the edit page; there is no editable form on the view itself.
         self::assertSame('/app/account/preferences/edit', $crawler->filter('[data-test="preferences-edit-link"]')->attr('href'));
         self::assertCount(0, $crawler->filter('[data-test="preferences-form"]'));
@@ -79,6 +82,7 @@ final class PreferencesControllerTest extends WebTestCase
         $form['change_preferences[language]'] = 'en-GB';
         $form['change_preferences[dateFormat]'] = DateFormat::Short->value;
         $form['change_preferences[timezone]'] = 'Europe/London';
+        $form['change_preferences[savingsDisplay]'] = SavingsDisplay::MonthBefore->value;
         $client->submit($form);
 
         self::assertResponseRedirects('/app/account/preferences');
@@ -91,6 +95,7 @@ final class PreferencesControllerTest extends WebTestCase
         self::assertSame('en-GB', $reloaded->locale);
         self::assertSame('Europe/London', $reloaded->timezone);
         self::assertSame(DateFormat::Short, $reloaded->dateFormat);
+        self::assertSame(SavingsDisplay::MonthBefore, $reloaded->savingsDisplay);
     }
 
     public function testEachDateTimeFormatOptionIsHumanLabelledWithALiveExample(): void

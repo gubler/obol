@@ -7,7 +7,7 @@ Everything about your account lives in one place. Select **Account** (the gear n
 
 ## Sections
 
-- **Preferences** - your display name and how Obol displays information: default currency, language, date and time format, and timezone.
+- **Preferences** - your display name and how Obol displays information: default currency, language, date and time format, timezone, and how savings targets are shown.
 - **Access** - the ways you sign in: your [email addresses](emails.md) and your [passkeys](passkeys.md).
 
 ## Preferences
@@ -19,6 +19,7 @@ The **Preferences** section shows your current settings as a summary. To change 
 - **Language** - the language Obol's text appears in.
 - **Date & time format** - how dates and times are written. Choose **Long**, **Medium**, or **Short** to follow your language's own style at that length, or **YYYY-MM-DD** for a fixed international order. Each option shows the current date and time as an example, so you can see exactly what you're picking. This applies everywhere Obol shows a date.
 - **Timezone** - the timezone your dates and renewal days are measured against.
+- **Savings display** - when the money for an upcoming bill should be fully set aside, according to your preference: **Saved by the month due** (the default) or **Saved the month before due**. See [Savings targets](/obol-user/savings/) for a worked example.
 
 ## Access
 

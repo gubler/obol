@@ -140,15 +140,17 @@ class Subscription
 
     /**
      * The amount that should be set aside by `$asOf` to cover upcoming renewals, in the currency's
-     * minor units. Models a monthly budget saved one month ahead: `monthlyCost` is allocated on the
-     * first of each calendar month, a renewal is fully funded by the first of the month before it
-     * falls due, and that full `cost` is held until the renewal is recorded paid (which advances
-     * `nextRenewal`). Saving toward the renewal after it begins once the current one is funded, so a
-     * bill that is funded but not yet paid is held in full *on top of* the next cycle's accrual. See
-     * ADR-0009; the lead and allocation cadence become per-user settings later (#120, #121).
+     * minor units. Models a monthly budget: `monthlyCost` is allocated on the first of each calendar
+     * month, a renewal is fully funded by the first of the month `$leadMonths` ahead of it (0 funds by
+     * the due month itself, 1 by the month before), and that full `cost` is held until the renewal is
+     * recorded paid (which advances `nextRenewal`). Saving toward the renewal after it begins once the
+     * current one is funded, so a bill that is funded but not yet paid is held in full *on top of* the
+     * next cycle's accrual. The lead is the owner's per-user SavingsDisplay preference; see ADR-0009.
      */
-    public function savingsTarget(\DateTimeImmutable $asOf): Money
+    public function savingsTarget(\DateTimeImmutable $asOf, int $leadMonths): Money
     {
+        Assertion::greaterOrEqualThan($leadMonths, 0, 'Savings lead must be zero or more months.');
+
         // Weekly bills renew several times within an allocation month, which the by-month model
         // cannot prorate; until by-week proration lands (#120) a weekly bill is treated as one
         // payment in hand.
@@ -167,7 +169,7 @@ class Subscription
         // overlap (the funded-but-unpaid one and the next cycle just begun), so this settles in a
         // couple of iterations; the horizon is only a backstop against degenerate sub-cent chunks.
         for ($i = 0; $i < self::SAVINGS_HORIZON; ++$i) {
-            $fundByMonth = $this->monthOrdinal($renewal) - 1; // first of the month before it falls due
+            $fundByMonth = $this->monthOrdinal($renewal) - $leadMonths; // first of the month $leadMonths ahead of due
             $monthsToFund = max(0, $fundByMonth - $asOfMonth);
             $funded = max(0, $costMinor - $monthlyCost * $monthsToFund);
 

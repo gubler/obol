@@ -107,6 +107,10 @@ enum:
         medium: 'Medium (%example%)'
         short: 'Short (%example%)'
         iso: 'YYYY-MM-DD (%example%)'
+    savings_display:
+        month_of: Saved by the month due
+        month_before: Saved the month before due
+        hidden: Do not show savings
     locale:
         en_us: English (United States)
         en_gb: English (United Kingdom)
@@ -198,7 +202,7 @@ account:
             access: Access
     preferences:
         heading: Preferences
-        intro: How Obol displays information for you - your name, default currency, language, date and time formatting, and timezone.
+        intro: How Obol displays information for you - your name, default currency, language, date and time formatting, timezone, and how savings targets are shown.
         edit: Edit
         edit_heading: Edit preferences
         display_name: Display name
@@ -209,6 +213,7 @@ account:
         language_unset: Not set
         date_time_format: Date & time format
         timezone: Timezone
+        savings_display: Savings display
         submit: Save preferences
         updated: Your preferences have been updated.
     passkey:

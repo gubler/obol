@@ -284,6 +284,15 @@ The core design rule in this codebase: **an object must never be representable i
 - This rule covers docs and comments only. Issue/PR descriptions, comments, and commit/PR
   `refs:`/`Closes` footers on Gitea are unaffected - cross-referencing is exactly their job.
 
+### Product voice (user-facing copy)
+Obol is a neutral tool, not an agent. In anything the app says to a user - `docs-user/`, UI
+strings and translations, form labels, flash messages - never give Obol a will, an opinion, or
+a judgment. It **shows**, **displays**, **records**, and **calculates** from the user's
+preferences; it does not **expect**, **want**, **think**, **judge**, **remind you that you
+should**, or even **observe**. A calculator doesn't observe anything - it is just a tool. Write
+in terms of the user and their settings ("how much you should have set aside, according to your
+savings preference"), never the app's expectations of them.
+
 ### Type Coverage
 100% type coverage required for:
 - Return types

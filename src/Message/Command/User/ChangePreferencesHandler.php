@@ -1,6 +1,6 @@
 <?php
 
-// ABOUTME: Handler for ChangePreferencesCommand - applies the chosen currency/timezone/locale/date format.
+// ABOUTME: Handler for ChangePreferencesCommand - applies currency/timezone/locale/date format/savings display.
 // ABOUTME: The doctrine_transaction bus middleware flushes the managed entity; no explicit flush here.
 
 declare(strict_types=1);
@@ -28,6 +28,7 @@ final readonly class ChangePreferencesHandler
             $command->timezone,
             $command->locale,
             $command->dateFormat,
+            $command->savingsDisplay,
         );
     }
 }

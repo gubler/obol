@@ -9,6 +9,7 @@ namespace App\Message\Command\User;
 
 use App\Enum\Currency;
 use App\Enum\DateFormat;
+use App\Enum\SavingsDisplay;
 use Symfony\Component\Uid\Ulid;
 
 final readonly class ChangePreferencesCommand
@@ -20,6 +21,7 @@ final readonly class ChangePreferencesCommand
         public string $timezone,
         public string $locale,
         public DateFormat $dateFormat,
+        public SavingsDisplay $savingsDisplay,
     ) {
     }
 }

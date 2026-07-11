@@ -11,6 +11,7 @@ use App\Dto\Account\ChangePreferencesDto;
 use App\Enum\AppLocale;
 use App\Enum\Currency;
 use App\Enum\DateFormat;
+use App\Enum\SavingsDisplay;
 use App\Service\DateFormatter;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\EnumType;
@@ -70,6 +71,11 @@ final class ChangePreferencesFormType extends AbstractType
                 'label' => 'account.preferences.timezone',
                 // timezone_detect_controller.js refines this to the browser's zone before the user touches it.
                 'attr' => ['data-timezone-detect-target' => 'field'],
+            ])
+            ->add('savingsDisplay', EnumType::class, [
+                'class' => SavingsDisplay::class,
+                'label' => 'account.preferences.savings_display',
+                'choice_label' => static fn (SavingsDisplay $display): string => $display->label(),
             ])
         ;
     }

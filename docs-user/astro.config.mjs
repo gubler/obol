@@ -19,6 +19,7 @@ const sidebar = [
   { slug: 'payment-sources' },
   { slug: 'payments' },
   { slug: 'reports' },
+  { slug: 'savings' },
   { slug: 'currencies' },
 ];
 

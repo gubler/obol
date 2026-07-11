@@ -1582,7 +1582,7 @@ final class SubscriptionTest extends TestCase
         // by 2024-01-15 four monthly allocations (Oct..Jan) have been made -> 800.
         $subscription = $this->makeSubscription(PaymentPeriod::Month, 6, 1200, '2024-04-28');
 
-        self::assertSame(800, $subscription->savingsTarget(new \DateTimeImmutable('2024-01-15'))->minorAmount);
+        self::assertSame(800, $subscription->savingsTarget(new \DateTimeImmutable('2024-01-15'), 1)->minorAmount);
     }
 
     public function testHoldsTheFundedCostAndTheNextCycleTogetherInTheUnpaidDueMonth(): void
@@ -1591,7 +1591,7 @@ final class SubscriptionTest extends TestCase
         // toward the October renewal has already begun -> 1400.
         $subscription = $this->makeSubscription(PaymentPeriod::Month, 6, 1200, '2024-04-28');
 
-        self::assertSame(1400, $subscription->savingsTarget(new \DateTimeImmutable('2024-04-15'))->minorAmount);
+        self::assertSame(1400, $subscription->savingsTarget(new \DateTimeImmutable('2024-04-15'), 1)->minorAmount);
     }
 
     public function testDropsToTheNextCycleOnceTheRenewalIsRecordedPaid(): void
@@ -1600,7 +1600,7 @@ final class SubscriptionTest extends TestCase
         // leaving the first 200 of the October cycle.
         $subscription = $this->makeSubscription(PaymentPeriod::Month, 6, 1200, '2024-10-28');
 
-        self::assertSame(200, $subscription->savingsTarget(new \DateTimeImmutable('2024-04-28'))->minorAmount);
+        self::assertSame(200, $subscription->savingsTarget(new \DateTimeImmutable('2024-04-28'), 1)->minorAmount);
     }
 
     public function testStacksThisMonthAndNextForAMonthlyBillInItsUnpaidDueMonth(): void
@@ -1609,7 +1609,7 @@ final class SubscriptionTest extends TestCase
         // month's allocation has begun (100) -> 200.
         $subscription = $this->makeSubscription(PaymentPeriod::Month, 1, 100, '2024-04-15');
 
-        self::assertSame(200, $subscription->savingsTarget(new \DateTimeImmutable('2024-04-08'))->minorAmount);
+        self::assertSame(200, $subscription->savingsTarget(new \DateTimeImmutable('2024-04-08'), 1)->minorAmount);
     }
 
     public function testIsOnePaymentForAMonthlyBillTheMonthBeforeItIsDue(): void
@@ -1618,7 +1618,7 @@ final class SubscriptionTest extends TestCase
         // the March bill has not begun -> 1500.
         $subscription = $this->makeSubscription(PaymentPeriod::Month, 1, 1500, '2024-02-01');
 
-        self::assertSame(1500, $subscription->savingsTarget(new \DateTimeImmutable('2024-01-15'))->minorAmount);
+        self::assertSame(1500, $subscription->savingsTarget(new \DateTimeImmutable('2024-01-15'), 1)->minorAmount);
     }
 
     public function testTreatsAWeeklyBillAsOnePaymentInHand(): void
@@ -1627,7 +1627,7 @@ final class SubscriptionTest extends TestCase
         // bill is just one payment held.
         $subscription = $this->makeSubscription(PaymentPeriod::Week, 1, 1000, '2024-01-08');
 
-        self::assertSame(1000, $subscription->savingsTarget(new \DateTimeImmutable('2024-01-05'))->minorAmount);
+        self::assertSame(1000, $subscription->savingsTarget(new \DateTimeImmutable('2024-01-05'), 1)->minorAmount);
     }
 
     public function testIsZeroBeforeTheFirstCycleHasBegun(): void
@@ -1635,7 +1635,7 @@ final class SubscriptionTest extends TestCase
         // A future renewal whose funding window has not opened yet has nothing to set aside.
         $subscription = $this->makeSubscription(PaymentPeriod::Year, 1, 12000, '2025-01-01');
 
-        self::assertSame(0, $subscription->savingsTarget(new \DateTimeImmutable('2023-12-01'))->minorAmount);
+        self::assertSame(0, $subscription->savingsTarget(new \DateTimeImmutable('2023-12-01'), 1)->minorAmount);
     }
 
     public function testHoldsAnOverdueRenewalInFullOnTopOfSavingForTheNext(): void
@@ -1644,7 +1644,35 @@ final class SubscriptionTest extends TestCase
         // monthly allocations toward the 2025 renewal have been made -> 15000.
         $subscription = $this->makeSubscription(PaymentPeriod::Year, 1, 12000, '2024-01-01');
 
-        self::assertSame(15000, $subscription->savingsTarget(new \DateTimeImmutable('2024-03-01'))->minorAmount);
+        self::assertSame(15000, $subscription->savingsTarget(new \DateTimeImmutable('2024-03-01'), 1)->minorAmount);
+    }
+
+    public function testMonthOfLeadRampsOneMonthLaterThanAMonthAhead(): void
+    {
+        // Same 1200/6mo bill due 2024-04-28, but funded by the 1st of the *due* month rather than a
+        // month ahead: by 2024-01-15 only three allocations (Nov..Jan) count -> 600, one monthlyCost
+        // less than the month-ahead lead's 800.
+        $subscription = $this->makeSubscription(PaymentPeriod::Month, 6, 1200, '2024-04-28');
+
+        self::assertSame(600, $subscription->savingsTarget(new \DateTimeImmutable('2024-01-15'), 0)->minorAmount);
+    }
+
+    public function testMonthOfLeadHoldsOnlyTheDueBillInTheUnpaidDueMonth(): void
+    {
+        // Under the month-of lead the next cycle has not begun by mid-April, so the funded 1200 stands
+        // alone (the month-ahead lead read 1400 here).
+        $subscription = $this->makeSubscription(PaymentPeriod::Month, 6, 1200, '2024-04-28');
+
+        self::assertSame(1200, $subscription->savingsTarget(new \DateTimeImmutable('2024-04-15'), 0)->minorAmount);
+    }
+
+    public function testMonthOfLeadMatchesTheDocumentedQuarterlyRamp(): void
+    {
+        // 3000 every 3 months -> 1000/mo, due 2024-04-15. Month-of: mid-March holds two allocations
+        // toward April (Feb, Mar) -> 2000, the "month of" column in the user-facing worked example.
+        $subscription = $this->makeSubscription(PaymentPeriod::Month, 3, 3000, '2024-04-15');
+
+        self::assertSame(2000, $subscription->savingsTarget(new \DateTimeImmutable('2024-03-15'), 0)->minorAmount);
     }
 
     public function testAllowsChangingTheCurrencyWhileThereAreNoPayments(): void

@@ -33,8 +33,17 @@ Two dimensions fall out, each a future per-user setting:
 **For now the model is hard-coded to `one month ahead` + `by month`.** The two settings
 above are deferred (#121 for the lead, #120 for the cadence).
 
-`Subscription::savingsTarget($asOf)` sums, over each upcoming renewal, the amount that
-should be set aside by `$asOf`:
+> **Update - the lead is now a per-user setting.** With multi-user support the lead became a
+> real preference, `SavingsDisplay` (`month-of` / `month-before` / `hidden`), carried on
+> `User` and set in account preferences. The default for new accounts is **month-of** (fully
+> saved by the due month), the way most people budget; existing rows were backfilled to
+> **month-before** to preserve this ADR's original behavior. `Subscription::savingsTarget()`
+> now takes a `$leadMonths` (0 funds by the due month, 1 a month ahead). The worked examples
+> below describe the **month-before** lead (`$leadMonths` 1). The allocation cadence
+> (`by month`) is still hard-coded.
+
+`Subscription::savingsTarget($asOf, $leadMonths)` sums, over each upcoming renewal, the amount
+that should be set aside by `$asOf`:
 
 - `monthlyCost` is allocated on the first of each calendar month (so the figure steps on the
   1st and is otherwise constant within a month).

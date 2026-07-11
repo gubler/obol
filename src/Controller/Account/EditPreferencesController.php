@@ -30,6 +30,7 @@ final class EditPreferencesController extends AbstractBaseController
         // Null when the stored locale has no shipped catalog; the form then shows its placeholder.
         $dto->language = null === $user->locale ? null : AppLocale::tryFrom($user->locale);
         $dto->dateFormat = $user->dateFormat;
+        $dto->savingsDisplay = $user->savingsDisplay;
 
         $form = $this->createForm(ChangePreferencesFormType::class, $dto);
         $form->handleRequest($request);
@@ -45,6 +46,7 @@ final class EditPreferencesController extends AbstractBaseController
                 timezone: $dto->timezone,
                 locale: $dto->language->value,
                 dateFormat: $dto->dateFormat,
+                savingsDisplay: $dto->savingsDisplay,
             ));
 
             $this->addFlash(self::FLASH_SUCCESS, $this->translator->trans('account.preferences.updated'));

@@ -28,6 +28,10 @@
                         {{ form_label(form.timezone) }}
                         {{ form_widget(form.timezone, {attr: {'data-test': 'preferences-timezone'}}) }}
                     </div>
+                    <div>
+                        {{ form_label(form.savingsDisplay) }}
+                        {{ form_widget(form.savingsDisplay, {attr: {'data-test': 'preferences-savings-display'}}) }}
+                    </div>
                 </div>
 
                 <div class="mt-6 flex flex-wrap items-center gap-3">

@@ -10,6 +10,7 @@ namespace App\Entity;
 use App\Doctrine\Type\CitextType;
 use App\Enum\Currency;
 use App\Enum\DateFormat;
+use App\Enum\SavingsDisplay;
 use App\Repository\UserRepository;
 use Assert\Assertion;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -75,6 +76,10 @@ class User implements UserInterface, EquatableInterface
         // How this user reads dates: a locale-aware Long/Medium/Short style or fixed ISO (see DateFormat).
         #[ORM\Column(enumType: DateFormat::class)]
         public private(set) DateFormat $dateFormat = DateFormat::Medium,
+        // How this user wants savings targets shown: funded by the due month, a month ahead, or hidden.
+        // Defaults to month-of, the way most people budget (see ADR-0009).
+        #[ORM\Column(enumType: SavingsDisplay::class)]
+        public private(set) SavingsDisplay $savingsDisplay = SavingsDisplay::MonthOf,
         /**
          * When first-run onboarding was completed; null until then. The onboarding gate keys off this.
          * Normally stamped only by completeOnboarding(); the constructor param lets seeding/fixtures mark
@@ -181,11 +186,13 @@ class User implements UserInterface, EquatableInterface
         string $timezone,
         string $locale,
         DateFormat $dateFormat,
+        SavingsDisplay $savingsDisplay,
     ): void {
         $this->displayCurrency = $displayCurrency;
         $this->timezone = $timezone;
         $this->locale = $locale;
         $this->dateFormat = $dateFormat;
+        $this->savingsDisplay = $savingsDisplay;
     }
 
     /**

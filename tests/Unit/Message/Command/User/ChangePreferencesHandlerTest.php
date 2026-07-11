@@ -10,6 +10,7 @@ namespace App\Tests\Unit\Message\Command\User;
 use App\Entity\User;
 use App\Enum\Currency;
 use App\Enum\DateFormat;
+use App\Enum\SavingsDisplay;
 use App\Message\Command\User\ChangePreferencesCommand;
 use App\Message\Command\User\ChangePreferencesHandler;
 use App\Repository\UserRepository;
@@ -36,6 +37,7 @@ final class ChangePreferencesHandlerTest extends TestCase
             timezone: 'Europe/London',
             locale: 'en-GB',
             dateFormat: DateFormat::Short,
+            savingsDisplay: SavingsDisplay::MonthBefore,
         ));
 
         self::assertSame('Magos', $user->displayName);
@@ -43,5 +45,6 @@ final class ChangePreferencesHandlerTest extends TestCase
         self::assertSame('Europe/London', $user->timezone);
         self::assertSame('en-GB', $user->locale);
         self::assertSame(DateFormat::Short, $user->dateFormat);
+        self::assertSame(SavingsDisplay::MonthBefore, $user->savingsDisplay);
     }
 }

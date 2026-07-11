@@ -11,6 +11,7 @@ use App\Entity\User;
 use App\Entity\UserEmail;
 use App\Enum\Currency;
 use App\Enum\DateFormat;
+use App\Enum\SavingsDisplay;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Uuid;
 
@@ -25,6 +26,14 @@ final class UserTest extends TestCase
         self::assertNull($user->locale);
         self::assertSame('America/New_York', $user->timezone);
         self::assertSame(DateFormat::Medium, $user->dateFormat);
+    }
+
+    public function testDefaultsToMonthOfSavingsDisplay(): void
+    {
+        // New accounts save by the due month, the way most people budget (see ADR-0009).
+        $user = new User(email: 'magos@dev88.test');
+
+        self::assertSame(SavingsDisplay::MonthOf, $user->savingsDisplay);
     }
 
     public function testResolveLocaleSetsTheLocale(): void
@@ -130,12 +139,13 @@ final class UserTest extends TestCase
     {
         $user = new User(email: 'magos@dev88.test');
 
-        $user->changePreferences(Currency::GBP, 'Europe/London', 'en-GB', DateFormat::Short);
+        $user->changePreferences(Currency::GBP, 'Europe/London', 'en-GB', DateFormat::Short, SavingsDisplay::MonthBefore);
 
         self::assertSame(Currency::GBP, $user->displayCurrency);
         self::assertSame('Europe/London', $user->timezone);
         self::assertSame('en-GB', $user->locale);
         self::assertSame(DateFormat::Short, $user->dateFormat);
+        self::assertSame(SavingsDisplay::MonthBefore, $user->savingsDisplay);
     }
 
     public function testChangePreferencesOverwritesAnAlreadyResolvedLocale(): void
@@ -144,7 +154,7 @@ final class UserTest extends TestCase
         // existing locale - that is exactly its job.
         $user = new User(email: 'magos@dev88.test', locale: 'en-US');
 
-        $user->changePreferences(Currency::USD, 'America/New_York', 'en-CA', DateFormat::Medium);
+        $user->changePreferences(Currency::USD, 'America/New_York', 'en-CA', DateFormat::Medium, SavingsDisplay::MonthOf);
 
         self::assertSame('en-CA', $user->locale);
     }

@@ -1,6 +1,6 @@
 <?php
 
-// ABOUTME: Data Transfer Object for the preferences form in the account hub (currency/timezone/language/dates).
+// ABOUTME: Data Transfer Object for the preferences form in the account hub (currency/timezone/language/dates/savings).
 // ABOUTME: The controller pre-fills the user's current settings; carries them to ChangePreferencesCommand.
 
 declare(strict_types=1);
@@ -10,6 +10,7 @@ namespace App\Dto\Account;
 use App\Enum\AppLocale;
 use App\Enum\Currency;
 use App\Enum\DateFormat;
+use App\Enum\SavingsDisplay;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotNull;
 use Symfony\Component\Validator\Constraints\Timezone;
@@ -30,4 +31,6 @@ final class ChangePreferencesDto
     public ?AppLocale $language = null;
 
     public DateFormat $dateFormat = DateFormat::Medium;
+
+    public SavingsDisplay $savingsDisplay = SavingsDisplay::MonthOf;
 }

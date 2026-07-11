@@ -12,6 +12,7 @@ use App\Entity\Subscription;
 use App\Entity\User;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
+use App\Enum\SavingsDisplay;
 use App\Enum\SubscriptionSort;
 use App\Message\Currency\Converter;
 use App\Message\Currency\CurrencyTotaller;
@@ -61,10 +62,10 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
         return new CurrencyTotaller(new Converter($exchangeRateRepository));
     }
 
-    private static function userRepository(): UserRepository
+    private static function userRepository(?User $owner = null): UserRepository
     {
         $userRepository = self::createStub(UserRepository::class);
-        $userRepository->method('getForId')->willReturn(new User(email: 'owner@example.com'));
+        $userRepository->method('getForId')->willReturn($owner ?? new User(email: 'owner@example.com'));
 
         return $userRepository;
     }
@@ -83,12 +84,12 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
      * @param list<Subscription>   $subscriptions
      * @param array<string, float> $rates
      */
-    private function runHomepage(array $subscriptions, FindSubscriptionsForHomepageQuery $query, array $rates = []): HomepageListing
+    private function runHomepage(array $subscriptions, FindSubscriptionsForHomepageQuery $query, array $rates = [], ?User $owner = null): HomepageListing
     {
         $repository = self::createStub(SubscriptionRepository::class);
         $repository->method('findForHomepageForOwner')->willReturn($subscriptions);
 
-        return (new FindSubscriptionsForHomepageRunner($repository, $this->homepageTotaller($rates), self::userRepository()))($query);
+        return (new FindSubscriptionsForHomepageRunner($repository, $this->homepageTotaller($rates), self::userRepository($owner)))($query);
     }
 
     public function testGroupsByCategoryOrderedByCategoryNameSortedByNameWithinEachGroup(): void
@@ -217,18 +218,48 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
         $software = new Category(owner: new User(email: 'owner@example.com'), name: 'Software');
 
         // A near renewal so the savings target is non-zero; it is constant within the day, so the runner's
-        // "now" matches the value computed here.
+        // "now" matches the value computed here. A month-before owner keeps the per-subscription figure
+        // non-zero on any day (month-of reads zero for a next-day renewal that falls in the next month).
+        $owner = new User(email: 'owner@example.com', savingsDisplay: SavingsDisplay::MonthBefore);
         $asOf = new \DateTimeImmutable();
         $renewal = $asOf->modify('+1 day')->format('Y-m-d');
-        $perSubscription = self::makeHomepageSubscription($software, 'Solo', 1000, renewal: $renewal)->savingsTarget($asOf)->minorAmount;
+        $perSubscription = self::makeHomepageSubscription($software, 'Solo', 1000, renewal: $renewal)->savingsTarget($asOf, 1)->minorAmount;
 
         $listing = $this->runHomepage([
             self::makeHomepageSubscription($software, 'JetBrains', 1000, renewal: $renewal),
             self::makeHomepageSubscription($software, '1Password', 1000, renewal: $renewal),
-        ], new FindSubscriptionsForHomepageQuery(ownerUserId: new Ulid()));
+        ], new FindSubscriptionsForHomepageQuery(ownerUserId: new Ulid()), owner: $owner);
 
         self::assertGreaterThan(0, $perSubscription);
         self::assertSame(2 * $perSubscription, $listing->groups[0]->savingsTotal->converted->minorAmount);
+    }
+
+    public function testHonorsTheOwnersSavingsLeadWhenTotallingSavings(): void
+    {
+        $software = new Category(owner: new User(email: 'owner@example.com'), name: 'Software');
+
+        $asOf = new \DateTimeImmutable();
+        $renewal = $asOf->modify('+1 day')->format('Y-m-d');
+        // A next-day renewal always reads differently under the two leads, so the totals must diverge
+        // exactly with the owner's preference.
+        $monthOf = self::makeHomepageSubscription($software, 'Solo', 1000, renewal: $renewal)->savingsTarget($asOf, 0)->minorAmount;
+        $monthBefore = self::makeHomepageSubscription($software, 'Solo', 1000, renewal: $renewal)->savingsTarget($asOf, 1)->minorAmount;
+        self::assertNotSame($monthOf, $monthBefore);
+
+        $query = new FindSubscriptionsForHomepageQuery(ownerUserId: new Ulid());
+        $monthOfListing = $this->runHomepage(
+            [self::makeHomepageSubscription($software, 'JetBrains', 1000, renewal: $renewal)],
+            $query,
+            owner: new User(email: 'owner@example.com', savingsDisplay: SavingsDisplay::MonthOf),
+        );
+        $monthBeforeListing = $this->runHomepage(
+            [self::makeHomepageSubscription($software, 'JetBrains', 1000, renewal: $renewal)],
+            $query,
+            owner: new User(email: 'owner@example.com', savingsDisplay: SavingsDisplay::MonthBefore),
+        );
+
+        self::assertSame($monthOf, $monthOfListing->groups[0]->savingsTotal->converted->minorAmount);
+        self::assertSame($monthBefore, $monthBeforeListing->groups[0]->savingsTotal->converted->minorAmount);
     }
 
     public function testConvertsAMixedCurrencyCategoryToTheDisplayCurrencyWithANativeBreakdown(): void

@@ -202,7 +202,7 @@ account:
             access: Access
     preferences:
         heading: Preferences
-        intro: How Obol displays information for you - your name, default currency, language, date and time formatting, timezone, and how savings targets are shown.
+        intro: How Obol displays information for you.
         edit: Edit
         edit_heading: Edit preferences
         display_name: Display name
@@ -392,6 +392,7 @@ subscription:
         payment_source: Payment Source
         cost: Cost
         next_renewal: Next Renewal
+        savings_target: Set aside
         description: Description
         link: Link
         history_heading: History

@@ -1,7 +1,7 @@
 <?php
 
 // ABOUTME: Read model pairing a category with its subscriptions for the homepage listing.
-// ABOUTME: Carries the category's monthly and savings totals already converted to the display currency.
+// ABOUTME: Carries the monthly total, and the savings total unless the owner hides savings (then null).
 
 declare(strict_types=1);
 
@@ -21,7 +21,8 @@ final readonly class CategoryGroup
         public ?Category $category,
         public array $subscriptions,
         public ConvertedTotal $monthlyTotal,
-        public ConvertedTotal $savingsTotal,
+        // Null when the owner's SavingsDisplay is Hidden: savings is suppressed and never computed.
+        public ?ConvertedTotal $savingsTotal,
         public \DateTimeImmutable $asOf,
     ) {
     }

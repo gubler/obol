@@ -10,6 +10,7 @@ namespace App\Message\Query\Subscription;
 use App\Entity\Category;
 use App\Entity\Subscription;
 use App\Enum\Currency;
+use App\Enum\SavingsDisplay;
 use App\Enum\SubscriptionSort;
 use App\Message\Currency\CurrencyTotaller;
 use App\Repository\SubscriptionRepository;
@@ -41,11 +42,9 @@ final readonly class FindSubscriptionsForHomepageRunner
         $asOf = new \DateTimeImmutable();
         $owner = $this->userRepository->getForId($query->ownerUserId);
         $display = $owner->displayCurrency;
-        // The owner's savings-target lead: 0 funds by the due month, 1 a month ahead (see ADR-0009).
-        $leadMonths = $owner->savingsDisplay->leadMonths();
 
         return new HomepageListing(
-            groups: $this->group($subscriptions, $display, $asOf, $leadMonths),
+            groups: $this->group($subscriptions, $display, $asOf, $owner->savingsDisplay),
             subscriptions: $subscriptions,
         );
     }
@@ -58,7 +57,7 @@ final readonly class FindSubscriptionsForHomepageRunner
      *
      * @return list<CategoryGroup>
      */
-    private function group(array $subscriptions, Currency $display, \DateTimeImmutable $asOf, int $leadMonths): array
+    private function group(array $subscriptions, Currency $display, \DateTimeImmutable $asOf, SavingsDisplay $savingsDisplay): array
     {
         /** @var array<string, array{category: ?Category, subscriptions: list<Subscription>}> $grouped */
         $grouped = [];
@@ -90,11 +89,14 @@ final readonly class FindSubscriptionsForHomepageRunner
                     $display,
                     $asOf,
                 ),
-                savingsTotal: $this->currencyTotaller->total(
-                    array_map(static fn (Subscription $s): Money => $s->savingsTarget($asOf, $leadMonths), $group['subscriptions']),
-                    $display,
-                    $asOf,
-                ),
+                // Hidden suppresses savings entirely: the figure is never computed (see ADR-0009).
+                savingsTotal: $savingsDisplay->showsSavings()
+                    ? $this->currencyTotaller->total(
+                        array_map(static fn (Subscription $s): Money => $s->savingsTarget($asOf, $savingsDisplay->leadMonths()), $group['subscriptions']),
+                        $display,
+                        $asOf,
+                    )
+                    : null,
                 asOf: $asOf,
             ),
             $grouped,

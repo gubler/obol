@@ -31,6 +31,22 @@ final class SavingsDisplayTest extends TestCase
         yield 'hidden defaults to the month-of lead' => [SavingsDisplay::Hidden, 0];
     }
 
+    #[DataProvider('provideKnowsWhetherItShowsSavingsCases')]
+    public function testKnowsWhetherItShowsSavings(SavingsDisplay $display, bool $expected): void
+    {
+        self::assertSame($expected, $display->showsSavings());
+    }
+
+    /**
+     * @return iterable<string, array{SavingsDisplay, bool}>
+     */
+    public static function provideKnowsWhetherItShowsSavingsCases(): iterable
+    {
+        yield 'month of shows savings' => [SavingsDisplay::MonthOf, true];
+        yield 'month before shows savings' => [SavingsDisplay::MonthBefore, true];
+        yield 'hidden does not show savings' => [SavingsDisplay::Hidden, false];
+    }
+
     public function testDefaultIsMonthOf(): void
     {
         // New accounts save by the due month, the way most people budget.

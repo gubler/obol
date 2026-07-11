@@ -27,6 +27,16 @@ enum SavingsDisplay: string
         };
     }
 
+    /**
+     * Whether the savings target should be shown at all. Hidden suppresses every savings figure - the
+     * per-category total on the homepage and the per-subscription figure on the detail page - and the
+     * runner skips computing it entirely for a hidden owner.
+     */
+    public function showsSavings(): bool
+    {
+        return self::Hidden !== $this;
+    }
+
     public function label(): string
     {
         // Translation key in the `messages` catalog (see ADR-0012); the case value is already key-safe.

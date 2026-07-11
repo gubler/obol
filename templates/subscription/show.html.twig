@@ -73,6 +73,12 @@
                     <dt class="text-sm font-medium text-fg-muted">{{ 'subscription.show.next_renewal'|trans }}</dt>
                     <dd class="text-lg text-fg">{{ subscription.nextRenewal|user_date }}</dd>
                 </div>
+                {% if savingsTarget is not null %}
+                <div class="subscription-savings-target">
+                    <dt class="text-sm font-medium text-fg-muted">{{ 'subscription.show.savings_target'|trans }}</dt>
+                    <dd class="text-lg text-fg">{{ savingsTarget.format() }}</dd>
+                </div>
+                {% endif %}
                 {% if subscription.description %}
                 <div>
                     <dt class="text-sm font-medium text-fg-muted">{{ 'subscription.show.description'|trans }}</dt>

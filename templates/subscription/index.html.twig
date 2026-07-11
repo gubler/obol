@@ -97,7 +97,7 @@
                             {{ group.category ? group.category.name : 'subscription.group.uncategorized'|trans }}
                         </span>
                         <span class="flex items-baseline gap-3 text-sm font-medium text-fg-muted">
-                            {% if group.savingsTotal.converted.minorAmount > 0 %}
+                            {% if group.savingsTotal is not null and group.savingsTotal.converted.minorAmount > 0 %}
                                 <span class="category-savings-total">
                                     {{ include('components/money_disclosure.html.twig', {
                                         amount: group.savingsTotal.converted,

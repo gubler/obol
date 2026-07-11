@@ -10,9 +10,11 @@ namespace App\Tests\Feature\Controller\Subscription;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\PaymentType;
+use App\Enum\SavingsDisplay;
 use App\Factory\CategoryFactory;
 use App\Factory\PaymentFactory;
 use App\Factory\SubscriptionFactory;
+use App\Factory\UserFactory;
 use App\Tests\Support\AuthenticatedTestCase;
 use App\Tests\Support\TranslationAssertions;
 use App\ValueObject\Money;
@@ -145,6 +147,47 @@ final class ShowSubscriptionControllerTest extends AuthenticatedTestCase
 
         self::assertResponseIsSuccessful();
         self::assertSelectorExists(selector: 'a[href="/app"]');
+    }
+
+    public function testShowsThePerSubscriptionSavingsTarget(): void
+    {
+        // A yearly bill renewing next month has most of its cost already set aside, so the detail page
+        // shows a non-zero savings target. (The exact figure is unit-tested; here we only assert it
+        // renders, since the by-month value can shift on a month boundary.)
+        $client = $this->authenticatedClient();
+        $subscription = SubscriptionFactory::createOne([
+            'name' => 'JetBrains',
+            'cost' => new Money(12000, Currency::USD),
+            'paymentPeriod' => PaymentPeriod::Year,
+            'paymentPeriodCount' => 1,
+            'nextRenewal' => new \DateTimeImmutable()->add(new \DateInterval('P1M')),
+        ]);
+
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/' . $subscription->id);
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('.subscription-savings-target', '$');
+    }
+
+    public function testHidesTheSavingsTargetWhenTheOwnerHidesSavings(): void
+    {
+        // Same subscription, but the owner's SavingsDisplay is Hidden - no savings figure renders.
+        $client = self::createClient();
+        $user = UserFactory::createOne(['savingsDisplay' => SavingsDisplay::Hidden]);
+        $client->loginUser($user);
+        $subscription = SubscriptionFactory::createOne([
+            'owner' => $user,
+            'name' => 'JetBrains',
+            'cost' => new Money(12000, Currency::USD),
+            'paymentPeriod' => PaymentPeriod::Year,
+            'paymentPeriodCount' => 1,
+            'nextRenewal' => new \DateTimeImmutable()->add(new \DateInterval('P1M')),
+        ]);
+
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/' . $subscription->id);
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('.subscription-savings-target');
     }
 
     public function testInvalidIdReturns404(): void

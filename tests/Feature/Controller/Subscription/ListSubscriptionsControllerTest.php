@@ -10,9 +10,11 @@ namespace App\Tests\Feature\Controller\Subscription;
 use App\Enum\CategoryIcon;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
+use App\Enum\SavingsDisplay;
 use App\Enum\TileColor;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
+use App\Factory\UserFactory;
 use App\Tests\Support\AuthenticatedTestCase;
 use App\ValueObject\Money;
 use Symfony\Component\DomCrawler\Crawler;
@@ -388,6 +390,34 @@ final class ListSubscriptionsControllerTest extends AuthenticatedTestCase
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(selector: '.category-savings-total', text: '$');
         self::assertCount(1, $crawler->filter('.category-savings-total'));
+    }
+
+    public function testHidesTheCategorySavingsTotalWhenTheOwnerHidesSavings(): void
+    {
+        // Same setup as the "renews beyond a month" case (which does show a savings total), but the
+        // owner's SavingsDisplay is Hidden, so no savings figure renders - while the subscription and
+        // its monthly total still do.
+        // Create the client first (the kernel boots once), then the Hidden-preference owner to log in.
+        $client = self::createClient();
+        $user = UserFactory::createOne(['savingsDisplay' => SavingsDisplay::Hidden]);
+        $client->loginUser($user);
+        $category = CategoryFactory::createOne(['name' => 'Software', 'owner' => $user]);
+
+        SubscriptionFactory::createOne([
+            'owner' => $user,
+            'category' => $category,
+            'name' => 'JetBrains',
+            'cost' => new Money(12000, Currency::USD),
+            'paymentPeriod' => PaymentPeriod::Year,
+            'paymentPeriodCount' => 1,
+            'nextRenewal' => new \DateTimeImmutable()->add(new \DateInterval('P1M')),
+        ]);
+
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
+
+        self::assertResponseIsSuccessful();
+        self::assertCount(0, $crawler->filter('.category-savings-total'));
+        self::assertCount(1, $crawler->filter('.category-monthly-total'));
     }
 
     public function testHidesArchivedSubscriptionsByDefault(): void

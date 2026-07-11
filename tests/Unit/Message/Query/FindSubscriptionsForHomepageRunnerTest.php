@@ -262,6 +262,22 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
         self::assertSame($monthBefore, $monthBeforeListing->groups[0]->savingsTotal->converted->minorAmount);
     }
 
+    public function testSuppressesTheSavingsTotalForAHiddenSavingsPreference(): void
+    {
+        $software = new Category(owner: new User(email: 'owner@example.com'), name: 'Software');
+
+        $renewal = new \DateTimeImmutable()->modify('+1 day')->format('Y-m-d');
+        $listing = $this->runHomepage(
+            [self::makeHomepageSubscription($software, 'JetBrains', 1000, renewal: $renewal)],
+            new FindSubscriptionsForHomepageQuery(ownerUserId: new Ulid()),
+            owner: new User(email: 'owner@example.com', savingsDisplay: SavingsDisplay::Hidden),
+        );
+
+        // A hidden preference means no savings figure is computed at all - the monthly total still is.
+        self::assertNull($listing->groups[0]->savingsTotal);
+        self::assertNotNull($listing->groups[0]->monthlyTotal);
+    }
+
     public function testConvertsAMixedCurrencyCategoryToTheDisplayCurrencyWithANativeBreakdown(): void
     {
         $mixed = new Category(owner: new User(email: 'owner@example.com'), name: 'Mixed');

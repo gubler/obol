@@ -200,9 +200,17 @@ admin:
         title: Admin
         nav:
             overview: Overview
+            system_toggles: System Toggles
     overview:
         heading: Overview
         intro: Manage system settings and user accounts.
+    system_toggles:
+        heading: System Toggles
+        intro: System-wide settings that apply to every account.
+        public_signup: Allow public sign-up
+        public_signup_help: When on, new visitors can create their own account without an invite.
+        submit: Save
+        updated: System settings updated.
 
 account:
     hub:

@@ -127,6 +127,22 @@ Audit log entry for subscription state changes.
 }
 ```
 
+## SystemSettings
+
+App-global, operator-controlled configuration - the one non-owner-scoped entity (see ADR-0020). A
+structural singleton: the `smallint` `id` is pinned to `1` by a `CHECK (id = 1)` constraint, and the row
+is seeded by its creating migration, so exactly one row always exists.
+
+| Property | Type | Notes |
+|----------|------|-------|
+| `id` | `int` | `smallint`, fixed at 1 (not a ULID — never referenced or exposed) |
+| `publicSignupEnabled` | `bool` | Whether public self-registration is open; defaults to false |
+
+Settings are typed `public private(set)` members read directly; each is mutated by one intention-revealing
+method (`changePublicSignup(bool)`), never a generic key-value setter. Read through the query bus
+(`GetSystemSettingsQuery` → `SystemSettingsRepository::get()`, the only accessor) and written through
+per-setting commands (`SetPublicSignupCommand`). A new setting is a typed column plus a typed mutator.
+
 ## Enums
 
 Three backed string enums in `src/Enum/`:

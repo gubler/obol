@@ -61,6 +61,12 @@ older docs.
   **primary**. A magic link resolves to its User via any *verified* UserEmail (so a second verified
   address is a recovery credential); the primary is the canonical identity. Unverified rows cannot
   log in. **Avoid** treating `User.email` as the only address - it is just the denormalized primary.
+- **system setting** - a piece of app-global, operator-controlled configuration, held on the
+  `SystemSettings` singleton (one row, id fixed at 1). Distinct from a per-user **preference**: a
+  preference is owned by a user and affects only their view; a system setting has no owner and applies
+  to the whole application (e.g. whether public sign-up is open). The operator changes them from the
+  admin area; the app reads them through the query bus. See ADR-0020. _Avoid_ calling these
+  "preferences" or "config".
 - **PaymentPeriod** - the billing cadence enum. The only cases are **`Year`**, **`Month`**,
   and **`Week`**. (There is no `Day` case, despite what older docs claimed.)
 - **paymentPeriodCount** - the multiplier on the period, e.g. `paymentPeriodCount: 3` with
@@ -147,6 +153,7 @@ Recorded under `reference/adr/`:
 - ADR-0017 - Per-user locale application
 - ADR-0018 - One origin, path-prefixed URL surfaces (`/app` for the application)
 - ADR-0019 - Admin authorization (ROLE_ADMIN, firewall rule plus IsGranted)
+- ADR-0020 - System settings as an app-global singleton
 
 ADR-0006 records the CQRS-via-Messenger decision (keep the command/query buses; data
 access confined to the handler layer). ADR-0007 extends it with the write-path

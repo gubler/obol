@@ -111,6 +111,36 @@ final class ArchTest extends TestCase
     }
 
     /**
+     * ADR-0020: the SystemSettings singleton is read only through SystemSettingsRepository::get(), which
+     * owns the find(1). No consumer reaches for the inherited Doctrine finders on that repository, so the
+     * "there is exactly one row" contract keeps a single, legible accessor.
+     */
+    public function testSystemSettingsIsAccessedOnlyViaGet(): void
+    {
+        $repositoryFile = self::srcRoot() . '/Repository/SystemSettingsRepository.php';
+
+        foreach (self::allSourceFiles() as $path) {
+            // get() itself calls find(1); the rule constrains consumers, not the accessor.
+            if ($path === $repositoryFile) {
+                continue;
+            }
+
+            $source = (string) file_get_contents($path);
+            if (!str_contains($source, 'SystemSettingsRepository')) {
+                continue;
+            }
+
+            foreach (['->find(', '->findBy(', '->findOneBy(', '->findAll('] as $finder) {
+                self::assertStringNotContainsString(
+                    $finder,
+                    $source,
+                    basename($path) . ' uses a raw Doctrine finder where it references SystemSettingsRepository; read the singleton through get() instead (ADR-0020)',
+                );
+            }
+        }
+    }
+
+    /**
      * ADR-0015: subscription and payment data is per-user. Every command and query that reads or
      * mutates it carries an `ownerUserId` (a Ulid, per ADR-0007) so the handler can scope by owner;
      * this test makes that structural, so a new owned message cannot forget the owner.

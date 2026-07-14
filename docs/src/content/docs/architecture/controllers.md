@@ -135,5 +135,6 @@ The admin area (`/app/admin/*`) is the operator surface, behind `ROLE_ADMIN` (se
 reuses the same data-driven two-column hub as the account settings: the shell lives in
 `templates/admin/_hub.html.twig`, sections extend it and fill `{% block section %}`, and adding a
 section is the same three steps (controller + route, one `sections` entry, an `admin.hub.nav.*`
-label). The landing section is **Overview**; **System Toggles** (runtime system settings) and
-**User management** (list, detail, invite, resend login link) are added as later sections.
+label). The sections are **Overview** and **System Toggles** (the runtime system settings - e.g. the
+public sign-up switch, read via the query bus and flipped through per-setting commands; see ADR-0020).
+**User management** (list, detail, invite, resend login link) is added as a later section.

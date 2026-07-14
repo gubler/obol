@@ -54,6 +54,9 @@
                                         <a href="{{ path('category_index') }}" data-tour="categories" class="rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.categories'|trans }}</a>
                                         <a href="{{ path('payment_source_index') }}" class="rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.payment_sources'|trans }}</a>
                                         <a href="{{ path('reports_index') }}" data-tour="reports" class="rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.reports'|trans }}</a>
+                                        {% if is_granted('ROLE_ADMIN') %}
+                                        <a href="{{ path('admin_index') }}" data-test="nav-admin" class="rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.admin'|trans }}</a>
+                                        {% endif %}
                                     </div>
                                 </div>
                                 {% endif %}
@@ -104,6 +107,9 @@
                         <a href="{{ path('category_index') }}" class="block rounded-md px-3 py-2 text-base font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.categories'|trans }}</a>
                         <a href="{{ path('payment_source_index') }}" class="block rounded-md px-3 py-2 text-base font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.payment_sources'|trans }}</a>
                         <a href="{{ path('reports_index') }}" class="block rounded-md px-3 py-2 text-base font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.reports'|trans }}</a>
+                        {% if is_granted('ROLE_ADMIN') %}
+                        <a href="{{ path('admin_index') }}" class="block rounded-md px-3 py-2 text-base font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.admin'|trans }}</a>
+                        {% endif %}
                         <a href="{{ path('account_preferences') }}" class="block rounded-md px-3 py-2 text-base font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.account'|trans }}</a>
                         <a href="{{ path('app_logout') }}" class="block rounded-md px-3 py-2 text-base font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.logout'|trans }}</a>
                     </div>

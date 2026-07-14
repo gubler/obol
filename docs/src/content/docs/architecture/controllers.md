@@ -25,6 +25,7 @@ PHPStan enforces a rule that `AbstractController` subclasses must not define a c
 - **No trailing slashes** — routes like `/app/subscriptions/` are forbidden
 - **HTTP method restrictions** — every route specifies `methods: ['GET']`, `methods: ['POST']`, or `methods: ['GET', 'POST']`
 - **URL surfaces (ADR-0018)** — authenticated application routes live under `/app` (protected by the `^/` deny-by-default firewall). Public routes stay at the root: the landing (`/`), login/magic-link, and the signed email-verification link (`/account/emails/{id}/verify`), which sits deliberately outside `/app` so it works from a logged-out mailbox.
+- **Admin authorization (ADR-0019)** — the operator surface at `/app/admin/*` requires `ROLE_ADMIN`. It is guarded by an `access_control` rule (`^/app/admin`, above the `^/` `ROLE_USER` catch-all) and restated with `#[IsGranted('ROLE_ADMIN')]` on the admin controllers; the "Admin" nav link is gated by `is_granted('ROLE_ADMIN')`. `ROLE_ADMIN` is a value on `User.roles` (no schema change); it is granted from the console (`app:user:promote`), not the UI.
 
 ## Controller Inventory
 
@@ -127,3 +128,12 @@ edit page render a matching `<turbo-frame id="account-preferences">`, so with JS
 swaps in place and on save the read-only view swaps back; without JS the link is a plain
 navigation and the form posts and redirects normally. The edit form saves the display name and
 the formatting settings in one `ChangePreferencesCommand`.
+
+## The admin hub (operator surface)
+
+The admin area (`/app/admin/*`) is the operator surface, behind `ROLE_ADMIN` (see ADR-0019). It
+reuses the same data-driven two-column hub as the account settings: the shell lives in
+`templates/admin/_hub.html.twig`, sections extend it and fill `{% block section %}`, and adding a
+section is the same three steps (controller + route, one `sections` entry, an `admin.hub.nav.*`
+label). The landing section is **Overview**; **System Toggles** (runtime system settings) and
+**User management** (list, detail, invite, resend login link) are added as later sections.

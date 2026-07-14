@@ -68,6 +68,9 @@ security:
         - { path: '^/account/emails/[0-9A-HJKMNP-TV-Z]{26}/verify$', roles: PUBLIC_ACCESS }
         # Non-prod login bypass for Panther browser tests (TestLoginAsController 404s outside dev/test).
         - { path: ^/_test, roles: PUBLIC_ACCESS }
+        # The operator surface. Above the ROLE_USER catch-all (first match wins), so every /app/admin
+        # route demands ROLE_ADMIN: a signed-in non-admin gets 403, an anonymous visitor is sent to login.
+        - { path: ^/app/admin, roles: ROLE_ADMIN }
         - { path: ^/, roles: ROLE_USER }
 
 when@test:

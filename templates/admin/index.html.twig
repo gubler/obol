@@ -1,0 +1,10 @@
+{# ABOUTME: The admin hub's Overview landing - the entry section behind the ROLE_ADMIN gate. #}
+{# ABOUTME: A neutral placeholder; System Toggles and User management sections are added in later slices. #}
+{% extends 'admin/_hub.html.twig' %}
+
+{% block section %}
+    <div data-test="admin-overview">
+        <h2 class="text-lg font-semibold text-fg">{{ 'admin.overview.heading'|trans }}</h2>
+        <p class="mt-2 text-sm text-fg-muted">{{ 'admin.overview.intro'|trans }}</p>
+    </div>
+{% endblock %}

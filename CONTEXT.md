@@ -144,6 +144,9 @@ Recorded under `reference/adr/`:
 - ADR-0014 - Authentication model (passwordless magic-link floor; multi-email backup credential)
 - ADR-0015 - Multi-user via per-row ownership (immutable owner FK; owner-scoped finders; Payment denormalized)
 - ADR-0016 - Renewal dates are timezone-naive, interpreted in the owner's zone at read time
+- ADR-0017 - Per-user locale application
+- ADR-0018 - One origin, path-prefixed URL surfaces (`/app` for the application)
+- ADR-0019 - Admin authorization (ROLE_ADMIN, firewall rule plus IsGranted)
 
 ADR-0006 records the CQRS-via-Messenger decision (keep the command/query buses; data
 access confined to the handler layer). ADR-0007 extends it with the write-path

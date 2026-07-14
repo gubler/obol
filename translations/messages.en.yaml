@@ -8,6 +8,7 @@ common:
         payment_sources: Payment Sources
         reports: Reports
         account: Account
+        admin: Admin
         logout: Log out
     theme:
         toggle: Toggle dark mode
@@ -193,6 +194,15 @@ tour:
         theme:
             title: Light or dark
             body: Switch between light and dark whenever you like.
+
+admin:
+    hub:
+        title: Admin
+        nav:
+            overview: Overview
+    overview:
+        heading: Overview
+        intro: Manage system settings and user accounts.
 
 account:
     hub:

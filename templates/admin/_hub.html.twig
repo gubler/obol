@@ -1,0 +1,57 @@
+{# ABOUTME: Two-column shell for the admin hub - a data-driven left sidebar and the active section. #}
+{# ABOUTME: Sections extend this and fill {% block section %}; add one via the `sections` list + a route. #}
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'admin.hub.title'|trans }}{% endblock %}
+
+{% block header %}
+    <h1 class="text-3xl font-bold tracking-tight text-header-fg">{{ 'admin.hub.title'|trans }}</h1>
+{% endblock %}
+
+{% block body %}
+    {# Adding a section is a single entry here plus its route + template - no layout change. `match`
+       lists the route-name prefixes that light this item up (its own routes and any that post to it). #}
+    {% set current_route = app.request.attributes.get('_route') %}
+    {% set sections = [
+        {label: 'admin.hub.nav.overview'|trans, route: 'admin_index', match: ['admin_index']},
+    ] %}
+
+    <div class="flex flex-col gap-6 md:flex-row">
+        <nav class="md:w-56 md:shrink-0" aria-label="{{ 'admin.hub.title'|trans }}">
+            <ul class="flex gap-1 overflow-x-auto md:flex-col md:gap-0.5" data-test="admin-hub-nav">
+                {% for section in sections %}
+                    {% set active = false %}
+                    {% for prefix in section.match %}
+                        {% if current_route starts with prefix %}{% set active = true %}{% endif %}
+                    {% endfor %}
+                    <li>
+                        <a href="{{ path(section.route) }}"
+                           class="block whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium {{ active ? 'bg-brand/10 text-brand' : 'text-fg/70 hover:bg-surface-2 hover:text-fg' }}"
+                           {% if active %}aria-current="page"{% endif %}
+                           data-test="admin-hub-nav-link">
+                            {{ section.label }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </nav>
+
+        <div class="min-w-0 grow">
+            {# Flashes for every section render here once, in the hub, rather than in each section template. #}
+            {% for message in app.flashes('notice') %}
+                <div class="flash-notice bg-success-surface border border-success text-success px-4 py-3 rounded mb-4">{{ message }}</div>
+            {% endfor %}
+            {% for message in app.flashes('success') %}
+                <div class="flash-success bg-success-surface border border-success text-success px-4 py-3 rounded mb-4">{{ message }}</div>
+            {% endfor %}
+            {% for message in app.flashes('warning') %}
+                <div class="flash-warning bg-warning-surface border border-warning text-warning px-4 py-3 rounded mb-4">{{ message }}</div>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <div class="flash-error bg-danger-surface border border-danger text-danger px-4 py-3 rounded mb-4">{{ message }}</div>
+            {% endfor %}
+
+            {% block section %}{% endblock %}
+        </div>
+    </div>
+{% endblock %}

@@ -144,4 +144,7 @@ not owner-scoped); it does not contradict ADR-0015, which isolates regular users
 the operator from accounts. Role changes stay console-only (`app:user:admin`); nothing on the user
 pages is editable. The detail lists the user's verified emails, each with a resend-login-link action -
 the operator picks which reachable address to send to, so a user locked out of their primary is not a
-dead end. Inviting a user is a later section.
+dead end. The list also links to an **invite** form: entering an email creates the account (a thin
+invite - no `Invite` entity; it reuses `CreateUserCommand` for the operator-vouched account plus its
+verified primary email, then `RequestLoginLinkCommand` for the link) and an email that already belongs
+to an account is rejected before anything is created.

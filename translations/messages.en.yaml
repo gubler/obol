@@ -239,6 +239,16 @@ admin:
         resend:
             submit: Resend login link
             sent: 'A login link has been sent to %email%.'
+        invite:
+            link: Invite user
+            back: Back to users
+            heading: Invite a user
+            intro: Create an account and email them a link to sign in.
+            email: Email address
+            email_placeholder: them@example.com
+            submit: Send invite
+            sent: 'Invited %email% - a login link is on its way.'
+            duplicate: This email already belongs to an account.
     system_toggles:
         heading: System Toggles
         intro: System-wide settings that apply to every account.

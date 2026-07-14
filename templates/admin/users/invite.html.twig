@@ -1,0 +1,30 @@
+{# ABOUTME: The admin invite-user form - enter an email to create an account and send it a login link. #}
+{# ABOUTME: Behind the ROLE_ADMIN gate; a thin invite (no Invite entity). See the Users section. #}
+{% extends 'admin/_hub.html.twig' %}
+
+{% block section %}
+    <section class="bg-surface shadow-md rounded p-6">
+        <a href="{{ path('admin_users') }}" class="text-sm text-brand hover:text-brand-strong hover:underline" data-test="admin-invite-back">
+            {{ 'admin.users.invite.back'|trans }}
+        </a>
+
+        <h2 class="mt-2 text-lg font-semibold text-fg">{{ 'admin.users.invite.heading'|trans }}</h2>
+        <p class="mt-1 mb-4 text-sm text-fg/70">{{ 'admin.users.invite.intro'|trans }}</p>
+
+        {{ form_start(form, {attr: {'data-test': 'admin-invite-form'}}) }}
+            <div class="max-w-sm">
+                {{ form_label(form.email) }}
+                {{ form_widget(form.email, {attr: {'data-test': 'admin-invite-email'}}) }}
+                {{ form_errors(form.email) }}
+            </div>
+
+            <div class="mt-6">
+                <button type="submit"
+                        class="bg-brand hover:bg-brand-strong text-on-brand text-sm font-medium py-2 px-3 rounded"
+                        data-test="admin-invite-submit">
+                    {{ 'admin.users.invite.submit'|trans }}
+                </button>
+            </div>
+        {{ form_end(form) }}
+    </section>
+{% endblock %}

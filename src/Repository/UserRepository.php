@@ -11,6 +11,7 @@ use App\Entity\User;
 use App\Entity\UserEmail;
 use App\Exception\CannotRemoveLastAdminException;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Ulid;
 use Symfony\Component\Uid\Uuid;
@@ -29,6 +30,57 @@ class UserRepository extends ServiceEntityRepository implements PublicKeyCredent
         private readonly UserEmailRepository $userEmails,
     ) {
         parent::__construct($registry, User::class);
+    }
+
+    /**
+     * One page of accounts matching a search term, ordered by email, for the admin user list. A deliberate
+     * cross-owner read: unlike the owner-scoped finders, it is not filtered to one user (see ADR-0015).
+     * Search matches the display name or any of a user's email addresses; a blank term matches everyone.
+     *
+     * @return list<User>
+     */
+    public function findMatching(string $search, int $limit, int $offset): array
+    {
+        return $this->matchingQueryBuilder($search)
+            ->orderBy('u.email', 'ASC')
+            ->setMaxResults($limit)
+            ->setFirstResult($offset)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    /**
+     * How many accounts match the search term (the same predicate as findMatching), for paging.
+     */
+    public function countMatching(string $search): int
+    {
+        $count = $this->matchingQueryBuilder($search)
+            ->select('COUNT(u.id)')
+            ->getQuery()
+            ->getSingleScalarResult()
+        ;
+
+        return is_numeric($count) ? (int) $count : 0;
+    }
+
+    /**
+     * The shared search predicate: match on the display name or on any of the user's email addresses.
+     * Email is a citext column (case-insensitive); the display name is lowered to match the same way.
+     */
+    private function matchingQueryBuilder(string $search): QueryBuilder
+    {
+        $qb = $this->createQueryBuilder('u');
+
+        $term = trim($search);
+        if ('' !== $term) {
+            $qb
+                ->andWhere('LOWER(u.displayName) LIKE :q OR EXISTS (SELECT 1 FROM ' . UserEmail::class . ' ue WHERE ue.user = u AND ue.email LIKE :q)')
+                ->setParameter('q', '%' . mb_strtolower($term) . '%')
+            ;
+        }
+
+        return $qb;
     }
 
     /**

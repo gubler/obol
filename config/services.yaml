@@ -14,6 +14,8 @@ parameters:
     # How long a secondary-email verification link is valid, in seconds (24 hours). Longer than a login
     # link because the person may not open the mailbox they are adding right away.
     app.secondary_email.verify_ttl_seconds: 86400
+    # How many accounts the admin user list shows per page.
+    app.admin.users_per_page: 20
 
 services:
     # default configuration for services in *this* file

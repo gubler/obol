@@ -135,6 +135,13 @@ The admin area (`/app/admin/*`) is the operator surface, behind `ROLE_ADMIN` (se
 reuses the same data-driven two-column hub as the account settings: the shell lives in
 `templates/admin/_hub.html.twig`, sections extend it and fill `{% block section %}`, and adding a
 section is the same three steps (controller + route, one `sections` entry, an `admin.hub.nav.*`
-label). The sections are **Overview** and **System Toggles** (the runtime system settings - e.g. the
-public sign-up switch, read via the query bus and flipped through per-setting commands; see ADR-0020).
-**User management** (list, detail, invite, resend login link) is added as a later section.
+label). The sections are **Overview**, **System Toggles** (the runtime system settings - e.g. the
+public sign-up switch, read via the query bus and flipped through per-setting commands; see ADR-0020),
+and **Users** - a searchable, paginated table of every account (search matches a display name or any of
+a user's email addresses), each row linking to a read-only detail (email, display name, roles, joined
+date, onboarding status). The user list is the app's first deliberate cross-owner read (all accounts,
+not owner-scoped); it does not contradict ADR-0015, which isolates regular users from each other, not
+the operator from accounts. Role changes stay console-only (`app:user:admin`); nothing on the user
+pages is editable. The detail lists the user's verified emails, each with a resend-login-link action -
+the operator picks which reachable address to send to, so a user locked out of their primary is not a
+dead end. Inviting a user is a later section.

@@ -1,0 +1,71 @@
+{# ABOUTME: The admin hub's read-only detail for one account, plus a per-email resend-login-link action. #}
+{# ABOUTME: No account fields are editable here (roles are console-only); behind the ROLE_ADMIN gate. #}
+{% extends 'admin/_hub.html.twig' %}
+
+{% block section %}
+    <section class="bg-surface shadow-md rounded p-6">
+        <a href="{{ path('admin_users') }}" class="text-sm text-brand hover:text-brand-strong hover:underline" data-test="admin-user-back">
+            {{ 'admin.users.detail.back'|trans }}
+        </a>
+
+        <h2 class="mt-2 text-lg font-semibold text-fg">{{ user.displayName }}</h2>
+
+        <dl class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div>
+                <dt class="text-xs font-medium uppercase tracking-wide text-fg/50">{{ 'admin.users.detail.email'|trans }}</dt>
+                <dd class="text-sm text-fg" data-test="admin-user-email">{{ user.email }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium uppercase tracking-wide text-fg/50">{{ 'admin.users.detail.display_name'|trans }}</dt>
+                <dd class="text-sm text-fg" data-test="admin-user-display-name">{{ user.displayName }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium uppercase tracking-wide text-fg/50">{{ 'admin.users.detail.roles'|trans }}</dt>
+                <dd class="text-sm text-fg" data-test="admin-user-roles">{{ user.getRoles|join(', ') }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium uppercase tracking-wide text-fg/50">{{ 'admin.users.detail.created'|trans }}</dt>
+                <dd class="text-sm text-fg" data-test="admin-user-created">{{ user.createdAt|user_date }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium uppercase tracking-wide text-fg/50">{{ 'admin.users.detail.onboarding'|trans }}</dt>
+                <dd class="text-sm text-fg" data-test="admin-user-onboarding">
+                    {{ (user.hasCompletedOnboarding ? 'admin.users.detail.onboarding_complete' : 'admin.users.detail.onboarding_incomplete')|trans }}
+                </dd>
+            </div>
+        </dl>
+
+        <h3 class="mt-6 text-sm font-semibold text-fg">{{ 'admin.users.detail.login_access'|trans }}</h3>
+        <p class="mt-1 mb-3 text-xs text-fg/60">{{ 'admin.users.detail.login_access_help'|trans }}</p>
+        <ul class="space-y-2" data-test="admin-user-emails">
+            {% for email in user.emails %}
+                <li class="flex flex-wrap items-center gap-2 rounded border border-line bg-surface-2 px-3 py-2"
+                    data-test="admin-user-email-row" data-test-email="{{ email.email }}">
+                    <span class="text-sm text-fg">{{ email.email }}</span>
+                    {% if email.isPrimary %}
+                        <span class="rounded bg-brand/10 px-2 py-0.5 text-xs font-medium text-brand" data-test="admin-user-email-primary">{{ 'admin.users.detail.email_primary'|trans }}</span>
+                    {% elseif email.isVerified %}
+                        <span class="rounded bg-success-surface px-2 py-0.5 text-xs font-medium text-success" data-test="admin-user-email-verified">{{ 'admin.users.detail.email_verified'|trans }}</span>
+                    {% else %}
+                        <span class="rounded bg-warning-surface px-2 py-0.5 text-xs font-medium text-warning" data-test="admin-user-email-pending">{{ 'admin.users.detail.email_pending'|trans }}</span>
+                    {% endif %}
+
+                    {% if email.isVerified %}
+                        <form method="post"
+                              action="{{ path('admin_user_resend_login_link', {id: user.id}) }}"
+                              class="ml-auto"
+                              data-test="admin-user-resend-form"
+                              data-test-resend-email="{{ email.email }}">
+                            <input type="hidden" name="email" value="{{ email.email }}">
+                            <button type="submit"
+                                    class="bg-brand hover:bg-brand-strong text-on-brand text-xs font-medium py-1 px-3 rounded"
+                                    data-test="admin-user-resend-submit">
+                                {{ 'admin.users.resend.submit'|trans }}
+                            </button>
+                        </form>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    </section>
+{% endblock %}

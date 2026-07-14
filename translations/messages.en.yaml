@@ -201,9 +201,44 @@ admin:
         nav:
             overview: Overview
             system_toggles: System Toggles
+            users: Users
     overview:
         heading: Overview
         intro: Manage system settings and user accounts.
+    users:
+        heading: Users
+        intro: Every account in the system.
+        empty: No accounts match.
+        admin_badge: Admin
+        user_badge: User
+        search_placeholder: Search by name or email
+        search_submit: Search
+        table:
+            name: Name
+            email: Email
+            role: Role
+            joined: Joined
+        pagination:
+            previous: Previous
+            next: Next
+            page_of: 'Page %page% of %pages%'
+        detail:
+            back: Back to users
+            email: Email
+            display_name: Display name
+            roles: Roles
+            created: Joined
+            onboarding: Onboarding
+            onboarding_complete: Completed
+            onboarding_incomplete: Not completed
+            login_access: Login access
+            login_access_help: Send a fresh sign-in link to any verified address the user can reach.
+            email_primary: Primary
+            email_verified: Verified
+            email_pending: Pending
+        resend:
+            submit: Resend login link
+            sent: 'A login link has been sent to %email%.'
     system_toggles:
         heading: System Toggles
         intro: System-wide settings that apply to every account.

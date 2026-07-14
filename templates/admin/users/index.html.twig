@@ -1,0 +1,75 @@
+{# ABOUTME: The admin hub's Users section - a searchable, paginated table of every account. #}
+{# ABOUTME: A cross-owner read behind the ROLE_ADMIN gate; read-only (rows link to the detail). #}
+{% extends 'admin/_hub.html.twig' %}
+
+{% block section %}
+    <section class="bg-surface shadow-md rounded p-6">
+        <h2 class="text-lg font-semibold text-fg">{{ 'admin.users.heading'|trans }}</h2>
+        <p class="mt-1 mb-4 text-sm text-fg/70">{{ 'admin.users.intro'|trans }}</p>
+
+        <form method="get" action="{{ path('admin_users') }}" class="mb-4 flex gap-2" data-test="admin-users-search">
+            <input type="search" name="q" value="{{ search }}"
+                   placeholder="{{ 'admin.users.search_placeholder'|trans }}"
+                   class="w-full max-w-sm rounded border border-line bg-surface-2 px-3 py-2 text-sm text-fg"
+                   data-test="admin-users-search-input" />
+            <button type="submit" class="bg-brand hover:bg-brand-strong text-on-brand text-sm font-medium py-2 px-3 rounded">
+                {{ 'admin.users.search_submit'|trans }}
+            </button>
+        </form>
+
+        {% if usersPage.users is empty %}
+            <p class="text-sm text-fg/60" data-test="admin-users-empty">{{ 'admin.users.empty'|trans }}</p>
+        {% else %}
+            <div class="overflow-hidden rounded border border-line">
+                <table class="min-w-full divide-y divide-line" data-test="admin-user-table">
+                    <thead class="bg-surface-2">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-fg-muted">{{ 'admin.users.table.name'|trans }}</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-fg-muted">{{ 'admin.users.table.email'|trans }}</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-fg-muted">{{ 'admin.users.table.role'|trans }}</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-fg-muted">{{ 'admin.users.table.joined'|trans }}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-line bg-surface">
+                        {% for user in usersPage.users %}
+                            <tr data-test="admin-user-row" data-test-user-email="{{ user.email }}">
+                                <td class="whitespace-nowrap px-4 py-3">
+                                    <a href="{{ path('admin_user_show', {id: user.id}) }}"
+                                       class="font-medium text-brand hover:text-brand-strong"
+                                       data-test="admin-user-link">{{ user.displayName }}</a>
+                                </td>
+                                <td class="whitespace-nowrap px-4 py-3 text-sm text-fg/70">{{ user.email }}</td>
+                                <td class="whitespace-nowrap px-4 py-3 text-sm">
+                                    {% if user.isAdmin %}
+                                        <span class="rounded bg-brand/10 px-2 py-0.5 text-xs font-medium text-brand" data-test="admin-user-badge-admin">{{ 'admin.users.admin_badge'|trans }}</span>
+                                    {% else %}
+                                        <span class="text-fg/60">{{ 'admin.users.user_badge'|trans }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="whitespace-nowrap px-4 py-3 text-sm text-fg/70">{{ user.createdAt|user_date }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <nav class="mt-4 flex items-center justify-between text-sm" data-test="admin-users-pagination" aria-label="{{ 'admin.users.heading'|trans }}">
+                <div>
+                    {% if usersPage.hasPrevious %}
+                        <a href="{{ path('admin_users', {q: search, page: usersPage.page - 1}) }}"
+                           class="text-brand hover:text-brand-strong hover:underline" data-test="admin-users-prev">{{ 'admin.users.pagination.previous'|trans }}</a>
+                    {% endif %}
+                </div>
+                <span class="text-fg/60" data-test="admin-users-page-status">
+                    {{ 'admin.users.pagination.page_of'|trans({'%page%': usersPage.page, '%pages%': usersPage.pageCount}) }}
+                </span>
+                <div>
+                    {% if usersPage.hasNext %}
+                        <a href="{{ path('admin_users', {q: search, page: usersPage.page + 1}) }}"
+                           class="text-brand hover:text-brand-strong hover:underline" data-test="admin-users-next">{{ 'admin.users.pagination.next'|trans }}</a>
+                    {% endif %}
+                </div>
+            </nav>
+        {% endif %}
+    </section>
+{% endblock %}

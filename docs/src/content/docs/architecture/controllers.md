@@ -25,7 +25,7 @@ PHPStan enforces a rule that `AbstractController` subclasses must not define a c
 - **No trailing slashes** — routes like `/app/subscriptions/` are forbidden
 - **HTTP method restrictions** — every route specifies `methods: ['GET']`, `methods: ['POST']`, or `methods: ['GET', 'POST']`
 - **URL surfaces (ADR-0018)** — authenticated application routes live under `/app` (protected by the `^/` deny-by-default firewall). Public routes stay at the root: the landing (`/`), login/magic-link, and the signed email-verification link (`/account/emails/{id}/verify`), which sits deliberately outside `/app` so it works from a logged-out mailbox.
-- **Admin authorization (ADR-0019)** — the operator surface at `/app/admin/*` requires `ROLE_ADMIN`. It is guarded by an `access_control` rule (`^/app/admin`, above the `^/` `ROLE_USER` catch-all) and restated with `#[IsGranted('ROLE_ADMIN')]` on the admin controllers; the "Admin" nav link is gated by `is_granted('ROLE_ADMIN')`. `ROLE_ADMIN` is a value on `User.roles` (no schema change); it is granted from the console (`app:user:promote`), not the UI.
+- **Admin authorization (ADR-0019)** — the operator surface at `/app/admin/*` requires `ROLE_ADMIN`. It is guarded by an `access_control` rule (`^/app/admin`, above the `^/` `ROLE_USER` catch-all) and restated with `#[IsGranted('ROLE_ADMIN')]` on the admin controllers; the "Admin" nav link is gated by `is_granted('ROLE_ADMIN')`. `ROLE_ADMIN` is a value on `User.roles` (no schema change); it is granted from the console (`app:user:admin --grant|--revoke`, which refuses to remove the last admin), not the UI.
 
 ## Controller Inventory
 

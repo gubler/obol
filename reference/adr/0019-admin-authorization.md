@@ -35,9 +35,15 @@ restated on the controllers.**
 - **The nav entry is gated by `is_granted('ROLE_ADMIN')`.** The "Admin" link renders only for admins,
   in both the desktop and mobile navigation - the surface is invisible to regular users, not merely
   link-hidden-but-reachable (the firewall enforces the latter).
-- **Granting the role is console-only.** A console command promotes a user to `ROLE_ADMIN`; the
-  admin UI does not change roles. This bootstraps the first admin (the UI that would grant the role is
-  itself behind the role) and keeps role changes off the web surface while there is a single operator.
+- **Granting the role is console-only.** The `app:user:admin` command grants or revokes `ROLE_ADMIN`
+  (one of `--grant`/`--revoke` is required - there is no default, so a fumbled invocation cannot silently
+  create an admin); the admin UI does not change roles. This bootstraps the first admin (the UI that
+  would grant the role is itself behind the role) and keeps role changes off the web surface while there
+  is a single operator.
+- **At least one admin always remains.** Revoking `ROLE_ADMIN` from the last remaining admin is refused
+  at the data layer (`UserRepository::assertNotLastAdmin`), so the operator surface can never be locked
+  out. Enforcing it there rather than in the command means the invariant holds for any future caller -
+  the web UI's role management included.
 
 ## Consequences
 

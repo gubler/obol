@@ -9,6 +9,7 @@ namespace App\Repository;
 
 use App\Entity\User;
 use App\Entity\UserEmail;
+use App\Exception\CannotRemoveLastAdminException;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Ulid;
@@ -43,6 +44,44 @@ class UserRepository extends ServiceEntityRepository implements PublicKeyCredent
         }
 
         return $user;
+    }
+
+    /**
+     * Resolve an account by its canonical primary email (the denormalized `email` column, which is citext
+     * so the match is case-insensitive). Used by the admin promote flow, which addresses a user by email.
+     */
+    public function findForEmail(string $email): ?User
+    {
+        return $this->findOneBy(['email' => $email]);
+    }
+
+    /**
+     * Every account that currently holds ROLE_ADMIN. The admin population is tiny, so this filters in
+     * PHP rather than reaching for a JSON-containment query; `isAdmin()` keeps the role check in one place.
+     *
+     * @return list<User>
+     */
+    public function findAdmins(): array
+    {
+        return array_values(array_filter($this->findAll(), static fn (User $user): bool => $user->isAdmin()));
+    }
+
+    public function countAdmins(): int
+    {
+        return \count($this->findAdmins());
+    }
+
+    /**
+     * Guard the system invariant that at least one admin always remains: refuse to de-admin the given
+     * user when they are the only admin, so the operator surface can never be locked out. A no-op for a
+     * non-admin. Enforced here at the data layer so every caller - the console now, the web UI later -
+     * inherits it. See ADR-0019.
+     */
+    public function assertNotLastAdmin(User $user): void
+    {
+        if ($user->isAdmin() && $this->countAdmins() <= 1) {
+            throw new CannotRemoveLastAdminException($user->email);
+        }
     }
 
     /**

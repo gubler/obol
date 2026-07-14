@@ -169,6 +169,50 @@ final class UserTest extends TestCase
         self::assertSame($user->getRoles(), array_values(array_unique($user->getRoles())));
     }
 
+    public function testIsAdminReflectsTheAdminRole(): void
+    {
+        self::assertFalse(new User(email: 'magos@dev88.test')->isAdmin());
+        self::assertTrue(new User(email: 'magos@dev88.test', roles: ['ROLE_ADMIN'])->isAdmin());
+    }
+
+    public function testGrantAdminAddsTheOperatorRole(): void
+    {
+        $user = new User(email: 'magos@dev88.test');
+
+        $user->grantAdmin();
+
+        self::assertContains('ROLE_ADMIN', $user->getRoles());
+    }
+
+    public function testGrantAdminIsIdempotent(): void
+    {
+        $user = new User(email: 'magos@dev88.test', roles: ['ROLE_ADMIN']);
+
+        $user->grantAdmin();
+
+        // No duplicate is appended to the stored roles array.
+        self::assertSame(['ROLE_ADMIN'], $user->roles);
+    }
+
+    public function testRevokeAdminRemovesTheOperatorRole(): void
+    {
+        $user = new User(email: 'magos@dev88.test', roles: ['ROLE_ADMIN']);
+
+        $user->revokeAdmin();
+
+        self::assertNotContains('ROLE_ADMIN', $user->getRoles());
+        self::assertSame([], $user->roles);
+    }
+
+    public function testRevokeAdminOnANonAdminIsANoOp(): void
+    {
+        $user = new User(email: 'magos@dev88.test');
+
+        $user->revokeAdmin();
+
+        self::assertSame([], $user->roles);
+    }
+
     public function testUserIdentifierIsTheEmail(): void
     {
         $user = new User(email: 'magos@dev88.test');

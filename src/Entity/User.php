@@ -29,6 +29,8 @@ use Symfony\Component\Uid\Uuid;
 #[ORM\UniqueConstraint(name: 'uniq_user_email', columns: ['email'])]
 class User implements UserInterface, EquatableInterface
 {
+    public const string ROLE_ADMIN = 'ROLE_ADMIN';
+
     #[ORM\Id]
     #[ORM\Column(type: UlidType::NAME, unique: true)]
     public private(set) Ulid $id;
@@ -201,6 +203,35 @@ class User implements UserInterface, EquatableInterface
     public function getRoles(): array
     {
         return array_values(array_unique(['ROLE_USER', ...$this->roles]));
+    }
+
+    public function isAdmin(): bool
+    {
+        return \in_array(self::ROLE_ADMIN, $this->roles, true);
+    }
+
+    /**
+     * Grant the operator role. Idempotent: re-granting an existing admin is a no-op, so the stored roles
+     * array never accumulates a duplicate `ROLE_ADMIN`. Granted from the console only (app:user:admin);
+     * see ADR-0019.
+     */
+    public function grantAdmin(): void
+    {
+        if (!\in_array(self::ROLE_ADMIN, $this->roles, true)) {
+            $this->roles[] = self::ROLE_ADMIN;
+        }
+    }
+
+    /**
+     * Revoke the operator role. Idempotent: revoking from a non-admin is a no-op. The array is
+     * re-indexed so it stays a JSON list rather than an object.
+     */
+    public function revokeAdmin(): void
+    {
+        $this->roles = array_values(array_filter(
+            $this->roles,
+            static fn (string $role): bool => self::ROLE_ADMIN !== $role,
+        ));
     }
 
     public function getUserIdentifier(): string

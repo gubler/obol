@@ -16,9 +16,11 @@
   },
   // Per-mutant wall-clock ceiling (seconds) so an infinite-loop mutant can't hang the run.
   timeout: 30,
-  // Baseline over the Unit suite is ~79-81% MSI (516/637 killed; runs vary a couple
-  // of points). Thresholds sit a safe margin under so an honest run never spuriously
-  // fails; ratchet up as coverage improves.
-  minMsi: 75,
-  minCoveredMsi: 75,
+  // Baseline over the Unit suite is ~82-83% MSI (~916/1105 killed). Both the score and
+  // the mutant count drift about a point between runs: the suite runs in a random order,
+  // which shifts which mutants count as covered. Thresholds sit under the baseline so an
+  // honest run never spuriously fails; ratchet up as coverage improves. At 80 the margin
+  // is 2-3 points - if runs start failing without a real regression, lower this first.
+  minMsi: 80,
+  minCoveredMsi: 80,
 }

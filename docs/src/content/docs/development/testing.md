@@ -134,7 +134,9 @@ Configuration lives in [`infection.json5`](https://code.dev88.work/dev88/obol/sr
 
 **On-demand only.** Infection is deliberately absent from `mise run check`, the git hooks, and CI — it is a periodic rigor check, not a gate. A run takes around 3 minutes. The task targets the **Unit suite**: Feature and Integration are slow and DB/HTTP-bound, and the unit-tested domain logic (entities, enums, value objects) is the meaningful mutation target.
 
-The baseline is **~82-83% MSI** (around 915 of ~1100 mutants killed, at 100% mutation code coverage). Both the score and the mutant count drift a little between runs, since the suite runs in a random order and which mutants count as covered shifts with it. `minMsi` / `minCoveredMsi` are pinned at **75** in `infection.json5`, a safe margin under the baseline so an honest run never spuriously fails; ratchet them up as the suite improves.
+The baseline is **~82-83% MSI** (around 915 of ~1100 mutants killed, at 100% mutation code coverage). Both the score and the mutant count drift a little between runs, since the suite runs in a random order and which mutants count as covered shifts with it. `minMsi` / `minCoveredMsi` are pinned at **80** in `infection.json5`, under the baseline so an honest run never spuriously fails; ratchet them up as the suite improves.
+
+That leaves 2-3 points of margin against roughly a point of run-to-run variance — deliberately tighter than the 75 it replaced. If the task starts failing without a real regression behind it, the threshold is the first thing to suspect, and lowering it is a legitimate answer.
 
 Four non-default knobs are baked into the `mise run infection` task, each needed for a green run on this image:
 

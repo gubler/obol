@@ -174,7 +174,7 @@ final class ArchTest extends TestCase
                 continue;
             }
 
-            $inScope = array_any($ownedNamespaces, fn ($namespace) => str_starts_with($class, $namespace . '\\'));
+            $inScope = array_any($ownedNamespaces, fn (string $namespace) => str_starts_with($class, $namespace . '\\'));
             if (!$inScope) {
                 continue;
             }

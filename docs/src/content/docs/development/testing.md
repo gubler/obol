@@ -142,7 +142,12 @@ Three non-default knobs are baked into the `mise run infection` task, each neede
 - **`php -d memory_limit=-1`** — mutation analysis itself succeeds, but the post-run temp-file cleanup walks thousands of files through Symfony Finder and OOMs on the 128M CLI default.
 - **`--threads=4`** — `--threads=max` exhausts the container file-descriptor limit under coverage and dies mid-run with "Too many open files"; 4 is the stable ceiling.
 
-Infection 0.33 sits cleanly alongside PHPUnit 13 — it does not constrain `phpunit/phpunit`; its adapter detects the version at runtime.
+Infection does not require `phpunit/phpunit` directly - its adapter detects the version at
+runtime - but it does cap PHPUnit indirectly, and 0.33 currently holds it at 13.1.x. Infection
+0.33 accepts `sebastian/diff` only up to `^8.0`, which caps `sebastian/comparator` at 8.2.x,
+which caps PHPUnit at 13.1.x, because PHPUnit 13.2 requires `sebastian/diff ^9.0`. Infection
+0.34 widens the constraint to include `^9.0` and releases the chain, so PHPUnit cannot advance
+past 13.1 until Infection does.
 
 ## Test Output
 

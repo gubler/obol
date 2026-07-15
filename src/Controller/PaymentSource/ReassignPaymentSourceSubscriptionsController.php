@@ -29,7 +29,7 @@ final class ReassignPaymentSourceSubscriptionsController extends AbstractBaseCon
 
         $target = (string) $request->request->get('target', '');
 
-        if (!Ulid::isValid($target)) {
+        if (!Ulid::isValid($target, Ulid::FORMAT_BASE_32)) {
             $this->addFlash(type: self::FLASH_ERROR, message: $this->translator->trans('payment_source.flash.reassign_failed'));
 
             return $this->redirectToRoute(route: 'payment_source_show', parameters: ['id' => $id]);

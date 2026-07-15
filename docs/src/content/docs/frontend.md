@@ -14,9 +14,9 @@ The importmap is defined in `importmap.php` at the repo root. Key entries:
 |--------|---------|---------|
 | `app` | local | Main entrypoint (`assets/app.js`) |
 | `@hotwired/stimulus` | 3.2.2 | Stimulus framework |
-| `@hotwired/turbo` | 8.0.20 | Turbo Drive for SPA-like navigation |
-| `@tailwindplus/elements` | 1.0.18 | Pre-built UI components |
-| `tailwindcss/*` | 4.1.17 | Tailwind CSS utilities |
+| `@hotwired/turbo` | 8.0.23 | Turbo Drive for SPA-like navigation |
+| `@tailwindplus/elements` | 1.0.22 | Pre-built UI components |
+| `tailwindcss/*` | 4.3.2 | Tailwind CSS utilities |
 
 ### Adding new JS dependencies
 

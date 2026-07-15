@@ -85,12 +85,15 @@ description = "Mutation testing via Infection (on-demand; NOT in `check` or CI).
 depends = ["_ensure-up"]
 # XDEBUG_MODE=coverage supplies the coverage driver Infection needs (no pcov in
 # the image). memory_limit=-1 keeps the post-run temp-file cleanup from OOMing on
-# the 128M CLI default. --threads is capped at 4 on purpose: --threads=max
-# exhausts the container file-descriptor limit under coverage and aborts the run.
+# the 128M CLI default. --initial-tests-php-options raises the limit again for the
+# PHPUnit child process Infection spawns: the parent's -d does not reach it, so the
+# child takes php.ini's 128M and the initial run dies partway through the Unit suite
+# under coverage. --threads is capped at 4 on purpose: --threads=max exhausts the
+# container file-descriptor limit under coverage and aborts the run.
 # Mutation testing targets the Unit suite - Feature/Integration are slow, DB/HTTP
 # bound, and unit-tested domain logic is the meaningful target. Pass extra flags
 # through with `--`, e.g. `mise run infection -- --filter=Subscription.php`.
-run = ["$DC exec -T -e XDEBUG_MODE=coverage php php -d memory_limit=-1 vendor/bin/infection --threads=4 --test-framework-options=--testsuite=Unit"]
+run = ["$DC exec -T -e XDEBUG_MODE=coverage php php -d memory_limit=-1 vendor/bin/infection --threads=4 --test-framework-options=--testsuite=Unit --initial-tests-php-options='-d memory_limit=-1'"]
 
 [tasks.coverage]
 description = "Run tests with coverage (min 70%)"

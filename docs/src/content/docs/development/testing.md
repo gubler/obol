@@ -132,14 +132,15 @@ mise run infection -- --filter=Subscription.php   # One source file
 
 Configuration lives in [`infection.json5`](https://code.dev88.work/dev88/obol/src/branch/main/infection.json5). Reports are written to the gitignored `var/infection/` (text, HTML, and a summary log).
 
-**On-demand only.** Infection is deliberately absent from `mise run check`, the git hooks, and CI — it is a periodic rigor check, not a gate. A run takes ~90 seconds. The task targets the **Unit suite**: Feature and Integration are slow and DB/HTTP-bound, and the unit-tested domain logic (entities, enums, value objects) is the meaningful mutation target.
+**On-demand only.** Infection is deliberately absent from `mise run check`, the git hooks, and CI — it is a periodic rigor check, not a gate. A run takes around 3 minutes. The task targets the **Unit suite**: Feature and Integration are slow and DB/HTTP-bound, and the unit-tested domain logic (entities, enums, value objects) is the meaningful mutation target.
 
-The baseline is **~79-81% MSI** (runs vary a couple of points). `minMsi` / `minCoveredMsi` are pinned at **75** in `infection.json5`, a safe margin under the baseline so an honest run never spuriously fails; ratchet them up as the suite improves.
+The baseline is **~82-83% MSI** (around 915 of ~1100 mutants killed, at 100% mutation code coverage). Both the score and the mutant count drift a little between runs, since the suite runs in a random order and which mutants count as covered shifts with it. `minMsi` / `minCoveredMsi` are pinned at **75** in `infection.json5`, a safe margin under the baseline so an honest run never spuriously fails; ratchet them up as the suite improves.
 
-Three non-default knobs are baked into the `mise run infection` task, each needed for a green run on this image:
+Four non-default knobs are baked into the `mise run infection` task, each needed for a green run on this image:
 
 - **`XDEBUG_MODE=coverage`** — the image ships Xdebug, not pcov; without a coverage driver Infection aborts.
 - **`php -d memory_limit=-1`** — mutation analysis itself succeeds, but the post-run temp-file cleanup walks thousands of files through Symfony Finder and OOMs on the 128M CLI default.
+- **`--initial-tests-php-options='-d memory_limit=-1'`** — the same ceiling, for the PHPUnit child process Infection spawns. The parent's `-d` does not reach it, so the child takes php.ini's 128M and the initial run dies partway through the Unit suite under coverage. The two are separate settings: raising one does nothing for the other.
 - **`--threads=4`** — `--threads=max` exhausts the container file-descriptor limit under coverage and dies mid-run with "Too many open files"; 4 is the stable ceiling.
 
 Infection does not require `phpunit/phpunit` directly - its adapter detects the version at

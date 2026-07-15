@@ -12,6 +12,7 @@ use App\Message\Currency\ConvertedTotal;
 use App\Message\Query\Report\Composition;
 use App\Message\Query\Report\CompositionSlice;
 use App\Service\CompositionChartFactory;
+use App\Tests\Support\PinsDefaultLocale;
 use App\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
 use Symfony\UX\Chartjs\Builder\ChartBuilder;
@@ -19,6 +20,9 @@ use Symfony\UX\Chartjs\Model\Chart;
 
 final class CompositionChartFactoryTest extends TestCase
 {
+    // The factory calls Money::format() with no locale, so the assertions below depend on the default.
+    use PinsDefaultLocale;
+
     public function testBuildsAPieWithOneLabelledSlicePerCategoryAndDisplayCurrencyAmounts(): void
     {
         $factory = new CompositionChartFactory(new ChartBuilder());

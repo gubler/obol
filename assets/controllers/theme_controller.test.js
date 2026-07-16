@@ -10,23 +10,24 @@ let application;
 const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 // jsdom here does not provide localStorage; give the controller a minimal in-memory store.
-if (typeof globalThis.localStorage === 'undefined') {
-    let store = {};
-    globalThis.localStorage = {
-        getItem: (key) => (key in store ? store[key] : null),
-        setItem: (key, value) => {
-            store[key] = String(value);
-        },
-        removeItem: (key) => {
-            delete store[key];
-        },
-        clear: () => {
-            store = {};
-        },
-        key: () => null,
-        length: 0,
-    };
-}
+// Installed unconditionally on purpose. Node defines globalThis.localStorage as a lazy getter that
+// warns when read without --localstorage-file, so feature-detecting first would trip that warning
+// just by looking. Nothing is lost: these tests want a store they control either way.
+let store = {};
+globalThis.localStorage = {
+    getItem: (key) => (key in store ? store[key] : null),
+    setItem: (key, value) => {
+        store[key] = String(value);
+    },
+    removeItem: (key) => {
+        delete store[key];
+    },
+    clear: () => {
+        store = {};
+    },
+    key: () => null,
+    length: 0,
+};
 
 beforeEach(() => {
     document.documentElement.classList.remove('dark');

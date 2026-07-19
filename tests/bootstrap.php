@@ -1,11 +1,12 @@
 <?php
 
-// ABOUTME: PHPUnit/Pest bootstrap — boots the test kernel and rebuilds the test
+// ABOUTME: PHPUnit bootstrap — boots the test kernel and rebuilds the test
 // ABOUTME: PostgreSQL database from migrations before the suite runs.
 
 declare(strict_types=1);
 
 use App\Kernel;
+use App\Tests\Support\TestDatabase;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
@@ -42,43 +43,6 @@ $kernel->boot();
 $application = new Application(kernel: $kernel);
 $application->setAutoExit(boolean: false);
 
-// Drop the test database if it exists (--force skips the confirmation prompt)
-$dropDatabaseDoctrineCommand = static function () use ($application): void {
-    $input = new ArrayInput(parameters: [
-        'command' => 'doctrine:database:drop',
-        '--force' => true,
-        '--if-exists' => true,
-    ]);
-
-    $input->setInteractive(interactive: false);
-
-    $application->run(input: $input, output: new ConsoleOutput());
-};
-
-// Create the test database (no-op if it already exists)
-$createDatabaseDoctrineCommand = static function () use ($application): void {
-    $input = new ArrayInput(parameters: [
-        'command' => 'doctrine:database:create',
-        '--if-not-exists' => true,
-    ]);
-
-    $input->setInteractive(interactive: false);
-
-    $application->run(input: $input, output: new ConsoleOutput());
-};
-
-// Migrate the database to the latest version
-$migrateDoctrineCommand = static function () use ($application): void {
-    $input = new ArrayInput(parameters: [
-        'command' => 'doctrine:migrations:migrate',
-        '--no-interaction' => true,
-    ]);
-
-    $input->setInteractive(interactive: false);
-
-    $application->run(input: $input, output: new ConsoleOutput());
-};
-
 // Load the fixtures into the DB
 // This is here in case we want it in the future, but it isn't used
 // in favor of only create the data we need for each test via Factories
@@ -94,12 +58,5 @@ $loadFixturesCommand = static function () use ($application): void {
     $application->run(input: $input, output: new ConsoleOutput());
 };
 
-array_map(
-    callback: '\call_user_func',
-    array: [
-        $dropDatabaseDoctrineCommand,
-        $createDatabaseDoctrineCommand,
-        $migrateDoctrineCommand,
-        // $loadFixturesCommand,
-    ]
-);
+// Drop, create, migrate - throws rather than let the suite run against a database it could not rebuild.
+new TestDatabase($application, new ConsoleOutput())->rebuild();

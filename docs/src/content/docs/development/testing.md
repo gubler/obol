@@ -37,6 +37,22 @@ Tests run against PostgreSQL (the same engine as production). The `tests/bootstr
 
 This happens once per test suite run. Individual tests do not re-migrate. DAMA wraps each test in a transaction (see below), so the schema is built once and reused.
 
+Every step is checked and a failure aborts the run (`tests/Support/TestDatabase.php`). The rebuild is the only thing separating one run from the next: the browser tests opt out of DAMA's rollback and commit, so a database that survives into the next run carries their writes with it - including a truncated `user` table, which strips the founder the migrations seed. Left unchecked, that surfaces later as assertion failures in whatever depends on that baseline, in tests that look unrelated to the browser suite and pass in isolation.
+
+Postgres refuses to drop a database that still has a session attached, so the usual cause is a Panther PHP server orphaned by an interrupted run. Clear it and re-run:
+
+```bash
+./bin/dc exec -T php sh -c "pkill -9 -f 'S localhost:9080'; pkill -9 -f chromium; exit 0"
+```
+
+Note that `pkill -f "php -S"` does **not** match it - the command line is `php -dvariables_order=EGPCS -S localhost:9080`. To confirm the port is free:
+
+```bash
+curl -s -o /dev/null -w '%{http_code}' --max-time 3 http://localhost:9080/
+```
+
+`000` means free; `200` means a stray is still serving.
+
 ## DAMA DoctrineTestBundle
 
 Each test is wrapped in a database transaction that rolls back after the test completes. This means:

@@ -66,20 +66,31 @@ Three services:
 
 ## Environment Variables
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `APP_ENV` | No | `prod` | Symfony environment |
-| `APP_SECRET` | Yes | `change-me-in-production` | Used for CSRF tokens and encryption |
-| `DATABASE_URL` | Yes | Composed from `POSTGRES_*` vars | Full database connection string |
-| `POSTGRES_USER` | Yes | `app` | PostgreSQL username |
-| `POSTGRES_PASSWORD` | Yes | `!ChangeMe!` | PostgreSQL password |
-| `POSTGRES_DB` | Yes | `app` | PostgreSQL database name |
-| `MAILER_DSN` | Yes (prod) | `null://null` | Outbound mail transport. Set to a real SMTP DSN (e.g. Fastmail app password) in prod and `.env.local`; the `null://null` default silently drops mail. URL-encode reserved characters in the username (`@` becomes `%40`). Verify with `app:mailer:smoke`. |
-| `WEBAUTHN_RP_ID` | Yes (prod) | `localhost` | Passkey relying-party id: a registrable-domain suffix of the site's origin, **without** scheme or port (e.g. `obol.dev88.co`). Passkeys bind to this, so it must be set correctly at first launch and stay stable across deploys - changing it invalidates every existing passkey. The committed default (`localhost`) covers local dev only. |
-| `WEBAUTHN_ALLOWED_ORIGINS` | Yes (prod) | `https://obol.lolly.localhost` | The exact origin(s) browsers send during a passkey ceremony (scheme + host + port). Must match the deployed site's origin (e.g. `https://obol.dev88.co`). |
+The base `compose.yaml` carries dev-friendly fallbacks (the `Dev default` column) so the local stack
+runs with no configuration. The prod overlay (`compose.prod.yaml`) deliberately drops those fallbacks
+for the security-critical secrets: it sources them from the host env with `${VAR:?...}`, so a missing
+one **aborts `docker compose` before anything starts** rather than booting with a repo-known weak
+value. Set every var marked *fail-fast* in the deploy environment.
 
-:::caution
-Change `APP_SECRET` and `POSTGRES_PASSWORD` from their defaults before deploying to production.
+| Variable | Prod | Dev default | Description |
+|----------|------|-------------|-------------|
+| `APP_ENV` | Baked `prod` | `dev` | Symfony environment. The prod image bakes `prod`; do not set it in the deploy env. |
+| `APP_SECRET` | **Required (fail-fast)** | committed dev value (`.env.dev`) | Signs magic links, remember-me cookies, and email-verification URIs. A known value is a full auth compromise. |
+| `POSTGRES_PASSWORD` | **Required (fail-fast)** | `!ChangeMe!` | PostgreSQL password. Also feeds `DATABASE_URL`, which the base compose composes from the `POSTGRES_*` vars. |
+| `CADDY_MERCURE_JWT_SECRET` | **Required (fail-fast)** | `!ChangeThisMercureHubJWTSecretKey!` | Signing key for the Mercure publisher/subscriber JWTs. |
+| `POSTGRES_USER` | Optional | `app` | PostgreSQL username. |
+| `POSTGRES_DB` | Optional | `app` | PostgreSQL database name. |
+| `MAILER_DSN` | Required | `null://null` | Outbound mail transport. Set to a real SMTP DSN (e.g. Fastmail app password); the `null://null` default silently drops mail. URL-encode reserved characters in the username (`@` becomes `%40`). Verify with `app:mailer:smoke`. |
+| `SERVER_NAME` | Required | `obol.lolly.localhost` | The deployed host (e.g. `obol.dev88.co`). Drives Caddy's site address and `DEFAULT_URI`. |
+| `DEFAULT_URI` | Derived from `SERVER_NAME` | `https://obol.lolly.localhost` | Base URI for URLs generated off-request (emails, magic links). Defaults to `https://${SERVER_NAME}`. |
+| `WEBAUTHN_RP_ID` | Required | `localhost` | Passkey relying-party id: a registrable-domain suffix of the site's origin, **without** scheme or port (e.g. `obol.dev88.co`). Passkeys bind to this, so it must be set correctly at first launch and stay stable across deploys - changing it invalidates every existing passkey. |
+| `WEBAUTHN_ALLOWED_ORIGINS` | Required | `https://obol.lolly.localhost` | The exact origin(s) browsers send during a passkey ceremony (scheme + host + port). Must match the deployed site's origin (e.g. `https://obol.dev88.co`). |
+
+:::danger
+The *fail-fast* secrets (`APP_SECRET`, `POSTGRES_PASSWORD`, `CADDY_MERCURE_JWT_SECRET`) have **no prod
+fallback**. If any is unset the deploy aborts with an error naming the missing var - by design. Compose
+only catches an *unset* var, not one deliberately set to a weak or default value, so still generate
+strong, unique secrets.
 :::
 
 :::caution
@@ -124,9 +135,16 @@ just the current shell.
 # Pin the prod file set - excludes compose.override.yaml
 export COMPOSE_FILE=compose.yaml:compose.prod.yaml
 
-# App environment (see the table above for the full required set)
+# Required secrets - the deploy aborts if any of these is unset (see the table above)
 export APP_SECRET="your-secret-here"
 export POSTGRES_PASSWORD="your-db-password"
+export CADDY_MERCURE_JWT_SECRET="your-mercure-jwt-secret"
+
+# Other prod environment (see the table above for the full set)
+export MAILER_DSN="smtp://user%40example.com:app-password@smtp.example.com:465"
+export SERVER_NAME="obol.example.com"
+export WEBAUTHN_RP_ID="obol.example.com"
+export WEBAUTHN_ALLOWED_ORIGINS="https://obol.example.com"
 export POSTGRES_USER="obol"
 export POSTGRES_DB="obol"
 

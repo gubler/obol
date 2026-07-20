@@ -7,9 +7,14 @@ services:
       context: .
       target: frankenphp_prod
     environment:
-      APP_SECRET: ${APP_SECRET}
-      MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET}
-      MERCURE_SUBSCRIBER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET}
+      # Required secrets use the ${VAR:?msg} form: an unset var aborts the whole `docker compose`
+      # command at interpolation time, so a forgotten secret fails the deploy loudly instead of
+      # silently falling back to the repo-known weak default in the base compose. APP_SECRET signs
+      # magic links, remember-me cookies, and email-verification URIs - a known value is a full auth
+      # compromise.
+      APP_SECRET: ${APP_SECRET:?APP_SECRET must be set in production}
+      MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:?CADDY_MERCURE_JWT_SECRET must be set in production}
+      MERCURE_SUBSCRIBER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:?CADDY_MERCURE_JWT_SECRET must be set in production}
       # Transactional mail (magic-link/signup). The base compose sets no MAILER_DSN, so
       # without this prod would inherit the dev `.env` null:// default and silently drop every
       # send. php runs app:mailer:smoke; verify a deploy with it. Sourced from the host deploy env.
@@ -22,5 +27,13 @@ services:
   worker:
     image: ${IMAGES_PREFIX:-}obol-php-prod
     environment:
-      APP_SECRET: ${APP_SECRET}
+      APP_SECRET: ${APP_SECRET:?APP_SECRET must be set in production}
       MAILER_DSN: ${MAILER_DSN}
+
+  # Require the database password from the host env rather than letting the base compose fall back to
+  # the repo-known !ChangeMe! default. This single required reference also gates DATABASE_URL, which
+  # the base compose builds from POSTGRES_PASSWORD - so an unset password aborts the deploy before
+  # anything starts, and a set one flows through to the app's connection string unchanged.
+  database:
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in production}

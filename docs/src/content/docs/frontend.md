@@ -16,7 +16,11 @@ The importmap is defined in `importmap.php` at the repo root. Key entries:
 | `@hotwired/stimulus` | 3.2.2 | Stimulus framework |
 | `@hotwired/turbo` | 8.0.23 | Turbo Drive for SPA-like navigation |
 | `@tailwindplus/elements` | 1.0.22 | Pre-built UI components |
-| `tailwindcss/*` | 4.3.2 | Tailwind CSS utilities |
+| `chart.js` | 4.5.1 | Charts, via Symfony UX Chart.js |
+| `@simplewebauthn/browser` | 13.3.0 | Passkey ceremonies |
+| `driver.js` | 1.7.0 | First-run onboarding tour |
+
+Tailwind itself is deliberately **not** in the importmap. Nothing imports it from JavaScript: the standalone binary compiles the CSS ahead of time, and the version that matters is pinned in `config/packages/symfonycasts_tailwind.yaml` (see [Tailwind CSS](#tailwind-css) below).
 
 ### Adding new JS dependencies
 

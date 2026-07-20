@@ -6,6 +6,11 @@ includes:
     - vendor/symplify/phpstan-rules/config/code-complexity-rules.neon
     - vendor/symplify/phpstan-rules/config/naming-rules.neon
 parameters:
+    # Cap the worker count rather than let PHPStan size itself to every core. Cost is all in the
+    # cache state: warm it is under one core, cold it hits ~680% CPU and 1.5 GiB. CI is always cold,
+    # and its runner shares the same physical machine as local work. Deliberate - do not remove.
+    parallel:
+        maximumNumberOfProcesses: 4
     level: 9
     paths:
         - bin/

@@ -66,4 +66,10 @@ return RectorConfig::configure()
         YieldDataProviderRector::class,
     ])
     ->withRootFiles()
+    // Cap the worker count instead of letting Rector auto-detect cores and take the whole machine
+    // (measured at ~830% CPU and 2.5 GiB on a 12-core box with a cold cache). This runs on every
+    // `mise run check` and in CI, and the CI runner shares the same physical machine as local work,
+    // so an uncapped run stalls everything else. Four keeps most of the parallel win; the cost is
+    // wall-clock on cold runs. Deliberate - do not restore auto-detect.
+    ->withParallel(maxNumberOfProcess: 4)
 ;

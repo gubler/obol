@@ -3,6 +3,10 @@
 # the Symplify complexity/naming rule sets), which would be noise on test code. This profile
 # lights up phpstan/phpstan-phpunit (inert until tests/ is analyzed). See #137.
 parameters:
+    # Same cap as the strict src profile: this profile has the same exposure, sizing itself to every
+    # core on a cold cache. See phpstan.dist.neon. Deliberate - do not remove.
+    parallel:
+        maximumNumberOfProcesses: 4
     level: 6
     paths:
         - tests

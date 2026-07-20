@@ -41,7 +41,10 @@ $finder = Finder::create()
 ;
 
 return new Config()
-    ->setParallelConfig(config: ParallelConfigFactory::detect())
+    // maxProcesses caps what detect() would otherwise size to every core (measured at ~660% CPU on
+    // a 12-core box). This runs on every commit via the pre-commit hook as well as in CI, which
+    // shares the same physical machine as local work. Deliberate - do not drop back to a bare detect().
+    ->setParallelConfig(config: ParallelConfigFactory::detect(maxProcesses: 4))
     ->setRules(rules: RULES)
     ->setRiskyAllowed(isRiskyAllowed: true)
     ->setCacheFile(cacheFile: 'var/cache/php-cs-fixer.cache')

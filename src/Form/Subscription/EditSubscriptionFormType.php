@@ -15,6 +15,7 @@ use App\Enum\TileColor;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
@@ -25,6 +26,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Uid\Ulid;
 
 /**
  * @extends AbstractType<UpdateSubscriptionDto>
@@ -36,6 +38,12 @@ final class EditSubscriptionFormType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        // Scope both pickers to the current owner so a user never sees another user's category or
+        // payment-source names (per-user isolation, ADR-0015). The controller passes the owner id since
+        // the form must not reach data access itself (ADR-0006/0007).
+        $ownerId = $options['owner_id'];
+        \assert($ownerId instanceof Ulid);
+
         // The category picker is only offered when categories exist; clearing it (or having none)
         // leaves the subscription uncategorized. The controller passes the flag so the form needs no
         // database access.
@@ -44,11 +52,13 @@ final class EditSubscriptionFormType extends AbstractType
                 'class' => Category::class,
                 'label' => 'subscription.form.category',
                 'choice_label' => 'name',
-                // Order the dropdown alphabetically. Type-hinting Doctrine's base EntityRepository
+                // Owner-scoped and ordered alphabetically. Type-hinting Doctrine's base EntityRepository
                 // (rather than the app's concrete category repository) keeps the form clear of the
                 // handler-layer data-access boundary the arch test guards (ADR-0006/0007).
                 'query_builder' => static fn (EntityRepository $repository): QueryBuilder => $repository
                     ->createQueryBuilder('category')
+                    ->andWhere('category.owner = :owner')
+                    ->setParameter('owner', $ownerId, UlidType::NAME)
                     ->orderBy('category.name', 'ASC'),
                 'placeholder' => 'subscription.group.uncategorized',
                 'required' => false,
@@ -65,6 +75,8 @@ final class EditSubscriptionFormType extends AbstractType
                 'choice_label' => 'name',
                 'query_builder' => static fn (EntityRepository $repository): QueryBuilder => $repository
                     ->createQueryBuilder('payment_source')
+                    ->andWhere('payment_source.owner = :owner')
+                    ->setParameter('owner', $ownerId, UlidType::NAME)
                     ->orderBy('payment_source.name', 'ASC'),
                 'placeholder' => 'subscription.group.unassigned',
                 'required' => false,
@@ -144,6 +156,8 @@ final class EditSubscriptionFormType extends AbstractType
             'has_categories' => true,
             'has_payment_sources' => true,
         ]);
+        $resolver->setRequired(optionNames: 'owner_id');
+        $resolver->setAllowedTypes(option: 'owner_id', allowedTypes: Ulid::class);
         $resolver->setAllowedTypes(option: 'offer_restart', allowedTypes: 'bool');
         $resolver->setAllowedTypes(option: 'lock_currency', allowedTypes: 'bool');
         $resolver->setAllowedTypes(option: 'has_categories', allowedTypes: 'bool');

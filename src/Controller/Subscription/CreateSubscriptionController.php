@@ -40,6 +40,7 @@ final class CreateSubscriptionController extends AbstractBaseController
         \assert(\is_array($paymentSources));
 
         $form = $this->createForm(type: CreateSubscriptionFormType::class, data: $dto, options: [
+            'owner_id' => $this->currentUser()->id,
             'has_categories' => [] !== $categories,
             'has_payment_sources' => [] !== $paymentSources,
         ]);

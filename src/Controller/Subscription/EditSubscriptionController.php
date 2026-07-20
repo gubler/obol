@@ -53,6 +53,7 @@ final class EditSubscriptionController extends AbstractBaseController
         \assert(\is_array($paymentSources));
 
         $form = $this->createForm(type: EditSubscriptionFormType::class, data: $dto, options: [
+            'owner_id' => $this->currentUser()->id,
             'offer_restart' => !$subscription->generatesPaymentsAutomatically(),
             // The currency is fixed once any payment exists; disable the picker so it cannot change.
             'lock_currency' => !$subscription->payments->isEmpty(),

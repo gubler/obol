@@ -28,13 +28,18 @@ The `Dockerfile` uses a multi-stage build:
 
 ## Docker Compose
 
-### Production (`compose.yaml`)
+### Production (`compose.yaml` + `compose.prod.yaml`)
+
+The production stack is the base `compose.yaml` plus the `compose.prod.yaml`
+overlay (prod image, app secret, `MAILER_DSN`). The dev `compose.override.yaml`
+must be excluded - see [Running in Production](#running-in-production) for how
+`COMPOSE_FILE` pins this.
 
 Three services:
 
 **`php`** — the Obol application (FrankenPHP)
 
-- Ports: `8080:80`, `8443:443`
+- Listens on `80`/`443` inside the container; the base stack publishes no host ports (the dev overlays add loopback publishing). Front it with the host's reverse proxy.
 - Depends on `database` with healthcheck
 - Volume: `uploads_data` mounted at `/app/public/uploads`
 
@@ -99,8 +104,27 @@ Migrations run automatically on every container start. The `--allow-no-migration
 
 ## Running in Production
 
+:::danger
+A bare `docker compose up -d` is **not** safe in production. With no file
+selection, Compose auto-merges `compose.override.yaml`, which forces the dev
+posture: `APP_ENV=dev`, the web profiler and debug toolbar, Xdebug, a source
+bind-mount, and PostgreSQL published to the host - full debug/info disclosure on
+the public internet. Production must run the base plus the prod overlay and must
+never load the override.
+:::
+
+Pin the file set with `COMPOSE_FILE` so every `docker compose` command in the
+deploy resolves to `compose.yaml` + `compose.prod.yaml` and can never auto-load
+the override. Set it in the deploy environment alongside the app's own variables,
+and make it **persistent** - a sourced env file, the deploy user's shell profile,
+or the systemd unit - so it is present for every future `pull`/`up`/`logs`, not
+just the current shell.
+
 ```bash
-# Set environment variables
+# Pin the prod file set - excludes compose.override.yaml
+export COMPOSE_FILE=compose.yaml:compose.prod.yaml
+
+# App environment (see the table above for the full required set)
 export APP_SECRET="your-secret-here"
 export POSTGRES_PASSWORD="your-db-password"
 export POSTGRES_USER="obol"
@@ -110,10 +134,13 @@ export POSTGRES_DB="obol"
 docker compose up -d
 
 # Check logs
-docker compose logs -f app
+docker compose logs -f php
 ```
 
-The app container waits for the database healthcheck to pass before starting. Migrations run automatically, then FrankenPHP begins serving on ports 80 and 443.
+With `COMPOSE_FILE` exported the plain `docker compose` invocations above are
+safe; without it, add `-f compose.yaml -f compose.prod.yaml` to every command
+instead. The `php` container waits for the database healthcheck to pass before
+starting. Migrations run automatically, then FrankenPHP begins serving.
 
 ## Container Registry
 

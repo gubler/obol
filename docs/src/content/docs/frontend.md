@@ -20,7 +20,7 @@ The importmap is defined in `importmap.php` at the repo root. Key entries:
 | `@simplewebauthn/browser` | 13.3.0 | Passkey ceremonies |
 | `driver.js` | 1.7.0 | First-run onboarding tour |
 
-Tailwind itself is deliberately **not** in the importmap. Nothing imports it from JavaScript: the standalone binary compiles the CSS ahead of time, and the version that matters is pinned in `config/packages/symfonycasts_tailwind.yaml` (see [Tailwind CSS](#tailwind-css) below).
+Tailwind itself is deliberately **not** in the importmap. Nothing imports it from JavaScript: the standalone binary compiles the CSS ahead of time, and the version that matters is pinned in `config/packages/symfonycasts_tailwind.yaml` (see [Tailwind CSS](#tailwind-css-v4) below).
 
 ### Adding new JS dependencies
 

@@ -28,6 +28,13 @@ docker compose pull
 docker compose up -d
 ```
 
+:::caution
+These bare commands are safe **only** when `COMPOSE_FILE=compose.yaml:compose.prod.yaml`
+is set in the deploy environment. Without it, Compose auto-loads the dev
+`compose.override.yaml` and redeploys the dev stack (`APP_ENV=dev`, profiler,
+Xdebug, published database). See [Running in Production](../deployment.md#running-in-production).
+:::
+
 The entrypoint script runs `doctrine:migrations:migrate --no-interaction --allow-no-migration` before starting FrankenPHP. Migrations are applied automatically on every container start.
 
 ## Writing Migrations

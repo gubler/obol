@@ -15,6 +15,7 @@ use App\Message\Currency\CurrencyTotaller;
 use App\Repository\SubscriptionRepository;
 use App\Repository\UserRepository;
 use App\Service\PeriodBoundaries;
+use App\ValueObject\CalendarDate;
 use Psr\Clock\ClockInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -32,10 +33,10 @@ final readonly class FindRemainingInPeriodRunner
 
     public function __invoke(FindRemainingInPeriodQuery $query): RemainingInPeriod
     {
-        // Resolve "now" in the owner's timezone so the calendar-period boundaries land on their local
+        // Resolve today in the owner's timezone so the calendar-period boundaries land on their local
         // week/month/year, not UTC's (see ADR-0016).
         $owner = $this->userRepository->getForId($query->ownerUserId);
-        $asOf = $owner->toLocal($this->clock->now());
+        $asOf = $owner->localDateFor($this->clock->now());
         $display = $owner->displayCurrency;
         $subscriptions = $this->subscriptionRepository->findActiveForOwner($query->ownerUserId);
 
@@ -50,7 +51,7 @@ final readonly class FindRemainingInPeriodRunner
     /**
      * @param array<Subscription> $subscriptions
      */
-    private function remaining(PaymentPeriod $period, array $subscriptions, Currency $display, \DateTimeImmutable $asOf): ConvertedTotal
+    private function remaining(PaymentPeriod $period, array $subscriptions, Currency $display, CalendarDate $asOf): ConvertedTotal
     {
         $periodEnd = $this->periodBoundaries->endOfPeriod($period, $asOf);
 

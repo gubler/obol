@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Service;
 
 use App\Service\FrankfurterClient;
+use App\Tests\Support\CalendarDateAssertions;
 use App\Tests\Support\InstantAssertions;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
@@ -15,6 +16,7 @@ use Symfony\Component\HttpClient\Response\MockResponse;
 
 final class FrankfurterClientTest extends TestCase
 {
+    use CalendarDateAssertions;
     use InstantAssertions;
 
     public function testParsesTheLatestRatesKeepsSupportedCurrenciesAndPinsEurToOne(): void
@@ -34,7 +36,7 @@ final class FrankfurterClientTest extends TestCase
 
         $snapshot = new FrankfurterClient($http)->fetchLatest();
 
-        self::assertSameInstant(new \DateTimeImmutable('2024-06-10'), $snapshot->date);
+        self::assertSameDate('2024-06-10', $snapshot->date);
         self::assertSame(1.0732, $snapshot->rates['USD']);
         self::assertSame(169.45, $snapshot->rates['JPY']);
         self::assertSame(1.0, $snapshot->rates['EUR']);

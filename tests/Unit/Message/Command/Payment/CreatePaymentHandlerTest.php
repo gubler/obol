@@ -12,6 +12,7 @@ use App\Enum\PaymentType;
 use App\Message\Command\Payment\CreatePaymentCommand;
 use App\Message\Command\Payment\CreatePaymentHandler;
 use App\Repository\SubscriptionRepository;
+use App\ValueObject\CalendarDate;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Clock\MockClock;
 use Symfony\Component\Uid\Ulid;
@@ -21,7 +22,7 @@ final class CreatePaymentHandlerTest extends TestCase
     public function testHandlerRecordsPaymentOnSubscription(): void
     {
         $ulid = new Ulid();
-        $paidDate = new \DateTimeImmutable('2025-01-15');
+        $paidDate = CalendarDate::fromString('2025-01-15');
 
         $subscription = $this->createMock(Subscription::class);
         $subscription->expects(self::once())
@@ -48,8 +49,8 @@ final class CreatePaymentHandlerTest extends TestCase
     public function testHandlerResumesAutomatedGenerationWhenRestartIsRequested(): void
     {
         $ulid = new Ulid();
-        $paidDate = new \DateTimeImmutable('2025-01-15');
-        $nextRenewal = new \DateTimeImmutable('2025-03-01');
+        $paidDate = CalendarDate::fromString('2025-01-15');
+        $nextRenewal = CalendarDate::fromString('2025-03-01');
 
         $subscription = $this->createMock(Subscription::class);
         $subscription->expects(self::once())
@@ -94,7 +95,7 @@ final class CreatePaymentHandlerTest extends TestCase
             ownerUserId: new Ulid(),
             subscriptionId: $ulid,
             amount: 1500,
-            paidDate: new \DateTimeImmutable(),
+            paidDate: CalendarDate::fromString('2024-01-01'),
         ));
     }
 }

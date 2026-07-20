@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace App\Message\Command\Payment;
 
+use App\ValueObject\CalendarDate;
 use Symfony\Component\Uid\Ulid;
 
 final readonly class AmendPaymentCommand
@@ -15,7 +16,7 @@ final readonly class AmendPaymentCommand
         public Ulid $ownerUserId,
         public Ulid $paymentId,
         public int $amount,
-        public \DateTimeImmutable $paidDate,
+        public CalendarDate $paidDate,
     ) {
     }
 }

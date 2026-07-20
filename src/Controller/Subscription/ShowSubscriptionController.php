@@ -10,6 +10,7 @@ namespace App\Controller\Subscription;
 use App\Controller\AbstractBaseController;
 use App\Entity\Subscription;
 use App\Message\Query\Subscription\FindSubscriptionQuery;
+use Psr\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
@@ -17,6 +18,11 @@ use Symfony\Component\Uid\Ulid;
 
 final class ShowSubscriptionController extends AbstractBaseController
 {
+    public function __construct(
+        private readonly ClockInterface $clock,
+    ) {
+    }
+
     #[Route(path: '/app/subscriptions/{id}', name: 'subscription_show', methods: ['GET'])]
     public function __invoke(Ulid $id): Response
     {
@@ -33,7 +39,7 @@ final class ShowSubscriptionController extends AbstractBaseController
         // null when they hide savings, so the template renders nothing (see ADR-0009).
         $savingsDisplay = $user->savingsDisplay;
         $savingsTarget = $savingsDisplay->showsSavings()
-            ? $subscription->savingsTarget(new \DateTimeImmutable(), $savingsDisplay->leadMonths())
+            ? $subscription->savingsTarget($user->localDateFor($this->clock->now()), $savingsDisplay->leadMonths())
             : null;
 
         return $this->render(view: 'subscription/show.html.twig', parameters: [

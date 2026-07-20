@@ -92,12 +92,24 @@ older docs.
   untouched. _Avoid_ "create a payment".
 - **archive / unarchive** - reversibly retire a subscription. Archived subscriptions are
   hidden by default but keep their full history. _Avoid_ "soft-delete" / "delete".
+- **calendar date** - a day on the wall (year/month/day), with no time and no offset, modeled by the
+  `CalendarDate` value object. It is the type of every date field that means "a day" rather than "an
+  instant": a subscription's `nextRenewal`, a payment's `paidDate`, an exchange rate's `asOf`, a
+  snapshot's `recordedAt`. Crossing to or from a `\DateTimeImmutable` requires naming a timezone, so a
+  calendar date can never be silently compared against a zoned instant. _Avoid_ "date" unqualified where
+  the distinction from an instant matters. See ADR-0021.
 - **renewal** - the point at which a subscription's next charge falls due, stored as the
   `nextRenewal` anchor the scheduler keys off (advanced one interval per payment, not by
   when the user actually paid). It is a **calendar date in the owner's timezone**, not a UTC
-  instant: stored tz-naive at midnight and interpreted against the owner's *current* timezone at
-  read time, so a timezone change or a DST transition re-reads the same date rather than shifting
-  it. _Avoid_ "payment due date" as a separate term. See ADR-0016.
+  instant: stored as a `DATE` and interpreted against the owner's *current* timezone at read time, so a
+  timezone change or a DST transition re-reads the same date rather than shifting it. _Avoid_ "payment
+  due date" as a separate term. See ADR-0016, refined by ADR-0021.
+- **renewal day** - the canonical day of the month (1-31) a monthly or yearly subscription recurs on,
+  stored as `Subscription.renewalDay` separately from `nextRenewal->day`. It is what a short month
+  clamps against and then restores from: a 31st-of-the-month renewal shows as the 28th in February and
+  returns to the 31st in March, rather than drifting down. When the shown renewal differs from the
+  renewal day (the clamped case), the UI flags it. _Avoid_ conflating it with the renewal date itself.
+  See ADR-0008 and ADR-0021.
 - **payment generation** - whether Obol generates a subscription's payments automatically or the
   user manages them, stored as the `paymentGeneration` mode (`Automated` | `Manual`). Deleting a
   subscription's latest payment switches it to **manual**: the scheduler stops generating and the
@@ -154,6 +166,7 @@ Recorded under `reference/adr/`:
 - ADR-0018 - One origin, path-prefixed URL surfaces (`/app` for the application)
 - ADR-0019 - Admin authorization (ROLE_ADMIN, firewall rule plus IsGranted)
 - ADR-0020 - System settings as an app-global singleton
+- ADR-0021 - CalendarDate value object (encodes the naive/zoned frame in the type system; refines ADR-0016)
 
 ADR-0006 records the CQRS-via-Messenger decision (keep the command/query buses; data
 access confined to the handler layer). ADR-0007 extends it with the write-path

@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Message\Command\Payment;
 
 use App\Message\Command\Payment\CreatePaymentCommand;
+use App\ValueObject\CalendarDate;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
 
@@ -16,7 +17,7 @@ final class CreatePaymentCommandTest extends TestCase
     public function testCommandStoresValues(): void
     {
         $subscriptionId = new Ulid();
-        $paidDate = new \DateTimeImmutable('2025-01-15');
+        $paidDate = CalendarDate::fromString('2025-01-15');
 
         $command = new CreatePaymentCommand(
             ownerUserId: new Ulid(),

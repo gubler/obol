@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Enum\DateFormat;
+use App\ValueObject\CalendarDate;
 use Symfony\Component\Translation\LocaleSwitcher;
 
 final readonly class DateFormatter
@@ -31,6 +32,25 @@ final readonly class DateFormatter
         );
 
         return (string) $formatter->format($date);
+    }
+
+    /**
+     * Render a calendar date in a user's DateFormat style. The ICU formatter is pinned to UTC and fed
+     * the date at UTC midnight so the rendered day is exactly the calendar day, independent of the
+     * ambient process timezone (a calendar date carries no zone of its own). See ADR-0021.
+     */
+    public function formatCalendarDate(CalendarDate $date, DateFormat $format): string
+    {
+        $formatter = new \IntlDateFormatter(
+            $this->localeSwitcher->getLocale(),
+            $format->length(),
+            \IntlDateFormatter::NONE,
+            'UTC',
+            \IntlDateFormatter::GREGORIAN,
+            $format->pattern(),
+        );
+
+        return (string) $formatter->format($date->toDateTimeImmutable(new \DateTimeZone('UTC')));
     }
 
     /**

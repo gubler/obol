@@ -13,6 +13,7 @@ use App\Enum\PaymentPeriod;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
 use App\Tests\Support\AuthenticatedTestCase;
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -24,8 +25,8 @@ final class MixedCurrencyCategoryTest extends AuthenticatedTestCase
         /** @var EntityManagerInterface $entityManager */
         $entityManager = self::getContainer()->get(EntityManagerInterface::class);
         // 1 EUR = 1.08 USD.
-        $entityManager->persist(new ExchangeRate(Currency::EUR, 1.0, new \DateTimeImmutable()));
-        $entityManager->persist(new ExchangeRate(Currency::USD, 1.08, new \DateTimeImmutable()));
+        $entityManager->persist(new ExchangeRate(Currency::EUR, 1.0, CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable(), new \DateTimeZone('UTC'))));
+        $entityManager->persist(new ExchangeRate(Currency::USD, 1.08, CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable(), new \DateTimeZone('UTC'))));
         $entityManager->flush();
 
         $category = CategoryFactory::createOne(['name' => 'Mixed']);

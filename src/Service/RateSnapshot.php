@@ -7,13 +7,15 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\ValueObject\CalendarDate;
+
 final readonly class RateSnapshot
 {
     /**
      * @param array<string, float> $rates EUR-pivot rates keyed by ISO 4217 code (supported only)
      */
     public function __construct(
-        public \DateTimeImmutable $date,
+        public CalendarDate $date,
         public array $rates,
     ) {
     }

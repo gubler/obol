@@ -81,6 +81,11 @@ Change `APP_SECRET` and `POSTGRES_PASSWORD` from their defaults before deploying
 Set `WEBAUTHN_RP_ID` and `WEBAUTHN_ALLOWED_ORIGINS` to the real deployed host before anyone registers a passkey. The RP id in particular is a permanent binding: if it changes later, every passkey registered under the old value stops working and users fall back to magic-link email. Magic-link login does not depend on these variables, so a misconfiguration never locks anyone out - it only disables the passkey fast path.
 :::
 
+## Process timezone
+
+The application must run with its process timezone set to **UTC**. Calendar dates carry the owner's
+timezone, applied at read time (see [ADR-0021](https://code.dev88.work/dev88/obol/src/branch/main/reference/adr/0021-calendar-date-value-object.md)), but instant storage (`createdAt` timestamps) and any ambient-zone date path must not vary with the host's `TZ`. The app pins `date_default_timezone_set('UTC')` at boot (`public/index.php` and `bin/console`) as belt-and-braces; deployments should also set PHP's `date.timezone=UTC` (the FrankenPHP base image already does). The bundled container needs no extra configuration; a custom PHP configuration must not override it to a local zone.
+
 ## Entrypoint
 
 The `docker/entrypoint.sh` script runs before FrankenPHP starts:

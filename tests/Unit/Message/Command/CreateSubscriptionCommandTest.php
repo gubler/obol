@@ -11,6 +11,7 @@ use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\TileColor;
 use App\Message\Command\Subscription\CreateSubscriptionCommand;
+use App\ValueObject\CalendarDate;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
 
@@ -20,7 +21,7 @@ final class CreateSubscriptionCommandTest extends TestCase
     {
         $ownerUserId = new Ulid();
         $categoryId = new Ulid();
-        $nextRenewal = new \DateTimeImmutable('2026-01-01');
+        $nextRenewal = CalendarDate::fromString('2026-01-01');
 
         $command = new CreateSubscriptionCommand(
             ownerUserId: $ownerUserId,
@@ -54,7 +55,7 @@ final class CreateSubscriptionCommandTest extends TestCase
     public function testCreatesCommandWithOptionalFieldDefaults(): void
     {
         $categoryId = new Ulid();
-        $nextRenewal = new \DateTimeImmutable('2026-01-01');
+        $nextRenewal = CalendarDate::fromString('2026-01-01');
 
         $command = new CreateSubscriptionCommand(
             ownerUserId: new Ulid(),
@@ -85,7 +86,7 @@ final class CreateSubscriptionCommandTest extends TestCase
             ownerUserId: new Ulid(),
             categoryId: new Ulid(),
             name: 'Test',
-            nextRenewal: new \DateTimeImmutable(),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 100,

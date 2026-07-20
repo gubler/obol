@@ -159,7 +159,7 @@ final class CreatePaymentControllerTest extends AuthenticatedTestCase
         $updated = $entityManager->getRepository(Subscription::class)->find($subscription->id);
         self::assertNotNull($updated);
         self::assertTrue($updated->generatesPaymentsAutomatically());
-        self::assertSame($future, $updated->nextRenewal->format('Y-m-d'));
+        self::assertSame($future, (string) $updated->nextRenewal);
     }
 
     public function testKeepsManualGenerationWhenThePaymentFormIsSubmittedWithoutRestart(): void

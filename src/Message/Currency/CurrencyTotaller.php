@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace App\Message\Currency;
 
 use App\Enum\Currency;
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 
 final readonly class CurrencyTotaller
@@ -20,7 +21,7 @@ final readonly class CurrencyTotaller
     /**
      * @param array<Money> $amounts amounts in any mix of currencies; keys and order are irrelevant
      */
-    public function total(array $amounts, Currency $display, ?\DateTimeImmutable $asOf = null): ConvertedTotal
+    public function total(array $amounts, Currency $display, ?CalendarDate $asOf = null): ConvertedTotal
     {
         $native = [];
         foreach ($amounts as $money) {

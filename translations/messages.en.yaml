@@ -422,6 +422,7 @@ subscription:
         payment_source: Payment Source
         name: Subscription Name
         next_renewal: Next Renewal Date
+        past_date_warning: 'This date is in the past, so automatic payment generation will be switched off for this subscription.'
         payment_period: Payment Period
         payment_period_count: Payment Period Count
         cost: Cost
@@ -448,6 +449,7 @@ subscription:
         back: Back to Subscriptions
         manual_badge: Manual payments
         manual_hint: Record a payment or edit the subscription to restart automatic generation.
+        renewal_adjusted: 'Normally recurs on day %day% of the month; this month is shorter, so it shows on day %adjusted%. Check your bill to confirm the charge date.'
         details_heading: Subscription Details
         archive_confirm: Are you sure you want to archive this subscription?
         delete_confirm: Are you sure you want to delete this subscription?

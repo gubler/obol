@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace App\Message\Query\Report;
 
 use App\Enum\ObligationTrendPeriod;
+use App\ValueObject\CalendarDate;
 
 final readonly class ObligationSeries
 {
@@ -17,7 +18,7 @@ final readonly class ObligationSeries
     public function __construct(
         public array $points,
         public ObligationTrendPeriod $period,
-        public \DateTimeImmutable $asOf,
+        public CalendarDate $asOf,
         public bool $isApproximate,
     ) {
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Doctrine\Type\CalendarDateType;
 use App\Enum\PaymentGeneration;
 use App\Enum\PaymentPeriod;
 use App\Enum\PaymentType;
@@ -12,6 +13,7 @@ use App\Enum\TileColor;
 use App\Lib\ChangeContextGenerator\Change;
 use App\Lib\ChangeContextGenerator\ChangeContextGenerator;
 use App\Repository\SubscriptionRepository;
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 use Assert\Assertion;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -81,6 +83,21 @@ class Subscription
     #[ORM\Column(enumType: TileColor::class)]
     public private(set) TileColor $color;
 
+    /**
+     * The next renewal, a calendar date whose meaning is the owner's local date resolved against the
+     * owner's current timezone at read time (ADR-0016 / ADR-0021). Stored as a DATE; never an instant.
+     */
+    #[ORM\Column(type: CalendarDateType::NAME)]
+    public private(set) CalendarDate $nextRenewal;
+
+    /**
+     * The canonical day of the month (1-31) a monthly or yearly subscription recurs on. Kept separate
+     * from `nextRenewal->day` so a short month that clamps the anchor (Jan 31 to Feb 28) can restore
+     * the intended day on the next long month, instead of drifting down forever. See ADR-0008.
+     */
+    #[ORM\Column]
+    public private(set) int $renewalDay;
+
     public function __construct(
         /**
          * The user this subscription belongs to. Immutable: a subscription is never reassigned between
@@ -93,12 +110,17 @@ class Subscription
         #[ORM\JoinColumn(nullable: true)]
         public private(set) ?Category $category,
         string $name,
-        #[ORM\Column]
-        public private(set) \DateTimeImmutable $nextRenewal,
+        CalendarDate $nextRenewal,
         #[ORM\Column(enumType: PaymentPeriod::class)]
         public private(set) PaymentPeriod $paymentPeriod,
         int $paymentPeriodCount,
         Money $cost,
+        /*
+         * The current instant (from the application clock), used to judge whether `$nextRenewal` is
+         * already in the past in the owner's zone - in which case generation starts Manual so the
+         * scheduler never fires a catch-up on a backfilled date. See `applyRenewalDate` and ADR-0008.
+         */
+        \DateTimeImmutable $now,
         #[ORM\Column(type: Types::TEXT)]
         public private(set) string $description = '',
         #[ORM\Column(type: Types::TEXT)]
@@ -125,6 +147,9 @@ class Subscription
         $this->cost = $cost;
         // A subscription always carries a tile color; pick a random swatch when one is not supplied.
         $this->color = $color ?? TileColor::random();
+        // Sets nextRenewal + renewalDay and, when the anchor is already past for the owner, starts the
+        // subscription on manual generation (see applyRenewalDate).
+        $this->applyRenewalDate($nextRenewal, $this->owner->localDateFor($now));
     }
 
     /**
@@ -147,7 +172,7 @@ class Subscription
      * current one is funded, so a bill that is funded but not yet paid is held in full *on top of* the
      * next cycle's accrual. The lead is the owner's per-user SavingsDisplay preference; see ADR-0009.
      */
-    public function savingsTarget(\DateTimeImmutable $asOf, int $leadMonths): Money
+    public function savingsTarget(CalendarDate $asOf, int $leadMonths): Money
     {
         Assertion::greaterOrEqualThan($leadMonths, 0, 'Savings lead must be zero or more months.');
 
@@ -160,16 +185,17 @@ class Subscription
 
         $costMinor = $this->cost->minorAmount;
         $monthlyCost = $this->monthlyCost()->minorAmount;
-        $asOfMonth = $this->monthOrdinal($asOf);
+        $asOfMonth = $asOf->monthOrdinal();
 
-        $renewal = $this->nextRenewal;
         $total = 0;
 
         // Sum what should be set aside for each upcoming renewal. In practice no more than two ever
         // overlap (the funded-but-unpaid one and the next cycle just begun), so this settles in a
         // couple of iterations; the horizon is only a backstop against degenerate sub-cent chunks.
+        // Each renewal is projected from the anchor by multiples so month-overflow never drifts it.
         for ($i = 0; $i < self::SAVINGS_HORIZON; ++$i) {
-            $fundByMonth = $this->monthOrdinal($renewal) - $leadMonths; // first of the month $leadMonths ahead of due
+            $renewal = $this->advance($this->nextRenewal, $i);
+            $fundByMonth = $renewal->monthOrdinal() - $leadMonths; // first of the month $leadMonths ahead of due
             $monthsToFund = max(0, $fundByMonth - $asOfMonth);
             $funded = max(0, $costMinor - $monthlyCost * $monthsToFund);
 
@@ -178,7 +204,6 @@ class Subscription
             }
 
             $total += $funded;
-            $renewal = $renewal->add($this->renewalInterval());
         }
 
         return new Money($total, $this->cost->currency);
@@ -188,30 +213,22 @@ class Subscription
      * What is still owed by `$periodEnd`: the sum of `cost` for every renewal from `nextRenewal` up
      * to and including `$periodEnd`, in the subscription's currency. Payments are never consulted -
      * `nextRenewal` is the authoritative next-owed - so a `nextRenewal` already in the past counts its
-     * overdue renewals and arrears fall out for free. See #145 and ADR-0010.
+     * overdue renewals and arrears fall out for free. Renewals are projected from the anchor by
+     * multiples (never iterated by adding an interval), so a short month cannot drift the count. See
+     * ADR-0008 and ADR-0010.
      */
-    public function remainingInPeriod(\DateTimeImmutable $periodEnd): Money
+    public function remainingInPeriod(CalendarDate $periodEnd): Money
     {
         $count = 0;
-        $renewal = $this->nextRenewal;
-        while ($renewal <= $periodEnd) {
+        while ($this->advance($this->nextRenewal, $count)->isOnOrBefore($periodEnd)) {
             ++$count;
-            $renewal = $renewal->add($this->renewalInterval());
         }
 
         return new Money($this->cost->minorAmount * $count, $this->cost->currency);
     }
 
-    /**
-     * The calendar month of `$date` as a count of months since year zero, for month arithmetic.
-     */
-    private function monthOrdinal(\DateTimeImmutable $date): int
-    {
-        return (int) $date->format('Y') * 12 + (int) $date->format('n') - 1;
-    }
-
     public function recordPayment(
-        \DateTimeImmutable $paidDate,
+        CalendarDate $paidDate,
         PaymentType $paymentType,
         ?int $amount = null,
     ): void {
@@ -221,9 +238,10 @@ class Subscription
 
         // A payment advances the anchor only when generation is automated and the payment falls in
         // the current open period (paid early-within-period, on time, or late) - not when it backfills
-        // a prior period. The flag records that fact so removal can undo exactly this advance.
+        // a prior period. The flag records that fact so removal can undo exactly this advance. The open
+        // period starts strictly after the previous renewal (the anchor stepped back one interval).
         $advancesRenewal = $this->generatesPaymentsAutomatically()
-            && $paidDate > $this->nextRenewal->sub($this->renewalInterval());
+            && $paidDate->isAfter($this->advance($this->nextRenewal, -1));
 
         $this->payments->add(
             new Payment(
@@ -236,7 +254,7 @@ class Subscription
         );
 
         if ($advancesRenewal) {
-            $this->nextRenewal = $this->nextRenewal->add($this->renewalInterval());
+            $this->nextRenewal = $this->advance($this->nextRenewal, 1);
         }
     }
 
@@ -245,7 +263,7 @@ class Subscription
         $this->payments->removeElement($payment);
 
         if ($this->removalRollsBackAnchor($payment)) {
-            $this->nextRenewal = $this->nextRenewal->sub($this->renewalInterval());
+            $this->nextRenewal = $this->advance($this->nextRenewal, -1);
         }
     }
 
@@ -287,10 +305,10 @@ class Subscription
      * The renewal anchor that would result from removing the given payment, for the delete
      * confirmation. Returns the unchanged anchor when removal would not shift it.
      */
-    public function renewalAfterRemoving(Payment $payment): \DateTimeImmutable
+    public function renewalAfterRemoving(Payment $payment): CalendarDate
     {
         return $this->removalRollsBackAnchor($payment)
-            ? $this->nextRenewal->sub($this->renewalInterval())
+            ? $this->advance($this->nextRenewal, -1)
             : $this->nextRenewal;
     }
 
@@ -304,14 +322,18 @@ class Subscription
     }
 
     /**
-     * The most recent payment by paid date, or null when there are none. This is the only payment a
-     * user may delete (see `removeLatestPayment`); the UI offers the delete action on it alone.
+     * The most recent payment, or null when there are none. Ordered by paid date, breaking a same-day
+     * tie by which row was created last so "latest" is deterministic when two payments share a calendar
+     * date (a calendar date carries no time to separate them). This is the only payment a user may
+     * delete (see `removeLatestPayment`); the UI offers the delete action on it alone.
      */
     public function latestPayment(): ?Payment
     {
         $latest = null;
         foreach ($this->payments as $payment) {
-            if (null === $latest || $payment->paidDate > $latest->paidDate) {
+            if (null === $latest
+                || $payment->paidDate->isAfter($latest->paidDate)
+                || ($payment->paidDate->equals($latest->paidDate) && $payment->createdAt > $latest->createdAt)) {
                 $latest = $payment;
             }
         }
@@ -319,19 +341,48 @@ class Subscription
         return $latest;
     }
 
-    private function renewalInterval(): \DateInterval
+    /**
+     * The renewal `$steps` billing intervals from `$from` (negative steps step backward), projected
+     * from the anchor rather than accumulated, so month-overflow can never drift it. A weekly cadence
+     * shifts by whole weeks; a monthly or yearly one lands on `renewalDay` clamped to the target
+     * month's length - which is what restores the 31st after a short month, and makes the step exactly
+     * reversible. See ADR-0008.
+     */
+    public function advance(CalendarDate $from, int $steps = 1): CalendarDate
     {
-        return new \DateInterval(match ($this->paymentPeriod) {
-            PaymentPeriod::Week => \sprintf('P%dW', $this->paymentPeriodCount),
-            PaymentPeriod::Month => \sprintf('P%dM', $this->paymentPeriodCount),
-            PaymentPeriod::Year => \sprintf('P%dY', $this->paymentPeriodCount),
-        });
+        return match ($this->paymentPeriod) {
+            PaymentPeriod::Week => $from->plusWeeks($steps * $this->paymentPeriodCount),
+            PaymentPeriod::Month => $this->onRenewalDay($from->monthOrdinal() + $steps * $this->paymentPeriodCount),
+            PaymentPeriod::Year => $this->onRenewalDay($from->monthOrdinal() + $steps * 12 * $this->paymentPeriodCount),
+        };
+    }
+
+    /**
+     * The calendar date on `renewalDay` (clamped to the month's length) in the month named by the given
+     * ordinal (`year * 12 + month - 1`, as CalendarDate::monthOrdinal produces).
+     */
+    private function onRenewalDay(int $monthOrdinal): CalendarDate
+    {
+        $year = intdiv($monthOrdinal, 12);
+        $month = $monthOrdinal % 12 + 1;
+        $daysInMonth = CalendarDate::for($year, $month, 1)->daysInMonth();
+
+        return CalendarDate::for($year, $month, min($this->renewalDay, $daysInMonth));
+    }
+
+    /**
+     * Whether the next renewal has been clamped off its canonical day by a short month (e.g. a
+     * renewalDay of 31 showing as the 28th in February). Drives the adjusted-date affordance.
+     */
+    public function isNextRenewalAdjusted(): bool
+    {
+        return $this->nextRenewal->day !== $this->renewalDay;
     }
 
     public function update(
         ?Category $category,
         string $name,
-        \DateTimeImmutable $nextRenewal,
+        CalendarDate $nextRenewal,
         string $description,
         string $link,
         string $logo,
@@ -339,6 +390,7 @@ class Subscription
         int $paymentPeriodCount,
         Money $cost,
         TileColor $color,
+        \DateTimeImmutable $now,
         ?PaymentSource $paymentSource = null,
     ): void {
         $name = $this->normalizeAndAssert(name: $name, cost: $cost, paymentPeriodCount: $paymentPeriodCount);
@@ -358,7 +410,7 @@ class Subscription
                 // A subscription may have no payment source; the audit reads the absence as "Unassigned".
                 new Change(field: 'paymentSource', current: $this->paymentSource instanceof PaymentSource ? $this->paymentSource->name : 'Unassigned', new: $paymentSource instanceof PaymentSource ? $paymentSource->name : 'Unassigned'),
                 new Change(field: 'name', current: $this->name, new: $name),
-                new Change(field: 'nextRenewal', current: $this->nextRenewal->format(format: 'c'), new: $nextRenewal->format(format: 'c')),
+                new Change(field: 'nextRenewal', current: (string) $this->nextRenewal, new: (string) $nextRenewal),
                 new Change(field: 'description', current: $this->description, new: $description),
                 new Change(field: 'link', current: $this->link, new: $link),
                 new Change(field: 'logo', current: $this->logo, new: $logo),
@@ -398,7 +450,6 @@ class Subscription
         $this->category = $category;
         $this->paymentSource = $paymentSource;
         $this->name = $name;
-        $this->nextRenewal = $nextRenewal;
         $this->description = $description;
         $this->link = $link;
         $this->logo = $logo;
@@ -406,6 +457,9 @@ class Subscription
         $this->paymentPeriodCount = $paymentPeriodCount;
         $this->cost = $cost;
         $this->color = $color;
+        // Sets nextRenewal + renewalDay and, when the new anchor is already past for the owner, hands
+        // generation to the user (see applyRenewalDate). Kept last so the change is applied as one step.
+        $this->applyRenewalDate($nextRenewal, $this->owner->localDateFor($now));
     }
 
     /**
@@ -495,42 +549,53 @@ class Subscription
      * local today (`$now` is the current instant, judged in the owner's zone) so resuming never triggers
      * an immediate catch-up generation on the next scheduler run.
      */
-    public function automatePayments(\DateTimeImmutable $nextRenewal, \DateTimeImmutable $now): void
+    public function automatePayments(CalendarDate $nextRenewal, \DateTimeImmutable $now): void
     {
+        $today = $this->owner->localDateFor($now);
+
         Assertion::true(
-            $nextRenewal > $this->localToday($now),
+            $nextRenewal->isAfter($today),
             'Automated payments require a renewal date in the future',
         );
 
+        // The anchor is future, so applyRenewalDate sets the date + renewalDay without forcing Manual;
+        // flipping generation back to Automated is this method's own explicit intent.
+        $this->applyRenewalDate($nextRenewal, $today);
         $this->paymentGeneration = PaymentGeneration::Automated;
-        $this->nextRenewal = $nextRenewal;
     }
 
     /**
-     * A sensible future anchor for resuming automated generation: the configured cadence stepped
+     * A sensible future anchor for resuming automated generation: the configured cadence projected
      * forward from the current anchor until it lands strictly after today. A renewal already in the
-     * future is returned unchanged.
+     * future is returned unchanged. Projected by multiples so a run of overdue months lands back on
+     * renewalDay rather than drifting.
      */
-    public function suggestedResumeRenewal(\DateTimeImmutable $now): \DateTimeImmutable
+    public function suggestedResumeRenewal(\DateTimeImmutable $now): CalendarDate
     {
-        $today = $this->localToday($now);
-        $renewal = $this->nextRenewal;
-        while ($renewal <= $today) {
-            $renewal = $renewal->add($this->renewalInterval());
+        $today = $this->owner->localDateFor($now);
+
+        $steps = 0;
+        while ($this->advance($this->nextRenewal, $steps)->isOnOrBefore($today)) {
+            ++$steps;
         }
 
-        return $renewal;
+        return $this->advance($this->nextRenewal, $steps);
     }
 
     /**
-     * Today in the owner's timezone, as a naive midnight matching how `nextRenewal` is stored: a renewal
-     * is a naive local date (ADR-0016), so both sides of the comparison must be in the same naive frame
-     * rather than one naive and one zoned, or the check is off by the owner's offset near midnight. The
-     * caller passes the current instant (from the application clock) so this stays deterministic and
-     * testable; the owner's zone - and so the invariant - is still applied here, not by the caller.
+     * Sets the next renewal and derives `renewalDay` from it, in one place. When the anchor is already
+     * before the owner's local `$today`, generation is forced to Manual: a past anchor means the user is
+     * backfilling or correcting, and the scheduler must not fire a catch-up run against it (ADR-0008).
+     * The one un-bypassable seam every renewal-date change routes through (constructor, update,
+     * automatePayments).
      */
-    private function localToday(\DateTimeImmutable $now): \DateTimeImmutable
+    private function applyRenewalDate(CalendarDate $nextRenewal, CalendarDate $today): void
     {
-        return new \DateTimeImmutable($this->owner->toLocal($now)->format('Y-m-d'));
+        $this->nextRenewal = $nextRenewal;
+        $this->renewalDay = $nextRenewal->day;
+
+        if ($nextRenewal->isBefore($today)) {
+            $this->paymentGeneration = PaymentGeneration::Manual;
+        }
     }
 }

@@ -15,6 +15,7 @@ use App\Factory\PaymentFactory;
 use App\Factory\SubscriptionFactory;
 use App\Tests\Support\AuthenticatedTestCase;
 use App\Tests\Support\TranslationAssertions;
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -31,7 +32,7 @@ final class EditPaymentControllerTest extends AuthenticatedTestCase
             'subscription' => $subscription,
             'type' => PaymentType::Generated,
             'amount' => new Money(1599, Currency::USD),
-            'paidDate' => new \DateTimeImmutable('2024-01-01'),
+            'paidDate' => CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('2024-01-01'), new \DateTimeZone('UTC')),
         ]);
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/payments/' . $payment->id . '/edit');
@@ -51,7 +52,7 @@ final class EditPaymentControllerTest extends AuthenticatedTestCase
             'subscription' => $subscription,
             'type' => PaymentType::Generated,
             'amount' => new Money(1599, Currency::USD),
-            'paidDate' => new \DateTimeImmutable('2024-01-01'),
+            'paidDate' => CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('2024-01-01'), new \DateTimeZone('UTC')),
         ]);
 
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/payments/' . $payment->id . '/edit');

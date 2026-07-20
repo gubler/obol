@@ -20,8 +20,10 @@ use App\Message\Query\Report\FindCategoryCompositionRunner;
 use App\Repository\ExchangeRateRepository;
 use App\Repository\SubscriptionRepository;
 use App\Repository\UserRepository;
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Clock\MockClock;
 use Symfony\Component\Uid\Ulid;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -33,10 +35,11 @@ final class FindCategoryCompositionRunnerTest extends TestCase
             owner: new User(email: 'owner@example.com'),
             category: $category,
             name: 'Test',
-            nextRenewal: new \DateTimeImmutable('2026-01-01'),
+            nextRenewal: CalendarDate::fromString('2026-01-01'),
             paymentPeriod: $period,
             paymentPeriodCount: $count,
             cost: new Money($costMinor, $currency),
+            now: new \DateTimeImmutable('2000-01-01', new \DateTimeZone('UTC')),
         );
     }
 
@@ -60,7 +63,7 @@ final class FindCategoryCompositionRunnerTest extends TestCase
             ->willReturn(new User(email: 'owner@example.com', displayCurrency: Currency::from($displayCurrency)))
         ;
 
-        $runner = new FindCategoryCompositionRunner($repository, $totaller, $userRepository, self::translator());
+        $runner = new FindCategoryCompositionRunner($repository, $totaller, $userRepository, new MockClock(), self::translator());
 
         return $runner(new FindCategoryCompositionQuery(ownerUserId: new Ulid()));
     }

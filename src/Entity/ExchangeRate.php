@@ -7,10 +7,11 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Doctrine\Type\CalendarDateType;
 use App\Enum\Currency;
 use App\Repository\ExchangeRateRepository;
+use App\ValueObject\CalendarDate;
 use Assert\Assertion;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
@@ -28,8 +29,9 @@ class ExchangeRate
         public private(set) Currency $currency,
         #[ORM\Column]
         public private(set) float $rate,
-        #[ORM\Column(type: Types::DATE_IMMUTABLE)]
-        public private(set) \DateTimeImmutable $asOf,
+        // The calendar day this rate is for, persisted as a DATE via the CalendarDate DBAL type.
+        #[ORM\Column(type: CalendarDateType::NAME)]
+        public private(set) CalendarDate $asOf,
     ) {
         Assertion::greaterThan(value: $rate, limit: 0, message: 'Exchange rate must be greater than zero');
 

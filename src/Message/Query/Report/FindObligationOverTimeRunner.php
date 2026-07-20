@@ -9,10 +9,12 @@ namespace App\Message\Query\Report;
 
 use App\Entity\ObligationSnapshot;
 use App\Enum\Currency;
+use App\Enum\ObligationTrendPeriod;
 use App\Message\Currency\CurrencyTotaller;
 use App\Repository\ObligationSnapshotRepository;
 use App\Repository\UserRepository;
 use App\Service\PeriodBoundaries;
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 use Psr\Clock\ClockInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -31,22 +33,22 @@ final readonly class FindObligationOverTimeRunner
 
     public function __invoke(FindObligationOverTimeQuery $query): ObligationSeries
     {
-        // Resolve "now" in the owner's timezone so the period anchors and their labels bucket the series
-        // on the owner's local calendar; the stored recordedAt dates stay UTC (see ADR-0016).
+        // Resolve today in the owner's timezone so the period anchors and their labels bucket the series
+        // on the owner's local calendar; the stored recordedAt dates are calendar dates too (ADR-0016).
         $owner = $this->userRepository->getForId($query->ownerUserId);
-        $now = $owner->toLocal($this->clock->now());
+        $today = $owner->localDateFor($this->clock->now());
         $display = $owner->displayCurrency;
         $snapshots = $this->snapshotRepository->findAllOrderedByRecordedAtForOwner($query->ownerUserId);
 
         $points = [];
         $approximate = false;
-        foreach ($this->anchors($query, $now) as $anchor) {
+        foreach ($this->anchors($query, $today) as $anchor) {
             $snapshot = $this->latestOnOrBefore($snapshots, $anchor);
             $total = $this->currencyTotaller->total($this->nativeAmounts($snapshot), $display);
             $approximate = $approximate || $total->isApproximate;
 
             $points[] = new ObligationPoint(
-                label: $anchor->format($query->period->labelFormat()),
+                label: $this->label($anchor, $query->period),
                 amount: $total->converted,
             );
         }
@@ -54,29 +56,56 @@ final readonly class FindObligationOverTimeRunner
         return new ObligationSeries(
             points: $points,
             period: $query->period,
-            asOf: $now,
+            asOf: $today,
             isApproximate: $approximate,
         );
     }
 
     /**
-     * The start-of-period anchors, oldest first, ending with the current in-progress bucket.
+     * The start-of-period anchors, oldest first, ending with the current in-progress bucket. Stepping is
+     * done in calendar terms (whole weeks, or month/year ordinals) so a short month never drifts a bucket.
      *
-     * @return list<\DateTimeImmutable>
+     * @return list<CalendarDate>
      */
-    private function anchors(FindObligationOverTimeQuery $query, \DateTimeImmutable $now): array
+    private function anchors(FindObligationOverTimeQuery $query, CalendarDate $today): array
     {
         $period = $query->period;
+        $current = $this->periodBoundaries->startOfPeriod($period, $today);
 
         $anchors = [];
         for ($stepsBack = $period->lookback() - 1; $stepsBack >= 0; --$stepsBack) {
-            $anchors[] = $this->periodBoundaries->startOfPeriod(
-                $period,
-                $now->modify(\sprintf('-%d %s', $stepsBack, $period->stepUnit())),
-            );
+            $anchors[] = $this->stepBack($period, $current, $stepsBack);
         }
 
         return $anchors;
+    }
+
+    /**
+     * The start-of-period anchor `$steps` buckets before `$current` (itself a period start).
+     */
+    private function stepBack(ObligationTrendPeriod $period, CalendarDate $current, int $steps): CalendarDate
+    {
+        return match ($period) {
+            ObligationTrendPeriod::Week => $current->plusWeeks(-$steps),
+            ObligationTrendPeriod::Month => $this->firstOfMonth($current->monthOrdinal() - $steps),
+            ObligationTrendPeriod::Year => CalendarDate::for($current->year - $steps, 1, 1),
+        };
+    }
+
+    /**
+     * The first day of the month named by the given ordinal (`year * 12 + month - 1`).
+     */
+    private function firstOfMonth(int $monthOrdinal): CalendarDate
+    {
+        return CalendarDate::for(intdiv($monthOrdinal, 12), $monthOrdinal % 12 + 1, 1);
+    }
+
+    /**
+     * A bucket's x-axis label, rendered from the calendar date via a fixed (locale-independent) pattern.
+     */
+    private function label(CalendarDate $anchor, ObligationTrendPeriod $period): string
+    {
+        return $anchor->toDateTimeImmutable(new \DateTimeZone('UTC'))->format($period->labelFormat());
     }
 
     /**
@@ -85,11 +114,11 @@ final readonly class FindObligationOverTimeRunner
      *
      * @param list<ObligationSnapshot> $snapshots
      */
-    private function latestOnOrBefore(array $snapshots, \DateTimeImmutable $anchor): ?ObligationSnapshot
+    private function latestOnOrBefore(array $snapshots, CalendarDate $anchor): ?ObligationSnapshot
     {
         $carried = null;
         foreach ($snapshots as $snapshot) {
-            if ($snapshot->recordedAt > $anchor) {
+            if ($snapshot->recordedAt->isAfter($anchor)) {
                 break;
             }
 

@@ -79,7 +79,8 @@ final class EditSubscriptionFormType extends AbstractType
             ->add(child: 'nextRenewal', type: DateType::class, options: [
                 'label' => 'subscription.form.next_renewal',
                 'widget' => 'single_text',
-                'input' => 'datetime_immutable',
+                'input' => 'string',
+                'input_format' => 'Y-m-d',
             ])
             ->add(child: 'paymentPeriod', type: EnumType::class, options: [
                 'class' => PaymentPeriod::class,

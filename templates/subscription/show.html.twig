@@ -71,7 +71,16 @@
                 </div>
                 <div>
                     <dt class="text-sm font-medium text-fg-muted">{{ 'subscription.show.next_renewal'|trans }}</dt>
-                    <dd class="text-lg text-fg">{{ subscription.nextRenewal|user_date }}</dd>
+                    <dd class="text-lg text-fg">
+                        {{ subscription.nextRenewal|user_date }}
+                        {% if subscription.isNextRenewalAdjusted() %}
+                            <span class="renewal-adjusted-alert ml-1 inline-flex items-center align-middle text-fg-muted"
+                                  title="{{ 'subscription.show.renewal_adjusted'|trans({'%day%': subscription.renewalDay, '%adjusted%': subscription.nextRenewal.day}) }}">
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>
+                                <span class="sr-only">{{ 'subscription.show.renewal_adjusted'|trans({'%day%': subscription.renewalDay, '%adjusted%': subscription.nextRenewal.day}) }}</span>
+                            </span>
+                        {% endif %}
+                    </dd>
                 </div>
                 {% if savingsTarget is not null %}
                 <div class="subscription-savings-target">

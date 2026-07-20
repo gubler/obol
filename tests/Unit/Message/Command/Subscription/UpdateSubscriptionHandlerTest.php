@@ -20,6 +20,7 @@ use App\Repository\CategoryRepository;
 use App\Repository\PaymentSourceRepository;
 use App\Repository\SubscriptionRepository;
 use App\Service\SubscriptionChangeNotifierInterface;
+use App\ValueObject\CalendarDate;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Clock\MockClock;
 use Symfony\Component\Uid\Ulid;
@@ -30,7 +31,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
     {
         $subscriptionUlid = new Ulid();
         $categoryUlid = new Ulid();
-        $nextRenewal = new \DateTimeImmutable('2025-01-15');
+        $nextRenewal = CalendarDate::fromString('2025-01-15');
 
         $subscription = $this->createMock(Subscription::class);
         $subscription->expects(self::once())->method('update');
@@ -97,7 +98,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
             subscriptionId: new Ulid(),
             categoryId: null,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2025-01-15'),
+            nextRenewal: CalendarDate::fromString('2025-01-15'),
             description: '',
             link: '',
             logo: '',
@@ -115,7 +116,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
 
         $subscription = $this->createMock(Subscription::class);
         $subscription->expects(self::once())->method('update')
-            ->with(self::anything(), self::anything(), self::anything(), self::anything(), self::anything(), self::anything(), self::anything(), self::anything(), self::anything(), self::anything(), $source)
+            ->with(self::anything(), self::anything(), self::anything(), self::anything(), self::anything(), self::anything(), self::anything(), self::anything(), self::anything(), self::anything(), self::anything(), $source)
         ;
 
         $subscriptionRepository = $this->createMock(SubscriptionRepository::class);
@@ -136,7 +137,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
             subscriptionId: new Ulid(),
             categoryId: null,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2025-01-15'),
+            nextRenewal: CalendarDate::fromString('2025-01-15'),
             description: '',
             link: '',
             logo: '',
@@ -175,7 +176,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
             subscriptionId: new Ulid(),
             categoryId: null,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2025-01-15'),
+            nextRenewal: CalendarDate::fromString('2025-01-15'),
             description: '',
             link: '',
             logo: '',
@@ -192,7 +193,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
     {
         $subscriptionUlid = new Ulid();
         $categoryUlid = new Ulid();
-        $nextRenewal = new \DateTimeImmutable('2025-03-01');
+        $nextRenewal = CalendarDate::fromString('2025-03-01');
 
         $subscription = $this->createMock(Subscription::class);
         $subscription->expects(self::once())->method('update');
@@ -253,7 +254,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
             subscriptionId: new Ulid(),
             categoryId: new Ulid(),
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable(),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -294,7 +295,7 @@ final class UpdateSubscriptionHandlerTest extends TestCase
             subscriptionId: new Ulid(),
             categoryId: new Ulid(),
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable(),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             description: '',
             link: '',
             logo: '',

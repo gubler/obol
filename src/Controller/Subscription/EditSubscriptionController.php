@@ -16,6 +16,9 @@ use App\Message\Query\Category\FindAllCategoriesQuery;
 use App\Message\Query\PaymentSource\FindAllPaymentSourcesQuery;
 use App\Message\Query\Subscription\FindSubscriptionQuery;
 use App\Service\FileUploader;
+use App\ValueObject\CalendarDate;
+use Psr\Clock\ClockInterface;
+use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -26,6 +29,7 @@ final class EditSubscriptionController extends AbstractBaseController
 {
     public function __construct(
         private readonly FileUploader $fileUploader,
+        private readonly ClockInterface $clock,
     ) {
     }
 
@@ -62,31 +66,39 @@ final class EditSubscriptionController extends AbstractBaseController
             /** @var UpdateSubscriptionDto $data */
             $data = $form->getData();
 
-            $logo = null !== $data->logo
-                ? $this->fileUploader->upload(file: $data->logo)
-                : $subscription->logo;
+            $nextRenewal = CalendarDate::fromString($data->nextRenewal);
 
-            $this->commandBus->dispatch(command: new UpdateSubscriptionCommand(
-                ownerUserId: $this->currentUser()->id,
-                subscriptionId: $id,
-                categoryId: $data->category?->id,
-                name: $data->name,
-                nextRenewal: $data->nextRenewal,
-                description: $data->description,
-                link: $data->link,
-                logo: $logo,
-                paymentPeriod: $data->paymentPeriod,
-                paymentPeriodCount: $data->paymentPeriodCount,
-                cost: $data->cost,
-                currency: $data->currency,
-                color: $data->color,
-                restartPaymentGeneration: $data->restartPaymentGeneration,
-                paymentSourceId: $data->paymentSource?->id,
-            ));
+            // Resuming automated generation needs a future anchor (the domain enforces it too). Report a
+            // past anchor as a form error rather than letting automatePayments() throw a 500.
+            if ($data->restartPaymentGeneration && $nextRenewal->isOnOrBefore($this->currentUser()->localDateFor($this->clock->now()))) {
+                $form->get('nextRenewal')->addError(new FormError($this->translator->trans('subscription.validation.restart_renewal_future')));
+            } else {
+                $logo = null !== $data->logo
+                    ? $this->fileUploader->upload(file: $data->logo)
+                    : $subscription->logo;
 
-            $this->addFlash(type: self::FLASH_SUCCESS, message: $this->translator->trans('subscription.flash.updated'));
+                $this->commandBus->dispatch(command: new UpdateSubscriptionCommand(
+                    ownerUserId: $this->currentUser()->id,
+                    subscriptionId: $id,
+                    categoryId: $data->category?->id,
+                    name: $data->name,
+                    nextRenewal: $nextRenewal,
+                    description: $data->description,
+                    link: $data->link,
+                    logo: $logo,
+                    paymentPeriod: $data->paymentPeriod,
+                    paymentPeriodCount: $data->paymentPeriodCount,
+                    cost: $data->cost,
+                    currency: $data->currency,
+                    color: $data->color,
+                    restartPaymentGeneration: $data->restartPaymentGeneration,
+                    paymentSourceId: $data->paymentSource?->id,
+                ));
 
-            return $this->redirectToRoute(route: 'subscription_show', parameters: ['id' => $id]);
+                $this->addFlash(type: self::FLASH_SUCCESS, message: $this->translator->trans('subscription.flash.updated'));
+
+                return $this->redirectToRoute(route: 'subscription_show', parameters: ['id' => $id]);
+            }
         }
 
         if ($form->isSubmitted() && !$form->isValid()) {

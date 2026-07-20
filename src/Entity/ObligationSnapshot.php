@@ -7,7 +7,9 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Doctrine\Type\CalendarDateType;
 use App\Repository\ObligationSnapshotRepository;
+use App\ValueObject\CalendarDate;
 use Assert\Assertion;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -43,8 +45,9 @@ class ObligationSnapshot
         #[ORM\JoinColumn(name: 'owner_user_id', nullable: false)]
         public private(set) User $owner,
         array $obligationsByCurrency,
-        #[ORM\Column(type: Types::DATE_IMMUTABLE)]
-        public private(set) \DateTimeImmutable $recordedAt = new \DateTimeImmutable('today'),
+        // The owner's local calendar day this snapshot was taken; persisted as a DATE via CalendarDate.
+        #[ORM\Column(type: CalendarDateType::NAME)]
+        public private(set) CalendarDate $recordedAt,
     ) {
         foreach ($obligationsByCurrency as $amount) {
             Assertion::greaterOrEqualThan(value: $amount, limit: 0, message: 'Obligation amount cannot be negative');

@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace App\Message\Query\Report;
 
 use App\Message\Currency\ConvertedTotal;
+use App\ValueObject\CalendarDate;
 
 final readonly class RemainingInPeriod
 {
@@ -15,7 +16,7 @@ final readonly class RemainingInPeriod
         public ConvertedTotal $weekly,
         public ConvertedTotal $monthly,
         public ConvertedTotal $yearly,
-        public \DateTimeImmutable $asOf,
+        public CalendarDate $asOf,
     ) {
     }
 }

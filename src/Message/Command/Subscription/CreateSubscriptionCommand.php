@@ -10,6 +10,7 @@ namespace App\Message\Command\Subscription;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\TileColor;
+use App\ValueObject\CalendarDate;
 use Symfony\Component\Uid\Ulid;
 
 final readonly class CreateSubscriptionCommand
@@ -18,7 +19,7 @@ final readonly class CreateSubscriptionCommand
         public Ulid $ownerUserId,
         public ?Ulid $categoryId,
         public string $name,
-        public \DateTimeImmutable $nextRenewal,
+        public CalendarDate $nextRenewal,
         public PaymentPeriod $paymentPeriod,
         public int $paymentPeriodCount,
         public int $cost,

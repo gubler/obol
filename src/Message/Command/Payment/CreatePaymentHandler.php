@@ -9,6 +9,7 @@ namespace App\Message\Command\Payment;
 
 use App\Enum\PaymentType;
 use App\Repository\SubscriptionRepository;
+use App\ValueObject\CalendarDate;
 use Psr\Clock\ClockInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -38,7 +39,7 @@ final readonly class CreatePaymentHandler
         );
 
         if ($command->restartPaymentGeneration) {
-            \assert($command->nextRenewal instanceof \DateTimeImmutable);
+            \assert($command->nextRenewal instanceof CalendarDate);
             $subscription->automatePayments($command->nextRenewal, $this->clock->now());
         }
     }

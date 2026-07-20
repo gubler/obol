@@ -12,6 +12,7 @@ use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Factory\SubscriptionFactory;
 use App\Factory\UserFactory;
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -27,8 +28,8 @@ final class PerUserDisplayCurrencyTest extends WebTestCase
         // EUR-pivot rates: 1 EUR = 1 EUR, 1 EUR = 1.08 USD. A $108.00 sub converts to exactly EUR 100.00.
         /** @var EntityManagerInterface $entityManager */
         $entityManager = self::getContainer()->get(EntityManagerInterface::class);
-        $entityManager->persist(new ExchangeRate(Currency::EUR, 1.0, new \DateTimeImmutable('today')));
-        $entityManager->persist(new ExchangeRate(Currency::USD, 1.08, new \DateTimeImmutable('today')));
+        $entityManager->persist(new ExchangeRate(Currency::EUR, 1.0, CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('today'), new \DateTimeZone('UTC'))));
+        $entityManager->persist(new ExchangeRate(Currency::USD, 1.08, CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('today'), new \DateTimeZone('UTC'))));
         $entityManager->flush();
 
         // A EUR-display user with a single USD-priced subscription: the report headline reads in EUR.

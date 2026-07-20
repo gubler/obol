@@ -21,8 +21,10 @@ use App\Repository\CategoryRepository;
 use App\Repository\ExchangeRateRepository;
 use App\Repository\SubscriptionRepository;
 use App\Repository\UserRepository;
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Clock\MockClock;
 use Symfony\Component\Uid\Ulid;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -34,10 +36,11 @@ final class FindCategoryBreakdownRunnerTest extends TestCase
             owner: new User(email: 'owner@example.com'),
             category: $category,
             name: $name,
-            nextRenewal: new \DateTimeImmutable('2026-01-01'),
+            nextRenewal: CalendarDate::fromString('2026-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money($costMinor, $currency),
+            now: new \DateTimeImmutable('2000-01-01', new \DateTimeZone('UTC')),
         );
     }
 
@@ -69,7 +72,7 @@ final class FindCategoryBreakdownRunnerTest extends TestCase
         ;
         $totaller = new CurrencyTotaller(new Converter($exchangeRateRepository));
 
-        $runner = new FindCategoryBreakdownRunner($categoryRepository, $subscriptionRepository, $totaller, self::userRepository(), self::translator());
+        $runner = new FindCategoryBreakdownRunner($categoryRepository, $subscriptionRepository, $totaller, self::userRepository(), new MockClock(), self::translator());
 
         return $runner(new FindCategoryBreakdownQuery(ownerUserId: $ownerUserId, categoryId: $categoryId));
     }
@@ -138,7 +141,7 @@ final class FindCategoryBreakdownRunnerTest extends TestCase
         $exchangeRateRepository->method('latestRate')->willReturn(null);
         $totaller = new CurrencyTotaller(new Converter($exchangeRateRepository));
 
-        $runner = new FindCategoryBreakdownRunner($categoryRepository, $subscriptionRepository, $totaller, self::userRepository(), self::translator());
+        $runner = new FindCategoryBreakdownRunner($categoryRepository, $subscriptionRepository, $totaller, self::userRepository(), new MockClock(), self::translator());
         $composition = $runner(new FindCategoryBreakdownQuery(ownerUserId: $ownerUserId, categoryId: null));
 
         self::assertInstanceOf(Composition::class, $composition);

@@ -11,6 +11,7 @@ use App\Entity\Subscription;
 use App\Factory\SubscriptionFactory;
 use App\Factory\UserFactory;
 use App\Repository\SubscriptionRepository;
+use App\ValueObject\CalendarDate;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
@@ -29,8 +30,8 @@ final class SubscriptionRepositoryTest extends WebTestCase
         //   Tokyo    (UTC+9)  -> 2026-08-01 13:00  (well into Aug 1)
         //   Honolulu (UTC-10) -> 2026-07-31 18:00  (still Jul 31)
         $now = new \DateTimeImmutable('2026-08-01 04:00:00', new \DateTimeZone('UTC'));
-        $augustFirst = new \DateTimeImmutable('2026-08-01 00:00:00');
-        $julyThirtyFirst = new \DateTimeImmutable('2026-07-31 00:00:00');
+        $augustFirst = CalendarDate::fromString('2026-08-01');
+        $julyThirtyFirst = CalendarDate::fromString('2026-07-31');
 
         $newYorker = UserFactory::createOne(['timezone' => 'America/New_York']);
         $tokyoite = UserFactory::createOne(['timezone' => 'Asia/Tokyo']);
@@ -45,7 +46,7 @@ final class SubscriptionRepositoryTest extends WebTestCase
         $honoluluDue = SubscriptionFactory::createOne(['owner' => $honoluluan, 'category' => null, 'name' => 'honolulu-due', 'nextRenewal' => $julyThirtyFirst]);
 
         // Exclusions unrelated to timezone: future, archived, and manual are never generated.
-        SubscriptionFactory::createOne(['owner' => $newYorker, 'category' => null, 'name' => 'future', 'nextRenewal' => new \DateTimeImmutable('2026-09-01 00:00:00')]);
+        SubscriptionFactory::createOne(['owner' => $newYorker, 'category' => null, 'name' => 'future', 'nextRenewal' => CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('2026-09-01 00:00:00'), new \DateTimeZone('UTC'))]);
         SubscriptionFactory::new(['owner' => $newYorker, 'category' => null, 'name' => 'archived', 'nextRenewal' => $augustFirst])->archived()->create();
         SubscriptionFactory::new(['owner' => $newYorker, 'category' => null, 'name' => 'manual', 'nextRenewal' => $augustFirst])->manual()->create();
 

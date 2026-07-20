@@ -13,6 +13,7 @@ use App\Entity\Payment;
 use App\Form\Payment\AmendPaymentFormType;
 use App\Message\Command\Payment\AmendPaymentCommand;
 use App\Message\Query\Payment\FindPaymentQuery;
+use App\ValueObject\CalendarDate;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -50,7 +51,7 @@ final class EditPaymentController extends AbstractBaseController
                 ownerUserId: $this->currentUser()->id,
                 paymentId: $id,
                 amount: $data->amount,
-                paidDate: $data->paidDate,
+                paidDate: CalendarDate::fromString($data->paidDate),
             ));
 
             $this->addFlash(type: self::FLASH_SUCCESS, message: $this->translator->trans('payment.flash.updated'));

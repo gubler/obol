@@ -8,12 +8,139 @@ declare(strict_types=1);
 
 namespace App\Tests\Arch;
 
+use App\Entity\ExchangeRate;
+use App\Entity\ObligationSnapshot;
+use App\Entity\Payment;
+use App\Entity\Subscription;
+use App\ValueObject\CalendarDate;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
 
 final class ArchTest extends TestCase
 {
     private const string SRC = __DIR__ . '/../../src';
+
+    /**
+     * ADR-0021: the calendar-date fields are the CalendarDate value object, not a bare instant. This is
+     * the structural core of the naive/zoned fix - a reflection guard so a field can never silently
+     * regress to a \DateTimeImmutable.
+     */
+    public function testCalendarDateFieldsAreTheValueObject(): void
+    {
+        self::assertSame(CalendarDate::class, self::propertyType(Subscription::class, 'nextRenewal'));
+        self::assertSame('int', self::propertyType(Subscription::class, 'renewalDay'));
+        self::assertSame(CalendarDate::class, self::propertyType(Payment::class, 'paidDate'));
+        self::assertSame(CalendarDate::class, self::propertyType(ObligationSnapshot::class, 'recordedAt'));
+        self::assertSame(CalendarDate::class, self::propertyType(ExchangeRate::class, 'asOf'));
+    }
+
+    /**
+     * ADR-0021: only the two boundary types - User (owner's zone) and CalendarDate (the naive/zoned
+     * valve) - may touch a timezone inside the domain. Any other entity or value object manipulating a
+     * zone is reintroducing exactly the naive-vs-zoned confusion the CalendarDate type exists to prevent.
+     */
+    public function testOnlyTheBoundaryTypesManipulateTimezones(): void
+    {
+        $allowed = ['User.php', 'CalendarDate.php'];
+
+        foreach ([...self::filesUnder('App\Entity'), ...self::filesUnder('App\ValueObject')] as $path) {
+            if (\in_array(basename($path), $allowed, true)) {
+                continue;
+            }
+
+            $source = (string) file_get_contents($path);
+            foreach (['new \DateTimeZone', '->setTimezone(', 'date_default_timezone_'] as $needle) {
+                self::assertStringNotContainsString(
+                    $needle,
+                    $source,
+                    basename($path) . ' manipulates a timezone; only User and CalendarDate may (ADR-0021)',
+                );
+            }
+        }
+    }
+
+    /**
+     * ADR-0021: turning a date into a `Y-m-d` string is CalendarDate's job (its `__toString`), so no
+     * other file hand-rolls `->format('Y-m-d')` - that ad-hoc reduction is how a zoned instant used to
+     * leak in as a naive string.
+     */
+    public function testNoAdHocYmdFormattingOutsideCalendarDate(): void
+    {
+        foreach (self::allSourceFiles() as $path) {
+            if ('CalendarDate.php' === basename($path)) {
+                continue;
+            }
+
+            self::assertStringNotContainsString(
+                "->format('Y-m-d')",
+                (string) file_get_contents($path),
+                basename($path) . " must not hand-roll ->format('Y-m-d'); cast a CalendarDate instead (ADR-0021)",
+            );
+        }
+    }
+
+    /**
+     * ADR-0021: a past renewal is allowed (it starts Manual generation); the future-date validation was
+     * deleted, so no DTO re-adds a `GreaterThan('today')` constraint.
+     */
+    public function testNoFutureDateConstraintInDtos(): void
+    {
+        foreach (self::filesUnder('App\Dto') as $path) {
+            self::assertStringNotContainsString(
+                "GreaterThan(value: 'today'",
+                (string) file_get_contents($path),
+                basename($path) . ' must not constrain a date to the future (past dates are allowed; ADR-0021)',
+            );
+        }
+    }
+
+    /**
+     * ADR-0021: entities never read the clock. "Now" is passed in (a `$now` instant) or resolved by a
+     * handler from the injected ClockInterface, so entity behavior stays deterministic and testable.
+     */
+    public function testEntitiesDoNotDependOnTheClock(): void
+    {
+        foreach (self::filesUnder('App\Entity') as $path) {
+            self::assertStringNotContainsString(
+                'ClockInterface',
+                (string) file_get_contents($path),
+                basename($path) . ' must not depend on the clock; a $now instant is passed in (ADR-0021)',
+            );
+        }
+    }
+
+    /**
+     * ADR-0021: time-sensitive code reads "now" from the injected clock or a passed instant, never the
+     * ambient process clock. The sole exception is an audit-timestamp field defaulting to now at the
+     * moment of construction (createdAt and its kin), which is instant-storage, not a time-sensitive
+     * decision.
+     */
+    public function testTimeSensitiveCodeDoesNotReadTheAmbientClock(): void
+    {
+        $auditFields = ['createdAt', 'verifiedAt', 'lastUsedAt', 'onboardingCompletedAt'];
+
+        foreach ([...self::filesUnder('App\Entity'), ...self::filesUnder('App\Message')] as $path) {
+            foreach (explode("\n", (string) file_get_contents($path)) as $line) {
+                if (!str_contains($line, 'new \DateTimeImmutable()')) {
+                    continue;
+                }
+
+                $isAuditDefault = array_any($auditFields, static fn (string $field): bool => str_contains($line, $field));
+                self::assertTrue(
+                    $isAuditDefault,
+                    basename($path) . ' reads the ambient clock (argless new \DateTimeImmutable()); inject a clock or pass an instant (ADR-0021)',
+                );
+            }
+        }
+    }
+
+    private static function propertyType(string $class, string $property): string
+    {
+        $type = new \ReflectionProperty($class, $property)->getType();
+        self::assertInstanceOf(\ReflectionNamedType::class, $type);
+
+        return $type->getName();
+    }
 
     public function testControllersAreSuffixedController(): void
     {

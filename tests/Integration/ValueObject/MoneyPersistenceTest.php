@@ -14,6 +14,7 @@ use App\Entity\User;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\PaymentType;
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -34,13 +35,14 @@ final class MoneyPersistenceTest extends WebTestCase
             owner: $owner,
             category: $category,
             name: 'Manga Box',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(2000, Currency::JPY),
+            now: new \DateTimeImmutable('2000-01-01', new \DateTimeZone('UTC')),
         );
         // A recorded payment inherits the subscription's currency.
-        $subscription->recordPayment(paidDate: new \DateTimeImmutable('2024-01-01'), paymentType: PaymentType::Verified);
+        $subscription->recordPayment(paidDate: CalendarDate::fromString('2024-01-01'), paymentType: PaymentType::Verified);
 
         $entityManager->persist($owner);
         $entityManager->persist($category);

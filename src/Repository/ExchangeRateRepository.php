@@ -7,8 +7,10 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Doctrine\Type\CalendarDateType;
 use App\Entity\ExchangeRate;
 use App\Enum\Currency;
+use App\ValueObject\CalendarDate;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -22,17 +24,17 @@ class ExchangeRateRepository extends ServiceEntityRepository
         parent::__construct($registry, ExchangeRate::class);
     }
 
-    public function hasRateFor(Currency $currency, \DateTimeImmutable $asOf): bool
+    public function hasRateFor(Currency $currency, CalendarDate $asOf): bool
     {
         return null !== $this->findOneBy(['currency' => $currency, 'asOf' => $asOf]);
     }
 
     /**
      * The most recent EUR-pivot rate for a currency (units of the currency per 1 EUR), or null when
-     * none is stored. With `$asOf` set, the latest rate dated on or before it - the historical lookup
-     * a future report can use; without it, the latest rate overall.
+     * none is stored. With `$asOf` set, the latest rate dated on or before that calendar day - the
+     * historical lookup a report uses for the owner's local day; without it, the latest rate overall.
      */
-    public function latestRate(Currency $currency, ?\DateTimeImmutable $asOf = null): ?float
+    public function latestRate(Currency $currency, ?CalendarDate $asOf = null): ?float
     {
         $qb = $this->createQueryBuilder('r')
             ->where('r.currency = :currency')
@@ -41,8 +43,8 @@ class ExchangeRateRepository extends ServiceEntityRepository
             ->setMaxResults(1)
         ;
 
-        if ($asOf instanceof \DateTimeImmutable) {
-            $qb->andWhere('r.asOf <= :asOf')->setParameter('asOf', $asOf);
+        if ($asOf instanceof CalendarDate) {
+            $qb->andWhere('r.asOf <= :asOf')->setParameter('asOf', $asOf, CalendarDateType::NAME);
         }
 
         $rate = $qb->getQuery()->getOneOrNullResult();

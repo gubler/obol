@@ -11,6 +11,7 @@ use App\Enum\DateFormat;
 use App\Factory\SubscriptionEventFactory;
 use App\Factory\SubscriptionFactory;
 use App\Factory\UserFactory;
+use App\ValueObject\CalendarDate;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -22,7 +23,7 @@ final class UserDateExtensionTest extends WebTestCase
         // the fixed pattern fixes the order independent of locale.
         $client = self::createClient();
         $user = UserFactory::createOne(['dateFormat' => DateFormat::Iso, 'locale' => 'en-GB']);
-        SubscriptionFactory::createOne(['owner' => $user, 'nextRenewal' => new \DateTimeImmutable('2027-03-09')]);
+        SubscriptionFactory::createOne(['owner' => $user, 'nextRenewal' => CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('2027-03-09'), new \DateTimeZone('UTC'))]);
 
         $client->loginUser($user);
         $client->request(method: Request::METHOD_GET, uri: '/app?view=list');
@@ -37,7 +38,7 @@ final class UserDateExtensionTest extends WebTestCase
         // not the American month-first form, proving the ambient locale drives it.
         $client = self::createClient();
         $user = UserFactory::createOne(['dateFormat' => DateFormat::Medium, 'locale' => 'en-GB']);
-        SubscriptionFactory::createOne(['owner' => $user, 'nextRenewal' => new \DateTimeImmutable('2027-03-09')]);
+        SubscriptionFactory::createOne(['owner' => $user, 'nextRenewal' => CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('2027-03-09'), new \DateTimeZone('UTC'))]);
 
         $client->loginUser($user);
         $client->request(method: Request::METHOD_GET, uri: '/app?view=list');

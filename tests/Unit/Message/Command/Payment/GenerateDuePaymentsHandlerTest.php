@@ -17,7 +17,9 @@ use App\Enum\PaymentType;
 use App\Message\Command\Payment\GenerateDuePaymentsCommand;
 use App\Message\Command\Payment\GenerateDuePaymentsHandler;
 use App\Repository\SubscriptionRepository;
+use App\Tests\Support\CalendarDateAssertions;
 use App\Tests\Support\InstantAssertions;
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -25,9 +27,10 @@ use Symfony\Component\Clock\MockClock;
 
 final class GenerateDuePaymentsHandlerTest extends TestCase
 {
+    use CalendarDateAssertions;
     use InstantAssertions;
 
-    private static function makeDuePaymentSubscription(PaymentPeriod $period, int $count, \DateTimeImmutable $nextRenewal): Subscription
+    private static function makeDuePaymentSubscription(PaymentPeriod $period, int $count, CalendarDate $nextRenewal): Subscription
     {
         return new Subscription(
             owner: new User(email: 'owner@example.com'),
@@ -37,6 +40,7 @@ final class GenerateDuePaymentsHandlerTest extends TestCase
             paymentPeriod: $period,
             paymentPeriodCount: $count,
             cost: new Money(1599, Currency::USD),
+            now: new \DateTimeImmutable('2000-01-01', new \DateTimeZone('UTC')),
         );
     }
 
@@ -62,7 +66,7 @@ final class GenerateDuePaymentsHandlerTest extends TestCase
 
     public function testGeneratesAPaymentDatedToTheRenewalWhenItHasPassed(): void
     {
-        $subscription = self::makeDuePaymentSubscription(PaymentPeriod::Month, 1, new \DateTimeImmutable('2020-01-01'));
+        $subscription = self::makeDuePaymentSubscription(PaymentPeriod::Month, 1, CalendarDate::fromString('2020-01-01'));
 
         $this->runGenerateDuePayments([$subscription]);
 
@@ -71,18 +75,18 @@ final class GenerateDuePaymentsHandlerTest extends TestCase
         $payment = $subscription->payments->first();
         self::assertSame(PaymentType::Generated, $payment->type);
         self::assertSame(1599, $payment->amount->minorAmount);
-        self::assertSameInstant(new \DateTimeImmutable('2020-01-01'), $payment->paidDate);
-        self::assertSameInstant(new \DateTimeImmutable('2020-02-01'), $subscription->nextRenewal);
+        self::assertSameDate('2020-01-01', $payment->paidDate);
+        self::assertSameDate('2020-02-01', $subscription->nextRenewal);
     }
 
     #[DataProvider('provideAdvancesTheRenewalAnchorByTheConfiguredIntervalCases')]
     public function testAdvancesTheRenewalAnchorByTheConfiguredInterval(PaymentPeriod $period, int $count, string $expected): void
     {
-        $subscription = self::makeDuePaymentSubscription($period, $count, new \DateTimeImmutable('2020-01-01'));
+        $subscription = self::makeDuePaymentSubscription($period, $count, CalendarDate::fromString('2020-01-01'));
 
         $this->runGenerateDuePayments([$subscription]);
 
-        self::assertSameInstant(new \DateTimeImmutable($expected), $subscription->nextRenewal);
+        self::assertSameDate($expected, $subscription->nextRenewal);
     }
 
     /**

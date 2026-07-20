@@ -1,7 +1,7 @@
 <?php
 
-// ABOUTME: Computes the start or inclusive end of the current calendar week / month / year for an as-of date.
-// ABOUTME: Used by remaining-in-period and obligation-trend reports; the week-start day is injected (app.week_start_day).
+// ABOUTME: Computes the first or last calendar day of the week / month / year containing an as-of date.
+// ABOUTME: Works in pure calendar dates (no time sentinel); the week-start day is injected (app.week_start_day).
 
 declare(strict_types=1);
 
@@ -9,6 +9,7 @@ namespace App\Service;
 
 use App\Enum\ObligationTrendPeriod;
 use App\Enum\PaymentPeriod;
+use App\ValueObject\CalendarDate;
 use Assert\Assertion;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
@@ -25,42 +26,42 @@ final readonly class PeriodBoundaries
     }
 
     /**
-     * The last moment of the calendar period containing `$asOf` (inclusive, end of day on the last day).
+     * The last day of the calendar period containing `$asOf` (inclusive).
      */
-    public function endOfPeriod(PaymentPeriod $period, \DateTimeImmutable $asOf): \DateTimeImmutable
+    public function endOfPeriod(PaymentPeriod $period, CalendarDate $asOf): CalendarDate
     {
         return match ($period) {
             PaymentPeriod::Week => $this->endOfWeek($asOf),
-            PaymentPeriod::Month => $asOf->modify('last day of this month')->setTime(23, 59, 59),
-            PaymentPeriod::Year => $asOf->setDate((int) $asOf->format('Y'), 12, 31)->setTime(23, 59, 59),
+            PaymentPeriod::Month => $asOf->lastDayOfMonth(),
+            PaymentPeriod::Year => CalendarDate::for($asOf->year, 12, 31),
         };
     }
 
     /**
-     * The first moment of the calendar period containing `$asOf` (start of day on the first day). Week-start
-     * leans on the same swappable week definition as `endOfPeriod`. Used to anchor the obligation trend.
+     * The first day of the calendar period containing `$asOf`. Week-start leans on the same swappable
+     * week definition as `endOfPeriod`. Used to anchor the obligation trend.
      */
-    public function startOfPeriod(ObligationTrendPeriod $period, \DateTimeImmutable $asOf): \DateTimeImmutable
+    public function startOfPeriod(ObligationTrendPeriod $period, CalendarDate $asOf): CalendarDate
     {
         return match ($period) {
             ObligationTrendPeriod::Week => $this->startOfWeek($asOf),
-            ObligationTrendPeriod::Month => $asOf->modify('first day of this month')->setTime(0, 0),
-            ObligationTrendPeriod::Year => $asOf->setDate((int) $asOf->format('Y'), 1, 1)->setTime(0, 0),
+            ObligationTrendPeriod::Month => CalendarDate::for($asOf->year, $asOf->month, 1),
+            ObligationTrendPeriod::Year => CalendarDate::for($asOf->year, 1, 1),
         };
     }
 
-    private function endOfWeek(\DateTimeImmutable $asOf): \DateTimeImmutable
+    private function endOfWeek(CalendarDate $asOf): CalendarDate
     {
         $lastDayOfWeek = ($this->weekStartDay + 6) % 7;
-        $daysUntilEnd = ($lastDayOfWeek - (int) $asOf->format('w') + 7) % 7;
+        $daysUntilEnd = ($lastDayOfWeek - $asOf->dayOfWeek() + 7) % 7;
 
-        return $asOf->modify(\sprintf('+%d days', $daysUntilEnd))->setTime(23, 59, 59);
+        return $asOf->plusDays($daysUntilEnd);
     }
 
-    private function startOfWeek(\DateTimeImmutable $asOf): \DateTimeImmutable
+    private function startOfWeek(CalendarDate $asOf): CalendarDate
     {
-        $daysSinceStart = ((int) $asOf->format('w') - $this->weekStartDay + 7) % 7;
+        $daysSinceStart = ($asOf->dayOfWeek() - $this->weekStartDay + 7) % 7;
 
-        return $asOf->modify(\sprintf('-%d days', $daysSinceStart))->setTime(0, 0);
+        return $asOf->plusDays(-$daysSinceStart);
     }
 }

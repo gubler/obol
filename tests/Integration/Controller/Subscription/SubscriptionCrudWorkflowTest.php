@@ -136,7 +136,9 @@ final class SubscriptionCrudWorkflowTest extends AuthenticatedTestCase
             $form = $crawler->selectButton(value: 'Save')->form([
                 'create_subscription[category]' => $category->id->toBase32(),
                 'create_subscription[name]' => $name,
-                'create_subscription[nextRenewal]' => '2026-01-01',
+                // A future renewal so the subscriptions stay on automated generation (a past date would
+                // switch them to Manual and add a badge to the name cell this test reads).
+                'create_subscription[nextRenewal]' => '2030-01-01',
                 'create_subscription[paymentPeriod]' => 'month',
                 'create_subscription[paymentPeriodCount]' => '1',
                 'create_subscription[cost]' => '9.99',

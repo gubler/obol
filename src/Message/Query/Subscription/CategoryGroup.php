@@ -10,6 +10,7 @@ namespace App\Message\Query\Subscription;
 use App\Entity\Category;
 use App\Entity\Subscription;
 use App\Message\Currency\ConvertedTotal;
+use App\ValueObject\CalendarDate;
 
 final readonly class CategoryGroup
 {
@@ -23,7 +24,7 @@ final readonly class CategoryGroup
         public ConvertedTotal $monthlyTotal,
         // Null when the owner's SavingsDisplay is Hidden: savings is suppressed and never computed.
         public ?ConvertedTotal $savingsTotal,
-        public \DateTimeImmutable $asOf,
+        public CalendarDate $asOf,
     ) {
     }
 }

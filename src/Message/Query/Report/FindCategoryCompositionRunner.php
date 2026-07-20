@@ -14,6 +14,7 @@ use App\Message\Currency\CurrencyTotaller;
 use App\Repository\SubscriptionRepository;
 use App\Repository\UserRepository;
 use App\ValueObject\Money;
+use Psr\Clock\ClockInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -30,14 +31,16 @@ final readonly class FindCategoryCompositionRunner
         private SubscriptionRepository $subscriptionRepository,
         private CurrencyTotaller $currencyTotaller,
         private UserRepository $userRepository,
+        private ClockInterface $clock,
         private TranslatorInterface $translator,
     ) {
     }
 
     public function __invoke(FindCategoryCompositionQuery $query): Composition
     {
-        $asOf = new \DateTimeImmutable();
-        $display = $this->userRepository->getForId($query->ownerUserId)->displayCurrency;
+        $owner = $this->userRepository->getForId($query->ownerUserId);
+        $asOf = $owner->localDateFor($this->clock->now());
+        $display = $owner->displayCurrency;
         $subscriptions = $this->subscriptionRepository->findActiveForOwner($query->ownerUserId);
 
         /** @var array<string, array{category: ?Category, costs: list<Money>}> $byCategory */

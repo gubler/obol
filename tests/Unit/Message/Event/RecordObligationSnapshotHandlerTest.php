@@ -18,10 +18,12 @@ use App\Message\Event\SubscriptionsChanged;
 use App\Repository\ObligationSnapshotRepository;
 use App\Repository\SubscriptionRepository;
 use App\Repository\UserRepository;
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Clock\MockClock;
 use Symfony\Component\Uid\Ulid;
 
 final class RecordObligationSnapshotHandlerTest extends TestCase
@@ -32,10 +34,11 @@ final class RecordObligationSnapshotHandlerTest extends TestCase
             owner: new User(email: 'owner@example.com'),
             category: new Category(owner: new User(email: 'owner@example.com'), name: 'Test Category'),
             name: 'Test',
-            nextRenewal: new \DateTimeImmutable('2020-01-01'),
+            nextRenewal: CalendarDate::fromString('2020-01-01'),
             paymentPeriod: $period,
             paymentPeriodCount: $count,
             cost: $cost,
+            now: new \DateTimeImmutable('2000-01-01', new \DateTimeZone('UTC')),
         );
     }
 
@@ -70,7 +73,7 @@ final class RecordObligationSnapshotHandlerTest extends TestCase
         // The event bus owns the transaction (doctrine_transaction middleware); the handler never flushes.
         $entityManager->expects(self::never())->method('flush');
 
-        $handler = new RecordObligationSnapshotHandler($subscriptionRepository, $snapshotRepository, self::userRepositoryReturning(new User(email: 'owner@example.com')), $entityManager, self::createStub(LoggerInterface::class));
+        $handler = new RecordObligationSnapshotHandler($subscriptionRepository, $snapshotRepository, self::userRepositoryReturning(new User(email: 'owner@example.com')), $entityManager, self::createStub(LoggerInterface::class), new MockClock());
         $handler(new SubscriptionsChanged(new Ulid()));
 
         self::assertInstanceOf(ObligationSnapshot::class, $captured);
@@ -86,12 +89,12 @@ final class RecordObligationSnapshotHandlerTest extends TestCase
             ->willReturn([self::makeSubscriptionCosting(new Money(4000, Currency::USD), PaymentPeriod::Month, 1)])
         ;
         $snapshotRepository = self::createStub(ObligationSnapshotRepository::class);
-        $snapshotRepository->method('findLatestForOwner')->willReturn(new ObligationSnapshot(new User(email: 'owner@example.com'), ['USD' => 3000]));
+        $snapshotRepository->method('findLatestForOwner')->willReturn(new ObligationSnapshot(new User(email: 'owner@example.com'), ['USD' => 3000], CalendarDate::fromString('2026-01-01')));
 
         $entityManager = $this->createMock(EntityManagerInterface::class);
         $entityManager->expects(self::once())->method('persist');
 
-        $handler = new RecordObligationSnapshotHandler($subscriptionRepository, $snapshotRepository, self::userRepositoryReturning(new User(email: 'owner@example.com')), $entityManager, self::createStub(LoggerInterface::class));
+        $handler = new RecordObligationSnapshotHandler($subscriptionRepository, $snapshotRepository, self::userRepositoryReturning(new User(email: 'owner@example.com')), $entityManager, self::createStub(LoggerInterface::class), new MockClock());
         $handler(new SubscriptionsChanged(new Ulid()));
     }
 
@@ -104,12 +107,12 @@ final class RecordObligationSnapshotHandlerTest extends TestCase
         ]);
         $snapshotRepository = self::createStub(ObligationSnapshotRepository::class);
         // Same totals, different key order - equality must be order-insensitive.
-        $snapshotRepository->method('findLatestForOwner')->willReturn(new ObligationSnapshot(new User(email: 'owner@example.com'), ['EUR' => 3000, 'USD' => 4000]));
+        $snapshotRepository->method('findLatestForOwner')->willReturn(new ObligationSnapshot(new User(email: 'owner@example.com'), ['EUR' => 3000, 'USD' => 4000], CalendarDate::fromString('2026-01-01')));
 
         $entityManager = $this->createMock(EntityManagerInterface::class);
         $entityManager->expects(self::never())->method('persist');
 
-        $handler = new RecordObligationSnapshotHandler($subscriptionRepository, $snapshotRepository, self::userRepositoryReturning(new User(email: 'owner@example.com')), $entityManager, self::createStub(LoggerInterface::class));
+        $handler = new RecordObligationSnapshotHandler($subscriptionRepository, $snapshotRepository, self::userRepositoryReturning(new User(email: 'owner@example.com')), $entityManager, self::createStub(LoggerInterface::class), new MockClock());
         $handler(new SubscriptionsChanged(new Ulid()));
     }
 
@@ -125,7 +128,7 @@ final class RecordObligationSnapshotHandlerTest extends TestCase
         $entityManager = $this->createMock(EntityManagerInterface::class);
         $entityManager->expects(self::never())->method('persist');
 
-        $handler = new RecordObligationSnapshotHandler($subscriptionRepository, $snapshotRepository, self::userRepositoryReturning(new User(email: 'owner@example.com')), $entityManager, $logger);
+        $handler = new RecordObligationSnapshotHandler($subscriptionRepository, $snapshotRepository, self::userRepositoryReturning(new User(email: 'owner@example.com')), $entityManager, $logger, new MockClock());
         $handler(new SubscriptionsChanged(new Ulid())); // must not throw
     }
 }

@@ -15,6 +15,7 @@ use App\Enum\PaymentPeriod;
 use App\Message\Command\PaymentSource\ReassignPaymentSourceSubscriptionsCommand;
 use App\Message\Command\PaymentSource\ReassignPaymentSourceSubscriptionsHandler;
 use App\Repository\PaymentSourceRepository;
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\TestCase;
@@ -83,10 +84,11 @@ final class ReassignPaymentSourceSubscriptionsHandlerTest extends TestCase
             owner: new User(email: 'owner@example.com'),
             category: null,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: new \DateTimeImmutable('2000-01-01', new \DateTimeZone('UTC')),
             paymentSource: $paymentSource,
         );
     }

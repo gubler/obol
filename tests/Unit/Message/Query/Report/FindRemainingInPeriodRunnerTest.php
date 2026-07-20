@@ -21,6 +21,7 @@ use App\Repository\ExchangeRateRepository;
 use App\Repository\SubscriptionRepository;
 use App\Repository\UserRepository;
 use App\Service\PeriodBoundaries;
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Clock\MockClock;
@@ -34,10 +35,11 @@ final class FindRemainingInPeriodRunnerTest extends TestCase
             owner: new User(email: 'owner@example.com'),
             category: new Category(owner: new User(email: 'owner@example.com'), name: 'Test'),
             name: 'Test',
-            nextRenewal: new \DateTimeImmutable($nextRenewal),
+            nextRenewal: CalendarDate::fromString($nextRenewal),
             paymentPeriod: $period,
             paymentPeriodCount: $count,
             cost: new Money($costMinor, $currency),
+            now: new \DateTimeImmutable('2000-01-01', new \DateTimeZone('UTC')),
         );
     }
 

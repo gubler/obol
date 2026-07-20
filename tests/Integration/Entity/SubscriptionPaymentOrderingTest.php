@@ -10,6 +10,7 @@ namespace App\Tests\Integration\Entity;
 use App\Entity\Subscription;
 use App\Factory\PaymentFactory;
 use App\Factory\SubscriptionFactory;
+use App\ValueObject\CalendarDate;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
@@ -27,9 +28,9 @@ final class SubscriptionPaymentOrderingTest extends WebTestCase
         $subscription = SubscriptionFactory::createOne();
 
         // Persisted out of chronological order, mirroring backfilling historical data by hand.
-        PaymentFactory::createOne(['subscription' => $subscription, 'paidDate' => new \DateTimeImmutable('2024-03-01')]);
-        PaymentFactory::createOne(['subscription' => $subscription, 'paidDate' => new \DateTimeImmutable('2024-01-01')]);
-        PaymentFactory::createOne(['subscription' => $subscription, 'paidDate' => new \DateTimeImmutable('2024-02-01')]);
+        PaymentFactory::createOne(['subscription' => $subscription, 'paidDate' => CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('2024-03-01'), new \DateTimeZone('UTC'))]);
+        PaymentFactory::createOne(['subscription' => $subscription, 'paidDate' => CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('2024-01-01'), new \DateTimeZone('UTC'))]);
+        PaymentFactory::createOne(['subscription' => $subscription, 'paidDate' => CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('2024-02-01'), new \DateTimeZone('UTC'))]);
 
         $entityManager = $this->entityManager();
         $entityManager->clear();
@@ -38,7 +39,7 @@ final class SubscriptionPaymentOrderingTest extends WebTestCase
         self::assertInstanceOf(Subscription::class, $reloaded);
 
         $paidDates = array_map(
-            static fn (\App\Entity\Payment $payment): string => $payment->paidDate->format('Y-m-d'),
+            static fn (\App\Entity\Payment $payment): string => (string) $payment->paidDate,
             $reloaded->payments->toArray(),
         );
 
@@ -50,7 +51,7 @@ final class SubscriptionPaymentOrderingTest extends WebTestCase
         self::createClient();
         $subscription = SubscriptionFactory::createOne();
 
-        $paidDate = new \DateTimeImmutable('2024-05-01');
+        $paidDate = CalendarDate::fromString('2024-05-01');
         PaymentFactory::createOne(['subscription' => $subscription, 'paidDate' => $paidDate, 'createdAt' => new \DateTimeImmutable('2024-05-01 09:00:00')]);
         PaymentFactory::createOne(['subscription' => $subscription, 'paidDate' => $paidDate, 'createdAt' => new \DateTimeImmutable('2024-05-01 11:00:00')]);
 

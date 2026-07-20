@@ -14,6 +14,7 @@ use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
 use App\Lib\Bus\CommandBus;
 use App\Message\Scheduler\GeneratePaymentsMessage;
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -29,7 +30,7 @@ final class GeneratePaymentsSchedulerTest extends WebTestCase
             'cost' => new Money(1599, Currency::USD),
             'paymentPeriod' => PaymentPeriod::Month,
             'paymentPeriodCount' => 1,
-            'nextRenewal' => new \DateTimeImmutable('-35 days'),
+            'nextRenewal' => CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('-35 days'), new \DateTimeZone('UTC')),
         ]);
 
         $container = self::getContainer();
@@ -53,7 +54,7 @@ final class GeneratePaymentsSchedulerTest extends WebTestCase
             'cost' => new Money(999, Currency::USD),
             'paymentPeriod' => PaymentPeriod::Month,
             'paymentPeriodCount' => 1,
-            'nextRenewal' => new \DateTimeImmutable('+10 days'),
+            'nextRenewal' => CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('+10 days'), new \DateTimeZone('UTC')),
         ]);
 
         $container = self::getContainer();
@@ -77,7 +78,7 @@ final class GeneratePaymentsSchedulerTest extends WebTestCase
             'cost' => new Money(999, Currency::USD),
             'paymentPeriod' => PaymentPeriod::Month,
             'paymentPeriodCount' => 1,
-            'nextRenewal' => new \DateTimeImmutable('-35 days'),
+            'nextRenewal' => CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('-35 days'), new \DateTimeZone('UTC')),
         ])->archived()->create();
 
         $container = self::getContainer();

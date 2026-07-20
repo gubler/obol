@@ -9,21 +9,24 @@ namespace App\Tests\Unit\Entity;
 
 use App\Entity\ExchangeRate;
 use App\Enum\Currency;
+use App\Tests\Support\CalendarDateAssertions;
 use App\Tests\Support\InstantAssertions;
+use App\ValueObject\CalendarDate;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
 
 final class ExchangeRateTest extends TestCase
 {
+    use CalendarDateAssertions;
     use InstantAssertions;
 
     public function testStoresAEurPivotRateForACurrencyOnADate(): void
     {
-        $rate = new ExchangeRate(Currency::USD, 1.0732, new \DateTimeImmutable('2024-06-10'));
+        $rate = new ExchangeRate(Currency::USD, 1.0732, CalendarDate::fromString('2024-06-10'));
 
         self::assertSame(Currency::USD, $rate->currency);
         self::assertSame(1.0732, $rate->rate);
-        self::assertSameInstant(new \DateTimeImmutable('2024-06-10'), $rate->asOf);
+        self::assertSameDate('2024-06-10', $rate->asOf);
         self::assertInstanceOf(Ulid::class, $rate->id);
     }
 
@@ -31,6 +34,6 @@ final class ExchangeRateTest extends TestCase
     {
         $this->expectException(\Assert\InvalidArgumentException::class);
 
-        new ExchangeRate(Currency::USD, 0.0, new \DateTimeImmutable('2024-06-10'));
+        new ExchangeRate(Currency::USD, 0.0, CalendarDate::fromString('2024-06-10'));
     }
 }

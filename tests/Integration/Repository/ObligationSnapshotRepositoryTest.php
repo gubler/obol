@@ -10,6 +10,7 @@ namespace App\Tests\Integration\Repository;
 use App\Entity\ObligationSnapshot;
 use App\Factory\UserFactory;
 use App\Repository\ObligationSnapshotRepository;
+use App\ValueObject\CalendarDate;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
@@ -37,9 +38,9 @@ final class ObligationSnapshotRepositoryTest extends WebTestCase
         $owner = UserFactory::createOne();
 
         // Constructed in order, so the third carries the highest (newest) ULID id.
-        $entityManager->persist(new ObligationSnapshot($owner, ['USD' => 4000]));
-        $entityManager->persist(new ObligationSnapshot($owner, ['USD' => 4500]));
-        $entityManager->persist(new ObligationSnapshot($owner, ['USD' => 4500, 'EUR' => 3000]));
+        $entityManager->persist(new ObligationSnapshot($owner, ['USD' => 4000], CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('today'), new \DateTimeZone('UTC'))));
+        $entityManager->persist(new ObligationSnapshot($owner, ['USD' => 4500], CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('today'), new \DateTimeZone('UTC'))));
+        $entityManager->persist(new ObligationSnapshot($owner, ['USD' => 4500, 'EUR' => 3000], CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('today'), new \DateTimeZone('UTC'))));
         $entityManager->flush();
 
         self::assertEqualsCanonicalizing(['USD' => 4500, 'EUR' => 3000], $repository->findLatestForOwner($owner->id)?->obligationsByCurrency);
@@ -56,8 +57,8 @@ final class ObligationSnapshotRepositoryTest extends WebTestCase
         $alice = UserFactory::createOne();
         $bob = UserFactory::createOne();
 
-        $entityManager->persist(new ObligationSnapshot($alice, ['USD' => 4000]));
-        $entityManager->persist(new ObligationSnapshot($bob, ['EUR' => 9000]));
+        $entityManager->persist(new ObligationSnapshot($alice, ['USD' => 4000], CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('today'), new \DateTimeZone('UTC'))));
+        $entityManager->persist(new ObligationSnapshot($bob, ['EUR' => 9000], CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('today'), new \DateTimeZone('UTC'))));
         $entityManager->flush();
 
         self::assertEqualsCanonicalizing(['USD' => 4000], $repository->findLatestForOwner($alice->id)?->obligationsByCurrency);

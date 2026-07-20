@@ -8,6 +8,7 @@ use App\Entity\Subscription;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\TileColor;
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
@@ -34,7 +35,15 @@ final class SubscriptionFactory extends PersistentObjectFactory
             'color' => self::faker()->randomElement(TileColor::cases()),
             'cost' => new Money(self::faker()->numberBetween(500, 3000), Currency::USD),
             'description' => self::faker()->sentence(),
-            'nextRenewal' => \DateTimeImmutable::createFromMutable(self::faker()->dateTimeBetween('now', '+60 days')),
+            // A future calendar date (no time-of-day), so a factory sub defaults to Automated. The random
+            // time that once masked the naive/zoned bug is gone: a calendar date has none to begin with.
+            'nextRenewal' => CalendarDate::forDatetimeInTimezone(
+                \DateTimeImmutable::createFromMutable(self::faker()->dateTimeBetween('now', '+60 days')),
+                new \DateTimeZone('UTC'),
+            ),
+            // Fixed well in the past so nextRenewal is judged future at construction (generation stays
+            // Automated); createdAt is stamped to the real now inside the constructor, independent of this.
+            'now' => new \DateTimeImmutable('2000-01-01', new \DateTimeZone('UTC')),
             'link' => self::faker()->url(),
             'logo' => '',
             'name' => self::faker()->words(2, true),
@@ -65,7 +74,7 @@ final class SubscriptionFactory extends PersistentObjectFactory
         return $this->afterInstantiate(function (Subscription $subscription): void {
             PaymentFactory::createOne([
                 'subscription' => $subscription,
-                'paidDate' => new \DateTimeImmutable('-5 days'),
+                'paidDate' => CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('-5 days'), new \DateTimeZone('UTC')),
             ]);
         });
     }

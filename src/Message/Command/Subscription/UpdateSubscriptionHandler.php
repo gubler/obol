@@ -68,6 +68,7 @@ final readonly class UpdateSubscriptionHandler
             paymentPeriodCount: $command->paymentPeriodCount,
             cost: new Money($command->cost, $command->currency),
             color: $command->color,
+            now: $this->clock->now(),
             paymentSource: $paymentSource,
         );
 

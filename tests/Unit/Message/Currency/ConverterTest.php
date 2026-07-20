@@ -10,6 +10,7 @@ namespace App\Tests\Unit\Message\Currency;
 use App\Enum\Currency;
 use App\Message\Currency\Converter;
 use App\Repository\ExchangeRateRepository;
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
 
@@ -55,7 +56,7 @@ final class ConverterTest extends TestCase
 
     public function testPassesAnAsOfDateThroughToTheRateLookup(): void
     {
-        $asOf = new \DateTimeImmutable('2024-01-01');
+        $asOf = CalendarDate::fromString('2024-01-01');
         $repository = self::createStub(ExchangeRateRepository::class);
         $repository->method('latestRate')->willReturnMap([
             [Currency::USD, $asOf, 1.08],

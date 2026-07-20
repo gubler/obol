@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace App\Message\Command\Payment;
 
+use App\ValueObject\CalendarDate;
 use Symfony\Component\Uid\Ulid;
 
 final readonly class CreatePaymentCommand
@@ -15,9 +16,9 @@ final readonly class CreatePaymentCommand
         public Ulid $ownerUserId,
         public Ulid $subscriptionId,
         public int $amount,
-        public \DateTimeImmutable $paidDate,
+        public CalendarDate $paidDate,
         public bool $restartPaymentGeneration = false,
-        public ?\DateTimeImmutable $nextRenewal = null,
+        public ?CalendarDate $nextRenewal = null,
     ) {
     }
 }

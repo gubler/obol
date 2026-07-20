@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace App\Twig;
 
 use App\Entity\User;
+use App\ValueObject\CalendarDate;
 use Knp\Bundle\TimeBundle\DateTimeFormatter;
 use Psr\Clock\ClockInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -40,20 +41,21 @@ final class RenewalLabelExtension extends AbstractExtension
      * calendar-day distance (the renewal day itself counts, since it is a valid not-late payment day)
      * rather than the time-of-day-truncated wall-clock gap.
      */
-    public function label(\DateTimeImmutable $renewal, User $owner): string
+    public function label(CalendarDate $renewal, User $owner): string
     {
-        // Compare as pure calendar dates: the owner's local today, and the renewal's stored local date
-        // (ADR-0016). Rebuilding both at UTC midnight from their Y-m-d keeps the day diff a clean integer
-        // instead of a cross-timezone hour count, and keeps the label time-of-day independent.
-        $today = new \DateTimeImmutable($owner->toLocal($this->clock->now())->format('Y-m-d'), new \DateTimeZone('UTC'));
-        $renewalDay = new \DateTimeImmutable($renewal->format('Y-m-d'), new \DateTimeZone('UTC'));
-
-        $days = (int) $today->diff($renewalDay)->format('%r%a');
+        // Compare as pure calendar dates: the owner's local today (ADR-0016) against the renewal date.
+        // The day count is a clean calendar-day integer, keeping the label time-of-day independent.
+        $today = $owner->localDateFor($this->clock->now());
+        $days = $today->daysUntil($renewal);
 
         return match ($days) {
             0 => $this->translator->trans('common.relative.today'),
             1 => $this->translator->trans('common.relative.tomorrow'),
-            default => $this->dateTimeFormatter->formatDiff($renewalDay, $today),
+            // KnpTime's time_diff needs instants; feed both at UTC midnight so it counts calendar days.
+            default => $this->dateTimeFormatter->formatDiff(
+                $renewal->toDateTimeImmutable(new \DateTimeZone('UTC')),
+                $today->toDateTimeImmutable(new \DateTimeZone('UTC')),
+            ),
         };
     }
 }

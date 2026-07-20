@@ -1,7 +1,7 @@
 <?php
 
 // ABOUTME: The week/month/year granularity of the obligations-over-time trend, backed by its URL query value.
-// ABOUTME: Carries the lookback length, the step unit for walking back, and the x-axis label format.
+// ABOUTME: Carries the lookback length and the x-axis label format; the runner walks back in calendar terms.
 
 declare(strict_types=1);
 
@@ -40,18 +40,6 @@ enum ObligationTrendPeriod: string
             self::Week => 52,
             self::Month => 24,
             self::Year => 10,
-        };
-    }
-
-    /**
-     * The relative-time unit for stepping back one bucket (used as "-N <unit>" with \DateTimeImmutable::modify).
-     */
-    public function stepUnit(): string
-    {
-        return match ($this) {
-            self::Week => 'weeks',
-            self::Month => 'months',
-            self::Year => 'years',
         };
     }
 

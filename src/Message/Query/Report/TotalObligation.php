@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace App\Message\Query\Report;
 
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 
 final readonly class TotalObligation
@@ -19,7 +20,7 @@ final readonly class TotalObligation
         public Money $monthly,
         public Money $yearly,
         public array $breakdown,
-        public \DateTimeImmutable $asOf,
+        public CalendarDate $asOf,
         public bool $isApproximate,
     ) {
     }

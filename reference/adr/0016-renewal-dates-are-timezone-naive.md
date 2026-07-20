@@ -2,6 +2,15 @@
 
 - Status: Accepted
 - Date: 2026-07-04
+- Refined by: ADR-0021
+
+> **Refined by ADR-0021.** This decision stands, but its enforcement changed. The naive frame was
+> encoded only by convention (a `\DateTimeImmutable` in a `timestamp` column), and the very hazard this
+> ADR warned about - comparing the naive value against a zoned instant - shipped in four places.
+> ADR-0021 makes the frame a type (`CalendarDate`): `User::toLocal()` becomes `User::localDateFor()`
+> returning a `CalendarDate`, and the naive/zoned boundary is now un-writable without naming a zone.
+> `nextRenewal` and `paid_date` are now `DATE` columns (they were `timestamp`); `recordedAt` and `asOf`
+> were already `DATE`.
 
 ## Context
 

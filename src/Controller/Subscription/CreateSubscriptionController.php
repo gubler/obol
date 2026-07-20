@@ -14,6 +14,7 @@ use App\Message\Command\Subscription\CreateSubscriptionCommand;
 use App\Message\Query\Category\FindAllCategoriesQuery;
 use App\Message\Query\PaymentSource\FindAllPaymentSourcesQuery;
 use App\Service\FileUploader;
+use App\ValueObject\CalendarDate;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -59,7 +60,7 @@ final class CreateSubscriptionController extends AbstractBaseController
                 ownerUserId: $this->currentUser()->id,
                 categoryId: $data->category?->id,
                 name: $data->name,
-                nextRenewal: $data->nextRenewal,
+                nextRenewal: CalendarDate::fromString($data->nextRenewal),
                 paymentPeriod: $data->paymentPeriod,
                 paymentPeriodCount: $data->paymentPeriodCount,
                 cost: $data->cost,

@@ -18,13 +18,16 @@ use App\Enum\PaymentType;
 use App\Message\Command\Payment\DeletePaymentCommand;
 use App\Message\Command\Payment\DeletePaymentHandler;
 use App\Repository\PaymentRepository;
+use App\Tests\Support\CalendarDateAssertions;
 use App\Tests\Support\InstantAssertions;
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
 
 final class DeletePaymentHandlerTest extends TestCase
 {
+    use CalendarDateAssertions;
     use InstantAssertions;
 
     public function testRemovingAGeneratedPaymentRollsBackTheAnchorAndSwitchesToManualGeneration(): void
@@ -33,14 +36,15 @@ final class DeletePaymentHandlerTest extends TestCase
             owner: new User(email: 'owner@example.com'),
             category: new Category(owner: new User(email: 'owner@example.com'), name: 'Test'),
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-02-01'),
+            nextRenewal: CalendarDate::fromString('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: new \DateTimeImmutable('2000-01-01', new \DateTimeZone('UTC')),
         );
         // A scheduler-generated due payment advances the anchor to 2024-03-01.
         $subscription->recordPayment(
-            paidDate: new \DateTimeImmutable('2024-02-01'),
+            paidDate: CalendarDate::fromString('2024-02-01'),
             paymentType: PaymentType::Generated,
         );
         /** @var Payment $payment */
@@ -53,7 +57,7 @@ final class DeletePaymentHandlerTest extends TestCase
         $handler(new DeletePaymentCommand(ownerUserId: new Ulid(), paymentId: $payment->id));
 
         self::assertCount(0, $subscription->payments);
-        self::assertSameInstant(new \DateTimeImmutable('2024-02-01'), $subscription->nextRenewal);
+        self::assertSameDate('2024-02-01', $subscription->nextRenewal);
         self::assertSame(PaymentGeneration::Manual, $subscription->paymentGeneration);
     }
 
@@ -63,14 +67,15 @@ final class DeletePaymentHandlerTest extends TestCase
             owner: new User(email: 'owner@example.com'),
             category: new Category(owner: new User(email: 'owner@example.com'), name: 'Test'),
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-02-01'),
+            nextRenewal: CalendarDate::fromString('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: new \DateTimeImmutable('2000-01-01', new \DateTimeZone('UTC')),
         );
         // A user-recorded current-period payment advances the anchor to 2024-03-01.
         $subscription->recordPayment(
-            paidDate: new \DateTimeImmutable('2024-01-15'),
+            paidDate: CalendarDate::fromString('2024-01-15'),
             paymentType: PaymentType::Verified,
         );
         /** @var Payment $payment */
@@ -83,7 +88,7 @@ final class DeletePaymentHandlerTest extends TestCase
         $handler(new DeletePaymentCommand(ownerUserId: new Ulid(), paymentId: $payment->id));
 
         self::assertCount(0, $subscription->payments);
-        self::assertSameInstant(new \DateTimeImmutable('2024-02-01'), $subscription->nextRenewal);
+        self::assertSameDate('2024-02-01', $subscription->nextRenewal);
         self::assertSame(PaymentGeneration::Automated, $subscription->paymentGeneration);
     }
 

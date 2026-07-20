@@ -2,6 +2,14 @@
 
 - Status: Accepted
 - Date: 2026-06-06
+- Amended by: ADR-0021
+
+> **Amended by ADR-0021.** The fixed-cadence renewal now projects from the anchor by multiples rather
+> than adding a `DateInterval` each step. `Subscription` stores a `renewalDay` (1-31); `advance()`
+> lands on `min(renewalDay, target month's length)`, so a run of months no longer drifts (Jan 31 ->
+> Feb 28 -> Mar 31) and each step is reversible. The old "resume requires a future renewal" rule is
+> generalized: any renewal already in the past (in the owner's zone) forces `Manual` generation in one
+> place (`applyRenewalDate`), preserving the anti-catch-up intent while allowing backfill.
 
 ## Context
 

@@ -30,6 +30,12 @@ A generated payment is Obol's best guess. When you know the real figure:
 
 If you take payments over manually, automatic generation pauses and the subscription shows a **Manual** badge on the dashboard and its page. To hand renewals back to Obol, record a payment (or edit the subscription) with a future **Next Renewal Date** and tick **Restart automatic payments?**.
 
+Setting a **Next Renewal Date in the past** also switches the subscription to manual generation. This lets you enter a subscription you started paying a while ago without Obol immediately generating a run of catch-up payments; the form shows a note when the date you've picked is in the past.
+
+## Renewals on the 29th, 30th, or 31st
+
+If a subscription renews on a day some months don't have — the 31st, say — Obol shows the renewal on the last day of any shorter month (the 28th or 29th in February) and returns to the 31st the next month that has one. The subscription's page marks the renewal date with a small indicator when it's been adjusted this way, so you know to check your actual bill for the exact charge date.
+
 ## Editing and deleting
 
 Every payment can be edited (to fix the amount or date) or deleted. A subscription's full payment record is on its page, under **History**.

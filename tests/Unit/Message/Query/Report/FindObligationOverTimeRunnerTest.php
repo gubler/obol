@@ -20,6 +20,7 @@ use App\Repository\ExchangeRateRepository;
 use App\Repository\ObligationSnapshotRepository;
 use App\Repository\UserRepository;
 use App\Service\PeriodBoundaries;
+use App\ValueObject\CalendarDate;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Clock\MockClock;
 use Symfony\Component\Uid\Ulid;
@@ -31,7 +32,7 @@ final class FindObligationOverTimeRunnerTest extends TestCase
      */
     private static function trendSnapshot(array $obligationsByCurrency, string $recordedAt): ObligationSnapshot
     {
-        return new ObligationSnapshot(new User(email: 'owner@example.com'), $obligationsByCurrency, new \DateTimeImmutable($recordedAt));
+        return new ObligationSnapshot(new User(email: 'owner@example.com'), $obligationsByCurrency, CalendarDate::fromString($recordedAt));
     }
 
     /**

@@ -18,6 +18,7 @@ use App\Message\Command\Subscription\ArchiveSubscriptionCommand;
 use App\Message\Command\Subscription\CreateSubscriptionCommand;
 use App\Message\Command\Subscription\UpdateSubscriptionCommand;
 use App\Repository\ObligationSnapshotRepository;
+use App\ValueObject\CalendarDate;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -43,7 +44,7 @@ final class ObligationSnapshotRecordingTest extends WebTestCase
             ownerUserId: $owner->id,
             categoryId: $category->id,
             name: 'Streaming',
-            nextRenewal: new \DateTimeImmutable('+1 month'),
+            nextRenewal: CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('+1 month'), new \DateTimeZone('UTC')),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 4000,
@@ -101,7 +102,7 @@ final class ObligationSnapshotRecordingTest extends WebTestCase
             ownerUserId: $alice->id,
             categoryId: null,
             name: 'Alice streaming',
-            nextRenewal: new \DateTimeImmutable('+1 month'),
+            nextRenewal: CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('+1 month'), new \DateTimeZone('UTC')),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 4000,
@@ -113,7 +114,7 @@ final class ObligationSnapshotRecordingTest extends WebTestCase
             ownerUserId: $bob->id,
             categoryId: null,
             name: 'Bob gym',
-            nextRenewal: new \DateTimeImmutable('+1 month'),
+            nextRenewal: CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('+1 month'), new \DateTimeZone('UTC')),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: 9000,

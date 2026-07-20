@@ -10,11 +10,15 @@ doctrine:
 
         types:
             citext: App\Doctrine\Type\CitextType
+            calendar_date: App\Doctrine\Type\CalendarDateType
 
-        # Map the PostgreSQL `citext` SQL type back to our citext Doctrine type during schema
-        # introspection so doctrine:migrations:diff does not propose spurious changes.
+        # Map PostgreSQL SQL types back to our custom Doctrine types during schema introspection so
+        # doctrine:migrations:diff does not propose spurious changes. Mapping `date` to calendar_date
+        # makes every DATE column hydrate as a CalendarDate (ObligationSnapshot.recordedAt and
+        # ExchangeRate.asOf included), which is why the swap has to be atomic. See ADR-0021.
         mapping_types:
             citext: citext
+            date: calendar_date
     orm:
 #        auto_generate_proxy_classes: true
 #        enable_lazy_ghost_objects: true

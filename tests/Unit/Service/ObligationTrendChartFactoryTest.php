@@ -13,6 +13,7 @@ use App\Message\Query\Report\ObligationPoint;
 use App\Message\Query\Report\ObligationSeries;
 use App\Service\ObligationTrendChartFactory;
 use App\Tests\Support\PinsDefaultLocale;
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Translation\Translator;
@@ -61,7 +62,7 @@ final class ObligationTrendChartFactoryTest extends TestCase
         return new ObligationSeries(
             points: array_map(static fn (array $p): ObligationPoint => new ObligationPoint($p[0], new Money($p[1], Currency::USD)), $points),
             period: ObligationTrendPeriod::Month,
-            asOf: new \DateTimeImmutable('2026-06-13'),
+            asOf: CalendarDate::fromString('2026-06-13'),
             isApproximate: false,
         );
     }

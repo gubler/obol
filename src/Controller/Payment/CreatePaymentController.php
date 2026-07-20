@@ -12,7 +12,9 @@ use App\Dto\Payment\CreatePaymentDto;
 use App\Form\Payment\CreatePaymentFormType;
 use App\Message\Command\Payment\CreatePaymentCommand;
 use App\Message\Query\Subscription\FindSubscriptionQuery;
+use App\ValueObject\CalendarDate;
 use Psr\Clock\ClockInterface;
+use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -40,7 +42,7 @@ final class CreatePaymentController extends AbstractBaseController
         $dto = new CreatePaymentDto();
         if ($offerRestart) {
             // Prefill a sensible future anchor should the user choose to resume automated generation.
-            $dto->nextRenewal = $subscription->suggestedResumeRenewal($this->clock->now());
+            $dto->nextRenewal = (string) $subscription->suggestedResumeRenewal($this->clock->now());
         }
 
         $form = $this->createForm(type: CreatePaymentFormType::class, data: $dto, options: [
@@ -57,18 +59,28 @@ final class CreatePaymentController extends AbstractBaseController
             \assert(null !== $data->amount);
             \assert(null !== $data->paidDate);
 
-            $this->commandBus->dispatch(command: new CreatePaymentCommand(
-                ownerUserId: $this->currentUser()->id,
-                subscriptionId: $subscription->id,
-                amount: $data->amount,
-                paidDate: $data->paidDate,
-                restartPaymentGeneration: $data->restartPaymentGeneration,
-                nextRenewal: $data->nextRenewal,
-            ));
+            // Resuming automated generation needs a future anchor; report a past one as a form error
+            // rather than letting automatePayments() throw a 500.
+            $restartRenewal = $data->restartPaymentGeneration && null !== $data->nextRenewal
+                ? CalendarDate::fromString($data->nextRenewal)
+                : null;
 
-            $this->addFlash(type: self::FLASH_SUCCESS, message: $this->translator->trans('payment.flash.recorded'));
+            if ($restartRenewal instanceof CalendarDate && $restartRenewal->isOnOrBefore($this->currentUser()->localDateFor($this->clock->now()))) {
+                $form->get('nextRenewal')->addError(new FormError($this->translator->trans('payment.validation.renewal_future')));
+            } else {
+                $this->commandBus->dispatch(command: new CreatePaymentCommand(
+                    ownerUserId: $this->currentUser()->id,
+                    subscriptionId: $subscription->id,
+                    amount: $data->amount,
+                    paidDate: CalendarDate::fromString($data->paidDate),
+                    restartPaymentGeneration: $data->restartPaymentGeneration,
+                    nextRenewal: $restartRenewal,
+                ));
 
-            return $this->redirectToRoute(route: 'subscription_show', parameters: ['id' => $subscriptionId]);
+                $this->addFlash(type: self::FLASH_SUCCESS, message: $this->translator->trans('payment.flash.recorded'));
+
+                return $this->redirectToRoute(route: 'subscription_show', parameters: ['id' => $subscriptionId]);
+            }
         }
 
         if ($form->isSubmitted() && !$form->isValid()) {

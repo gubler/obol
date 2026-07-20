@@ -14,6 +14,7 @@ use App\Entity\User;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\SubscriptionEventType;
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
 
@@ -30,10 +31,11 @@ final class SubscriptionEventTest extends TestCase
             owner: new User(email: 'owner@example.com'),
             category: $category,
             name: 'Test Subscription',
-            nextRenewal: new \DateTimeImmutable(),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1000, Currency::USD),
+            now: new \DateTimeImmutable('2000-01-01', new \DateTimeZone('UTC')),
         );
     }
 

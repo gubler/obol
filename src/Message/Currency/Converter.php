@@ -9,6 +9,7 @@ namespace App\Message\Currency;
 
 use App\Enum\Currency;
 use App\Repository\ExchangeRateRepository;
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 use Assert\Assertion;
 
@@ -24,7 +25,7 @@ final readonly class Converter
      * historical lookup. Same-currency conversion is the identity. Conversion is approximate by
      * design (#126): naive rounding to the target currency's minor unit, no banker's rounding.
      */
-    public function convert(Money $from, Currency $to, ?\DateTimeImmutable $asOf = null): Money
+    public function convert(Money $from, Currency $to, ?CalendarDate $asOf = null): Money
     {
         if ($from->currency === $to) {
             return $from;

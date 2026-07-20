@@ -17,13 +17,16 @@ use App\Enum\PaymentType;
 use App\Message\Command\Payment\AmendPaymentCommand;
 use App\Message\Command\Payment\AmendPaymentHandler;
 use App\Repository\PaymentRepository;
+use App\Tests\Support\CalendarDateAssertions;
 use App\Tests\Support\InstantAssertions;
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
 
 final class AmendPaymentHandlerTest extends TestCase
 {
+    use CalendarDateAssertions;
     use InstantAssertions;
 
     public function testAmendsThePayment(): void
@@ -32,16 +35,17 @@ final class AmendPaymentHandlerTest extends TestCase
             owner: new User(email: 'owner@example.com'),
             category: new Category(owner: new User(email: 'owner@example.com'), name: 'Test'),
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-02-01'),
+            nextRenewal: CalendarDate::fromString('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1000, Currency::USD),
+            now: new \DateTimeImmutable('2000-01-01', new \DateTimeZone('UTC')),
         );
         $payment = new Payment(
             subscription: $subscription,
             type: PaymentType::Generated,
             amount: new Money(1000, Currency::USD),
-            paidDate: new \DateTimeImmutable('2024-01-01'),
+            paidDate: CalendarDate::fromString('2024-01-01'),
         );
 
         $repository = $this->createMock(PaymentRepository::class);
@@ -52,11 +56,11 @@ final class AmendPaymentHandlerTest extends TestCase
             ownerUserId: new Ulid(),
             paymentId: $payment->id,
             amount: 1200,
-            paidDate: new \DateTimeImmutable('2024-01-05'),
+            paidDate: CalendarDate::fromString('2024-01-05'),
         ));
 
         self::assertSame(1200, $payment->amount->minorAmount);
-        self::assertSameInstant(new \DateTimeImmutable('2024-01-05'), $payment->paidDate);
+        self::assertSameDate('2024-01-05', $payment->paidDate);
         self::assertSame(PaymentType::Verified, $payment->type);
     }
 
@@ -73,7 +77,7 @@ final class AmendPaymentHandlerTest extends TestCase
             ownerUserId: new Ulid(),
             paymentId: new Ulid(),
             amount: 1200,
-            paidDate: new \DateTimeImmutable(),
+            paidDate: CalendarDate::fromString('2024-01-01'),
         ));
     }
 }

@@ -21,8 +21,10 @@ use App\Repository\ExchangeRateRepository;
 use App\Repository\PaymentSourceRepository;
 use App\Repository\SubscriptionRepository;
 use App\Repository\UserRepository;
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Clock\MockClock;
 use Symfony\Component\Uid\Ulid;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -34,10 +36,11 @@ final class FindPaymentSourceBreakdownRunnerTest extends TestCase
             owner: new User(email: 'owner@example.com'),
             category: null,
             name: $name,
-            nextRenewal: new \DateTimeImmutable('2026-01-01'),
+            nextRenewal: CalendarDate::fromString('2026-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money($costMinor, Currency::USD),
+            now: new \DateTimeImmutable('2000-01-01', new \DateTimeZone('UTC')),
             paymentSource: $source,
         );
     }
@@ -62,7 +65,7 @@ final class FindPaymentSourceBreakdownRunnerTest extends TestCase
 
         $totaller = $this->totaller();
 
-        $runner = new FindPaymentSourceBreakdownRunner($paymentSourceRepository, $subscriptionRepository, $totaller, self::userRepository(), self::translator());
+        $runner = new FindPaymentSourceBreakdownRunner($paymentSourceRepository, $subscriptionRepository, $totaller, self::userRepository(), new MockClock(), self::translator());
 
         return $runner(new FindPaymentSourceBreakdownQuery(ownerUserId: $ownerUserId, paymentSourceId: $sourceId));
     }
@@ -131,7 +134,7 @@ final class FindPaymentSourceBreakdownRunnerTest extends TestCase
             ])
         ;
 
-        $runner = new FindPaymentSourceBreakdownRunner($paymentSourceRepository, $subscriptionRepository, $this->totaller(), self::userRepository(), self::translator());
+        $runner = new FindPaymentSourceBreakdownRunner($paymentSourceRepository, $subscriptionRepository, $this->totaller(), self::userRepository(), new MockClock(), self::translator());
         $composition = $runner(new FindPaymentSourceBreakdownQuery(ownerUserId: $ownerUserId, paymentSourceId: null));
 
         self::assertInstanceOf(Composition::class, $composition);

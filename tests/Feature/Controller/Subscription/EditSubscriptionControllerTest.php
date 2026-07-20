@@ -259,7 +259,7 @@ final class EditSubscriptionControllerTest extends AuthenticatedTestCase
         $updated = $entityManager->getRepository(className: Subscription::class)->find($subscription->id);
         self::assertInstanceOf(Subscription::class, $updated);
         self::assertTrue($updated->generatesPaymentsAutomatically());
-        self::assertSame($future, $updated->nextRenewal->format('Y-m-d'));
+        self::assertSame($future, (string) $updated->nextRenewal);
     }
 
     public function testRejectsARestartWithANonFutureRenewalDate(): void

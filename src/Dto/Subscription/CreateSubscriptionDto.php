@@ -32,8 +32,11 @@ final class CreateSubscriptionDto
     #[NotBlank]
     public string $name = '';
 
-    #[NotNull]
-    public ?\DateTimeImmutable $nextRenewal = null;
+    // A `Y-m-d` string from the date picker (the form binds `input => string`); the controller converts
+    // it to a CalendarDate. Any date is allowed - a past renewal simply starts generation on Manual.
+    // NotBlank (not NotNull) because an empty date field binds to '' rather than null.
+    #[NotBlank]
+    public ?string $nextRenewal = null;
 
     public PaymentPeriod $paymentPeriod = PaymentPeriod::Month;
 

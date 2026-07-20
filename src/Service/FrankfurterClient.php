@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Enum\Currency;
+use App\ValueObject\CalendarDate;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final readonly class FrankfurterClient implements ExchangeRateProviderInterface
@@ -38,6 +39,6 @@ final readonly class FrankfurterClient implements ExchangeRateProviderInterface
             }
         }
 
-        return new RateSnapshot(new \DateTimeImmutable($data['date']), $rates);
+        return new RateSnapshot(CalendarDate::fromString($data['date']), $rates);
     }
 }

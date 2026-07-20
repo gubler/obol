@@ -13,6 +13,7 @@ use App\Message\Query\Report\Composition;
 use App\Message\Query\Report\CompositionSlice;
 use App\Service\CompositionChartFactory;
 use App\Tests\Support\PinsDefaultLocale;
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
 use Symfony\UX\Chartjs\Builder\ChartBuilder;
@@ -66,7 +67,7 @@ final class CompositionChartFactoryTest extends TestCase
         return new Composition(
             slices: array_values($slices),
             total: new ConvertedTotal(self::usd(0), [], false),
-            asOf: new \DateTimeImmutable('2026-06-13'),
+            asOf: CalendarDate::fromString('2026-06-13'),
         );
     }
 }

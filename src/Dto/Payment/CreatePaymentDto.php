@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace App\Dto\Payment;
 
-use Symfony\Component\Validator\Constraints\GreaterThan;
 use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
+use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
 use Symfony\Component\Validator\Constraints\When;
 
@@ -18,21 +18,24 @@ final class CreatePaymentDto
     #[GreaterThanOrEqual(value: 1)]
     public ?int $amount = null;
 
-    #[NotNull]
-    public ?\DateTimeImmutable $paidDate = null;
+    // A `Y-m-d` string from the date picker; the controller converts it to a CalendarDate. NotBlank (not
+    // NotNull) because an empty date field binds to '' rather than null.
+    #[NotBlank]
+    public ?string $paidDate = null;
 
     /**
-     * Only offered for a manual subscription. When checked, `nextRenewal` must be a future date and
-     * the subscription returns to automated generation anchored there.
+     * Only offered for a manual subscription. When checked, the subscription returns to automated
+     * generation anchored to `nextRenewal`, which must be a future date (checked in the controller).
      */
     public bool $restartPaymentGeneration = false;
 
+    // The resume anchor (a `Y-m-d` string), required only when restarting; the future-date check lives
+    // in the controller so a past date is a form error rather than a 500 from automatePayments().
     #[When(
         expression: 'this.restartPaymentGeneration === true',
         constraints: [
             new NotNull(message: 'payment.validation.restart_renewal_required'),
-            new GreaterThan(value: 'today', message: 'payment.validation.renewal_future'),
         ],
     )]
-    public ?\DateTimeImmutable $nextRenewal = null;
+    public ?string $nextRenewal = null;
 }

@@ -94,8 +94,26 @@ $subscription = SubscriptionFactory::createOne([
 - All enums in `App\Enum` must be backed
 - Entities must not depend on controllers
 - Data access (repositories and the `EntityManager`) is confined to the handler layer — only `App\Message`, `App\Entity` and `App\Repository` may reference them (see [ADR-0006](https://code.dev88.work/dev88/obol/src/branch/main/reference/adr/0006-cqrs-buses-data-access-boundary.md) / [ADR-0007](https://code.dev88.work/dev88/obol/src/branch/main/reference/adr/0007-write-path-message-conventions.md))
+- The calendar-date frame is locked in place (see [ADR-0021](https://code.dev88.work/dev88/obol/src/branch/main/reference/adr/0021-calendar-date-value-object.md)): the five calendar-date fields are `CalendarDate`, only `User` and `CalendarDate` may touch a timezone, no code hand-rolls `->format('Y-m-d')`, no DTO constrains a date to the future, entities take no clock, and time-sensitive code never reads the ambient `new \DateTimeImmutable()`
 
 The "no debugging functions" rule (`dump`, `dd`, `var_dump`, `print_r`, `ray`) is enforced by PHPStan instead — function-call rules are not something reflection can express. It lives in the Symplify `ForbiddenFuncCallRule` in `phpstan.dist.neon` and runs under `mise run sa`.
+
+## Timezone and CalendarDate testing
+
+Calendar-date behavior (`CalendarDate`, the renewal anchor, the payment date, report boundaries) is
+timezone-sensitive at exactly one seam — the owner's zone, applied at read time. Two conventions keep
+those tests honest:
+
+- **Prove independence by contrast, not by pinning.** A test that a date resolves correctly in a given
+  zone uses two owners in *contrasting* zones reading the same instant (e.g. `Pacific/Honolulu` at
+  06:00 UTC is still the previous day, `Asia/Tokyo` is already the next), and asserts the days differ.
+  Feature tests prefer permanent-offset zones with no DST (`Pacific/Kiritimati` UTC+14,
+  `Pacific/Midway` UTC-11) so a DST transition can't move the answer.
+- **`PinsDefaultTimezone` only to prove ambient-independence.** `CalendarDate` is designed to ignore the
+  process default timezone. The `App\Tests\Support\PinsDefaultTimezone` trait sets a hostile ambient
+  zone (and restores it afterward) so a test can *prove* the result doesn't move; it is not a substitute
+  for passing an explicit zone in the code under test. `CalendarDateAssertions::assertSameDate()`
+  compares a `CalendarDate` against an expected `Y-m-d` string by value.
 
 ## Static Analysis of Tests
 

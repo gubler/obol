@@ -10,6 +10,7 @@ namespace App\Tests\Integration\Repository;
 use App\Entity\ExchangeRate;
 use App\Enum\Currency;
 use App\Repository\ExchangeRateRepository;
+use App\ValueObject\CalendarDate;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
@@ -17,7 +18,7 @@ final class ExchangeRateRepositoryTest extends WebTestCase
 {
     private function persistRate(EntityManagerInterface $entityManager, Currency $currency, float $rate, string $asOf): void
     {
-        $entityManager->persist(new ExchangeRate($currency, $rate, new \DateTimeImmutable($asOf)));
+        $entityManager->persist(new ExchangeRate($currency, $rate, CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable($asOf), new \DateTimeZone('UTC'))));
     }
 
     public function testReturnsTheMostRecentRateForACurrency(): void
@@ -51,7 +52,7 @@ final class ExchangeRateRepositoryTest extends WebTestCase
         $this->persistRate($entityManager, Currency::USD, 1.09, '2024-01-03');
         $entityManager->flush();
 
-        self::assertSame(1.05, $repository->latestRate(Currency::USD, new \DateTimeImmutable('2024-01-02')));
+        self::assertSame(1.05, $repository->latestRate(Currency::USD, CalendarDate::fromString('2024-01-02')));
     }
 
     public function testReturnsNullWhenNoRateIsStoredForTheCurrency(): void

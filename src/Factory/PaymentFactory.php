@@ -7,6 +7,7 @@ namespace App\Factory;
 use App\Entity\Payment;
 use App\Enum\Currency;
 use App\Enum\PaymentType;
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
@@ -27,7 +28,10 @@ final class PaymentFactory extends PersistentObjectFactory
     {
         return [
             'amount' => new Money(self::faker()->numberBetween(500, 5000), Currency::USD),
-            'paidDate' => \DateTimeImmutable::createFromMutable(self::faker()->dateTime()),
+            'paidDate' => CalendarDate::forDatetimeInTimezone(
+                \DateTimeImmutable::createFromMutable(self::faker()->dateTime()),
+                new \DateTimeZone('UTC'),
+            ),
             'subscription' => SubscriptionFactory::new(),
             'type' => self::faker()->randomElement(PaymentType::cases()),
         ];

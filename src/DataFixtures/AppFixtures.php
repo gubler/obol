@@ -106,28 +106,28 @@ class AppFixtures extends Fixture
         // Add payments to subscriptions (2-5 each for active ones)
         for ($i = 0; $i < 5; ++$i) {
             $netflix->recordPayment(
-                paidDate: new \DateTimeImmutable('-' . $i . ' months'),
+                paidDate: \App\ValueObject\CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('-' . $i . ' months'), new \DateTimeZone('UTC')),
                 paymentType: \App\Enum\PaymentType::Verified,
             );
         }
 
         for ($i = 0; $i < 3; ++$i) {
             $spotify->recordPayment(
-                paidDate: new \DateTimeImmutable('-' . $i . ' months'),
+                paidDate: \App\ValueObject\CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('-' . $i . ' months'), new \DateTimeZone('UTC')),
                 paymentType: \App\Enum\PaymentType::Verified,
             );
         }
 
         for ($i = 0; $i < 4; ++$i) {
             $github->recordPayment(
-                paidDate: new \DateTimeImmutable('-' . $i . ' months'),
+                paidDate: \App\ValueObject\CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('-' . $i . ' months'), new \DateTimeZone('UTC')),
                 paymentType: \App\Enum\PaymentType::Verified,
             );
         }
 
         for ($i = 0; $i < 2; ++$i) {
             $notion->recordPayment(
-                paidDate: new \DateTimeImmutable('-' . $i . ' months'),
+                paidDate: \App\ValueObject\CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('-' . $i . ' months'), new \DateTimeZone('UTC')),
                 paymentType: \App\Enum\PaymentType::Verified,
             );
         }
@@ -144,6 +144,7 @@ class AppFixtures extends Fixture
             paymentPeriodCount: $netflix->paymentPeriodCount,
             cost: new Money(1999, Currency::USD),
             color: $netflix->color,
+            now: new \DateTimeImmutable('2000-01-01', new \DateTimeZone('UTC')),
         );
 
         $manager->flush();

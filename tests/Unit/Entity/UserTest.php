@@ -12,11 +12,15 @@ use App\Entity\UserEmail;
 use App\Enum\Currency;
 use App\Enum\DateFormat;
 use App\Enum\SavingsDisplay;
+use App\Tests\Support\PinsDefaultTimezone;
+use App\ValueObject\CalendarDate;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Uuid;
 
 final class UserTest extends TestCase
 {
+    use PinsDefaultTimezone;
+
     public function testDefaultsToUsdCurrencyUnresolvedLocaleAppTimezoneAndMediumDates(): void
     {
         $user = new User(email: 'magos@dev88.test');
@@ -240,30 +244,71 @@ final class UserTest extends TestCase
         self::assertFalse($user->userHandle->equals($other->userHandle));
     }
 
-    public function testToLocalReExpressesAnInstantInTheUsersTimezoneWithoutChangingIt(): void
+    public function testLocalDateForReadsTheSameInstantAsADifferentCalendarDayInEachOwnersZone(): void
     {
-        // A user behind UTC: 04:00 UTC is still the small hours of the same local day.
-        $newYorker = new User(email: 'ny@dev88.test', timezone: 'America/New_York');
-        $utc = new \DateTimeImmutable('2026-08-01 04:00:00', new \DateTimeZone('UTC'));
+        // One instant, read as a calendar date in four zones spanning UTC: the day differs by zone.
+        $instant = new \DateTimeImmutable('2026-08-01 06:00:00', new \DateTimeZone('UTC'));
 
-        $local = $newYorker->toLocal($utc);
-
-        // Same instant, re-expressed in the owner's wall clock (00:00 EDT, UTC-4).
-        self::assertSame($utc->getTimestamp(), $local->getTimestamp());
-        self::assertSame('2026-08-01 00:00:00', $local->format('Y-m-d H:i:s'));
-        self::assertSame('America/New_York', $local->getTimezone()->getName());
+        self::assertTrue(
+            CalendarDate::for(2026, 7, 31)->equals(
+                new User(email: 'hi@dev88.test', timezone: 'Pacific/Honolulu')->localDateFor($instant),
+            ),
+            'Honolulu (UTC-10) is still Jul 31 at 06:00 UTC',
+        );
+        self::assertTrue(
+            CalendarDate::for(2026, 8, 1)->equals(
+                new User(email: 'utc@dev88.test', timezone: 'UTC')->localDateFor($instant),
+            ),
+        );
+        self::assertTrue(
+            CalendarDate::for(2026, 8, 1)->equals(
+                new User(email: 'jp@dev88.test', timezone: 'Asia/Tokyo')->localDateFor($instant),
+            ),
+        );
     }
 
-    public function testToLocalCrossesTheLocalDayBoundaryForAZoneAheadOfUtc(): void
+    public function testLocalDateForResolvesTheLiveBugInstantToTheOwnersPreviousDay(): void
     {
-        // A user ahead of UTC: an instant still on Jul 31 in UTC is already Aug 1 locally.
-        $tokyoite = new User(email: 'jp@dev88.test', timezone: 'Asia/Tokyo');
-        $utc = new \DateTimeImmutable('2026-07-31 20:00:00', new \DateTimeZone('UTC'));
+        // The bug this whole refactor fixes: 03:59:59 UTC on Aug 1 is still Jul 31 for a New Yorker
+        // (UTC-4 EDT), so a bill due Aug 1 must not be counted in July.
+        $newYorker = new User(email: 'ny@dev88.test', timezone: 'America/New_York');
+        $instant = new \DateTimeImmutable('2026-08-01 03:59:59', new \DateTimeZone('UTC'));
 
-        $local = $tokyoite->toLocal($utc);
+        self::assertTrue(CalendarDate::for(2026, 7, 31)->equals($newYorker->localDateFor($instant)));
+    }
 
-        self::assertSame($utc->getTimestamp(), $local->getTimestamp());
-        self::assertSame('2026-08-01 05:00:00', $local->format('Y-m-d H:i:s'));
+    public function testLocalDateForFollowsAChangeOfTimezone(): void
+    {
+        // ADR-0016's claim, made testable: the owner's zone is applied at read time, so re-reading the
+        // same instant after a timezone change yields a different calendar date - nothing is stored.
+        $user = new User(email: 'mover@dev88.test', timezone: 'Asia/Tokyo');
+        $instant = new \DateTimeImmutable('2026-07-31 20:00:00', new \DateTimeZone('UTC'));
+
+        self::assertTrue(CalendarDate::for(2026, 8, 1)->equals($user->localDateFor($instant)));
+
+        $user->changePreferences(
+            displayCurrency: Currency::USD,
+            timezone: 'Pacific/Honolulu',
+            locale: 'en',
+            dateFormat: DateFormat::Medium,
+            savingsDisplay: SavingsDisplay::MonthOf,
+        );
+
+        self::assertTrue(CalendarDate::for(2026, 7, 31)->equals($user->localDateFor($instant)));
+    }
+
+    public function testLocalDateForIsIndependentOfTheAmbientProcessTimezone(): void
+    {
+        $newYorker = new User(email: 'ny@dev88.test', timezone: 'America/New_York');
+        $instant = new \DateTimeImmutable('2026-08-01 03:59:59', new \DateTimeZone('UTC'));
+
+        date_default_timezone_set('Pacific/Kiritimati');
+        $ahead = $newYorker->localDateFor($instant);
+        date_default_timezone_set('Pacific/Midway');
+        $behind = $newYorker->localDateFor($instant);
+
+        self::assertTrue($ahead->equals($behind));
+        self::assertTrue(CalendarDate::for(2026, 7, 31)->equals($ahead));
     }
 
     public function testSyncPrimaryEmailCacheAdoptsThePrimaryRowsAddress(): void

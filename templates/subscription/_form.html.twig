@@ -12,7 +12,17 @@
 {% endif %}
 
 {{ form_row(form.name) }}
-{{ form_row(form.nextRenewal) }}
+
+{# A past renewal is allowed (it switches the subscription to manual generation); warn softly. #}
+<div data-controller="past-date-warning">
+    {{ form_row(form.nextRenewal, {attr: {
+        'data-past-date-warning-target': 'input',
+        'data-action': 'input->past-date-warning#check',
+    }}) }}
+    <p class="past-date-warning mt-1 text-sm text-warning" data-past-date-warning-target="message" hidden>
+        {{ 'subscription.form.past_date_warning'|trans }}
+    </p>
+</div>
 
 {# Cycle: paymentPeriodCount + paymentPeriod read as one sentence, "Every N period(s)". #}
 <div data-controller="billing-cycle">

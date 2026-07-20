@@ -17,11 +17,9 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Constraints\AtLeastOneOf;
 use Symfony\Component\Validator\Constraints\Blank;
 use Symfony\Component\Validator\Constraints\File;
-use Symfony\Component\Validator\Constraints\GreaterThan;
 use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Url;
-use Symfony\Component\Validator\Constraints\When;
 
 final class UpdateSubscriptionDto
 {
@@ -34,15 +32,14 @@ final class UpdateSubscriptionDto
     #[NotBlank]
     public string $name;
 
-    #[When(
-        expression: 'this.restartPaymentGeneration === true',
-        constraints: [new GreaterThan(value: 'today', message: 'subscription.validation.restart_renewal_future')],
-    )]
-    public \DateTimeImmutable $nextRenewal;
+    // A `Y-m-d` string from the date picker; the controller converts it to a CalendarDate. A past date
+    // is allowed and starts (or keeps) Manual generation. When restarting, the controller checks the
+    // date is in the future in the owner's zone and reports a form error otherwise (never a 500).
+    public string $nextRenewal;
 
     /**
      * Only offered for a manual subscription. When checked, the subscription returns to automated
-     * generation anchored to `nextRenewal`, which must be a future date.
+     * generation anchored to `nextRenewal`, which must be a future date (checked in the controller).
      */
     public bool $restartPaymentGeneration = false;
 
@@ -78,7 +75,7 @@ final class UpdateSubscriptionDto
         $this->category = $subscription->category;
         $this->paymentSource = $subscription->paymentSource;
         $this->name = $subscription->name;
-        $this->nextRenewal = $subscription->nextRenewal;
+        $this->nextRenewal = (string) $subscription->nextRenewal;
         $this->paymentPeriod = $subscription->paymentPeriod;
         $this->paymentPeriodCount = $subscription->paymentPeriodCount;
         $this->cost = $subscription->cost->minorAmount;

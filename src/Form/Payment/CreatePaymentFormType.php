@@ -30,7 +30,8 @@ final class CreatePaymentFormType extends AbstractType
             ->add(child: 'paidDate', type: DateType::class, options: [
                 'label' => 'payment.form.paid_date',
                 'widget' => 'single_text',
-                'input' => 'datetime_immutable',
+                'input' => 'string',
+                'input_format' => 'Y-m-d',
             ])
         ;
 
@@ -45,7 +46,8 @@ final class CreatePaymentFormType extends AbstractType
                 ->add(child: 'nextRenewal', type: DateType::class, options: [
                     'label' => 'payment.form.next_renewal_on',
                     'widget' => 'single_text',
-                    'input' => 'datetime_immutable',
+                    'input' => 'string',
+                    'input_format' => 'Y-m-d',
                     'required' => false,
                 ])
             ;

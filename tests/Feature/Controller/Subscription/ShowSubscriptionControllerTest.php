@@ -17,6 +17,7 @@ use App\Factory\SubscriptionFactory;
 use App\Factory\UserFactory;
 use App\Tests\Support\AuthenticatedTestCase;
 use App\Tests\Support\TranslationAssertions;
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 
 final class ShowSubscriptionControllerTest extends AuthenticatedTestCase
@@ -89,7 +90,7 @@ final class ShowSubscriptionControllerTest extends AuthenticatedTestCase
         $client = $this->authenticatedClient();
         $subscription = SubscriptionFactory::createOne([
             'name' => 'Netflix',
-            'nextRenewal' => new \DateTimeImmutable('2024-03-01'),
+            'nextRenewal' => CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('2024-03-01'), new \DateTimeZone('UTC')),
             'paymentPeriod' => PaymentPeriod::Month,
             'paymentPeriodCount' => 1,
         ]);
@@ -97,7 +98,7 @@ final class ShowSubscriptionControllerTest extends AuthenticatedTestCase
         PaymentFactory::createOne([
             'subscription' => $subscription,
             'type' => PaymentType::Generated,
-            'paidDate' => new \DateTimeImmutable('2024-02-15'),
+            'paidDate' => CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('2024-02-15'), new \DateTimeZone('UTC')),
             'advancedRenewal' => true,
         ]);
 
@@ -115,7 +116,7 @@ final class ShowSubscriptionControllerTest extends AuthenticatedTestCase
         $client = $this->authenticatedClient();
         $subscription = SubscriptionFactory::createOne([
             'name' => 'Netflix',
-            'nextRenewal' => new \DateTimeImmutable('2024-03-01'),
+            'nextRenewal' => CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('2024-03-01'), new \DateTimeZone('UTC')),
             'paymentPeriod' => PaymentPeriod::Month,
             'paymentPeriodCount' => 1,
         ]);
@@ -123,7 +124,7 @@ final class ShowSubscriptionControllerTest extends AuthenticatedTestCase
         PaymentFactory::createOne([
             'subscription' => $subscription,
             'type' => PaymentType::Verified,
-            'paidDate' => new \DateTimeImmutable('2023-11-01'),
+            'paidDate' => CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('2023-11-01'), new \DateTimeZone('UTC')),
             'advancedRenewal' => false,
         ]);
 
@@ -160,7 +161,7 @@ final class ShowSubscriptionControllerTest extends AuthenticatedTestCase
             'cost' => new Money(12000, Currency::USD),
             'paymentPeriod' => PaymentPeriod::Year,
             'paymentPeriodCount' => 1,
-            'nextRenewal' => new \DateTimeImmutable()->add(new \DateInterval('P1M')),
+            'nextRenewal' => CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable()->add(new \DateInterval('P1M')), new \DateTimeZone('UTC')),
         ]);
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/' . $subscription->id);
@@ -181,7 +182,7 @@ final class ShowSubscriptionControllerTest extends AuthenticatedTestCase
             'cost' => new Money(12000, Currency::USD),
             'paymentPeriod' => PaymentPeriod::Year,
             'paymentPeriodCount' => 1,
-            'nextRenewal' => new \DateTimeImmutable()->add(new \DateInterval('P1M')),
+            'nextRenewal' => CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable()->add(new \DateInterval('P1M')), new \DateTimeZone('UTC')),
         ]);
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/' . $subscription->id);
@@ -215,7 +216,7 @@ final class ShowSubscriptionControllerTest extends AuthenticatedTestCase
         PaymentFactory::createOne([
             'subscription' => $subscription,
             'type' => PaymentType::Generated,
-            'paidDate' => new \DateTimeImmutable('2024-02-15'),
+            'paidDate' => CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('2024-02-15'), new \DateTimeZone('UTC')),
         ]);
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/' . $subscription->id);
@@ -254,8 +255,8 @@ final class ShowSubscriptionControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
         $subscription = SubscriptionFactory::createOne(['name' => 'Netflix']);
-        PaymentFactory::createOne(['subscription' => $subscription, 'paidDate' => new \DateTimeImmutable('2024-01-01')]);
-        PaymentFactory::createOne(['subscription' => $subscription, 'paidDate' => new \DateTimeImmutable('2024-02-01')]);
+        PaymentFactory::createOne(['subscription' => $subscription, 'paidDate' => CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('2024-01-01'), new \DateTimeZone('UTC'))]);
+        PaymentFactory::createOne(['subscription' => $subscription, 'paidDate' => CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('2024-02-01'), new \DateTimeZone('UTC'))]);
 
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/' . $subscription->id);
 

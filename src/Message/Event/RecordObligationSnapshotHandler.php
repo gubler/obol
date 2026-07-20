@@ -12,6 +12,7 @@ use App\Repository\ObligationSnapshotRepository;
 use App\Repository\SubscriptionRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Clock\ClockInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Uid\Ulid;
@@ -25,6 +26,7 @@ final readonly class RecordObligationSnapshotHandler
         private UserRepository $userRepository,
         private EntityManagerInterface $entityManager,
         private LoggerInterface $logger,
+        private ClockInterface $clock,
     ) {
     }
 
@@ -45,7 +47,9 @@ final readonly class RecordObligationSnapshotHandler
             }
 
             $owner = $this->userRepository->getForId($event->ownerUserId);
-            $this->entityManager->persist(new ObligationSnapshot($owner, $current));
+            $this->entityManager->persist(
+                new ObligationSnapshot($owner, $current, $owner->localDateFor($this->clock->now())),
+            );
         } catch (\Throwable $throwable) {
             // A snapshot is a derived side effect; never let its failure roll back the edit that triggered it.
             $this->logger->error('Failed to record obligation snapshot', ['exception' => $throwable]);

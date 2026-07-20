@@ -20,8 +20,10 @@ use App\Message\Query\Report\TotalObligation;
 use App\Repository\ExchangeRateRepository;
 use App\Repository\SubscriptionRepository;
 use App\Repository\UserRepository;
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Clock\MockClock;
 use Symfony\Component\Uid\Ulid;
 
 final class FindTotalObligationRunnerTest extends TestCase
@@ -32,10 +34,11 @@ final class FindTotalObligationRunnerTest extends TestCase
             owner: new User(email: 'owner@example.com'),
             category: new Category(owner: new User(email: 'owner@example.com'), name: 'Test'),
             name: 'Test',
-            nextRenewal: new \DateTimeImmutable('2020-01-01'),
+            nextRenewal: CalendarDate::fromString('2020-01-01'),
             paymentPeriod: $period,
             paymentPeriodCount: $count,
             cost: $cost,
+            now: new \DateTimeImmutable('2000-01-01', new \DateTimeZone('UTC')),
         );
     }
 
@@ -62,6 +65,7 @@ final class FindTotalObligationRunnerTest extends TestCase
             $subscriptionRepository,
             new CurrencyTotaller(new Converter($exchangeRateRepository)),
             $userRepository,
+            new MockClock(),
         );
 
         return $runner(new FindTotalObligationQuery(ownerUserId: new Ulid()));
@@ -84,7 +88,7 @@ final class FindTotalObligationRunnerTest extends TestCase
         self::assertSame(1902, $totals->weekly->minorAmount);         // round(8240 * 12/52)
         self::assertSame(98880, $totals->yearly->minorAmount);        // 8240 * 12
         self::assertTrue($totals->isApproximate);
-        self::assertInstanceOf(\DateTimeImmutable::class, $totals->asOf);
+        self::assertInstanceOf(CalendarDate::class, $totals->asOf);
 
         self::assertCount(2, $totals->breakdown);
         // Key-sorted by currency code: EUR before USD.

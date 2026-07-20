@@ -14,6 +14,7 @@ use App\Repository\UserRepository;
 use App\Service\SubscriptionChangeNotifierInterface;
 use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Clock\ClockInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(bus: 'command.bus', handles: CreateSubscriptionCommand::class)]
@@ -25,6 +26,7 @@ final readonly class CreateSubscriptionHandler
         private UserRepository $userRepository,
         private EntityManagerInterface $entityManager,
         private SubscriptionChangeNotifierInterface $subscriptionChangeNotifier,
+        private ClockInterface $clock,
     ) {
     }
 
@@ -66,6 +68,7 @@ final readonly class CreateSubscriptionHandler
             paymentPeriod: $command->paymentPeriod,
             paymentPeriodCount: $command->paymentPeriodCount,
             cost: new Money($command->cost, $command->currency),
+            now: $this->clock->now(),
             description: $command->description,
             link: $command->link,
             logo: $command->logo,

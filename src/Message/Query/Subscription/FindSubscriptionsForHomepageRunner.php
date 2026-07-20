@@ -15,7 +15,9 @@ use App\Enum\SubscriptionSort;
 use App\Message\Currency\CurrencyTotaller;
 use App\Repository\SubscriptionRepository;
 use App\Repository\UserRepository;
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
+use Psr\Clock\ClockInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(bus: 'query.bus', handles: FindSubscriptionsForHomepageQuery::class)]
@@ -31,6 +33,7 @@ final readonly class FindSubscriptionsForHomepageRunner
         private SubscriptionRepository $subscriptionRepository,
         private CurrencyTotaller $currencyTotaller,
         private UserRepository $userRepository,
+        private ClockInterface $clock,
     ) {
     }
 
@@ -39,8 +42,8 @@ final readonly class FindSubscriptionsForHomepageRunner
         $subscriptions = $this->subscriptionRepository->findForHomepageForOwner($query->ownerUserId, $query->includeArchived);
         usort($subscriptions, $this->comparator($query->sort));
 
-        $asOf = new \DateTimeImmutable();
         $owner = $this->userRepository->getForId($query->ownerUserId);
+        $asOf = $owner->localDateFor($this->clock->now());
         $display = $owner->displayCurrency;
 
         return new HomepageListing(
@@ -57,7 +60,7 @@ final readonly class FindSubscriptionsForHomepageRunner
      *
      * @return list<CategoryGroup>
      */
-    private function group(array $subscriptions, Currency $display, \DateTimeImmutable $asOf, SavingsDisplay $savingsDisplay): array
+    private function group(array $subscriptions, Currency $display, CalendarDate $asOf, SavingsDisplay $savingsDisplay): array
     {
         /** @var array<string, array{category: ?Category, subscriptions: list<Subscription>}> $grouped */
         $grouped = [];
@@ -114,7 +117,7 @@ final readonly class FindSubscriptionsForHomepageRunner
 
         return match ($sort) {
             SubscriptionSort::Name => $byName,
-            SubscriptionSort::Renewal => static fn (Subscription $a, Subscription $b): int => ($a->nextRenewal <=> $b->nextRenewal) ?: $byName($a, $b),
+            SubscriptionSort::Renewal => static fn (Subscription $a, Subscription $b): int => $a->nextRenewal->compareTo($b->nextRenewal) ?: $byName($a, $b),
             SubscriptionSort::MonthlyCost => static fn (Subscription $a, Subscription $b): int => ($b->monthlyCost()->minorAmount <=> $a->monthlyCost()->minorAmount) ?: $byName($a, $b),
             SubscriptionSort::Cost => static fn (Subscription $a, Subscription $b): int => ($b->cost->minorAmount <=> $a->cost->minorAmount) ?: $byName($a, $b),
         };

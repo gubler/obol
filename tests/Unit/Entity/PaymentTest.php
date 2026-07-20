@@ -14,12 +14,15 @@ use App\Entity\User;
 use App\Enum\Currency;
 use App\Enum\PaymentPeriod;
 use App\Enum\PaymentType;
+use App\Tests\Support\CalendarDateAssertions;
 use App\Tests\Support\InstantAssertions;
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
 
 final class PaymentTest extends TestCase
 {
+    use CalendarDateAssertions;
     use InstantAssertions;
 
     private Subscription $subscription;
@@ -33,10 +36,11 @@ final class PaymentTest extends TestCase
             owner: new User(email: 'owner@example.com'),
             category: $category,
             name: 'Test Subscription',
-            nextRenewal: new \DateTimeImmutable(),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1000, Currency::USD),
+            now: new \DateTimeImmutable('2000-01-01', new \DateTimeZone('UTC')),
         );
     }
 
@@ -46,6 +50,7 @@ final class PaymentTest extends TestCase
             subscription: $this->subscription,
             type: PaymentType::Verified,
             amount: new Money(1000, Currency::USD),
+            paidDate: CalendarDate::fromString('2024-01-01'),
         );
 
         self::assertSame($this->subscription, $payment->subscription);
@@ -59,6 +64,7 @@ final class PaymentTest extends TestCase
             subscription: $this->subscription,
             type: PaymentType::Verified,
             amount: new Money(1000, Currency::USD),
+            paidDate: CalendarDate::fromString('2024-01-01'),
         );
 
         // Denormalized copy-at-birth: a payment's owner always equals its subscription's owner,
@@ -68,7 +74,7 @@ final class PaymentTest extends TestCase
 
     public function testStoresThePaidDate(): void
     {
-        $paidDate = new \DateTimeImmutable('2024-05-01');
+        $paidDate = CalendarDate::fromString('2024-05-01');
         $payment = new Payment(
             subscription: $this->subscription,
             type: PaymentType::Verified,
@@ -86,6 +92,7 @@ final class PaymentTest extends TestCase
             subscription: $this->subscription,
             type: PaymentType::Generated,
             amount: new Money(2000, Currency::USD),
+            paidDate: CalendarDate::fromString('2024-01-01'),
         );
         $after = new \DateTimeImmutable();
 
@@ -99,12 +106,14 @@ final class PaymentTest extends TestCase
             subscription: $this->subscription,
             type: PaymentType::Verified,
             amount: new Money(1000, Currency::USD),
+            paidDate: CalendarDate::fromString('2024-01-01'),
         );
 
         $generatedPayment = new Payment(
             subscription: $this->subscription,
             type: PaymentType::Generated,
             amount: new Money(1000, Currency::USD),
+            paidDate: CalendarDate::fromString('2024-01-01'),
         );
 
         self::assertSame(PaymentType::Verified, $verifiedPayment->type);
@@ -117,13 +126,13 @@ final class PaymentTest extends TestCase
             subscription: $this->subscription,
             type: PaymentType::Generated,
             amount: new Money(1000, Currency::USD),
-            paidDate: new \DateTimeImmutable('2024-01-01'),
+            paidDate: CalendarDate::fromString('2024-01-01'),
         );
 
-        $payment->amend(amount: 1200, paidDate: new \DateTimeImmutable('2024-01-05'));
+        $payment->amend(amount: 1200, paidDate: CalendarDate::fromString('2024-01-05'));
 
         self::assertSame(1200, $payment->amount->minorAmount);
-        self::assertSameInstant(new \DateTimeImmutable('2024-01-05'), $payment->paidDate);
+        self::assertSameDate('2024-01-05', $payment->paidDate);
         self::assertSame(PaymentType::Verified, $payment->type);
     }
 
@@ -133,11 +142,12 @@ final class PaymentTest extends TestCase
             subscription: $this->subscription,
             type: PaymentType::Generated,
             amount: new Money(1000, Currency::USD),
+            paidDate: CalendarDate::fromString('2024-01-01'),
         );
 
         $this->expectException(\Assert\InvalidArgumentException::class);
 
-        $payment->amend(amount: 0, paidDate: new \DateTimeImmutable());
+        $payment->amend(amount: 0, paidDate: CalendarDate::fromString('2024-01-01'));
     }
 
     public function testRejectsZeroAmount(): void
@@ -148,6 +158,7 @@ final class PaymentTest extends TestCase
             subscription: $this->subscription,
             type: PaymentType::Verified,
             amount: new Money(0, Currency::USD),
+            paidDate: CalendarDate::fromString('2024-01-01'),
         );
     }
 
@@ -159,6 +170,7 @@ final class PaymentTest extends TestCase
             subscription: $this->subscription,
             type: PaymentType::Verified,
             amount: new Money(-100, Currency::USD),
+            paidDate: CalendarDate::fromString('2024-01-01'),
         );
     }
 }

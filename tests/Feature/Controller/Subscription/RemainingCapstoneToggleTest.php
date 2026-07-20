@@ -12,6 +12,7 @@ use App\Enum\PaymentPeriod;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
 use App\Tests\Support\AuthenticatedTestCase;
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 
 final class RemainingCapstoneToggleTest extends AuthenticatedTestCase
@@ -25,7 +26,7 @@ final class RemainingCapstoneToggleTest extends AuthenticatedTestCase
             'cost' => new Money(5000, Currency::USD),
             'paymentPeriod' => PaymentPeriod::Month,
             'paymentPeriodCount' => 1,
-            'nextRenewal' => new \DateTimeImmutable('first day of this month'),
+            'nextRenewal' => CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('first day of this month'), new \DateTimeZone('UTC')),
         ]);
 
         // Default capstone is Global Totals.

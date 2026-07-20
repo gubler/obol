@@ -2,6 +2,15 @@
 
 - Status: Accepted
 - Date: 2026-06-06
+- Amended by: ADR-0021
+
+> **Amended by ADR-0021.** Commands still carry a `Ulid` (never a Doctrine entity or a stringified id)
+> to identify owned rows. They *may* carry a non-entity, immutable value object as payload data -
+> `Money` already did, and `CalendarDate` now joins it (create/update subscription and payment commands
+> carry the renewal/paid date as a `CalendarDate`). The form DTO still carries the raw `Y-m-d` string;
+> the controller converts it to the value object at the DTO-to-Command hop. This is safe on the
+> synchronous buses (no serialization boundary); it would need reconsidering if a command were ever
+> moved to an async transport.
 
 ## Context
 

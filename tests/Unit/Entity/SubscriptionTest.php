@@ -19,17 +19,27 @@ use App\Enum\PaymentPeriod;
 use App\Enum\PaymentType;
 use App\Enum\SubscriptionEventType;
 use App\Enum\TileColor;
+use App\Tests\Support\CalendarDateAssertions;
 use App\Tests\Support\InstantAssertions;
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
 
 final class SubscriptionTest extends TestCase
 {
+    use CalendarDateAssertions;
     use InstantAssertions;
 
     private Category $category;
 
     private User $owner;
+
+    /**
+     * A construction-time "now" fixed far in the past, so a subscription built with any realistic future
+     * renewal starts Automated (the historical default). Tests that exercise the past-anchor->Manual rule
+     * pass their own instant instead.
+     */
+    private \DateTimeImmutable $now;
 
     protected function setUp(): void
     {
@@ -37,6 +47,7 @@ final class SubscriptionTest extends TestCase
 
         $this->category = new Category(owner: new User(email: 'owner@example.com'), name: 'Entertainment');
         $this->owner = new User(email: 'owner@example.com');
+        $this->now = new \DateTimeImmutable('2000-01-01', new \DateTimeZone('UTC'));
     }
 
     public function testCreatesSubscriptionWithAnImmutableOwner(): void
@@ -45,10 +56,11 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         self::assertSame($this->owner, $subscription->owner);
@@ -56,7 +68,7 @@ final class SubscriptionTest extends TestCase
 
     public function testCreatesSubscriptionWithValidData(): void
     {
-        $nextRenewal = new \DateTimeImmutable('2024-01-01');
+        $nextRenewal = CalendarDate::fromString('2024-01-01');
         $subscription = new Subscription(
             owner: $this->owner,
             category: $this->category,
@@ -65,6 +77,7 @@ final class SubscriptionTest extends TestCase
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         self::assertSame($this->category, $subscription->category);
@@ -81,10 +94,11 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: null,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         self::assertNull($subscription->category);
@@ -96,16 +110,17 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         $subscription->update(
             category: null,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -113,6 +128,7 @@ final class SubscriptionTest extends TestCase
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
             color: $subscription->color,
+            now: $this->now,
         );
 
         self::assertNull($subscription->category);
@@ -129,16 +145,17 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: null,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         $subscription->update(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -146,6 +163,7 @@ final class SubscriptionTest extends TestCase
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
             color: $subscription->color,
+            now: $this->now,
         );
 
         self::assertSame($this->category, $subscription->category);
@@ -163,10 +181,11 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         self::assertNull($subscription->paymentSource);
@@ -174,7 +193,7 @@ final class SubscriptionTest extends TestCase
         $subscription->update(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -182,6 +201,7 @@ final class SubscriptionTest extends TestCase
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
             color: $subscription->color,
+            now: $this->now,
             paymentSource: $source,
         );
 
@@ -203,17 +223,18 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
             paymentSource: $source,
         );
 
         $subscription->update(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -221,6 +242,7 @@ final class SubscriptionTest extends TestCase
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
             color: $subscription->color,
+            now: $this->now,
         );
 
         self::assertNull($subscription->paymentSource);
@@ -240,10 +262,11 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
             paymentSource: $from,
         );
 
@@ -266,10 +289,11 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
             paymentSource: $source,
         );
 
@@ -286,10 +310,11 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Spotify',
-            nextRenewal: new \DateTimeImmutable(),
+            nextRenewal: CalendarDate::fromString('2024-06-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1000, Currency::USD),
+            now: $this->now,
         );
         $after = new \DateTimeImmutable();
 
@@ -303,10 +328,11 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Spotify',
-            nextRenewal: new \DateTimeImmutable(),
+            nextRenewal: CalendarDate::fromString('2024-06-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1000, Currency::USD),
+            now: $this->now,
         );
 
         self::assertFalse($subscription->archived);
@@ -318,10 +344,11 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Spotify',
-            nextRenewal: new \DateTimeImmutable(),
+            nextRenewal: CalendarDate::fromString('2024-06-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1000, Currency::USD),
+            now: $this->now,
         );
 
         self::assertCount(0, $subscription->payments);
@@ -334,10 +361,11 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable(),
+            nextRenewal: CalendarDate::fromString('2024-06-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
             description: 'Streaming service',
             link: 'https://netflix.com',
             logo: 'netflix.png',
@@ -354,10 +382,11 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Spotify',
-            nextRenewal: new \DateTimeImmutable(),
+            nextRenewal: CalendarDate::fromString('2024-06-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1000, Currency::USD),
+            now: $this->now,
         );
 
         self::assertSame('', $subscription->description);
@@ -371,17 +400,18 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         $newCategory = new Category(owner: new User(email: 'owner@example.com'), name: 'Streaming');
         $subscription->update(
             category: $newCategory,
             name: 'Netflix Premium',
-            nextRenewal: new \DateTimeImmutable('2024-02-01'),
+            nextRenewal: CalendarDate::fromString('2024-02-01'),
             description: 'Premium plan',
             link: 'https://netflix.com',
             logo: 'netflix.png',
@@ -389,6 +419,7 @@ final class SubscriptionTest extends TestCase
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
             color: $subscription->color,
+            now: $this->now,
         );
 
         self::assertCount(1, $subscription->subscriptionEvents);
@@ -402,7 +433,7 @@ final class SubscriptionTest extends TestCase
 
     public function testCreatesOnlyCostChangeEventWhenOnlyCostFieldsChange(): void
     {
-        $nextRenewal = new \DateTimeImmutable('2024-01-01');
+        $nextRenewal = CalendarDate::fromString('2024-01-01');
         $subscription = new Subscription(
             owner: $this->owner,
             category: $this->category,
@@ -411,6 +442,7 @@ final class SubscriptionTest extends TestCase
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         $subscription->update(
@@ -424,6 +456,7 @@ final class SubscriptionTest extends TestCase
             paymentPeriodCount: 1,
             cost: new Money(15000, Currency::USD),
             color: $subscription->color,
+            now: $this->now,
         );
 
         self::assertCount(1, $subscription->subscriptionEvents);
@@ -436,7 +469,7 @@ final class SubscriptionTest extends TestCase
 
     public function testRecordsAPeriodCountChangeUnderThePaymentPeriodCountKey(): void
     {
-        $nextRenewal = new \DateTimeImmutable('2024-01-01');
+        $nextRenewal = CalendarDate::fromString('2024-01-01');
         $subscription = new Subscription(
             owner: $this->owner,
             category: $this->category,
@@ -445,6 +478,7 @@ final class SubscriptionTest extends TestCase
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         $subscription->update(
@@ -458,6 +492,7 @@ final class SubscriptionTest extends TestCase
             paymentPeriodCount: 3,
             cost: new Money(1500, Currency::USD),
             color: $subscription->color,
+            now: $this->now,
         );
 
         self::assertCount(1, $subscription->subscriptionEvents);
@@ -475,16 +510,17 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         $subscription->update(
             category: $this->category,
             name: 'Netflix Premium',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -492,6 +528,7 @@ final class SubscriptionTest extends TestCase
             paymentPeriodCount: 1,
             cost: new Money(15000, Currency::USD),
             color: $subscription->color,
+            now: $this->now,
         );
 
         self::assertCount(2, $subscription->subscriptionEvents);
@@ -507,7 +544,7 @@ final class SubscriptionTest extends TestCase
 
     public function testCreatesNoEventsWhenNoFieldsChange(): void
     {
-        $nextRenewal = new \DateTimeImmutable('2024-01-01');
+        $nextRenewal = CalendarDate::fromString('2024-01-01');
         $subscription = new Subscription(
             owner: $this->owner,
             category: $this->category,
@@ -516,6 +553,7 @@ final class SubscriptionTest extends TestCase
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         $subscription->update(
@@ -529,6 +567,7 @@ final class SubscriptionTest extends TestCase
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
             color: $subscription->color,
+            now: $this->now,
         );
 
         self::assertCount(0, $subscription->subscriptionEvents);
@@ -540,19 +579,20 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-02-01'),
+            nextRenewal: CalendarDate::fromString('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         // Paying late (on the 6th) must not move the anchor off the fixed cadence.
         $subscription->recordPayment(
-            paidDate: new \DateTimeImmutable('2024-02-06'),
+            paidDate: CalendarDate::fromString('2024-02-06'),
             paymentType: PaymentType::Verified,
         );
 
-        self::assertSameInstant(new \DateTimeImmutable('2024-03-01'), $subscription->nextRenewal);
+        self::assertSameDate('2024-03-01', $subscription->nextRenewal);
     }
 
     public function testRollingBackARemovedPaymentPullsTheRenewalAnchorBack(): void
@@ -561,14 +601,15 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-02-01'),
+            nextRenewal: CalendarDate::fromString('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         $subscription->recordPayment(
-            paidDate: new \DateTimeImmutable('2024-02-01'),
+            paidDate: CalendarDate::fromString('2024-02-01'),
             paymentType: PaymentType::Verified,
         );
         /** @var Payment $payment */
@@ -576,7 +617,7 @@ final class SubscriptionTest extends TestCase
         $subscription->removePayment($payment);
 
         self::assertCount(0, $subscription->payments);
-        self::assertSameInstant(new \DateTimeImmutable('2024-02-01'), $subscription->nextRenewal);
+        self::assertSameDate('2024-02-01', $subscription->nextRenewal);
     }
 
     public function testAddsPaymentToCollection(): void
@@ -585,14 +626,15 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         $subscription->recordPayment(
-            paidDate: new \DateTimeImmutable('2024-02-01'),
+            paidDate: CalendarDate::fromString('2024-02-01'),
             paymentType: PaymentType::Verified,
         );
 
@@ -609,14 +651,15 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         $subscription->recordPayment(
-            paidDate: new \DateTimeImmutable('2024-02-01'),
+            paidDate: CalendarDate::fromString('2024-02-01'),
             paymentType: PaymentType::Verified,
         );
 
@@ -631,14 +674,15 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         $subscription->recordPayment(
-            paidDate: new \DateTimeImmutable('2024-02-01'),
+            paidDate: CalendarDate::fromString('2024-02-01'),
             paymentType: PaymentType::Verified,
             amount: 2000,
         );
@@ -655,10 +699,11 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-02-01'),
+            nextRenewal: CalendarDate::fromString('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         self::assertSame(PaymentGeneration::Automated, $subscription->paymentGeneration);
@@ -671,10 +716,11 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-02-01'),
+            nextRenewal: CalendarDate::fromString('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         $subscription->switchToManualPayments();
@@ -689,20 +735,21 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-02-01'),
+            nextRenewal: CalendarDate::fromString('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
         $subscription->switchToManualPayments();
 
         $subscription->recordPayment(
-            paidDate: new \DateTimeImmutable('2024-02-01'),
+            paidDate: CalendarDate::fromString('2024-02-01'),
             paymentType: PaymentType::Verified,
         );
 
         self::assertCount(1, $subscription->payments);
-        self::assertSameInstant(new \DateTimeImmutable('2024-02-01'), $subscription->nextRenewal);
+        self::assertSameDate('2024-02-01', $subscription->nextRenewal);
     }
 
     public function testRemovingAPaymentUnderManualGenerationLeavesTheRenewalAnchorUntouched(): void
@@ -711,14 +758,15 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-02-01'),
+            nextRenewal: CalendarDate::fromString('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
         // Record while automated so the anchor advances to 2024-03-01, then switch to manual.
         $subscription->recordPayment(
-            paidDate: new \DateTimeImmutable('2024-02-01'),
+            paidDate: CalendarDate::fromString('2024-02-01'),
             paymentType: PaymentType::Verified,
         );
         $subscription->switchToManualPayments();
@@ -727,7 +775,7 @@ final class SubscriptionTest extends TestCase
         $subscription->removePayment($payment);
 
         self::assertCount(0, $subscription->payments);
-        self::assertSameInstant(new \DateTimeImmutable('2024-03-01'), $subscription->nextRenewal);
+        self::assertSameDate('2024-03-01', $subscription->nextRenewal);
     }
 
     public function testRemovingTheLatestGeneratedPaymentSwitchesToManualAndRollsBackTheAnchor(): void
@@ -736,14 +784,15 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-02-01'),
+            nextRenewal: CalendarDate::fromString('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
         // The scheduler records the due payment as Generated, which advances the anchor to 2024-03-01.
         $subscription->recordPayment(
-            paidDate: new \DateTimeImmutable('2024-02-01'),
+            paidDate: CalendarDate::fromString('2024-02-01'),
             paymentType: PaymentType::Generated,
         );
         /** @var Payment $payment */
@@ -754,7 +803,7 @@ final class SubscriptionTest extends TestCase
         self::assertCount(0, $subscription->payments);
         // Deleting a generated payment means "I did not pay this", so generation passes to the user.
         self::assertSame(PaymentGeneration::Manual, $subscription->paymentGeneration);
-        self::assertSameInstant(new \DateTimeImmutable('2024-02-01'), $subscription->nextRenewal);
+        self::assertSameDate('2024-02-01', $subscription->nextRenewal);
     }
 
     public function testRemovingTheLatestVerifiedPaymentRollsBackButLeavesGenerationAutomated(): void
@@ -763,14 +812,15 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-02-01'),
+            nextRenewal: CalendarDate::fromString('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
         // A user-recorded current-period payment advances the anchor to 2024-03-01.
         $subscription->recordPayment(
-            paidDate: new \DateTimeImmutable('2024-01-15'),
+            paidDate: CalendarDate::fromString('2024-01-15'),
             paymentType: PaymentType::Verified,
         );
         /** @var Payment $payment */
@@ -781,7 +831,7 @@ final class SubscriptionTest extends TestCase
         self::assertCount(0, $subscription->payments);
         // Deleting a verified payment is data correction, so generation stays automated.
         self::assertSame(PaymentGeneration::Automated, $subscription->paymentGeneration);
-        self::assertSameInstant(new \DateTimeImmutable('2024-02-01'), $subscription->nextRenewal);
+        self::assertSameDate('2024-02-01', $subscription->nextRenewal);
     }
 
     public function testBackfillingAHistoricalPaymentDoesNotAdvanceTheAnchor(): void
@@ -790,22 +840,23 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-02-01'),
+            nextRenewal: CalendarDate::fromString('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         // A payment for a prior period (well before the current period that ends on the anchor).
         $subscription->recordPayment(
-            paidDate: new \DateTimeImmutable('2023-12-15'),
+            paidDate: CalendarDate::fromString('2023-12-15'),
             paymentType: PaymentType::Verified,
         );
         /** @var Payment $payment */
         $payment = $subscription->payments->first();
 
         self::assertFalse($payment->advancedRenewal);
-        self::assertSameInstant(new \DateTimeImmutable('2024-02-01'), $subscription->nextRenewal);
+        self::assertSameDate('2024-02-01', $subscription->nextRenewal);
     }
 
     public function testAPaymentOnThePeriodBoundaryDoesNotAdvanceTheAnchor(): void
@@ -814,22 +865,23 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-02-01'),
+            nextRenewal: CalendarDate::fromString('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         // The boundary (anchor minus one interval) belongs to the prior period: not strictly greater.
         $subscription->recordPayment(
-            paidDate: new \DateTimeImmutable('2024-01-01'),
+            paidDate: CalendarDate::fromString('2024-01-01'),
             paymentType: PaymentType::Verified,
         );
         /** @var Payment $payment */
         $payment = $subscription->payments->first();
 
         self::assertFalse($payment->advancedRenewal);
-        self::assertSameInstant(new \DateTimeImmutable('2024-02-01'), $subscription->nextRenewal);
+        self::assertSameDate('2024-02-01', $subscription->nextRenewal);
     }
 
     public function testAnInPeriodPaymentAdvancesTheAnchorAndIsFlagged(): void
@@ -838,21 +890,22 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-02-01'),
+            nextRenewal: CalendarDate::fromString('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         $subscription->recordPayment(
-            paidDate: new \DateTimeImmutable('2024-01-15'),
+            paidDate: CalendarDate::fromString('2024-01-15'),
             paymentType: PaymentType::Verified,
         );
         /** @var Payment $payment */
         $payment = $subscription->payments->first();
 
         self::assertTrue($payment->advancedRenewal);
-        self::assertSameInstant(new \DateTimeImmutable('2024-03-01'), $subscription->nextRenewal);
+        self::assertSameDate('2024-03-01', $subscription->nextRenewal);
     }
 
     public function testRemovingABackfilledPaymentDoesNotRollBackTheAnchor(): void
@@ -861,13 +914,14 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-02-01'),
+            nextRenewal: CalendarDate::fromString('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
         $subscription->recordPayment(
-            paidDate: new \DateTimeImmutable('2023-12-15'),
+            paidDate: CalendarDate::fromString('2023-12-15'),
             paymentType: PaymentType::Verified,
         );
         /** @var Payment $payment */
@@ -876,7 +930,7 @@ final class SubscriptionTest extends TestCase
         $subscription->removePayment($payment);
 
         self::assertCount(0, $subscription->payments);
-        self::assertSameInstant(new \DateTimeImmutable('2024-02-01'), $subscription->nextRenewal);
+        self::assertSameDate('2024-02-01', $subscription->nextRenewal);
     }
 
     public function testProjectsTheRolledBackAnchorWhenRemovingAnAdvancingPayment(): void
@@ -885,20 +939,21 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-02-01'),
+            nextRenewal: CalendarDate::fromString('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
         $subscription->recordPayment(
-            paidDate: new \DateTimeImmutable('2024-01-15'),
+            paidDate: CalendarDate::fromString('2024-01-15'),
             paymentType: PaymentType::Generated,
         );
         /** @var Payment $payment */
         $payment = $subscription->payments->first();
 
         self::assertTrue($subscription->removalRollsBackAnchor($payment));
-        self::assertSameInstant(new \DateTimeImmutable('2024-02-01'), $subscription->renewalAfterRemoving($payment));
+        self::assertSameDate('2024-02-01', $subscription->renewalAfterRemoving($payment));
         self::assertTrue($subscription->removalSwitchesToManual($payment));
     }
 
@@ -908,20 +963,21 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-02-01'),
+            nextRenewal: CalendarDate::fromString('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
         $subscription->recordPayment(
-            paidDate: new \DateTimeImmutable('2023-12-15'),
+            paidDate: CalendarDate::fromString('2023-12-15'),
             paymentType: PaymentType::Verified,
         );
         /** @var Payment $payment */
         $payment = $subscription->payments->first();
 
         self::assertFalse($subscription->removalRollsBackAnchor($payment));
-        self::assertSameInstant(new \DateTimeImmutable('2024-02-01'), $subscription->renewalAfterRemoving($payment));
+        self::assertSameDate('2024-02-01', $subscription->renewalAfterRemoving($payment));
         self::assertFalse($subscription->removalSwitchesToManual($payment));
     }
 
@@ -931,17 +987,18 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-02-01'),
+            nextRenewal: CalendarDate::fromString('2024-02-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
         $subscription->recordPayment(
-            paidDate: new \DateTimeImmutable('2024-01-01'),
+            paidDate: CalendarDate::fromString('2024-01-01'),
             paymentType: PaymentType::Verified,
         );
         $subscription->recordPayment(
-            paidDate: new \DateTimeImmutable('2024-02-01'),
+            paidDate: CalendarDate::fromString('2024-02-01'),
             paymentType: PaymentType::Verified,
         );
         /** @var Payment $older */
@@ -959,10 +1016,11 @@ final class SubscriptionTest extends TestCase
             owner: $owner,
             category: null,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable($nextRenewal),
+            nextRenewal: CalendarDate::fromString($nextRenewal),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
     }
 
@@ -972,12 +1030,12 @@ final class SubscriptionTest extends TestCase
         $subscription->switchToManualPayments();
 
         $now = new \DateTimeImmutable('2026-06-15 12:00:00', new \DateTimeZone('UTC'));
-        $future = new \DateTimeImmutable('2026-06-20');
+        $future = CalendarDate::fromString('2026-06-20');
         $subscription->automatePayments($future, $now);
 
         self::assertSame(PaymentGeneration::Automated, $subscription->paymentGeneration);
         self::assertTrue($subscription->generatesPaymentsAutomatically());
-        self::assertSameInstant($future, $subscription->nextRenewal);
+        self::assertTrue($future->equals($subscription->nextRenewal));
     }
 
     public function testAutomatingWithANonFutureRenewalIsRejected(): void
@@ -989,7 +1047,7 @@ final class SubscriptionTest extends TestCase
 
         $this->expectException(\Assert\InvalidArgumentException::class);
 
-        $subscription->automatePayments(new \DateTimeImmutable('2020-01-01'), $now);
+        $subscription->automatePayments(CalendarDate::fromString('2020-01-01'), $now);
     }
 
     public function testAutomatingJudgesFutureOnTheOwnersLocalTodayAcceptingADateUtcWouldCallToday(): void
@@ -1000,7 +1058,7 @@ final class SubscriptionTest extends TestCase
         $subscription->switchToManualPayments();
 
         $now = new \DateTimeImmutable('2026-06-15 06:00:00', new \DateTimeZone('UTC'));
-        $subscription->automatePayments(new \DateTimeImmutable('2026-06-15 00:00:00'), $now);
+        $subscription->automatePayments(CalendarDate::fromString('2026-06-15'), $now);
 
         self::assertSame(PaymentGeneration::Automated, $subscription->paymentGeneration);
     }
@@ -1016,7 +1074,7 @@ final class SubscriptionTest extends TestCase
 
         $this->expectException(\Assert\InvalidArgumentException::class);
 
-        $subscription->automatePayments(new \DateTimeImmutable('2026-06-16 00:00:00'), $now);
+        $subscription->automatePayments(CalendarDate::fromString('2026-06-16'), $now);
     }
 
     public function testSuggestedResumeRenewalStepsTheCadenceToTheFirstDateAfterTheOwnersLocalToday(): void
@@ -1027,7 +1085,7 @@ final class SubscriptionTest extends TestCase
 
         $now = new \DateTimeImmutable('2026-06-15 12:00:00', new \DateTimeZone('UTC'));
 
-        self::assertSame('2026-07-15', $subscription->suggestedResumeRenewal($now)->format('Y-m-d'));
+        self::assertSame('2026-07-15', (string) $subscription->suggestedResumeRenewal($now));
     }
 
     public function testSuggestedResumeRenewalStepsRelativeToTheOwnersLocalTodayNotUtc(): void
@@ -1038,17 +1096,17 @@ final class SubscriptionTest extends TestCase
 
         $now = new \DateTimeImmutable('2026-06-15 06:00:00', new \DateTimeZone('UTC'));
 
-        self::assertSame('2026-06-15', $subscription->suggestedResumeRenewal($now)->format('Y-m-d'));
+        self::assertSame('2026-06-15', (string) $subscription->suggestedResumeRenewal($now));
     }
 
     public function testSuggestedResumeRenewalKeepsARenewalThatIsAlreadyInTheFuture(): void
     {
-        $future = new \DateTimeImmutable('2027-03-15');
+        $future = CalendarDate::fromString('2027-03-15');
         $subscription = $this->subscriptionFor($this->owner, '2027-03-15');
 
         $now = new \DateTimeImmutable('2026-06-15 12:00:00', new \DateTimeZone('UTC'));
 
-        self::assertSameInstant($future, $subscription->suggestedResumeRenewal($now));
+        self::assertTrue($future->equals($subscription->suggestedResumeRenewal($now)));
     }
 
     public function testSetsArchivedToTrue(): void
@@ -1057,10 +1115,11 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         $subscription->archive();
@@ -1074,10 +1133,11 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         $subscription->archive();
@@ -1095,10 +1155,11 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         $subscription->archive();
@@ -1113,10 +1174,11 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         $subscription->archive();
@@ -1141,10 +1203,11 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: '',
-            nextRenewal: new \DateTimeImmutable(),
+            nextRenewal: CalendarDate::fromString('2024-06-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
     }
 
@@ -1156,10 +1219,11 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: '   ',
-            nextRenewal: new \DateTimeImmutable(),
+            nextRenewal: CalendarDate::fromString('2024-06-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
     }
 
@@ -1171,10 +1235,11 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable(),
+            nextRenewal: CalendarDate::fromString('2024-06-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(0, Currency::USD),
+            now: $this->now,
         );
     }
 
@@ -1186,10 +1251,11 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable(),
+            nextRenewal: CalendarDate::fromString('2024-06-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(-100, Currency::USD),
+            now: $this->now,
         );
     }
 
@@ -1201,10 +1267,11 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable(),
+            nextRenewal: CalendarDate::fromString('2024-06-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 0,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
     }
 
@@ -1216,10 +1283,11 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable(),
+            nextRenewal: CalendarDate::fromString('2024-06-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: -1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
     }
 
@@ -1229,10 +1297,11 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         $this->expectException(\Assert\InvalidArgumentException::class);
@@ -1240,7 +1309,7 @@ final class SubscriptionTest extends TestCase
         $subscription->update(
             category: $this->category,
             name: '',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -1248,6 +1317,7 @@ final class SubscriptionTest extends TestCase
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
             color: $subscription->color,
+            now: $this->now,
         );
     }
 
@@ -1257,10 +1327,11 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         $this->expectException(\Assert\InvalidArgumentException::class);
@@ -1268,7 +1339,7 @@ final class SubscriptionTest extends TestCase
         $subscription->update(
             category: $this->category,
             name: '   ',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -1276,6 +1347,7 @@ final class SubscriptionTest extends TestCase
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
             color: $subscription->color,
+            now: $this->now,
         );
     }
 
@@ -1285,10 +1357,11 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         $this->expectException(\Assert\InvalidArgumentException::class);
@@ -1296,7 +1369,7 @@ final class SubscriptionTest extends TestCase
         $subscription->update(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -1304,6 +1377,7 @@ final class SubscriptionTest extends TestCase
             paymentPeriodCount: 1,
             cost: new Money(0, Currency::USD),
             color: $subscription->color,
+            now: $this->now,
         );
     }
 
@@ -1313,10 +1387,11 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         $this->expectException(\Assert\InvalidArgumentException::class);
@@ -1324,7 +1399,7 @@ final class SubscriptionTest extends TestCase
         $subscription->update(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -1332,6 +1407,7 @@ final class SubscriptionTest extends TestCase
             paymentPeriodCount: 1,
             cost: new Money(-100, Currency::USD),
             color: $subscription->color,
+            now: $this->now,
         );
     }
 
@@ -1341,10 +1417,11 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         $this->expectException(\Assert\InvalidArgumentException::class);
@@ -1352,7 +1429,7 @@ final class SubscriptionTest extends TestCase
         $subscription->update(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -1360,6 +1437,7 @@ final class SubscriptionTest extends TestCase
             paymentPeriodCount: 0,
             cost: new Money(1500, Currency::USD),
             color: $subscription->color,
+            now: $this->now,
         );
     }
 
@@ -1369,10 +1447,11 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         $this->expectException(\Assert\InvalidArgumentException::class);
@@ -1380,7 +1459,7 @@ final class SubscriptionTest extends TestCase
         $subscription->update(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -1388,6 +1467,7 @@ final class SubscriptionTest extends TestCase
             paymentPeriodCount: -1,
             cost: new Money(1500, Currency::USD),
             color: $subscription->color,
+            now: $this->now,
         );
     }
 
@@ -1397,10 +1477,11 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: '  Netflix  ',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         self::assertSame('Netflix', $subscription->name);
@@ -1412,16 +1493,17 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         $subscription->update(
             category: $this->category,
             name: '  Netflix Premium  ',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -1429,6 +1511,7 @@ final class SubscriptionTest extends TestCase
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
             color: $subscription->color,
+            now: $this->now,
         );
 
         self::assertSame('Netflix Premium', $subscription->name);
@@ -1440,10 +1523,11 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
         );
 
         self::assertInstanceOf(TileColor::class, $subscription->color);
@@ -1455,10 +1539,11 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
             color: TileColor::Blue,
         );
 
@@ -1471,17 +1556,18 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
             color: TileColor::Blue,
         );
 
         $subscription->update(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -1489,6 +1575,7 @@ final class SubscriptionTest extends TestCase
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
             color: TileColor::Red,
+            now: $this->now,
         );
 
         self::assertSame(TileColor::Red, $subscription->color);
@@ -1506,17 +1593,18 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             paymentPeriod: PaymentPeriod::Month,
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
+            now: $this->now,
             color: TileColor::Blue,
         );
 
         $subscription->update(
             category: $this->category,
             name: 'Netflix',
-            nextRenewal: new \DateTimeImmutable('2024-01-01'),
+            nextRenewal: CalendarDate::fromString('2024-01-01'),
             description: '',
             link: '',
             logo: '',
@@ -1524,6 +1612,7 @@ final class SubscriptionTest extends TestCase
             paymentPeriodCount: 1,
             cost: new Money(1500, Currency::USD),
             color: TileColor::Blue,
+            now: $this->now,
         );
 
         self::assertCount(0, $subscription->subscriptionEvents);
@@ -1582,7 +1671,7 @@ final class SubscriptionTest extends TestCase
         // by 2024-01-15 four monthly allocations (Oct..Jan) have been made -> 800.
         $subscription = $this->makeSubscription(PaymentPeriod::Month, 6, 1200, '2024-04-28');
 
-        self::assertSame(800, $subscription->savingsTarget(new \DateTimeImmutable('2024-01-15'), 1)->minorAmount);
+        self::assertSame(800, $subscription->savingsTarget(CalendarDate::fromString('2024-01-15'), 1)->minorAmount);
     }
 
     public function testHoldsTheFundedCostAndTheNextCycleTogetherInTheUnpaidDueMonth(): void
@@ -1591,7 +1680,7 @@ final class SubscriptionTest extends TestCase
         // toward the October renewal has already begun -> 1400.
         $subscription = $this->makeSubscription(PaymentPeriod::Month, 6, 1200, '2024-04-28');
 
-        self::assertSame(1400, $subscription->savingsTarget(new \DateTimeImmutable('2024-04-15'), 1)->minorAmount);
+        self::assertSame(1400, $subscription->savingsTarget(CalendarDate::fromString('2024-04-15'), 1)->minorAmount);
     }
 
     public function testDropsToTheNextCycleOnceTheRenewalIsRecordedPaid(): void
@@ -1600,7 +1689,7 @@ final class SubscriptionTest extends TestCase
         // leaving the first 200 of the October cycle.
         $subscription = $this->makeSubscription(PaymentPeriod::Month, 6, 1200, '2024-10-28');
 
-        self::assertSame(200, $subscription->savingsTarget(new \DateTimeImmutable('2024-04-28'), 1)->minorAmount);
+        self::assertSame(200, $subscription->savingsTarget(CalendarDate::fromString('2024-04-28'), 1)->minorAmount);
     }
 
     public function testStacksThisMonthAndNextForAMonthlyBillInItsUnpaidDueMonth(): void
@@ -1609,7 +1698,7 @@ final class SubscriptionTest extends TestCase
         // month's allocation has begun (100) -> 200.
         $subscription = $this->makeSubscription(PaymentPeriod::Month, 1, 100, '2024-04-15');
 
-        self::assertSame(200, $subscription->savingsTarget(new \DateTimeImmutable('2024-04-08'), 1)->minorAmount);
+        self::assertSame(200, $subscription->savingsTarget(CalendarDate::fromString('2024-04-08'), 1)->minorAmount);
     }
 
     public function testIsOnePaymentForAMonthlyBillTheMonthBeforeItIsDue(): void
@@ -1618,7 +1707,7 @@ final class SubscriptionTest extends TestCase
         // the March bill has not begun -> 1500.
         $subscription = $this->makeSubscription(PaymentPeriod::Month, 1, 1500, '2024-02-01');
 
-        self::assertSame(1500, $subscription->savingsTarget(new \DateTimeImmutable('2024-01-15'), 1)->minorAmount);
+        self::assertSame(1500, $subscription->savingsTarget(CalendarDate::fromString('2024-01-15'), 1)->minorAmount);
     }
 
     public function testTreatsAWeeklyBillAsOnePaymentInHand(): void
@@ -1627,7 +1716,7 @@ final class SubscriptionTest extends TestCase
         // bill is just one payment held.
         $subscription = $this->makeSubscription(PaymentPeriod::Week, 1, 1000, '2024-01-08');
 
-        self::assertSame(1000, $subscription->savingsTarget(new \DateTimeImmutable('2024-01-05'), 1)->minorAmount);
+        self::assertSame(1000, $subscription->savingsTarget(CalendarDate::fromString('2024-01-05'), 1)->minorAmount);
     }
 
     public function testIsZeroBeforeTheFirstCycleHasBegun(): void
@@ -1635,7 +1724,7 @@ final class SubscriptionTest extends TestCase
         // A future renewal whose funding window has not opened yet has nothing to set aside.
         $subscription = $this->makeSubscription(PaymentPeriod::Year, 1, 12000, '2025-01-01');
 
-        self::assertSame(0, $subscription->savingsTarget(new \DateTimeImmutable('2023-12-01'), 1)->minorAmount);
+        self::assertSame(0, $subscription->savingsTarget(CalendarDate::fromString('2023-12-01'), 1)->minorAmount);
     }
 
     public function testHoldsAnOverdueRenewalInFullOnTopOfSavingForTheNext(): void
@@ -1644,7 +1733,7 @@ final class SubscriptionTest extends TestCase
         // monthly allocations toward the 2025 renewal have been made -> 15000.
         $subscription = $this->makeSubscription(PaymentPeriod::Year, 1, 12000, '2024-01-01');
 
-        self::assertSame(15000, $subscription->savingsTarget(new \DateTimeImmutable('2024-03-01'), 1)->minorAmount);
+        self::assertSame(15000, $subscription->savingsTarget(CalendarDate::fromString('2024-03-01'), 1)->minorAmount);
     }
 
     public function testMonthOfLeadRampsOneMonthLaterThanAMonthAhead(): void
@@ -1654,7 +1743,7 @@ final class SubscriptionTest extends TestCase
         // less than the month-ahead lead's 800.
         $subscription = $this->makeSubscription(PaymentPeriod::Month, 6, 1200, '2024-04-28');
 
-        self::assertSame(600, $subscription->savingsTarget(new \DateTimeImmutable('2024-01-15'), 0)->minorAmount);
+        self::assertSame(600, $subscription->savingsTarget(CalendarDate::fromString('2024-01-15'), 0)->minorAmount);
     }
 
     public function testMonthOfLeadHoldsOnlyTheDueBillInTheUnpaidDueMonth(): void
@@ -1663,7 +1752,7 @@ final class SubscriptionTest extends TestCase
         // alone (the month-ahead lead read 1400 here).
         $subscription = $this->makeSubscription(PaymentPeriod::Month, 6, 1200, '2024-04-28');
 
-        self::assertSame(1200, $subscription->savingsTarget(new \DateTimeImmutable('2024-04-15'), 0)->minorAmount);
+        self::assertSame(1200, $subscription->savingsTarget(CalendarDate::fromString('2024-04-15'), 0)->minorAmount);
     }
 
     public function testMonthOfLeadMatchesTheDocumentedQuarterlyRamp(): void
@@ -1672,7 +1761,7 @@ final class SubscriptionTest extends TestCase
         // toward April (Feb, Mar) -> 2000, the "month of" column in the user-facing worked example.
         $subscription = $this->makeSubscription(PaymentPeriod::Month, 3, 3000, '2024-04-15');
 
-        self::assertSame(2000, $subscription->savingsTarget(new \DateTimeImmutable('2024-03-15'), 0)->minorAmount);
+        self::assertSame(2000, $subscription->savingsTarget(CalendarDate::fromString('2024-03-15'), 0)->minorAmount);
     }
 
     public function testAllowsChangingTheCurrencyWhileThereAreNoPayments(): void
@@ -1687,7 +1776,7 @@ final class SubscriptionTest extends TestCase
     public function testRejectsChangingTheCurrencyOnceAPaymentHasBeenRecorded(): void
     {
         $subscription = $this->makeSubscription(PaymentPeriod::Month, 1, 1500, '2024-02-01');
-        $subscription->recordPayment(paidDate: new \DateTimeImmutable('2024-02-01'), paymentType: PaymentType::Verified);
+        $subscription->recordPayment(paidDate: CalendarDate::fromString('2024-02-01'), paymentType: PaymentType::Verified);
 
         $this->expectException(\Assert\InvalidArgumentException::class);
 
@@ -1697,7 +1786,7 @@ final class SubscriptionTest extends TestCase
     public function testAllowsASameCurrencyCostChangeAfterAPaymentExists(): void
     {
         $subscription = $this->makeSubscription(PaymentPeriod::Month, 1, 1500, '2024-02-01');
-        $subscription->recordPayment(paidDate: new \DateTimeImmutable('2024-02-01'), paymentType: PaymentType::Verified);
+        $subscription->recordPayment(paidDate: CalendarDate::fromString('2024-02-01'), paymentType: PaymentType::Verified);
 
         $this->updateCost($subscription, new Money(1999, Currency::USD));
 
@@ -1711,10 +1800,11 @@ final class SubscriptionTest extends TestCase
             owner: $this->owner,
             category: new Category(owner: $this->owner, name: 'Entertainment'),
             name: 'Example',
-            nextRenewal: new \DateTimeImmutable($nextRenewal),
+            nextRenewal: CalendarDate::fromString($nextRenewal),
             paymentPeriod: $period,
             paymentPeriodCount: $count,
             cost: new Money($cost, Currency::USD),
+            now: $this->now,
         );
     }
 
@@ -1731,6 +1821,7 @@ final class SubscriptionTest extends TestCase
             paymentPeriodCount: $subscription->paymentPeriodCount,
             cost: $cost,
             color: $subscription->color,
+            now: $this->now,
         );
     }
 }

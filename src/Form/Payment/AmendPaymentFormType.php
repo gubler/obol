@@ -29,7 +29,8 @@ final class AmendPaymentFormType extends AbstractType
             ->add(child: 'paidDate', type: DateType::class, options: [
                 'label' => 'payment.form.paid_date',
                 'widget' => 'single_text',
-                'input' => 'datetime_immutable',
+                'input' => 'string',
+                'input_format' => 'Y-m-d',
             ])
         ;
     }

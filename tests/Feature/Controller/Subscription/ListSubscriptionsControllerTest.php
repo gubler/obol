@@ -16,6 +16,7 @@ use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
 use App\Factory\UserFactory;
 use App\Tests\Support\AuthenticatedTestCase;
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -47,7 +48,7 @@ final class ListSubscriptionsControllerTest extends AuthenticatedTestCase
         $client = $this->authenticatedClient();
         SubscriptionFactory::createOne([
             'name' => 'Netflix',
-            'nextRenewal' => new \DateTimeImmutable('today'),
+            'nextRenewal' => CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('today'), new \DateTimeZone('UTC')),
         ]);
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
@@ -62,7 +63,7 @@ final class ListSubscriptionsControllerTest extends AuthenticatedTestCase
         $client = $this->authenticatedClient();
         SubscriptionFactory::createOne([
             'name' => 'Spotify',
-            'nextRenewal' => new \DateTimeImmutable('tomorrow'),
+            'nextRenewal' => CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('tomorrow'), new \DateTimeZone('UTC')),
         ]);
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
@@ -154,12 +155,12 @@ final class ListSubscriptionsControllerTest extends AuthenticatedTestCase
         SubscriptionFactory::createOne([
             'category' => $category,
             'name' => 'Alfa',
-            'nextRenewal' => new \DateTimeImmutable('+30 days'),
+            'nextRenewal' => CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('+30 days'), new \DateTimeZone('UTC')),
         ]);
         SubscriptionFactory::createOne([
             'category' => $category,
             'name' => 'Zulu',
-            'nextRenewal' => new \DateTimeImmutable('+2 days'),
+            'nextRenewal' => CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('+2 days'), new \DateTimeZone('UTC')),
         ]);
 
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app?view=list&sort=renewal');
@@ -358,7 +359,7 @@ final class ListSubscriptionsControllerTest extends AuthenticatedTestCase
             'paymentPeriod' => PaymentPeriod::Year,
             'paymentPeriodCount' => 1,
             // Renews next month, so most of the year's cost should already be set aside.
-            'nextRenewal' => new \DateTimeImmutable()->add(new \DateInterval('P1M')),
+            'nextRenewal' => CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable()->add(new \DateInterval('P1M')), new \DateTimeZone('UTC')),
         ]);
 
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
@@ -382,7 +383,7 @@ final class ListSubscriptionsControllerTest extends AuthenticatedTestCase
             'paymentPeriod' => PaymentPeriod::Month,
             'paymentPeriodCount' => 1,
             // Renews tomorrow, so the current cycle is well underway.
-            'nextRenewal' => new \DateTimeImmutable()->add(new \DateInterval('P1D')),
+            'nextRenewal' => CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable()->add(new \DateInterval('P1D')), new \DateTimeZone('UTC')),
         ]);
 
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
@@ -410,7 +411,7 @@ final class ListSubscriptionsControllerTest extends AuthenticatedTestCase
             'cost' => new Money(12000, Currency::USD),
             'paymentPeriod' => PaymentPeriod::Year,
             'paymentPeriodCount' => 1,
-            'nextRenewal' => new \DateTimeImmutable()->add(new \DateInterval('P1M')),
+            'nextRenewal' => CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable()->add(new \DateInterval('P1M')), new \DateTimeZone('UTC')),
         ]);
 
         $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
@@ -460,7 +461,7 @@ final class ListSubscriptionsControllerTest extends AuthenticatedTestCase
             // Anchor to a fixed calendar day: renewal_label floors both dates to midnight and
             // measures the calendar-day distance, so a relative seed with extra hours could tip
             // onto the next day past a UTC midnight and read "3 days" (#297).
-            'nextRenewal' => new \DateTimeImmutable('today +2 days'),
+            'nextRenewal' => CalendarDate::forDatetimeInTimezone(new \DateTimeImmutable('today +2 days'), new \DateTimeZone('UTC')),
         ]);
 
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');

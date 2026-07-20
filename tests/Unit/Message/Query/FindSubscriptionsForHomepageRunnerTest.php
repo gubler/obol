@@ -23,8 +23,10 @@ use App\Message\Query\Subscription\HomepageListing;
 use App\Repository\ExchangeRateRepository;
 use App\Repository\SubscriptionRepository;
 use App\Repository\UserRepository;
+use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Clock\MockClock;
 use Symfony\Component\Uid\Ulid;
 
 final class FindSubscriptionsForHomepageRunnerTest extends TestCase
@@ -42,10 +44,11 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
             owner: new User(email: 'owner@example.com'),
             category: $category,
             name: $name,
-            nextRenewal: new \DateTimeImmutable($renewal),
+            nextRenewal: CalendarDate::fromString($renewal),
             paymentPeriod: $period,
             paymentPeriodCount: $count,
             cost: new Money($cost, $currency),
+            now: new \DateTimeImmutable('2000-01-01', new \DateTimeZone('UTC')),
         );
     }
 
@@ -89,7 +92,7 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
         $repository = self::createStub(SubscriptionRepository::class);
         $repository->method('findForHomepageForOwner')->willReturn($subscriptions);
 
-        return (new FindSubscriptionsForHomepageRunner($repository, $this->homepageTotaller($rates), self::userRepository($owner)))($query);
+        return (new FindSubscriptionsForHomepageRunner($repository, $this->homepageTotaller($rates), self::userRepository($owner), new MockClock()))($query);
     }
 
     public function testGroupsByCategoryOrderedByCategoryNameSortedByNameWithinEachGroup(): void
@@ -221,8 +224,8 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
         // "now" matches the value computed here. A month-before owner keeps the per-subscription figure
         // non-zero on any day (month-of reads zero for a next-day renewal that falls in the next month).
         $owner = new User(email: 'owner@example.com', savingsDisplay: SavingsDisplay::MonthBefore);
-        $asOf = new \DateTimeImmutable();
-        $renewal = $asOf->modify('+1 day')->format('Y-m-d');
+        $asOf = CalendarDate::fromString(new \DateTimeImmutable()->format('Y-m-d'));
+        $renewal = (string) $asOf->plusDays(1);
         $perSubscription = self::makeHomepageSubscription($software, 'Solo', 1000, renewal: $renewal)->savingsTarget($asOf, 1)->minorAmount;
 
         $listing = $this->runHomepage([
@@ -238,8 +241,8 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
     {
         $software = new Category(owner: new User(email: 'owner@example.com'), name: 'Software');
 
-        $asOf = new \DateTimeImmutable();
-        $renewal = $asOf->modify('+1 day')->format('Y-m-d');
+        $asOf = CalendarDate::fromString(new \DateTimeImmutable()->format('Y-m-d'));
+        $renewal = (string) $asOf->plusDays(1);
         // A next-day renewal always reads differently under the two leads, so the totals must diverge
         // exactly with the owner's preference.
         $monthOf = self::makeHomepageSubscription($software, 'Solo', 1000, renewal: $renewal)->savingsTarget($asOf, 0)->minorAmount;
@@ -305,7 +308,7 @@ final class FindSubscriptionsForHomepageRunnerTest extends TestCase
             ->willReturn([])
         ;
 
-        $runner = new FindSubscriptionsForHomepageRunner($repository, $this->homepageTotaller(), self::userRepository());
+        $runner = new FindSubscriptionsForHomepageRunner($repository, $this->homepageTotaller(), self::userRepository(), new MockClock());
         $listing = $runner(new FindSubscriptionsForHomepageQuery(ownerUserId: new Ulid(), includeArchived: true));
 
         self::assertSame([], $listing->groups);

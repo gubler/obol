@@ -10,6 +10,7 @@ namespace App\Twig;
 use App\Entity\User;
 use App\Enum\DateFormat;
 use App\Service\DateFormatter;
+use App\ValueObject\CalendarDate;
 use Symfony\Bundle\SecurityBundle\Security;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
@@ -31,9 +32,13 @@ final class UserDateExtension extends AbstractExtension
         ];
     }
 
-    public function format(\DateTimeInterface $date): string
+    public function format(\DateTimeInterface|CalendarDate $date): string
     {
-        return $this->dateFormatter->format($date, $this->preference());
+        // user_date renders both a calendar date (nextRenewal, paidDate, report as-of dates) and a plain
+        // instant (createdAt, lastUsedAt) in the user's style; user_datetime below stays instant-only.
+        return $date instanceof CalendarDate
+            ? $this->dateFormatter->formatCalendarDate($date, $this->preference())
+            : $this->dateFormatter->format($date, $this->preference());
     }
 
     public function formatDateTime(\DateTimeInterface $dateTime): string

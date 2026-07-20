@@ -13,6 +13,7 @@ use App\Message\Currency\CurrencyTotaller;
 use App\Repository\SubscriptionRepository;
 use App\Repository\UserRepository;
 use App\ValueObject\Money;
+use Psr\Clock\ClockInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(bus: 'query.bus', handles: FindTotalObligationQuery::class)]
@@ -22,13 +23,17 @@ final readonly class FindTotalObligationRunner
         private SubscriptionRepository $subscriptionRepository,
         private CurrencyTotaller $currencyTotaller,
         private UserRepository $userRepository,
+        private ClockInterface $clock,
     ) {
     }
 
     public function __invoke(FindTotalObligationQuery $query): TotalObligation
     {
-        $asOf = new \DateTimeImmutable();
-        $display = $this->userRepository->getForId($query->ownerUserId)->displayCurrency;
+        // The rate-read date is the owner's local today (ADR-0016), so an owner behind UTC reads their
+        // own day's rate rather than tomorrow's near midnight.
+        $owner = $this->userRepository->getForId($query->ownerUserId);
+        $asOf = $owner->localDateFor($this->clock->now());
+        $display = $owner->displayCurrency;
 
         $monthlyCosts = array_map(
             static fn (Subscription $subscription): Money => $subscription->monthlyCost(),

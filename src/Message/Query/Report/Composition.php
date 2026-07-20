@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace App\Message\Query\Report;
 
 use App\Message\Currency\ConvertedTotal;
+use App\ValueObject\CalendarDate;
 
 final readonly class Composition
 {
@@ -17,7 +18,7 @@ final readonly class Composition
     public function __construct(
         public array $slices,
         public ConvertedTotal $total,
-        public \DateTimeImmutable $asOf,
+        public CalendarDate $asOf,
         public ?string $title = null,
     ) {
     }

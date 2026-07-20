@@ -51,6 +51,18 @@ final class ArchTest extends TestCase
         }
     }
 
+    public function testValueObjectsAreFinalAndReadonly(): void
+    {
+        $valueObjects = self::classNamesUnder('App\ValueObject');
+        self::assertNotEmpty($valueObjects, 'expected at least one value object under App\ValueObject');
+
+        foreach ($valueObjects as $class) {
+            $reflection = new \ReflectionClass($class);
+            self::assertTrue($reflection->isFinal(), $class . ' in App\ValueObject must be final');
+            self::assertTrue($reflection->isReadOnly(), $class . ' in App\ValueObject must be readonly');
+        }
+    }
+
     public function testEntitiesDoNotDependOnControllers(): void
     {
         foreach (self::filesUnder('App\Entity') as $path) {

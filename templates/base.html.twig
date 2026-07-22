@@ -2,6 +2,7 @@
 <html lang="en" class="h-full bg-page text-fg">
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
         <title>{% block title %}{{ 'common.title.default'|trans }}{% endblock %}</title>
         <link rel="icon" type="image/svg+xml" href="{{ asset('icons/obol-coin.svg') }}">
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
@@ -36,7 +37,7 @@
         } %}
     {% endif %}
     <div class="min-h-full"{% if app.user %} data-controller="tour" data-tour-labels-value="{{ tour_labels|json_encode }}"{% endif %}>
-        <div class="relative bg-header pb-32">
+        <div class="relative bg-header pb-16 sm:pb-32">
             <nav class="bg-header">
                 <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div class="border-b border-white/10">
@@ -123,9 +124,9 @@
             </header>
         </div>
 
-        <main class="relative -mt-32">
-            <div class="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
-                <div class="rounded-lg bg-surface px-5 py-6 shadow-sm sm:px-6">
+        <main class="relative -mt-16 sm:-mt-32">
+            <div class="mx-auto max-w-7xl pb-12 sm:px-6 lg:px-8">
+                <div class="rounded-none bg-surface px-5 py-6 shadow-sm sm:rounded-lg sm:px-6">
                     {% block body %}{% endblock %}
                 </div>
             </div>

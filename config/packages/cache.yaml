@@ -15,5 +15,8 @@ framework:
         #app: cache.adapter.apcu
 
         # Namespaced pools use the above "app" backend by default
-        #pools:
-            #my.dedicated.cache: null
+        pools:
+            # Tracks redeemed magic links so a single-use link cannot be replayed within its lifetime.
+            # Entries only need to outlive the link itself, so the pool expires them at that horizon.
+            cache.login_link:
+                default_lifetime: '%app.login_link.lifetime_seconds%'

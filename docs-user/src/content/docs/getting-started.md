@@ -11,7 +11,7 @@ Obol is passwordless - there's nothing to remember and no password to reset.
 
 1. Open Obol. If you're not signed in, you'll land on the login page.
 2. Enter your email address and select **Email me a link**.
-3. Open the email from Obol and click the sign-in link. You're in.
+3. Open the email from Obol and click the sign-in link, then select **Sign in** on the page that opens. You're in.
 
 A few things worth knowing:
 

@@ -142,6 +142,11 @@ auth:
         email:
             label: Email address
             placeholder: you@example.com
+        check:
+            title: Sign in
+            heading: Finish signing in
+            intro: One more step - click below to sign in to Obol.
+            submit: Sign in
     email:
         login_link:
             subject: Your Obol sign-in link

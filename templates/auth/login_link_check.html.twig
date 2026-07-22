@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'auth.login.check.title'|trans }}{% endblock %}
+
+{% block body %}
+    <div class="container mx-auto max-w-md px-4 py-8">
+        <h1 class="mb-2 text-3xl font-bold">{{ 'auth.login.check.heading'|trans }}</h1>
+        <p class="mb-6 text-fg/70">{{ 'auth.login.check.intro'|trans }}</p>
+
+        <div class="bg-surface shadow-md rounded p-6">
+            {# The emailed link is a plain GET; only this POST redeems it (check_post_only), so a prefetch
+               cannot burn the single-use link. The signature travels back in the hidden fields. #}
+            <form method="post" action="{{ path('app_login_check') }}" class="space-y-6" data-test="login-link-check-form">
+                <input type="hidden" name="user" value="{{ user }}">
+                <input type="hidden" name="hash" value="{{ hash }}">
+                <input type="hidden" name="expires" value="{{ expires }}">
+                <button type="submit" class="w-full bg-brand hover:bg-brand-strong text-on-brand font-bold py-2 px-4 rounded">
+                    {{ 'auth.login.check.submit'|trans }}
+                </button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

@@ -137,80 +137,46 @@ Full developer documentation is the Starlight site under `docs/src/content/docs/
 - `docs/src/content/docs/operations/updates.md` — deploying new versions, migrations
 
 ### Gitea Integration
-**IMPORTANT**: This project uses Gitea for issue tracking, NOT GitHub.
+**IMPORTANT**: This project uses Gitea for issue tracking and pull requests, NOT GitHub.
 
-```bash
-# List issues
-tea issues list
-
-# View issue details
-tea issues show <issue-number>
-
-# Create new issue
-tea issues create
-
-# Add comment to issue
-tea comment <issue-number> "Comment text..."
-
-# Close issue
-tea issues close <issue-number>
-```
-
-**NEVER use `gh` CLI** - it's for GitHub only. Always use `tea` for Gitea operations.
+Do all tracker work - issues, comments, labels, pull requests - through the **gitea MCP**
+(`mcp__gitea__*` tools), acting as your own user. Do **not** use the `tea` or `gh` CLIs:
+`gh` targets GitHub, and `tea` runs under the maintainer's account, which misattributes
+agent work to them. If the MCP can't do something, ask a human to do it by hand.
 
 ## Git Workflow for Issues
 
-Follow this workflow when working on issues:
+Every change follows: issue -> branch -> tests -> code -> commit -> PR -> merge -> close.
 
-### 1. Create Issue
-Create the issue in Gitea (via `tea issues create` or web UI) with clear description and acceptance criteria.
+### 1. Issue first
+There must be a tracker issue before code. If none exists, create one (via the gitea MCP)
+with a clear description and acceptance criteria.
 
-### 2. Create Branch
+### 2. Branch
+Feature branches come off `main`, named `<type>/<issue>-slug` to match the work
+(`feat/265-responsive-design`, `chore/433-workflow-docs`, `fix/434-viewport`). Never commit
+to `main` directly - the pre-commit hook blocks it.
 ```bash
 git checkout main
 git pull origin main
-git checkout -b issue-##-brief-description
+git checkout -b feat/<issue>-slug
 ```
 
-### 3. Work on Branch
-- Write failing tests first (TDD)
-- Implement the solution
-- Commit frequently with conventional commit messages
-- Ensure all tests pass (`mise run test`)
-- Ensure static analysis passes (`mise run sa`)
-- Ensure code style passes (`mise run cs`)
+### 3. Work on the branch
+- Write a failing test first (TDD), then implement.
+- Commit frequently with Conventional Commits messages; reference the issue with a `refs:`
+  footer, never in the subject.
+- Keep it green with `mise run check` (sa + tests + cs + twig-cs + the JS toolchain).
 
-### 4. Push and Create PR
-```bash
-git push -u origin issue-##-brief-description
-tea pulls create --title "Title" --description "Description" --base main
-```
+### 4. Push and open a PR
+Push the branch and open the PR through the gitea MCP, base `main`. Put `Closes #NN` in the
+PR **body** (not the title) to auto-close the issue on merge.
 
-### 5. Review and Merge
-- Wait for review/approval (or self-review if authorized)
-- Address any feedback
-- Merge PR to main (via Gitea UI or CLI)
-- Pull latest main: `git checkout main && git pull`
+### 5. Review and merge
+Once approved, squash-merge to `main` (the repo default) and delete the feature branch.
 
-### 6. Close Issue with Reference
-```bash
-# Add closing comment with commit hash from merged PR
-tea comment <issue-number> "Closed by commit <hash>
-
-Summary of changes...
-- What was implemented
-- Files created/updated
-- Test results"
-
-# Close the issue
-tea issues close <issue-number>
-
-# Delete feature branch (optional)
-git branch -d issue-##-brief-description
-git push origin --delete issue-##-brief-description
-```
-
-**Note**: When working on larger feature branches (like the current `subscriptions` branch), you may work directly on that branch with multiple issues before creating a final PR to main.
+### 6. After merge
+Confirm the issue auto-closed, then sync: `git checkout main && git pull`.
 
 ## Git Hooks
 

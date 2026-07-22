@@ -42,6 +42,19 @@ final class EditSubscriptionControllerTest extends AuthenticatedTestCase
         self::assertNoTranslationKeyLeaks((string) $client->getResponse()->getContent(), 'edit subscription page');
     }
 
+    public function testDoesNotOfferALogoUploadField(): void
+    {
+        // Image uploads are removed from the UI for launch; the pipeline returns later.
+        $client = $this->authenticatedClient();
+        $subscription = SubscriptionFactory::createOne(['name' => 'Netflix']);
+
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/' . $subscription->id . '/edit');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists(selector: 'input[type="file"]');
+        self::assertSelectorNotExists(selector: '[name="edit_subscription[logo]"]');
+    }
+
     public function testCategoryDropdownIsOrderedAlphabetically(): void
     {
         $client = $this->authenticatedClient();

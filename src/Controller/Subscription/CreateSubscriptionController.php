@@ -53,6 +53,9 @@ final class CreateSubscriptionController extends AbstractBaseController
 
             \assert(null !== $data->nextRenewal);
 
+            // Logo image uploads are disabled for launch: the form no longer offers a logo field, so
+            // $data->logo is always null here and no upload runs. The pipeline (FileUploader, the
+            // entity/command logo field, the tile <img>) stays wired for the re-add.
             $logo = null !== $data->logo
                 ? $this->fileUploader->upload(file: $data->logo)
                 : '';

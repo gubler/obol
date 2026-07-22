@@ -74,6 +74,9 @@ final class EditSubscriptionController extends AbstractBaseController
             if ($data->restartPaymentGeneration && $nextRenewal->isOnOrBefore($this->currentUser()->localDateFor($this->clock->now()))) {
                 $form->get('nextRenewal')->addError(new FormError($this->translator->trans('subscription.validation.restart_renewal_future')));
             } else {
+                // Logo image uploads are disabled for launch: the form no longer offers a logo field,
+                // so $data->logo is always null here and the existing logo is preserved. The pipeline
+                // stays wired for the re-add.
                 $logo = null !== $data->logo
                     ? $this->fileUploader->upload(file: $data->logo)
                     : $subscription->logo;

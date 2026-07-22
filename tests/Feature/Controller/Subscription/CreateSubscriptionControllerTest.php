@@ -15,6 +15,7 @@ use App\Factory\SubscriptionFactory;
 use App\Factory\UserFactory;
 use App\Tests\Support\AuthenticatedTestCase;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 final class CreateSubscriptionControllerTest extends AuthenticatedTestCase
 {
@@ -378,5 +379,52 @@ final class CreateSubscriptionControllerTest extends AuthenticatedTestCase
         $finalCount = SubscriptionFactory::count();
 
         self::assertSame($initialCount, $finalCount);
+    }
+
+    public function testDoesNotOfferALogoUploadField(): void
+    {
+        // Image uploads are removed from the UI for launch; the pipeline returns later.
+        $client = $this->authenticatedClient();
+
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/new');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists(selector: 'input[type="file"]');
+        self::assertSelectorNotExists(selector: '[name="create_subscription[logo]"]');
+    }
+
+    public function testAForgedLogoUploadDoesNotPersistAnImage(): void
+    {
+        $client = $this->authenticatedClient();
+        $crawler = $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/new');
+
+        // Forge the multipart logo field the UI no longer renders; the upload must not be stored.
+        $values = $crawler->selectButton(value: 'Save')->form()->getPhpValues();
+        $values['create_subscription']['name'] = 'Forged Logo Sub';
+        $values['create_subscription']['nextRenewal'] = '2026-01-15';
+        $values['create_subscription']['cost'] = '9.99';
+
+        $client->request(
+            method: \Symfony\Component\HttpFoundation\Request::METHOD_POST,
+            uri: '/app/subscriptions/new',
+            parameters: $values,
+            files: ['create_subscription' => ['logo' => self::pngUpload()]],
+        );
+
+        $subscription = $this->storedSubscription('Forged Logo Sub');
+        self::assertTrue(
+            !$subscription instanceof Subscription || '' === $subscription->logo,
+            'a forged logo upload must not persist an image path',
+        );
+    }
+
+    private static function pngUpload(): UploadedFile
+    {
+        // A 1x1 transparent PNG with real magic bytes, so it would sniff as a valid image if processed.
+        $tempFile = tempnam(directory: sys_get_temp_dir(), prefix: 'forged_logo_');
+        \assert(false !== $tempFile);
+        file_put_contents(filename: $tempFile, data: (string) base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', strict: true));
+
+        return new UploadedFile(path: $tempFile, originalName: 'logo.png', mimeType: 'image/png', test: true);
     }
 }

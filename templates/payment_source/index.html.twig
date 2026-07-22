@@ -4,9 +4,9 @@
 
 {% block body %}
     <div class="container mx-auto px-4 py-8">
-        <div class="flex justify-between items-center mb-6">
+        <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h1 class="text-3xl font-bold">{{ 'payment_source.index.heading'|trans }}</h1>
-            <a href="{{ path('payment_source_new') }}" class="bg-brand hover:bg-brand-strong text-on-brand font-bold py-2 px-4 rounded">
+            <a href="{{ path('payment_source_new') }}" class="self-start bg-brand hover:bg-brand-strong text-on-brand font-bold py-2 px-4 rounded sm:self-auto">
                 {{ 'payment_source.action.new'|trans }}
             </a>
         </div>
@@ -18,7 +18,7 @@
         {% endfor %}
 
         {% if payment_sources|length > 0 %}
-            <div class="bg-surface shadow-md rounded overflow-hidden">
+            <div class="bg-surface shadow-md rounded overflow-x-auto">
                 <table class="min-w-full divide-y divide-line">
                     <thead class="bg-surface-2">
                         <tr>

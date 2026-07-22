@@ -29,7 +29,7 @@
         {% if usersPage.users is empty %}
             <p class="text-sm text-fg/60" data-test="admin-users-empty">{{ 'admin.users.empty'|trans }}</p>
         {% else %}
-            <div class="overflow-hidden rounded border border-line">
+            <div class="overflow-x-auto rounded border border-line">
                 <table class="min-w-full divide-y divide-line" data-test="admin-user-table">
                     <thead class="bg-surface-2">
                         <tr>

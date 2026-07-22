@@ -37,6 +37,11 @@
 	# referrer) live in the Symfony response listener, which can be tested and covers only PHP routes.
 	header ?X-Content-Type-Options "nosniff"
 
+	# .webmanifest is not in Caddy's MIME table (it falls back to text/plain); the PWA spec
+	# wants application/manifest+json so the manifest validates without a Content-Type warning.
+	@manifest path /manifest.webmanifest
+	header @manifest Content-Type "application/manifest+json"
+
 	@phpRoute {
 		not path /.well-known/mercure*
 		not file {path}

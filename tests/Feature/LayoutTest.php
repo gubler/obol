@@ -41,6 +41,38 @@ final class LayoutTest extends AuthenticatedTestCase
         self::assertSelectorExists(selector: 'head link[rel="apple-touch-icon"]');
     }
 
+    public function testDeclaresWebManifest(): void
+    {
+        $client = $this->authenticatedClient();
+
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists(selector: 'head link[rel="manifest"]');
+    }
+
+    public function testDeclaresThemeColor(): void
+    {
+        $client = $this->authenticatedClient();
+
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists(selector: 'head meta[name="theme-color"]');
+    }
+
+    public function testDeclaresStandaloneWebAppCapability(): void
+    {
+        // The installed app launches full-screen; assert both the standard and Apple capability metas.
+        $client = $this->authenticatedClient();
+
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists(selector: 'head meta[name="mobile-web-app-capable"][content="yes"]');
+        self::assertSelectorExists(selector: 'head meta[name="apple-mobile-web-app-capable"][content="yes"]');
+    }
+
     public function testHeaderShowsObolLogo(): void
     {
         $client = $this->authenticatedClient();

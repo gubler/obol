@@ -180,10 +180,16 @@ The app's mark is a heraldic bee struck on a beaded gold coin (an obol). The sin
 
 **`assets/icons/obol-coin.svg`** — served through AssetMapper as both the header logo and the SVG favicon (`<link rel="icon" type="image/svg+xml">` in `base.html.twig`).
 
-SVG favicons aren't honored everywhere (notably Safari and iOS), so a small PNG set lives at the web root for fallback and is wired up in `base.html.twig`:
+SVG favicons aren't honored everywhere (notably Safari and iOS), so a PNG set lives at the web root for fallback and for the home-screen icons, wired up in `base.html.twig`:
 
-- `public/favicon-32.png`, `public/favicon-16.png` — PNG `rel="icon"` fallbacks
-- `public/apple-touch-icon.png` (180px) — iOS home screen / Safari
+- `public/favicon-32.png`, `public/favicon-16.png` — PNG `rel="icon"` fallbacks (coin on transparency)
+- `public/apple-touch-icon.png` (180px) — iOS home screen
+- `public/icon-192.png`, `public/icon-512.png` — PWA manifest icons (`purpose: any`)
+- `public/icon-192-maskable.png`, `public/icon-512-maskable.png` — PWA `purpose: maskable`
+
+The home-screen icons (apple-touch + the four `icon-*`) put the coin on a solid dark tile
+(`--obol-surface`, `#1f1810`); the bare coin is transparent, which iOS renders on black and Android
+floats on the launcher. Maskable variants keep the coin inside the ~80% safe zone a launcher may crop to.
 
 Those PNGs are generated from the SVG, not drawn by hand:
 
@@ -191,9 +197,19 @@ Those PNGs are generated from the SVG, not drawn by hand:
 mise run icons   # rasterize assets/icons/obol-coin.svg -> public/*.png
 ```
 
-The task ([`bin/generate-icons.mjs`](https://code.dev88.work/dev88/obol/src/branch/main/bin/generate-icons.mjs), host-side via `sharp`) renders the 180px tile from the full coin, and derives a flat-rim variant on the fly for the 16/32px icons — the beaded rim turns to noise that small. Re-run it after editing the SVG and commit the refreshed PNGs. It is intentionally **not** part of `mise run check`, the hooks, or CI: the outputs are committed artifacts, regenerated only when the mark changes.
+The task ([`bin/generate-icons.mjs`](https://code.dev88.work/dev88/obol/src/branch/main/bin/generate-icons.mjs), host-side via `sharp`) renders the tiled icons from the full coin, and derives a flat-rim variant on the fly for the 16/32px favicons — the beaded rim turns to noise that small. Re-run it after editing the SVG and commit the refreshed PNGs. It is intentionally **not** part of `mise run check`, the hooks, or CI: the outputs are committed artifacts, regenerated only when the mark changes.
 
 The same `obol-coin.svg` is the Dashy homelab tile (tracked in the homelab repo).
+
+### PWA / installability
+
+Obol is an installable PWA (ADR-0024): `public/manifest.webmanifest` declares `display: standalone`,
+`start_url: /app`, the icon set above, and a `theme_color`/`background_color` from the palette; the
+base layout head carries the manifest link, per-scheme `theme-color` metas, and the
+`apple-mobile-web-app-*` tags. Caddy serves the manifest straight from the web root with an explicit
+`application/manifest+json` Content-Type. Installing adds Obol to the home screen and launches it
+standalone (no browser chrome). A service worker and offline support are deliberately out of scope for
+now — the app is online-only.
 
 ## Templates
 

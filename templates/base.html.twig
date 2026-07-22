@@ -8,6 +8,14 @@
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+        <link rel="manifest" href="/manifest.webmanifest">
+        {# theme-color follows the OS scheme to match the header band (see the dark palette in app.css). #}
+        <meta name="theme-color" content="#26190a" media="(prefers-color-scheme: light)">
+        <meta name="theme-color" content="#14100a" media="(prefers-color-scheme: dark)">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <meta name="apple-mobile-web-app-title" content="Obol">
         {# Resolve the theme before paint so there is no flash: dark unless a light choice is
            stored or the OS prefers light. Kept in sync with resolveTheme in theme_controller.js. #}
         <script>

@@ -77,7 +77,6 @@ value. Set every var marked *fail-fast* in the deploy environment.
 | `APP_ENV` | Baked `prod` | `dev` | Symfony environment. The prod image bakes `prod`; do not set it in the deploy env. |
 | `APP_SECRET` | **Required (fail-fast)** | committed dev value (`.env.dev`) | Signs magic links, remember-me cookies, and email-verification URIs. A known value is a full auth compromise. |
 | `POSTGRES_PASSWORD` | **Required (fail-fast)** | `!ChangeMe!` | PostgreSQL password. Also feeds `DATABASE_URL`, which the base compose composes from the `POSTGRES_*` vars. |
-| `CADDY_MERCURE_JWT_SECRET` | **Required (fail-fast)** | `!ChangeThisMercureHubJWTSecretKey!` | Signing key for the Mercure publisher/subscriber JWTs. |
 | `POSTGRES_USER` | Optional | `app` | PostgreSQL username. |
 | `POSTGRES_DB` | Optional | `app` | PostgreSQL database name. |
 | `MAILER_DSN` | Required | `null://null` | Outbound mail transport. Set to a real SMTP DSN (e.g. Fastmail app password); the `null://null` default silently drops mail. URL-encode reserved characters in the username (`@` becomes `%40`). Verify with `app:mailer:smoke`. |
@@ -87,7 +86,7 @@ value. Set every var marked *fail-fast* in the deploy environment.
 | `WEBAUTHN_ALLOWED_ORIGINS` | Required | `https://obol.lolly.localhost` | The exact origin(s) browsers send during a passkey ceremony (scheme + host + port). Must match the deployed site's origin (e.g. `https://obol.dev88.co`). |
 
 :::danger
-The *fail-fast* secrets (`APP_SECRET`, `POSTGRES_PASSWORD`, `CADDY_MERCURE_JWT_SECRET`) have **no prod
+The *fail-fast* secrets (`APP_SECRET`, `POSTGRES_PASSWORD`) have **no prod
 fallback**. If any is unset the deploy aborts with an error naming the missing var - by design. Compose
 only catches an *unset* var, not one deliberately set to a weak or default value, so still generate
 strong, unique secrets.
@@ -138,7 +137,6 @@ export COMPOSE_FILE=compose.yaml:compose.prod.yaml
 # Required secrets - the deploy aborts if any of these is unset (see the table above)
 export APP_SECRET="your-secret-here"
 export POSTGRES_PASSWORD="your-db-password"
-export CADDY_MERCURE_JWT_SECRET="your-mercure-jwt-secret"
 
 # Other prod environment (see the table above for the full set)
 export MAILER_DSN="smtp://user%40example.com:app-password@smtp.example.com:465"

@@ -13,8 +13,6 @@ services:
       # magic links, remember-me cookies, and email-verification URIs - a known value is a full auth
       # compromise.
       APP_SECRET: ${APP_SECRET:?APP_SECRET must be set in production}
-      MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:?CADDY_MERCURE_JWT_SECRET must be set in production}
-      MERCURE_SUBSCRIBER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:?CADDY_MERCURE_JWT_SECRET must be set in production}
       # Transactional mail (magic-link/signup). The base compose sets no MAILER_DSN, so
       # without this prod would inherit the dev `.env` null:// default and silently drop every
       # send. php runs app:mailer:smoke; verify a deploy with it. Sourced from the host deploy env.

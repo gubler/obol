@@ -24,7 +24,21 @@ services:
     environment:
       FRANKENPHP_WORKER_CONFIG: watch
       FRANKENPHP_SITE_CONFIG: hot_reload
-      MERCURE_EXTRA_DIRECTIVES: demo
+      # The Mercure hub is dev-only: it powers FrankenPHP's hot_reload (which refuses to boot
+      # without a configured hub) and the demo debugger UI. Injecting it here via
+      # CADDY_SERVER_EXTRA_DIRECTIVES keeps it out of the shared Caddyfile, so prod never mounts a
+      # public hub. The JWT keys are dev-only too; the *_ALG vars default from the base image.
+      # Why prod has no hub, and the criteria for bringing one back: reference/adr/0023.
+      MERCURE_PUBLISHER_JWT_KEY: "!ChangeThisMercureHubJWTSecretKey!"
+      MERCURE_SUBSCRIBER_JWT_KEY: "!ChangeThisMercureHubJWTSecretKey!"
+      CADDY_SERVER_EXTRA_DIRECTIVES: |
+        mercure {
+          publisher_jwt {env.MERCURE_PUBLISHER_JWT_KEY} {env.MERCURE_PUBLISHER_JWT_ALG}
+          subscriber_jwt {env.MERCURE_SUBSCRIBER_JWT_KEY} {env.MERCURE_SUBSCRIBER_JWT_ALG}
+          anonymous
+          subscriptions
+          demo
+        }
       # See https://xdebug.org/docs/all_settings#mode
       XDEBUG_MODE: "${XDEBUG_MODE:-develop}"
       APP_ENV: "${APP_ENV:-dev}"

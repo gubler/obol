@@ -135,3 +135,12 @@ textarea::placeholder {
 [type='radio']:focus {
     --tw-ring-color: var(--obol-brand);
 }
+
+/*
+ * PWA standalone safe-area inset. With viewport-fit=cover, reserve room for the home indicator so
+ * the footer is not overlapped when Obol runs installed (display: standalone). The inset resolves
+ * to 0 in a normal browser, so this is a no-op outside an installed PWA on a device with a notch.
+ */
+.pwa-safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+}

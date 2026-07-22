@@ -73,6 +73,29 @@ final class LayoutTest extends AuthenticatedTestCase
         self::assertSelectorExists(selector: 'head meta[name="apple-mobile-web-app-capable"][content="yes"]');
     }
 
+    public function testRendersTheHeaderBandOnPagesThatProvideOne(): void
+    {
+        // The dashboard fills the header block (title + New subscription), so the colored band renders.
+        $client = $this->authenticatedClient();
+
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists(selector: 'header');
+    }
+
+    public function testOmitsTheHeaderBandWhenThePageHasNoHeader(): void
+    {
+        // Pages without a header block (e.g. Categories) must not render an empty colored band -
+        // that leaves a slab of dead space above the content on mobile.
+        $client = $this->authenticatedClient();
+
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/categories');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists(selector: 'header');
+    }
+
     public function testHeaderShowsObolLogo(): void
     {
         $client = $this->authenticatedClient();

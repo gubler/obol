@@ -44,8 +44,12 @@
             theme: {title: 'tour.step.theme.title'|trans, body: 'tour.step.theme.body'|trans},
         } %}
     {% endif %}
-    <div class="min-h-full"{% if app.user %} data-controller="tour" data-tour-labels-value="{{ tour_labels|json_encode }}"{% endif %}>
-        <div class="relative bg-header pb-16 sm:pb-32">
+    {# Capture the page's header so an empty one collapses the colored band instead of leaving a
+       slab of dead space above the content (pages like the detail/edit views set no header). #}
+    {% set header_content %}{% block header %}{% endblock %}{% endset %}
+    {% set has_header = header_content|trim is not empty %}
+    <div class="min-h-full pwa-safe-bottom"{% if app.user %} data-controller="tour" data-tour-labels-value="{{ tour_labels|json_encode }}"{% endif %}>
+        <div class="relative bg-header{{ has_header ? ' pb-16 sm:pb-32' : '' }}">
             <nav class="bg-header">
                 <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div class="border-b border-white/10">
@@ -80,7 +84,7 @@
                                         {{ 'common.nav.account'|trans }}
                                     </a>
                                     <span class="hidden px-2 text-sm text-header-muted md:inline" title="{{ app.user.userIdentifier }}">{{ app.user.displayName }}</span>
-                                    <a href="{{ path('app_logout') }}" class="rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.logout'|trans }}</a>
+                                    <a href="{{ path('app_logout') }}" class="hidden rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg md:inline-block">{{ 'common.nav.logout'|trans }}</a>
                                 {% endif %}
                                 <button type="button" data-controller="theme" data-action="theme#toggle" data-tour="theme" aria-label="{{ 'common.theme.toggle'|trans }}" aria-pressed="false" class="relative inline-flex items-center justify-center rounded-md p-2 text-header-muted hover:bg-white/5 hover:text-header-fg focus:outline-2 focus:outline-offset-2 focus:outline-brand">
                                     <span class="sr-only">{{ 'common.theme.toggle'|trans }}</span>
@@ -125,14 +129,16 @@
                 </el-disclosure>
                 {% endif %}
             </nav>
+            {% if has_header %}
             <header class="{% block header_padding %}py-10{% endblock %}">
                 <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    {% block header %} {% endblock %}
+                    {{ header_content }}
                 </div>
             </header>
+            {% endif %}
         </div>
 
-        <main class="relative -mt-16 sm:-mt-32">
+        <main class="relative{{ has_header ? ' -mt-16 sm:-mt-32' : ' mt-4 sm:mt-6' }}">
             <div class="mx-auto max-w-7xl pb-12 sm:px-6 lg:px-8">
                 <div class="rounded-none bg-surface px-5 py-6 shadow-sm sm:rounded-lg sm:px-6">
                     {% block body %}{% endblock %}

@@ -97,7 +97,7 @@
                 {% if subscription.link %}
                 <div>
                     <dt class="text-sm font-medium text-fg-muted">{{ 'subscription.show.link'|trans }}</dt>
-                    <dd class="text-lg text-fg"><a href="{{ subscription.link }}" target="_blank" class="text-brand hover:text-brand-strong">{{ subscription.link }}</a></dd>
+                    <dd class="text-lg text-fg"><a href="{{ subscription.link }}" target="_blank" rel="noopener noreferrer" class="text-brand hover:text-brand-strong">{{ subscription.link }}</a></dd>
                 </div>
                 {% endif %}
             </dl>

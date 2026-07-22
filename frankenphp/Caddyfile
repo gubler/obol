@@ -43,7 +43,12 @@
 
 	# Disable Topics tracking if not enabled explicitly: https://github.com/jkarlin/topics
 	header ?Permissions-Policy "browsing-topics=()"
-	header ?Strict-Transport-Security "max-age=31536000"
+	header ?Strict-Transport-Security "max-age=31536000; includeSubDomains"
+	# nosniff on every response, including static files (uploaded logos, compiled assets) served by
+	# the file_server below, which bypasses PHP. The app sets it too on dynamic responses; `?` yields
+	# to a header already present, so the two never conflict. Document-scoped headers (CSP, frame,
+	# referrer) live in the Symfony response listener, which can be tested and covers only PHP routes.
+	header ?X-Content-Type-Options "nosniff"
 
 	@phpRoute {
 		not path /.well-known/mercure*

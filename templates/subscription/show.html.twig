@@ -31,32 +31,9 @@
         <div class="bg-surface shadow-md rounded p-6 mb-6">
             <div class="flex justify-between items-center">
                 <h2 class="text-xl font-semibold">{{ 'subscription.show.details_heading'|trans }}</h2>
-                <div class="space-x-2">
-                    <a href="{{ path('subscription_edit', {id: subscription.id}) }}" class="bg-brand hover:bg-brand-strong text-on-brand font-bold py-2 px-4 rounded">
-                        {{ 'common.action.edit'|trans }}
-                    </a>
-                    {% if subscription.archived %}
-                        <form action="{{ path('subscription_unarchive', {id: subscription.id}) }}" method="POST" class="inline-block">
-                            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
-                            <button type="submit" class="bg-surface-2 text-fg hover:bg-line font-bold py-2 px-4 rounded">
-                                {{ 'common.action.unarchive'|trans }}
-                            </button>
-                        </form>
-                    {% else %}
-                        <form action="{{ path('subscription_archive', {id: subscription.id}) }}" method="POST" class="inline-block" data-turbo-confirm="{{ 'subscription.show.archive_confirm'|trans }}">
-                            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
-                            <button type="submit" class="bg-surface-2 text-fg hover:bg-line font-bold py-2 px-4 rounded">
-                                {{ 'common.action.archive'|trans }}
-                            </button>
-                        </form>
-                    {% endif %}
-                    <form action="{{ path('subscription_delete', {id: subscription.id}) }}" method="POST" class="inline-block" data-turbo-confirm="{{ 'subscription.show.delete_confirm'|trans }}">
-                        <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
-                        <button type="submit" class="bg-danger text-white hover:opacity-90 font-bold py-2 px-4 rounded">
-                            {{ 'common.action.delete'|trans }}
-                        </button>
-                    </form>
-                </div>
+                <a href="{{ path('subscription_edit', {id: subscription.id}) }}" class="bg-brand hover:bg-brand-strong text-on-brand font-bold py-2 px-4 rounded">
+                    {{ 'common.action.edit'|trans }}
+                </a>
             </div>
 
             <dl class="mt-4 space-y-2">

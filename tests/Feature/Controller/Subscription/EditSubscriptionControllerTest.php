@@ -42,6 +42,33 @@ final class EditSubscriptionControllerTest extends AuthenticatedTestCase
         self::assertNoTranslationKeyLeaks((string) $client->getResponse()->getContent(), 'edit subscription page');
     }
 
+    public function testOffersArchiveAndDeleteActionsForAnActiveSubscription(): void
+    {
+        // Destructive/state actions live on the edit page, not the detail page.
+        $client = $this->authenticatedClient();
+        $subscription = SubscriptionFactory::createOne(['name' => 'Netflix']);
+
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/' . $subscription->id . '/edit');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists(selector: 'form[action="/app/subscriptions/' . $subscription->id . '/archive"]');
+        self::assertSelectorExists(selector: 'form[action="/app/subscriptions/' . $subscription->id . '/delete"]');
+        self::assertSelectorNotExists(selector: 'form[action="/app/subscriptions/' . $subscription->id . '/unarchive"]');
+    }
+
+    public function testOffersUnarchiveInsteadOfArchiveForAnArchivedSubscription(): void
+    {
+        $client = $this->authenticatedClient();
+        $subscription = SubscriptionFactory::new(['name' => 'Netflix'])->archived()->create();
+
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/' . $subscription->id . '/edit');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists(selector: 'form[action="/app/subscriptions/' . $subscription->id . '/unarchive"]');
+        self::assertSelectorNotExists(selector: 'form[action="/app/subscriptions/' . $subscription->id . '/archive"]');
+        self::assertSelectorExists(selector: 'form[action="/app/subscriptions/' . $subscription->id . '/delete"]');
+    }
+
     public function testDoesNotOfferALogoUploadField(): void
     {
         // Image uploads are removed from the UI for launch; the pipeline returns later.

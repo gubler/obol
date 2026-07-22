@@ -450,6 +450,8 @@ subscription:
         restart_notice: >-
             Automatic payment generation is paused for this subscription. To resume it, set the
             Next Renewal Date to a future date and check “Restart automatic payments?” below.
+        actions_heading: Manage this subscription
+        actions_intro: Archive to hide it from your active list, or delete it permanently.
     show:
         back: Back to Subscriptions
         manual_badge: Manual payments

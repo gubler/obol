@@ -70,8 +70,10 @@ final class ShowSubscriptionControllerTest extends AuthenticatedTestCase
         self::assertSelectorExists(selector: 'a[href="/app/subscriptions/' . $subscription->id . '/edit"]');
     }
 
-    public function testShowsDeleteButton(): void
+    public function testDoesNotOfferArchiveOrDeleteOnTheDetailPage(): void
     {
+        // The detail page is read-focused: its only action is Edit. Archive and Delete live on
+        // the edit page, so their forms must not render here.
         $client = $this->authenticatedClient();
         $category = CategoryFactory::createOne(['name' => 'Entertainment']);
         $subscription = SubscriptionFactory::createOne([
@@ -82,7 +84,8 @@ final class ShowSubscriptionControllerTest extends AuthenticatedTestCase
         $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/' . $subscription->id);
 
         self::assertResponseIsSuccessful();
-        self::assertSelectorExists(selector: 'form[action="/app/subscriptions/' . $subscription->id . '/delete"]');
+        self::assertSelectorNotExists(selector: 'form[action="/app/subscriptions/' . $subscription->id . '/delete"]');
+        self::assertSelectorNotExists(selector: 'form[action="/app/subscriptions/' . $subscription->id . '/archive"]');
     }
 
     public function testPaymentDeleteConfirmationStatesTheRollbackAndManualSwitch(): void

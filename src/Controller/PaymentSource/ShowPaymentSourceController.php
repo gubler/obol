@@ -8,7 +8,9 @@ declare(strict_types=1);
 namespace App\Controller\PaymentSource;
 
 use App\Controller\AbstractBaseController;
+use App\Dto\PaymentSource\ReassignSubscriptionsDto;
 use App\Entity\PaymentSource;
+use App\Form\PaymentSource\ReassignSubscriptionsFormType;
 use App\Message\Query\PaymentSource\FindAllPaymentSourcesQuery;
 use App\Message\Query\PaymentSource\FindPaymentSourceQuery;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,17 +32,29 @@ final class ShowPaymentSourceController extends AbstractBaseController
 
         \assert($paymentSource instanceof PaymentSource);
 
-        // Other sources are the candidate targets for the "move all subscriptions" action.
+        // The "move all subscriptions" action is offered only when there is somewhere to move them - this
+        // source has subscriptions and at least one other source exists to receive them. The form (posted
+        // to the reassign action) is owner-scoped and excludes this source; see ReassignSubscriptionsFormType.
         /** @var array<PaymentSource> $allSources */
         $allSources = $this->queryBus->query(query: new FindAllPaymentSourcesQuery(ownerUserId: $ownerUserId));
-        $otherSources = array_filter(
-            $allSources,
-            static fn (PaymentSource $other): bool => !$other->id->equals($paymentSource->id),
-        );
+        $hasOtherSources = array_any($allSources, static fn (PaymentSource $other): bool => !$other->id->equals($paymentSource->id));
+
+        $reassignForm = null;
+        if (\count($paymentSource->subscriptions) > 0 && $hasOtherSources) {
+            $reassignForm = $this->createForm(
+                type: ReassignSubscriptionsFormType::class,
+                data: new ReassignSubscriptionsDto(),
+                options: [
+                    'owner_id' => $ownerUserId,
+                    'current_id' => $paymentSource->id,
+                    'action' => $this->generateUrl(route: 'payment_source_reassign', parameters: ['id' => $paymentSource->id]),
+                ],
+            );
+        }
 
         return $this->render(view: 'payment_source/show.html.twig', parameters: [
             'payment_source' => $paymentSource,
-            'other_payment_sources' => $otherSources,
+            'reassign_form' => $reassignForm,
         ]);
     }
 }

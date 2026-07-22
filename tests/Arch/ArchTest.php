@@ -14,6 +14,8 @@ use App\Entity\Payment;
 use App\Entity\Subscription;
 use App\ValueObject\CalendarDate;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
 use Symfony\Component\Uid\Ulid;
 
 final class ArchTest extends TestCase
@@ -132,6 +134,62 @@ final class ArchTest extends TestCase
                 );
             }
         }
+    }
+
+    /**
+     * ADR-0022: every state-changing HTTP action is CSRF-protected by one of the two sanctioned means -
+     * routed through the Form component (which validates the `submit` token during form handling) or
+     * carrying #[IsCsrfTokenValid]. A controller action mapped to a non-safe method that has neither is a
+     * silent CSRF gap, so this makes the rule structural: a new one cannot ship unguarded.
+     */
+    public function testStateChangingRoutesAreCsrfProtected(): void
+    {
+        $safeMethods = ['GET', 'HEAD', 'OPTIONS', 'TRACE'];
+
+        // The magic-link check endpoint accepts a POST that is neither a form nor an #[IsCsrfTokenValid]
+        // action: it is the login-link redemption, intercepted by the login_link authenticator and
+        // authenticated by the signed hash in the URL, not a CSRF token (ADR-0014/ADR-0022).
+        $exemptions = [\App\Controller\Auth\LoginCheckController::class];
+
+        $checked = 0;
+
+        foreach (self::classNamesUnder('App\Controller') as $class) {
+            if (\in_array($class, $exemptions, true)) {
+                continue;
+            }
+
+            $reflection = new \ReflectionClass($class);
+
+            // Single-action invokable controllers: form handling, if any, lives in this one file.
+            $source = (string) file_get_contents((string) $reflection->getFileName());
+            $usesForm = str_contains($source, 'createForm(') || str_contains($source, '->handleRequest(');
+
+            foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+                $hasCsrfAttribute = [] !== $method->getAttributes(IsCsrfTokenValid::class)
+                    || [] !== $reflection->getAttributes(IsCsrfTokenValid::class);
+
+                foreach ($method->getAttributes(Route::class) as $routeAttribute) {
+                    /** @var list<string> $methods */
+                    $methods = array_map('strtoupper', (array) ($routeAttribute->getArguments()['methods'] ?? []));
+
+                    // An unrestricted route ([] methods) accepts every verb, POST included.
+                    $isStateChanging = [] === $methods || [] !== array_diff($methods, $safeMethods);
+                    if (!$isStateChanging) {
+                        continue;
+                    }
+
+                    self::assertTrue(
+                        $hasCsrfAttribute || $usesForm,
+                        $class . ' handles a non-safe route but is neither Form-component-backed nor '
+                            . 'marked #[IsCsrfTokenValid]; every state-changing action must be CSRF-protected (ADR-0022)',
+                    );
+
+                    ++$checked;
+                }
+            }
+        }
+
+        self::assertGreaterThan(0, $checked, 'expected at least one state-changing route to check');
     }
 
     private static function propertyType(string $class, string $property): string

@@ -63,21 +63,16 @@
                 <p class="text-fg-muted">{{ 'payment_source.show.no_subscriptions'|trans }}</p>
             {% endif %}
 
-            {% if payment_source.subscriptions|length > 0 and other_payment_sources|length > 0 %}
-                <form action="{{ path('payment_source_reassign', {id: payment_source.id}) }}" method="POST" class="mt-6 border-t border-line pt-4">
-                    <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
-                    <label for="reassign-target" class="block text-sm font-medium text-fg mb-2">{{ 'payment_source.show.move_all_label'|trans }}</label>
+            {% if reassign_form is not null %}
+                {{ form_start(reassign_form, {attr: {class: 'mt-6 border-t border-line pt-4'}}) }}
+                    {{ form_label(reassign_form.target, null, {label_attr: {class: 'block text-sm font-medium text-fg mb-2'}}) }}
                     <div class="flex items-center gap-2">
-                        <select id="reassign-target" name="target" class="rounded-md border-line shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
-                            {% for other in other_payment_sources %}
-                                <option value="{{ other.id }}">{{ other.name }}</option>
-                            {% endfor %}
-                        </select>
+                        {{ form_widget(reassign_form.target, {attr: {class: 'rounded-md border-line shadow-sm focus:border-brand focus:ring-brand sm:text-sm'}}) }}
                         <button type="submit" class="bg-brand hover:bg-brand-strong text-on-brand font-bold py-2 px-4 rounded">
                             {{ 'payment_source.show.move_all_button'|trans }}
                         </button>
                     </div>
-                </form>
+                {{ form_end(reassign_form) }}
             {% endif %}
         </div>
     </div>

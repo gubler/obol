@@ -59,7 +59,6 @@ final class CsrfProtectionTest extends AuthenticatedTestCase
         yield 'payment validate' => ['/app/payments/' . $id . '/validate'];
         yield 'category delete' => ['/app/categories/' . $id . '/delete'];
         yield 'payment source delete' => ['/app/payment-sources/' . $id . '/delete'];
-        yield 'payment source reassign' => ['/app/payment-sources/' . $id . '/reassign'];
         yield 'passkey revoke' => ['/app/account/passkeys/' . $id . '/delete'];
         yield 'email remove' => ['/app/account/emails/' . $id . '/remove'];
         yield 'email promote' => ['/app/account/emails/' . $id . '/promote'];

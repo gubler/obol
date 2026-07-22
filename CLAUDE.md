@@ -87,6 +87,23 @@ mise run seed:clear                            # drop + migrate (no fixtures)
 mise run dce -- php bin/console doctrine:migrations:migrate
 ```
 
+Fixtures seed a single account, `founder@example.com` (primary, verified).
+
+### Local login (dev)
+
+Auth is passwordless (magic link), and dev sets `MAILER_DSN=null://null`, so no link is
+ever delivered locally - there is nothing to type on the login form. Sign in with the
+non-prod bypass instead (route registered only outside production):
+
+```
+https://obol.lolly.localhost/_test/login-as/founder@example.com
+```
+
+It authenticates the session directly and redirects to `/`; go to `/app` for the
+dashboard. Route: `src/Controller/Test/TestLoginAsController.php` (`GET /_test/login-as/{email}`).
+Alternatives if you want the real magic-link flow: point `MAILER_DSN` at a catcher
+(e.g. Mailpit) in `.env.local`, or read the link from the Symfony profiler's Mailer panel.
+
 ### AI Mate (dev-only MCP server)
 ```bash
 mise run mate            # start the Mate MCP server (stdio) in the php container

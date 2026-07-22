@@ -65,7 +65,11 @@ final class UpdateSubscriptionDto
     ])]
     public string $link = '';
 
-    #[File]
+    // Constrain the logo to small raster images. Excluding SVG (and any markup type) is the point:
+    // an SVG or HTML file sniffs to an active-script type and, served from public/uploads, would run
+    // in our own origin on direct navigation. maxSize also caps a disk-fill upload. The constraint
+    // sniffs the actual content, so a renamed .png with SVG bytes is still rejected.
+    #[File(maxSize: '2M', mimeTypes: ['image/png', 'image/jpeg', 'image/webp', 'image/gif'])]
     public ?UploadedFile $logo = null;
 
     public TileColor $color;

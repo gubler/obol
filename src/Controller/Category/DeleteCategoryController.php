@@ -12,10 +12,12 @@ use App\Message\Command\Category\DeleteCategoryCommand;
 use App\Message\Query\Category\FindCategoryQuery;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
 use Symfony\Component\Uid\Ulid;
 
 final class DeleteCategoryController extends AbstractBaseController
 {
+    #[IsCsrfTokenValid(id: 'submit')]
     #[Route(path: '/app/categories/{id}/delete', name: 'category_delete', methods: ['POST'])]
     public function __invoke(Ulid $id): \Symfony\Component\HttpFoundation\RedirectResponse
     {

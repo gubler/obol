@@ -13,12 +13,15 @@ use App\Enum\SubscriptionEventType;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
 use App\Tests\Support\AuthenticatedTestCase;
+use App\Tests\Support\SameOriginPostTrait;
 use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DomCrawler\Crawler;
 
 final class SubscriptionCrudWorkflowTest extends AuthenticatedTestCase
 {
+    use SameOriginPostTrait;
+
     public function testCompleteCreateReadUpdateDeleteWorkflow(): void
     {
         $client = $this->authenticatedClient();
@@ -73,7 +76,7 @@ final class SubscriptionCrudWorkflowTest extends AuthenticatedTestCase
         self::assertSame(1999, $updatedSubscription->cost->minorAmount);
 
         // Delete
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/subscriptions/' . $subscriptionId . '/delete');
+        $this->postSameOrigin($client, '/app/subscriptions/' . $subscriptionId . '/delete');
 
         self::assertResponseRedirects(expectedLocation: '/app');
 

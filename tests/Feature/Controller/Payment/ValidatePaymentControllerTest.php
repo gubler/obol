@@ -14,11 +14,14 @@ use App\Factory\CategoryFactory;
 use App\Factory\PaymentFactory;
 use App\Factory\SubscriptionFactory;
 use App\Tests\Support\AuthenticatedTestCase;
+use App\Tests\Support\SameOriginPostTrait;
 use App\ValueObject\Money;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class ValidatePaymentControllerTest extends AuthenticatedTestCase
 {
+    use SameOriginPostTrait;
+
     public function testPostRequestValidatesAGeneratedPayment(): void
     {
         $client = $this->authenticatedClient();
@@ -30,7 +33,7 @@ final class ValidatePaymentControllerTest extends AuthenticatedTestCase
             'amount' => new Money(1599, Currency::USD),
         ]);
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/payments/' . $payment->id . '/validate');
+        $this->postSameOrigin($client, '/app/payments/' . $payment->id . '/validate');
 
         self::assertResponseRedirects(expectedLocation: '/app/subscriptions/' . $subscription->id);
 
@@ -49,7 +52,7 @@ final class ValidatePaymentControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/payments/01JKXXXXXXXXXXXXXXXXXXXXXXX/validate');
+        $this->postSameOrigin($client, '/app/payments/01JKXXXXXXXXXXXXXXXXXXXXXXX/validate');
 
         self::assertResponseStatusCodeSame(expectedCode: 404);
     }

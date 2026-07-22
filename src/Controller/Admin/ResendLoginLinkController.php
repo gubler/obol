@@ -15,12 +15,14 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Uid\Ulid;
 
 final class ResendLoginLinkController extends AbstractBaseController
 {
     #[IsGranted(attribute: 'ROLE_ADMIN')]
+    #[IsCsrfTokenValid(id: 'submit')]
     #[Route(path: '/app/admin/users/{id}/resend-login-link', name: 'admin_user_resend_login_link', methods: ['POST'])]
     public function __invoke(Ulid $id, Request $request): RedirectResponse
     {

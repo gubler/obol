@@ -56,6 +56,7 @@
                               class="ml-auto"
                               data-test="admin-user-resend-form"
                               data-test-resend-email="{{ email.email }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
                             <input type="hidden" name="email" value="{{ email.email }}">
                             <button type="submit"
                                     class="bg-brand hover:bg-brand-strong text-on-brand text-xs font-medium py-1 px-3 rounded"

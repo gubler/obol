@@ -11,10 +11,13 @@ use App\Entity\Subscription;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
 use App\Tests\Support\AuthenticatedTestCase;
+use App\Tests\Support\SameOriginPostTrait;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class UnarchiveSubscriptionControllerTest extends AuthenticatedTestCase
 {
+    use SameOriginPostTrait;
+
     public function testUnarchiveRequestUnarchivesSubscription(): void
     {
         $client = $this->authenticatedClient();
@@ -24,7 +27,7 @@ final class UnarchiveSubscriptionControllerTest extends AuthenticatedTestCase
             'name' => 'Netflix',
         ])->archived()->create();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/subscriptions/' . $subscription->id . '/unarchive');
+        $this->postSameOrigin($client, '/app/subscriptions/' . $subscription->id . '/unarchive');
 
         self::assertResponseRedirects('/app/subscriptions/' . $subscription->id);
 
@@ -48,7 +51,7 @@ final class UnarchiveSubscriptionControllerTest extends AuthenticatedTestCase
             'name' => 'Spotify',
         ])->archived()->create();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/subscriptions/' . $subscription->id . '/unarchive');
+        $this->postSameOrigin($client, '/app/subscriptions/' . $subscription->id . '/unarchive');
         $client->followRedirect();
 
         self::assertSelectorTextContains('.flash-success', 'Subscription unarchived successfully');
@@ -58,7 +61,7 @@ final class UnarchiveSubscriptionControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/unarchive');
+        $this->postSameOrigin($client, '/app/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/unarchive');
 
         self::assertResponseStatusCodeSame(404);
     }
@@ -88,7 +91,7 @@ final class UnarchiveSubscriptionControllerTest extends AuthenticatedTestCase
 
         $initialEventCount = \count($subscription->subscriptionEvents);
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/subscriptions/' . $subscription->id . '/unarchive');
+        $this->postSameOrigin($client, '/app/subscriptions/' . $subscription->id . '/unarchive');
 
         $container = self::getContainer();
         /** @var EntityManagerInterface $entityManager */

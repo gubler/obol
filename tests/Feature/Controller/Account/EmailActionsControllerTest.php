@@ -12,12 +12,15 @@ use App\Factory\UserEmailFactory;
 use App\Factory\UserFactory;
 use App\Repository\UserEmailRepository;
 use App\Repository\UserRepository;
+use App\Tests\Support\SameOriginPostTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Request;
 
 final class EmailActionsControllerTest extends WebTestCase
 {
+    use SameOriginPostTrait;
+
     public function testPromotingAVerifiedSecondaryUpdatesThePrimaryAndKeepsTheSessionAlive(): void
     {
         $client = self::createClient();
@@ -25,7 +28,7 @@ final class EmailActionsControllerTest extends WebTestCase
         $secondary = UserEmailFactory::createOne(['user' => $user, 'email' => 'new@dev88.test', 'verifiedAt' => new \DateTimeImmutable()]);
         $client->loginUser($user);
 
-        $client->request(Request::METHOD_POST, '/app/account/emails/' . $secondary->id . '/promote');
+        $this->postSameOrigin($client, '/app/account/emails/' . $secondary->id . '/promote');
         self::assertResponseRedirects('/app/account/access');
 
         // Following the redirect hits an authenticated-by-default route. A successful render (not a bounce
@@ -45,7 +48,7 @@ final class EmailActionsControllerTest extends WebTestCase
         $pending = UserEmailFactory::new()->unverified()->create(['user' => $user, 'email' => 'pending@dev88.test']);
         $client->loginUser($user);
 
-        $client->request(Request::METHOD_POST, '/app/account/emails/' . $pending->id . '/promote');
+        $this->postSameOrigin($client, '/app/account/emails/' . $pending->id . '/promote');
         self::assertResponseRedirects('/app/account/access');
         $client->followRedirect();
         self::assertSelectorExists('.flash-error');
@@ -62,7 +65,7 @@ final class EmailActionsControllerTest extends WebTestCase
         $theirs = UserEmailFactory::createOne(['user' => $other, 'email' => 'theirs@dev88.test', 'verifiedAt' => new \DateTimeImmutable()]);
         $client->loginUser($user);
 
-        $client->request(Request::METHOD_POST, '/app/account/emails/' . $theirs->id . '/promote');
+        $this->postSameOrigin($client, '/app/account/emails/' . $theirs->id . '/promote');
         self::assertResponseStatusCodeSame(404);
     }
 
@@ -74,7 +77,7 @@ final class EmailActionsControllerTest extends WebTestCase
         $id = $secondary->id;
         $client->loginUser($user);
 
-        $client->request(Request::METHOD_POST, '/app/account/emails/' . $id . '/remove');
+        $this->postSameOrigin($client, '/app/account/emails/' . $id . '/remove');
         self::assertResponseRedirects('/app/account/access');
 
         $em = self::getContainer()->get(EntityManagerInterface::class);
@@ -88,7 +91,7 @@ final class EmailActionsControllerTest extends WebTestCase
         $client->loginUser($user);
 
         $primary = self::getContainer()->get(UserEmailRepository::class)->findPrimaryForUser($user);
-        $client->request(Request::METHOD_POST, '/app/account/emails/' . $primary->id . '/remove');
+        $this->postSameOrigin($client, '/app/account/emails/' . $primary->id . '/remove');
 
         self::assertResponseRedirects('/app/account/access');
         $client->followRedirect();
@@ -106,7 +109,7 @@ final class EmailActionsControllerTest extends WebTestCase
         $theirs = UserEmailFactory::createOne(['user' => $other, 'email' => 'theirs@dev88.test', 'verifiedAt' => new \DateTimeImmutable()]);
         $client->loginUser($user);
 
-        $client->request(Request::METHOD_POST, '/app/account/emails/' . $theirs->id . '/remove');
+        $this->postSameOrigin($client, '/app/account/emails/' . $theirs->id . '/remove');
         self::assertResponseStatusCodeSame(404);
     }
 
@@ -117,7 +120,7 @@ final class EmailActionsControllerTest extends WebTestCase
         $pending = UserEmailFactory::new()->unverified()->create(['user' => $user, 'email' => 'pending@dev88.test']);
         $client->loginUser($user);
 
-        $client->request(Request::METHOD_POST, '/app/account/emails/' . $pending->id . '/resend');
+        $this->postSameOrigin($client, '/app/account/emails/' . $pending->id . '/resend');
         self::assertResponseRedirects('/app/account/access');
         $client->followRedirect();
         self::assertSelectorExists('.flash-notice');

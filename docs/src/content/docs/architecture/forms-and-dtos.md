@@ -59,3 +59,35 @@ Located in `src/Form/`, organized by entity subdirectory. All form type classes 
 - **Validation concerns differ** — form validation (e.g., "field is required") is distinct from domain invariants (e.g., "cost must be positive")
 - **Decoupling** — the form contract is independent of the entity's internal structure
 - **File uploads** — DTOs can hold `UploadedFile` objects, which entities should not
+
+## CSRF protection
+
+CSRF protection is stateless (same-origin, `config/packages/csrf.yaml`): a POST is accepted when it
+carries a same-origin `Origin`/`Sec-Fetch-Site`/`Referer` header or double-submits the token. The
+token id is `submit` for every form.
+
+- **Form-component forms** get it automatically — `FormType` renders and validates the `submit` token
+  as part of `handleRequest()`/`isValid()`. Nothing extra to do.
+- **Hand-built one-click forms** (a bare `<form method="post">` with just a button — delete, archive,
+  validate, the per-email actions) are not routed through the Form component, so each end must opt in:
+
+  ```twig
+  <form method="post" action="{{ path('subscription_delete', {id: subscription.id}) }}">
+      <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
+      <button type="submit">{{ 'common.action.delete'|trans }}</button>
+  </form>
+  ```
+
+  ```php
+  #[IsCsrfTokenValid(id: 'submit')]
+  #[Route(path: '/app/subscriptions/{id}/delete', name: 'subscription_delete', methods: ['POST'])]
+  public function __invoke(Ulid $id): RedirectResponse
+  ```
+
+  The attribute is enforced before the controller body, so a forged (cross-origin) request never runs
+  the action; the `InvalidCsrfTokenException` it raises is an authentication failure, so the user is
+  bounced to the login entry point. Any new hand-built POST form must carry both halves.
+
+In tests, a crawler-submitted form (`$client->submit($form)`) is same-origin automatically; a direct
+`$client->request('POST', ...)` is not, so `App\Tests\Support\SameOriginPostTrait::postSameOrigin()`
+adds the token and Sec-Fetch-Site header to reach a protected controller body.

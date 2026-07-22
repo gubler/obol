@@ -13,6 +13,7 @@ use App\Factory\PaymentFactory;
 use App\Factory\PaymentSourceFactory;
 use App\Factory\SubscriptionFactory;
 use App\Factory\UserFactory;
+use App\Tests\Support\SameOriginPostTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -20,6 +21,8 @@ use Symfony\Component\HttpFoundation\Request;
 
 final class OwnerIsolationTest extends WebTestCase
 {
+    use SameOriginPostTrait;
+
     public function testUserBCannotReadUserAsSubscriptionOrPayment(): void
     {
         // createClient() must be the first kernel boot; the factories reuse it afterwards.
@@ -54,7 +57,7 @@ final class OwnerIsolationTest extends WebTestCase
             '/app/payments/' . $payment->id . '/validate',
             '/app/payments/' . $payment->id . '/delete',
         ] as $uri) {
-            $client->request(method: Request::METHOD_POST, uri: $uri);
+            $this->postSameOrigin($client, $uri);
             self::assertResponseStatusCodeSame(expectedCode: 404, message: $uri . ' must 404 for a non-owner');
         }
     }
@@ -90,7 +93,7 @@ final class OwnerIsolationTest extends WebTestCase
             self::assertResponseStatusCodeSame(expectedCode: 404, message: $uri . ' must 404 for a non-owner');
         }
 
-        $client->request(method: Request::METHOD_POST, uri: '/app/categories/' . $category->id . '/delete');
+        $this->postSameOrigin($client, '/app/categories/' . $category->id . '/delete');
         self::assertResponseStatusCodeSame(expectedCode: 404, message: 'deleting a non-owned category must 404');
     }
 
@@ -113,7 +116,7 @@ final class OwnerIsolationTest extends WebTestCase
             '/app/payment-sources/' . $source->id . '/delete',
             '/app/payment-sources/' . $source->id . '/reassign',
         ] as $uri) {
-            $client->request(method: Request::METHOD_POST, uri: $uri);
+            $this->postSameOrigin($client, $uri);
             self::assertResponseStatusCodeSame(expectedCode: 404, message: $uri . ' must 404 for a non-owner');
         }
     }

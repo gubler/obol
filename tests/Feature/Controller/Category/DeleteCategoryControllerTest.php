@@ -11,11 +11,14 @@ use App\Entity\Category;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
 use App\Tests\Support\AuthenticatedTestCase;
+use App\Tests\Support\SameOriginPostTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Uid\Ulid;
 
 final class DeleteCategoryControllerTest extends AuthenticatedTestCase
 {
+    use SameOriginPostTrait;
+
     public function testDeletesCategoryWithoutSubscriptionsSuccessfully(): void
     {
         $client = $this->authenticatedClient();
@@ -23,7 +26,7 @@ final class DeleteCategoryControllerTest extends AuthenticatedTestCase
         $category = CategoryFactory::createOne(['name' => 'Empty Category']);
         $categoryId = $category->id;
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/categories/' . $categoryId . '/delete');
+        $this->postSameOrigin($client, '/app/categories/' . $categoryId . '/delete');
 
         self::assertResponseRedirects(expectedLocation: '/app/categories');
 
@@ -44,7 +47,7 @@ final class DeleteCategoryControllerTest extends AuthenticatedTestCase
         $category = CategoryFactory::createOne(['name' => 'Test Category']);
         $categoryId = $category->id;
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/categories/' . $categoryId . '/delete');
+        $this->postSameOrigin($client, '/app/categories/' . $categoryId . '/delete');
         $client->followRedirect();
 
         self::assertSelectorTextContains(selector: '.flash-success', text: 'Category deleted successfully');
@@ -59,7 +62,7 @@ final class DeleteCategoryControllerTest extends AuthenticatedTestCase
 
         $categoryId = $category->id;
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/categories/' . $categoryId . '/delete');
+        $this->postSameOrigin($client, '/app/categories/' . $categoryId . '/delete');
 
         self::assertResponseRedirects();
 
@@ -82,7 +85,7 @@ final class DeleteCategoryControllerTest extends AuthenticatedTestCase
 
         $categoryId = $category->id;
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/categories/' . $categoryId . '/delete');
+        $this->postSameOrigin($client, '/app/categories/' . $categoryId . '/delete');
         $client->followRedirect();
 
         self::assertSelectorTextContains(selector: '.flash-error', text: 'Cannot delete category with subscriptions');
@@ -94,7 +97,7 @@ final class DeleteCategoryControllerTest extends AuthenticatedTestCase
 
         $nonExistentId = new Ulid();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/categories/' . $nonExistentId . '/delete');
+        $this->postSameOrigin($client, '/app/categories/' . $nonExistentId . '/delete');
 
         self::assertResponseStatusCodeSame(expectedCode: 404);
     }

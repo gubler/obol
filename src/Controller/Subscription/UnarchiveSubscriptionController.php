@@ -12,10 +12,12 @@ use App\Message\Command\Subscription\UnarchiveSubscriptionCommand;
 use App\Message\Query\Subscription\FindSubscriptionQuery;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
 use Symfony\Component\Uid\Ulid;
 
 final class UnarchiveSubscriptionController extends AbstractBaseController
 {
+    #[IsCsrfTokenValid(id: 'submit')]
     #[Route(path: '/app/subscriptions/{id}/unarchive', name: 'subscription_unarchive', methods: ['POST'])]
     public function __invoke(Ulid $id): \Symfony\Component\HttpFoundation\RedirectResponse
     {

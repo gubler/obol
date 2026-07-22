@@ -13,10 +13,12 @@ use App\Message\Query\PaymentSource\FindPaymentSourceQuery;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
 use Symfony\Component\Uid\Ulid;
 
 final class DeletePaymentSourceController extends AbstractBaseController
 {
+    #[IsCsrfTokenValid(id: 'submit')]
     #[Route(path: '/app/payment-sources/{id}/delete', name: 'payment_source_delete', methods: ['POST'])]
     public function __invoke(Ulid $id): RedirectResponse
     {

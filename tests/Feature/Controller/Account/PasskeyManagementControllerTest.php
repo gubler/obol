@@ -11,12 +11,15 @@ use App\Entity\PasskeyCredential;
 use App\Factory\PasskeyCredentialFactory;
 use App\Factory\UserFactory;
 use App\Tests\Support\AuthenticatedTestCase;
+use App\Tests\Support\SameOriginPostTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Uid\Ulid;
 
 final class PasskeyManagementControllerTest extends AuthenticatedTestCase
 {
+    use SameOriginPostTrait;
+
     public function testListShowsTheEmptyStateWhenTheUserHasNoPasskeys(): void
     {
         $client = $this->authenticatedClient();
@@ -57,7 +60,7 @@ final class PasskeyManagementControllerTest extends AuthenticatedTestCase
         $passkey = PasskeyCredentialFactory::createOne(['user' => UserFactory::founder(), 'name' => 'Doomed']);
         $id = $passkey->id;
 
-        $client->request(Request::METHOD_POST, '/app/account/passkeys/' . $id . '/delete');
+        $this->postSameOrigin($client, '/app/account/passkeys/' . $id . '/delete');
 
         self::assertResponseRedirects('/app/account/access');
 
@@ -71,7 +74,7 @@ final class PasskeyManagementControllerTest extends AuthenticatedTestCase
         $client = $this->authenticatedClient();
         $passkey = PasskeyCredentialFactory::createOne(['user' => UserFactory::founder(), 'name' => 'Only One']);
 
-        $client->request(Request::METHOD_POST, '/app/account/passkeys/' . $passkey->id . '/delete');
+        $this->postSameOrigin($client, '/app/account/passkeys/' . $passkey->id . '/delete');
         $client->followRedirect();
 
         self::assertSelectorExists('.flash-warning');
@@ -84,7 +87,7 @@ final class PasskeyManagementControllerTest extends AuthenticatedTestCase
         $passkey = PasskeyCredentialFactory::createOne(['user' => $otherUser, 'name' => 'Not Yours']);
         $id = $passkey->id;
 
-        $client->request(Request::METHOD_POST, '/app/account/passkeys/' . $id . '/delete');
+        $this->postSameOrigin($client, '/app/account/passkeys/' . $id . '/delete');
 
         self::assertResponseStatusCodeSame(404);
 

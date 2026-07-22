@@ -9,11 +9,14 @@ namespace App\Tests\Integration\Controller\PaymentSource;
 
 use App\Entity\PaymentSource;
 use App\Tests\Support\AuthenticatedTestCase;
+use App\Tests\Support\SameOriginPostTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DomCrawler\Crawler;
 
 final class PaymentSourceCrudWorkflowTest extends AuthenticatedTestCase
 {
+    use SameOriginPostTrait;
+
     public function testCompleteCreateEditDeleteWorkflow(): void
     {
         $client = $this->authenticatedClient();
@@ -50,7 +53,7 @@ final class PaymentSourceCrudWorkflowTest extends AuthenticatedTestCase
         self::assertSame('Updated Source', $updated->name);
 
         // Delete
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/payment-sources/' . $sourceId . '/delete');
+        $this->postSameOrigin($client, '/app/payment-sources/' . $sourceId . '/delete');
         self::assertResponseRedirects(expectedLocation: '/app/payment-sources');
 
         $entityManager->clear();

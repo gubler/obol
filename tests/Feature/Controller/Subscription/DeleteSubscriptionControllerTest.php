@@ -11,10 +11,13 @@ use App\Entity\Subscription;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
 use App\Tests\Support\AuthenticatedTestCase;
+use App\Tests\Support\SameOriginPostTrait;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class DeleteSubscriptionControllerTest extends AuthenticatedTestCase
 {
+    use SameOriginPostTrait;
+
     public function testDeleteRequestWithValidIdDeletesSubscription(): void
     {
         $client = $this->authenticatedClient();
@@ -26,7 +29,7 @@ final class DeleteSubscriptionControllerTest extends AuthenticatedTestCase
 
         $subscriptionId = $subscription->id;
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/subscriptions/' . $subscriptionId . '/delete');
+        $this->postSameOrigin($client, '/app/subscriptions/' . $subscriptionId . '/delete');
 
         self::assertResponseRedirects(expectedLocation: '/app');
 
@@ -50,7 +53,7 @@ final class DeleteSubscriptionControllerTest extends AuthenticatedTestCase
             'name' => 'Spotify',
         ]);
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/subscriptions/' . $subscription->id . '/delete');
+        $this->postSameOrigin($client, '/app/subscriptions/' . $subscription->id . '/delete');
         $client->followRedirect();
 
         self::assertSelectorTextContains(selector: '.flash-success', text: 'Subscription deleted successfully');
@@ -60,7 +63,7 @@ final class DeleteSubscriptionControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/delete');
+        $this->postSameOrigin($client, '/app/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/delete');
 
         self::assertResponseStatusCodeSame(expectedCode: 404);
     }
@@ -90,7 +93,7 @@ final class DeleteSubscriptionControllerTest extends AuthenticatedTestCase
 
         $initialCount = SubscriptionFactory::count();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/subscriptions/' . $subscription->id . '/delete');
+        $this->postSameOrigin($client, '/app/subscriptions/' . $subscription->id . '/delete');
 
         $finalCount = SubscriptionFactory::count();
 

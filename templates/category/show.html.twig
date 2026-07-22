@@ -32,6 +32,7 @@
                         {{ 'common.action.edit'|trans }}
                     </a>
                     <form action="{{ path('category_delete', {id: category.id}) }}" method="POST" class="inline-block" data-turbo-confirm="{{ 'category.show.delete_confirm'|trans }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
                         <button type="submit" class="bg-danger text-white hover:opacity-90 font-bold py-2 px-4 rounded">
                             {{ 'common.action.delete'|trans }}
                         </button>

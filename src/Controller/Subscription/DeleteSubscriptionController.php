@@ -12,10 +12,12 @@ use App\Message\Command\Subscription\DeleteSubscriptionCommand;
 use App\Message\Query\Subscription\FindSubscriptionQuery;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
 use Symfony\Component\Uid\Ulid;
 
 final class DeleteSubscriptionController extends AbstractBaseController
 {
+    #[IsCsrfTokenValid(id: 'submit')]
     #[Route(path: '/app/subscriptions/{id}/delete', name: 'subscription_delete', methods: ['POST'])]
     public function __invoke(Ulid $id): \Symfony\Component\HttpFoundation\RedirectResponse
     {

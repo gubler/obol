@@ -12,10 +12,12 @@ use App\Message\Command\Subscription\ArchiveSubscriptionCommand;
 use App\Message\Query\Subscription\FindSubscriptionQuery;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
 use Symfony\Component\Uid\Ulid;
 
 final class ArchiveSubscriptionController extends AbstractBaseController
 {
+    #[IsCsrfTokenValid(id: 'submit')]
     #[Route(path: '/app/subscriptions/{id}/archive', name: 'subscription_archive', methods: ['POST'])]
     public function __invoke(Ulid $id): \Symfony\Component\HttpFoundation\RedirectResponse
     {

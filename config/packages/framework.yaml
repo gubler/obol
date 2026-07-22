@@ -3,7 +3,11 @@ framework:
     secret: '%env(APP_SECRET)%'
 
     # Note that the session will be started ONLY if you read or write from it.
-    session: true
+    session:
+        # Pin the SameSite policy explicitly rather than leaning on Symfony's default. Lax lets the
+        # session cookie ride top-level GET navigations (magic-link and email-verify links arrive that
+        # way) while withholding it from cross-site POSTs - defense in depth behind the CSRF tokens.
+        cookie_samesite: lax
 
     #esi: true
     #fragments: true

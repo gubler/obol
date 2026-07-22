@@ -32,6 +32,7 @@
                         {{ 'common.action.edit'|trans }}
                     </a>
                     <form action="{{ path('payment_source_delete', {id: payment_source.id}) }}" method="POST" class="inline-block" data-turbo-confirm="{{ 'payment_source.show.delete_confirm'|trans }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
                         <button type="submit" class="bg-danger text-white hover:opacity-90 font-bold py-2 px-4 rounded">
                             {{ 'common.action.delete'|trans }}
                         </button>
@@ -64,6 +65,7 @@
 
             {% if payment_source.subscriptions|length > 0 and other_payment_sources|length > 0 %}
                 <form action="{{ path('payment_source_reassign', {id: payment_source.id}) }}" method="POST" class="mt-6 border-t border-line pt-4">
+                    <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
                     <label for="reassign-target" class="block text-sm font-medium text-fg mb-2">{{ 'payment_source.show.move_all_label'|trans }}</label>
                     <div class="flex items-center gap-2">
                         <select id="reassign-target" name="target" class="rounded-md border-line shadow-sm focus:border-brand focus:ring-brand sm:text-sm">

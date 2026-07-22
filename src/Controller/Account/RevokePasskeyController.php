@@ -15,10 +15,12 @@ use App\Message\Query\PasskeyCredential\FindPasskeysForUserQuery;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
 use Symfony\Component\Uid\Ulid;
 
 final class RevokePasskeyController extends AbstractBaseController
 {
+    #[IsCsrfTokenValid(id: 'submit')]
     #[Route(path: '/app/account/passkeys/{id}/delete', name: 'account_passkey_revoke', methods: ['POST'])]
     public function __invoke(Ulid $id): RedirectResponse
     {

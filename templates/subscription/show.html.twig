@@ -37,18 +37,21 @@
                     </a>
                     {% if subscription.archived %}
                         <form action="{{ path('subscription_unarchive', {id: subscription.id}) }}" method="POST" class="inline-block">
+                            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
                             <button type="submit" class="bg-surface-2 text-fg hover:bg-line font-bold py-2 px-4 rounded">
                                 {{ 'common.action.unarchive'|trans }}
                             </button>
                         </form>
                     {% else %}
                         <form action="{{ path('subscription_archive', {id: subscription.id}) }}" method="POST" class="inline-block" data-turbo-confirm="{{ 'subscription.show.archive_confirm'|trans }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
                             <button type="submit" class="bg-surface-2 text-fg hover:bg-line font-bold py-2 px-4 rounded">
                                 {{ 'common.action.archive'|trans }}
                             </button>
                         </form>
                     {% endif %}
                     <form action="{{ path('subscription_delete', {id: subscription.id}) }}" method="POST" class="inline-block" data-turbo-confirm="{{ 'subscription.show.delete_confirm'|trans }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
                         <button type="submit" class="bg-danger text-white hover:opacity-90 font-bold py-2 px-4 rounded">
                             {{ 'common.action.delete'|trans }}
                         </button>
@@ -124,6 +127,7 @@
                                     <span class="text-fg-muted">{{ payment.amount.format() }}</span>
                                     {% if payment.type.value == 'generated' %}
                                         <form action="{{ path('payment_validate', {id: payment.id}) }}" method="POST" class="payment-validate-form inline-block">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
                                             <button type="submit" class="text-success hover:opacity-80 text-sm">{{ 'payment.action.validate'|trans }}</button>
                                         </form>
                                     {% endif %}
@@ -137,6 +141,7 @@
                                             ~ (subscription.removalSwitchesToManual(payment)
                                                 ? 'payment.delete_confirm.manual'|trans
                                                 : '') }}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
                                             <button type="submit" class="text-danger hover:opacity-80 text-sm">{{ 'common.action.delete'|trans }}</button>
                                         </form>
                                     {% endif %}

@@ -174,13 +174,34 @@ final class UserManagementControllerTest extends WebTestCase
         $user = UserFactory::createOne(['email' => 'tester@dev88.test']);
         $client->loginUser(UserFactory::founder());
 
+        // Submit a real resend form (so the CSRF token is valid) but tamper the target address to one
+        // that is not the user's - the address check still rejects it as a 404, nothing is queued.
+        $crawler = $client->request(Request::METHOD_GET, '/app/admin/users/' . $user->id);
+        $form = $crawler->filter('[data-test-resend-email="tester@dev88.test"]')->form();
+        $form['email'] = 'attacker@evil.test';
+        $client->submit($form);
+
+        self::assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        self::assertCount(0, $this->asyncTransport()->getSent());
+    }
+
+    public function testResendWithoutAValidCsrfTokenIsRejected(): void
+    {
+        $client = self::createClient();
+        $user = UserFactory::createOne(['email' => 'tester@dev88.test']);
+        $client->loginUser(UserFactory::founder());
+
+        // A direct POST that bypasses the rendered form is cross-origin (no same-origin Origin/Referer),
+        // so same-origin CSRF protection refuses it: the InvalidCsrfTokenException bounces to the login
+        // entry point and, crucially, no login link is queued even though the target address is valid.
         $client->request(
             Request::METHOD_POST,
             '/app/admin/users/' . $user->id . '/resend-login-link',
-            ['email' => 'attacker@evil.test'],
+            ['email' => 'tester@dev88.test'],
         );
 
-        self::assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        self::assertResponseRedirects();
+        self::assertStringContainsString('/login', (string) $client->getResponse()->headers->get('Location'));
         self::assertCount(0, $this->asyncTransport()->getSent());
     }
 

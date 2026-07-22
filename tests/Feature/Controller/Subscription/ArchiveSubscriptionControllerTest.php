@@ -11,10 +11,13 @@ use App\Entity\Subscription;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
 use App\Tests\Support\AuthenticatedTestCase;
+use App\Tests\Support\SameOriginPostTrait;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class ArchiveSubscriptionControllerTest extends AuthenticatedTestCase
 {
+    use SameOriginPostTrait;
+
     public function testArchiveRequestArchivesSubscription(): void
     {
         $client = $this->authenticatedClient();
@@ -24,7 +27,7 @@ final class ArchiveSubscriptionControllerTest extends AuthenticatedTestCase
             'name' => 'Netflix',
         ]);
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/subscriptions/' . $subscription->id . '/archive');
+        $this->postSameOrigin($client, '/app/subscriptions/' . $subscription->id . '/archive');
 
         self::assertResponseRedirects('/app/subscriptions/' . $subscription->id);
 
@@ -48,7 +51,7 @@ final class ArchiveSubscriptionControllerTest extends AuthenticatedTestCase
             'name' => 'Spotify',
         ]);
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/subscriptions/' . $subscription->id . '/archive');
+        $this->postSameOrigin($client, '/app/subscriptions/' . $subscription->id . '/archive');
         $client->followRedirect();
 
         self::assertSelectorTextContains('.flash-success', 'Subscription archived successfully');
@@ -58,7 +61,7 @@ final class ArchiveSubscriptionControllerTest extends AuthenticatedTestCase
     {
         $client = $this->authenticatedClient();
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/archive');
+        $this->postSameOrigin($client, '/app/subscriptions/01JKXXXXXXXXXXXXXXXXXXXXXXX/archive');
 
         self::assertResponseStatusCodeSame(404);
     }
@@ -88,7 +91,7 @@ final class ArchiveSubscriptionControllerTest extends AuthenticatedTestCase
 
         $initialEventCount = \count($subscription->subscriptionEvents);
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/subscriptions/' . $subscription->id . '/archive');
+        $this->postSameOrigin($client, '/app/subscriptions/' . $subscription->id . '/archive');
 
         $container = self::getContainer();
         /** @var EntityManagerInterface $entityManager */

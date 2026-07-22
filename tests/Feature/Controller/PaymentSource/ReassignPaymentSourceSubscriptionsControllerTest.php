@@ -12,10 +12,13 @@ use App\Enum\SubscriptionEventType;
 use App\Factory\PaymentSourceFactory;
 use App\Factory\SubscriptionFactory;
 use App\Tests\Support\AuthenticatedTestCase;
+use App\Tests\Support\SameOriginPostTrait;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class ReassignPaymentSourceSubscriptionsControllerTest extends AuthenticatedTestCase
 {
+    use SameOriginPostTrait;
+
     public function testShowPageOffersTheMoveAllFormWhenThereAreSubscriptionsAndOtherSources(): void
     {
         $client = $this->authenticatedClient();
@@ -54,7 +57,7 @@ final class ReassignPaymentSourceSubscriptionsControllerTest extends Authenticat
         SubscriptionFactory::createOne(['paymentSource' => $from, 'name' => 'Spotify']);
         $toId = $to->id;
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/payment-sources/' . $from->id . '/reassign', parameters: ['target' => (string) $to->id]);
+        $this->postSameOrigin($client, '/app/payment-sources/' . $from->id . '/reassign', ['target' => (string) $to->id]);
 
         self::assertResponseRedirects(expectedLocation: '/app/payment-sources/' . $from->id);
         $client->followRedirect();
@@ -85,7 +88,7 @@ final class ReassignPaymentSourceSubscriptionsControllerTest extends Authenticat
 
         $source = PaymentSourceFactory::createOne(['name' => 'Amex 1234']);
 
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/payment-sources/' . $source->id . '/reassign', parameters: ['target' => 'not-a-ulid']);
+        $this->postSameOrigin($client, '/app/payment-sources/' . $source->id . '/reassign', ['target' => 'not-a-ulid']);
         $client->followRedirect();
 
         self::assertSelectorTextContains(selector: '.flash-error', text: 'Could not move the subscriptions');

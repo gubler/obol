@@ -12,11 +12,14 @@ use App\Entity\Subscription;
 use App\Factory\CategoryFactory;
 use App\Factory\SubscriptionFactory;
 use App\Tests\Support\AuthenticatedTestCase;
+use App\Tests\Support\SameOriginPostTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DomCrawler\Crawler;
 
 final class CategoryCrudWorkflowTest extends AuthenticatedTestCase
 {
+    use SameOriginPostTrait;
+
     public function testCompleteCreateEditDeleteWorkflow(): void
     {
         $client = $this->authenticatedClient();
@@ -54,7 +57,7 @@ final class CategoryCrudWorkflowTest extends AuthenticatedTestCase
         self::assertSame('Updated Workflow Category', $updatedCategory->name);
 
         // Delete
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/categories/' . $categoryId . '/delete');
+        $this->postSameOrigin($client, '/app/categories/' . $categoryId . '/delete');
 
         self::assertResponseRedirects(expectedLocation: '/app/categories');
 
@@ -72,7 +75,7 @@ final class CategoryCrudWorkflowTest extends AuthenticatedTestCase
         $categoryId = $category->id;
 
         // Try to delete the category. This should fail
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/categories/' . $categoryId . '/delete');
+        $this->postSameOrigin($client, '/app/categories/' . $categoryId . '/delete');
         $client->followRedirect();
 
         self::assertSelectorTextContains(selector: '.flash-error', text: 'Cannot delete category with subscriptions');
@@ -88,7 +91,7 @@ final class CategoryCrudWorkflowTest extends AuthenticatedTestCase
         $entityManager->flush();
 
         // Now delete should work
-        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_POST, uri: '/app/categories/' . $categoryId . '/delete');
+        $this->postSameOrigin($client, '/app/categories/' . $categoryId . '/delete');
         self::assertResponseRedirects(expectedLocation: '/app/categories');
         $client->followRedirect();
 

@@ -38,6 +38,7 @@
                                       action="{{ path('account_email_promote', {id: email.id}) }}"
                                       data-turbo-confirm="{{ 'account.email.promote.confirm'|trans({'%address%': email.email}) }}"
                                       data-test="email-promote-form">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
                                     <button type="submit"
                                             class="bg-brand hover:bg-brand-strong text-on-brand text-xs font-medium py-1 px-3 rounded"
                                             data-test="email-promote-submit">
@@ -48,6 +49,7 @@
                                 <form method="post"
                                       action="{{ path('account_email_resend', {id: email.id}) }}"
                                       data-test="email-resend-form">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
                                     <button type="submit"
                                             class="border border-line text-fg text-xs font-medium py-1 px-3 rounded hover:bg-surface"
                                             data-test="email-resend-submit">
@@ -60,6 +62,7 @@
                                   action="{{ path('account_email_remove', {id: email.id}) }}"
                                   data-turbo-confirm="{{ 'account.email.remove.confirm'|trans({'%address%': email.email}) }}"
                                   data-test="email-remove-form">
+                                <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
                                 <button type="submit"
                                         class="border border-danger text-danger text-xs font-medium py-1 px-3 rounded hover:bg-danger-surface"
                                         data-test="email-remove-submit">
@@ -156,6 +159,7 @@
                               class="mt-2"
                               data-turbo-confirm="{{ 'account.passkey.revoke.confirm'|trans({'%name%': credential.name}) }}"
                               data-test="passkey-revoke-form">
+                            <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">
                             <button type="submit"
                                     class="border border-danger text-danger text-xs font-medium py-1 px-3 rounded hover:bg-danger-surface"
                                     data-test="passkey-revoke-submit">

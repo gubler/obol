@@ -1,12 +1,16 @@
 {# Magic-link login email (HTML). All copy is translatable per ADR-0012. #}
-<h1>{{ 'auth.email.login_link.heading'|trans }}</h1>
+{% extends 'email/base_email.html.twig' %}
 
-<p>{{ 'auth.email.login_link.body'|trans }}</p>
+{% block content %}
+    <h1>{{ 'auth.email.login_link.heading'|trans }}</h1>
 
-<p>
-    <a href="{{ loginLinkUrl }}">{{ 'auth.email.login_link.cta'|trans }}</a>
-</p>
+    <p>{{ 'auth.email.login_link.body'|trans }}</p>
 
-<p>{{ 'auth.email.login_link.expiry'|trans({'%when%': expiresAt|time_diff}) }}</p>
+    <p>
+        <a class="email-button" href="{{ loginLinkUrl }}">{{ 'auth.email.login_link.cta'|trans }}</a>
+    </p>
 
-<p>{{ 'auth.email.login_link.ignore'|trans }}</p>
+    <p class="email-fineprint">{{ 'auth.email.login_link.expiry'|trans({'%when%': expiresAt|time_diff}) }}</p>
+
+    <p class="email-fineprint">{{ 'auth.email.login_link.ignore'|trans }}</p>
+{% endblock %}

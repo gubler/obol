@@ -1,12 +1,16 @@
 {# Secondary-email verification email (HTML). All copy is translatable per ADR-0012. #}
-<h1>{{ 'account.email.verify.heading'|trans }}</h1>
+{% extends 'email/base_email.html.twig' %}
 
-<p>{{ 'account.email.verify.body'|trans }}</p>
+{% block content %}
+    <h1>{{ 'account.email.verify.heading'|trans }}</h1>
 
-<p>
-    <a href="{{ verifyUrl }}">{{ 'account.email.verify.cta'|trans }}</a>
-</p>
+    <p>{{ 'account.email.verify.body'|trans }}</p>
 
-<p>{{ 'account.email.verify.expiry'|trans({'%when%': expiresAt|time_diff}) }}</p>
+    <p>
+        <a class="email-button" href="{{ verifyUrl }}">{{ 'account.email.verify.cta'|trans }}</a>
+    </p>
 
-<p>{{ 'account.email.verify.ignore'|trans }}</p>
+    <p class="email-fineprint">{{ 'account.email.verify.expiry'|trans({'%when%': expiresAt|time_diff}) }}</p>
+
+    <p class="email-fineprint">{{ 'account.email.verify.ignore'|trans }}</p>
+{% endblock %}

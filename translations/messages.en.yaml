@@ -133,6 +133,10 @@ landing:
             label: Email address
             placeholder: you@example.com
 
+email:
+    layout:
+        automated_note: This is an automated message from Obol.
+
 auth:
     login:
         title: Log in

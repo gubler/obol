@@ -1,0 +1,52 @@
+{# Shared branded layout for transactional emails. Children fill {% block content %}. #}
+{# CSS lives in the <style> block below and is inlined at render (twig/cssinliner-extra), because email
+   clients strip <style> tags and only honor inline style attributes. Colors are the Obol light palette
+   (assets/styles/app.css); email theme-awareness is deliberately out of scope for now. #}
+{% apply inline_css %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { margin: 0; padding: 0; background-color: #f7f1e3; }
+        .email-wrap { width: 100%; background-color: #f7f1e3; }
+        .email-card { background-color: #fffdf8; border: 1px solid #e4d9bf; }
+        .email-header { background-color: #26190a; padding: 24px 32px; }
+        .email-wordmark { margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: 20px; font-weight: 700; letter-spacing: 0.02em; color: #e0ae3a; }
+        .email-body { padding: 32px; font-family: -apple-system, 'Segoe UI', Arial, sans-serif; font-size: 16px; line-height: 1.5; color: #2a2012; }
+        .email-body h1 { margin: 0 0 16px; font-size: 22px; font-weight: 700; color: #2a2012; }
+        .email-body p { margin: 0 0 16px; }
+        .email-button { display: inline-block; padding: 12px 28px; background-color: #9c7320; font-weight: 700; color: #fff8e8; text-decoration: none; }
+        .email-fineprint { color: #6b5d44; font-size: 14px; }
+        .email-footer { padding: 20px 32px; border-top: 1px solid #e4d9bf; font-family: -apple-system, 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #6b5d44; }
+        a { color: #8a6418; }
+    </style>
+</head>
+<body>
+    <table class="email-wrap" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+            <td align="center" style="padding: 24px 12px;">
+                <table class="email-card" role="presentation" width="480" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                        <td class="email-header">
+                            <p class="email-wordmark">Obol</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="email-body">
+                            {% block content %}{% endblock %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="email-footer">
+                            {{ 'email.layout.automated_note'|trans }}
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+{% endapply %}

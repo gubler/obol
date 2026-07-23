@@ -64,7 +64,7 @@ State changes on `Subscription` go through dedicated methods (`update()`, `archi
 
 ## Documentation
 
-Developer docs are at [docs.dev88.work/obol](https://docs.dev88.work/obol); the end-user guide is at [docs.dev88.work/obol-user](https://docs.dev88.work/obol-user).
+Developer docs are at [docs.dev88.work/obol](https://docs.dev88.work/obol); the end-user guide is at [docs.dev88.work/obol-user](https://docs.dev88.work/obol-user). The user guide is also baked into the production image and served in-app at `/help` (linked from the app header), so it ships with the app - see [ADR-0018](reference/adr/0018-url-surface-structure.md).
 
 ### Working on docs locally
 

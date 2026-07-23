@@ -3,7 +3,7 @@ title: Categories
 description: Group subscriptions with a color and icon.
 ---
 
-Categories group related subscriptions - Streaming, Software, Utilities, and so on. They organize the dashboard, color your subscriptions, and drive the per-category breakdowns in [Reports](/obol-user/reports/).
+Categories group related subscriptions - Streaming, Software, Utilities, and so on. They organize the dashboard, color your subscriptions, and drive the per-category breakdowns in [Reports](reports.md).
 
 ## Creating a category
 
@@ -25,4 +25,4 @@ You can only **Delete** a category that has no subscriptions. If it still has so
 
 ## Uncategorized subscriptions
 
-A category is optional. Subscriptions without one are grouped as **Uncategorized** on the dashboard and get their own [Uncategorized report](/obol-user/reports/#per-category-and-uncategorized).
+A category is optional. Subscriptions without one are grouped as **Uncategorized** on the dashboard and get their own [Uncategorized report](reports.md#per-category-and-uncategorized).

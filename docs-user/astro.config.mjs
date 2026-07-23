@@ -8,6 +8,11 @@ import mermaid from 'astro-mermaid';
 import rehypeRelativeMarkdownLinks from 'astro-rehype-relative-markdown-links';
 import starlightLinksValidator from 'starlight-links-validator';
 
+// Base path differs per build target: the docs.dev88.work publish serves it at /obol-user (the
+// default), while the production app image bakes it in at /help (ADR-0018). The DOCS_BASE env var
+// selects the target; the rehype relative-link rewriter below must use the same value.
+const base = process.env.DOCS_BASE ?? '/obol-user';
+
 // Curated reading order rather than alphabetical; labels come from each page's frontmatter title.
 const sidebar = [
   { slug: 'getting-started' },
@@ -25,7 +30,7 @@ const sidebar = [
 
 export default defineConfig({
   site: 'https://docs.dev88.work/obol-user',
-  base: '/obol-user',
+  base,
   integrations: [
     mermaid({ theme: 'dark', autoTheme: true }),
     starlight({
@@ -50,7 +55,7 @@ export default defineConfig({
   // `collectionBase: false`; `base`/`trailingSlash` mirror the site config above.
   markdown: {
     rehypePlugins: [
-      [rehypeRelativeMarkdownLinks, { base: '/obol-user', collectionBase: false, trailingSlash: 'always' }],
+      [rehypeRelativeMarkdownLinks, { base, collectionBase: false, trailingSlash: 'always' }],
     ],
   },
 });

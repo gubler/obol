@@ -3,9 +3,9 @@ title: Savings targets
 description: How much you should have set aside for upcoming bills, and when the full amount should be in hand.
 ---
 
-Obol shows how much you should have set aside for a bill - on each subscription's own page, and totalled for a whole [category](/obol-user/categories/) on your dashboard - so you can see whether you're on track to pay it when it comes due.
+Obol shows how much you should have set aside for a bill - on each subscription's own page, and totalled for a whole [category](categories.md) on your dashboard - so you can see whether you're on track to pay it when it comes due.
 
-Because people budget in different ways, the **Savings display** setting in your [account preferences](/obol-user/account/#preferences) lets you choose **when** the full amount should be in hand - saved by the month a bill is due, or saved the month before - or switch the figures off entirely.
+Because people budget in different ways, the **Savings display** setting in your [account preferences](account.md#preferences) lets you choose **when** the full amount should be in hand - saved by the month a bill is due, or saved the month before - or switch the figures off entirely.
 
 ## The two options
 

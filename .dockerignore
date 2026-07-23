@@ -39,3 +39,11 @@ vendor/
 .env.local
 .env.local.php
 .env.test
+
+# The end-user help manual (docs-user/) is built into the prod image at public/help. Its Markdown
+# content is the source the Astro build consumes, so re-include it - the broad **/*.md rule above
+# would otherwise strip it from the build context. Keep installed deps and build output out; both
+# are (re)generated inside the help-docs builder stage.
+!docs-user/**/*.md
+docs-user/node_modules/
+docs-user/dist/

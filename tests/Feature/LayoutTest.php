@@ -96,6 +96,18 @@ final class LayoutTest extends AuthenticatedTestCase
         self::assertSelectorNotExists(selector: 'header');
     }
 
+    public function testHeaderLinksToTheHelpManual(): void
+    {
+        // The help manual is a static site served at /help (ADR-0018), not a Symfony route, so the
+        // link is a literal path opened in a new tab rather than a generated URL.
+        $client = $this->authenticatedClient();
+
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists(selector: 'nav a[href="/help/"][target="_blank"]');
+    }
+
     public function testHeaderShowsObolLogo(): void
     {
         $client = $this->authenticatedClient();

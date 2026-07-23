@@ -10,11 +10,11 @@ A subscription is anything you pay for on a repeating schedule. Each one tracks 
 Select **New subscription** on the dashboard and fill in the form:
 
 - **Subscription Name** - what it is (e.g. "Netflix").
-- **Category** - optional; groups the subscription on the dashboard and in reports. See [Categories](/obol-user/categories/).
-- **Payment Source** - optional; the card or account that pays for it. See [Payment Sources](/obol-user/payment-sources/). The picker appears once you've created at least one.
+- **Category** - optional; groups the subscription on the dashboard and in reports. See [Categories](categories.md).
+- **Payment Source** - optional; the card or account that pays for it. See [Payment Sources](payment-sources.md). The picker appears once you've created at least one.
 - **Next Renewal Date** - when the next payment is due. Obol counts down to this.
 - **Billing cycle** - read as a sentence: *Every* **N** **period**, where the period is Week, Month, or Year. "Every 1 Month" or "Every 3 Months", for example.
-- **Cost** and **Currency** - the amount per cycle, in whatever currency you choose. See [Currencies](/obol-user/currencies/).
+- **Cost** and **Currency** - the amount per cycle, in whatever currency you choose. See [Currencies](currencies.md).
 - **Description**, **Link**, **Logo** - optional extras.
 - **Color** - the tile color on the dashboard. If you've picked a category, the color follows that category's color automatically - until you choose a swatch yourself, after which it stays put.
 
@@ -31,4 +31,4 @@ Open a subscription from the dashboard to see its full details and history, then
 
 ## Renewals
 
-The **Next Renewal Date** is the heart of a subscription - the dashboard counts down to it, and recording a payment moves it forward by one billing cycle (see [Payments](/obol-user/payments/)). A renewal due today or tomorrow is called out as **Today** / **Tomorrow** on the tile.
+The **Next Renewal Date** is the heart of a subscription - the dashboard counts down to it, and recording a payment moves it forward by one billing cycle (see [Payments](payments.md)). A renewal due today or tomorrow is called out as **Today** / **Tomorrow** on the tile.

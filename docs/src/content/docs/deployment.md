@@ -17,6 +17,10 @@ The `Dockerfile` uses a multi-stage build:
 5. Copies application source
 6. Dumps optimized autoloader and compiled `.env`
 7. Compiles frontend assets: `importmap:install`, `tailwind:build`, `asset-map:compile`
+8. Bakes in the end-user help manual: a separate Node stage builds the `docs-user/`
+   Astro Starlight site with `DOCS_BASE=/help` and its output is copied to `public/help`,
+   so the manual ships in lock-step with the app. Caddy/FrankenPHP serves those files
+   statically ahead of PHP, so `/help` needs no Symfony route (ADR-0018).
 
 ### App stage
 

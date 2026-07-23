@@ -9,6 +9,7 @@ common:
         reports: Reports
         account: Account
         admin: Admin
+        help: Help
         logout: Log out
     theme:
         toggle: Toggle dark mode

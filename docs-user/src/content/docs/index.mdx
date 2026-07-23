@@ -6,39 +6,43 @@ hero:
   tagline: Keep track of every subscription - what it costs, when it renews, and where your money goes.
   image:
     file: ../../assets/obol-coin.svg
-  actions:
-    - text: Get started
-      link: /obol-user/getting-started/
-      icon: right-arrow
-      variant: primary
 ---
 
-import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+import { CardGrid, LinkCard, LinkButton } from '@astrojs/starlight/components';
+
+{/* Links are built from the configured base so this page stays portable across build targets -
+    /obol-user for the docs.dev88.work publish, /help in the prod app image. The links validator
+    rejects bare relative links, so the base is prefixed explicitly. BASE_URL may or may not carry
+    a trailing slash depending on the target, so withBase normalizes to exactly one join slash. */}
+
+export const withBase = (path) => import.meta.env.BASE_URL.replace(/\/$/, '') + path;
+
+<LinkButton href={withBase('/getting-started/')} icon="right-arrow">Get started</LinkButton>
 
 <CardGrid>
   <LinkCard
     title="Subscriptions"
-    href="/obol-user/subscriptions/"
+    href={withBase('/subscriptions/')}
     description="Add, edit, archive, and organize the things you pay for."
   />
   <LinkCard
     title="Categories"
-    href="/obol-user/categories/"
+    href={withBase('/categories/')}
     description="Group subscriptions (Streaming, Software, Utilities...) with a color and icon."
   />
   <LinkCard
     title="Payments"
-    href="/obol-user/payments/"
+    href={withBase('/payments/')}
     description="Record what you've paid, and let Obol track renewals for you."
   />
   <LinkCard
     title="Reports"
-    href="/obol-user/reports/"
+    href={withBase('/reports/')}
     description="See where your money goes, by category and over time."
   />
   <LinkCard
     title="Currencies"
-    href="/obol-user/currencies/"
+    href={withBase('/currencies/')}
     description="Track subscriptions in any currency."
   />
 </CardGrid>

@@ -11,7 +11,7 @@ A breakdown of your total monthly obligation across categories, shown as a pie w
 
 ## Monthly obligation by payment source
 
-The same breakdown, grouped by [payment source](/obol-user/payment-sources/) instead of category - how much of your monthly obligation rides on each card or account. Select a source to open its own **monthly obligation by subscription** report; subscriptions with no source roll up into an **Unassigned** report, reached the same way.
+The same breakdown, grouped by [payment source](payment-sources.md) instead of category - how much of your monthly obligation rides on each card or account. Select a source to open its own **monthly obligation by subscription** report; subscriptions with no source roll up into an **Unassigned** report, reached the same way.
 
 ## Obligation over time
 
@@ -24,4 +24,4 @@ A line chart of your total obligation, with a **Weekly / Monthly / Yearly** togg
 
 ## A note on amounts
 
-When subscriptions are in different [currencies](/obol-user/currencies/), Obol converts them to a single display currency so the totals add up. A converted total is marked as approximate, since exchange rates move.
+When subscriptions are in different [currencies](currencies.md), Obol converts them to a single display currency so the totals add up. A converted total is marked as approximate, since exchange rates move.

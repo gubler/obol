@@ -18,8 +18,8 @@ A few things worth knowing:
 - The link is valid for **15 minutes** and works once. If it expires, just request a new one.
 - For your privacy, the "check your email" message looks the same whether or not an account exists for that address - so the page never reveals who has an account.
 - Obol keeps you signed in on that device, so day to day you won't need to repeat this. Select **Log out** in the top bar to end the session.
-- Prefer to skip the email round trip? Once you're signed in you can add a [passkey](/obol-user/passkeys/) and sign in with your fingerprint, face, or device PIN.
-- Add a backup [email address](/obol-user/emails/) so you're never locked out if you lose access to one mailbox - a magic link to any verified address signs you in.
+- Prefer to skip the email round trip? Once you're signed in you can add a [passkey](passkeys.md) and sign in with your fingerprint, face, or device PIN.
+- Add a backup [email address](emails.md) so you're never locked out if you lose access to one mailbox - a magic link to any verified address signs you in.
 
 During closed testing, accounts are set up for you - if you can't sign in, ask whoever invited you.
 
@@ -50,7 +50,7 @@ Use the **Tiles** / **List** toggle to switch how subscriptions are shown:
 
 - **Group by category** collects subscriptions under their category headings; toggle it off for one flat set.
 - **Sort** by Name, Renewal, Monthly cost, or Cost.
-- **Show archived** brings archived subscriptions back into view (see [Subscriptions → Archiving](/obol-user/subscriptions/#archiving-and-deleting)).
+- **Show archived** brings archived subscriptions back into view (see [Subscriptions → Archiving](subscriptions.md#archiving-and-deleting)).
 
 ### The totals panel
 
@@ -67,4 +67,4 @@ Switch between them with the **Global totals** / **Remaining** toggle.
 2. Fill in the name, cost, and next renewal date (the rest is optional).
 3. Save.
 
-That's it - it appears on the dashboard and Obol starts counting down to its renewal. The full set of options is covered in **[Subscriptions](/obol-user/subscriptions/)**.
+That's it - it appears on the dashboard and Obol starts counting down to its renewal. The full set of options is covered in **[Subscriptions](subscriptions.md)**.

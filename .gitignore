@@ -12,6 +12,10 @@
 /assets/vendor/
 ###< symfony/asset-mapper ###
 
+# The end-user help manual is built into the prod image at public/help by the Docker build; it is
+# never part of the source tree or served from the host.
+/public/help/
+
 # JS toolchain (dev-only: Biome + Vitest + tsc). node_modules is never shipped -
 # AssetMapper + importmap remain the runtime; package-lock.json IS committed.
 /node_modules/

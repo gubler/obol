@@ -17,4 +17,4 @@ This is deliberate: once you have payment history in a given currency, switching
 
 ## Totals across currencies
 
-The dashboard totals and the [Reports](/obol-user/reports/) add up across every subscription, so Obol converts each one into a single display currency to produce a combined figure. Because exchange rates move, a converted total is shown as approximate.
+The dashboard totals and the [Reports](reports.md) add up across every subscription, so Obol converts each one into a single display currency to produce a combined figure. Because exchange rates move, a converted total is shown as approximate.

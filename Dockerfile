@@ -86,6 +86,25 @@ COPY --link frankenphp/conf.d/20-app.dev.ini $PHP_INI_DIR/app.conf.d/
 
 CMD [ "frankenphp", "run", "--config", "/etc/frankenphp/Caddyfile", "--watch" ]
 
+# Builder for the end-user help manual (Astro Starlight in docs-user/). Its static output is baked
+# into the prod image at public/help (ADR-0018), so /help ships in lock-step with the app and needs
+# no separate publish step. DOCS_BASE=/help sets the base path for this target (the docs.dev88.work
+# publish keeps the /obol-user default). The build runs the Starlight links validator, so a broken
+# link fails the image build.
+FROM node:22-alpine AS help_docs_builder
+
+WORKDIR /docs
+
+ENV DOCS_BASE=/help
+
+# Install deps first (cached until the lockfile changes), then build the content.
+COPY --link docs-user/package.json docs-user/pnpm-lock.yaml ./
+RUN corepack enable && pnpm install --frozen-lockfile
+
+COPY --link docs-user/ ./
+RUN pnpm build
+
+
 # Builder for the prod FrankenPHP image
 FROM frankenphp_base AS frankenphp_prod_builder
 
@@ -99,8 +118,13 @@ COPY --link frankenphp/conf.d/20-app.prod.ini $PHP_INI_DIR/app.conf.d/
 COPY --link composer.* symfony.* ./
 RUN composer install --no-cache --prefer-dist --no-dev --no-autoloader --no-scripts --no-progress
 
-# copy sources
-COPY --link --exclude=frankenphp/ . ./
+# copy sources (docs-user/ is excluded here - the manual is built by help_docs_builder and copied
+# in as static files below, so its source never needs to reach the PHP image)
+COPY --link --exclude=frankenphp/ --exclude=docs-user/ . ./
+
+# Bake the built help manual in as static files. Caddy/FrankenPHP serves existing files under
+# public/ before routing to Symfony (see @phpRoute in the Caddyfile), so /help needs no route.
+COPY --link --from=help_docs_builder /docs/dist ./public/help
 
 RUN <<-EOF
 	mkdir -p var/cache var/log var/share

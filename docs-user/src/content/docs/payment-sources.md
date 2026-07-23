@@ -11,7 +11,7 @@ Go to **Payment Sources** and select **New Payment Source**, then give it:
 
 - **Payment Source Name** - how you'll recognize it, e.g. "Amex 1234" or "Joint checking".
 - **Comment** - optional free-text notes, e.g. an expiry date or which bank it's with.
-- **Color** - a swatch used for its tile and its slice in [Reports](/obol-user/reports/).
+- **Color** - a swatch used for its tile and its slice in [Reports](reports.md).
 
 ## Attaching a source to a subscription
 
@@ -36,4 +36,4 @@ You can only **Delete** a source that has no subscriptions. If it still has some
 
 ## Unassigned subscriptions
 
-A payment source is optional. Subscriptions without one are grouped as **Unassigned** and get their own slice and drill-down in the [by-source report](/obol-user/reports/#monthly-obligation-by-payment-source).
+A payment source is optional. Subscriptions without one are grouped as **Unassigned** and get their own slice and drill-down in the [by-source report](reports.md#monthly-obligation-by-payment-source).

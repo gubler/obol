@@ -47,7 +47,7 @@
                 </div>
                 <div>
                     <dt class="text-sm font-medium text-fg-muted">{{ 'subscription.show.cost'|trans }}</dt>
-                    <dd class="text-lg text-fg">{{ subscription.cost.format() }} / {{ 'subscription.cadence'|trans({count: subscription.paymentPeriodCount, period: subscription.paymentPeriod.value}) }}</dd>
+                    <dd class="text-lg text-fg">{{ subscription.cost|money }} / {{ 'subscription.cadence'|trans({count: subscription.paymentPeriodCount, period: subscription.paymentPeriod.value}) }}</dd>
                 </div>
                 <div>
                     <dt class="text-sm font-medium text-fg-muted">{{ 'subscription.show.next_renewal'|trans }}</dt>
@@ -65,7 +65,7 @@
                 {% if savingsTarget is not null %}
                 <div class="subscription-savings-target">
                     <dt class="text-sm font-medium text-fg-muted">{{ 'subscription.show.savings_target'|trans }}</dt>
-                    <dd class="text-lg text-fg">{{ savingsTarget.format() }}</dd>
+                    <dd class="text-lg text-fg">{{ savingsTarget|money }}</dd>
                 </div>
                 {% endif %}
                 {% if subscription.description %}
@@ -101,7 +101,7 @@
                                     <span class="ml-2 text-xs text-fg-muted">{{ payment.type.label|trans }}</span>
                                 </div>
                                 <div class="flex items-center space-x-3">
-                                    <span class="text-fg-muted">{{ payment.amount.format() }}</span>
+                                    <span class="text-fg-muted">{{ payment.amount|money }}</span>
                                     {% if payment.type.value == 'generated' %}
                                         <form action="{{ path('payment_validate', {id: payment.id}) }}" method="POST" class="payment-validate-form inline-block">
                                             <input type="hidden" name="_token" value="{{ csrf_token('submit') }}">

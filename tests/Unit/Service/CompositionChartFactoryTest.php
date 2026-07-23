@@ -12,21 +12,19 @@ use App\Message\Currency\ConvertedTotal;
 use App\Message\Query\Report\Composition;
 use App\Message\Query\Report\CompositionSlice;
 use App\Service\CompositionChartFactory;
-use App\Tests\Support\PinsDefaultLocale;
+use App\Service\Money\MoneyFormatter;
 use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Translation\LocaleSwitcher;
 use Symfony\UX\Chartjs\Builder\ChartBuilder;
 use Symfony\UX\Chartjs\Model\Chart;
 
 final class CompositionChartFactoryTest extends TestCase
 {
-    // The factory calls Money::format() with no locale, so the assertions below depend on the default.
-    use PinsDefaultLocale;
-
     public function testBuildsAPieWithOneLabelledSlicePerCategoryAndDisplayCurrencyAmounts(): void
     {
-        $factory = new CompositionChartFactory(new ChartBuilder());
+        $factory = self::factory();
 
         $chart = $factory->pie(self::makeComposition(
             new CompositionSlice('Software', self::usd(4000), [self::usd(4000)], false),
@@ -44,7 +42,7 @@ final class CompositionChartFactoryTest extends TestCase
 
     public function testCarriesTheNativeBreakdownOnlyForConvertedApproximateSlices(): void
     {
-        $factory = new CompositionChartFactory(new ChartBuilder());
+        $factory = self::factory();
 
         $chart = $factory->pie(self::makeComposition(
             new CompositionSlice('Mixed', self::usd(15400), [self::usd(10000), new Money(5000, Currency::EUR)], true),
@@ -55,6 +53,12 @@ final class CompositionChartFactoryTest extends TestCase
 
         self::assertSame(['$100.00', '€50.00'], $native[0]); // approximate: native lines for the tooltip
         self::assertSame([], $native[1]);                    // not approximate: nothing extra to disclose
+    }
+
+    private static function factory(): CompositionChartFactory
+    {
+        // An explicit-locale formatter: the display strings below are pinned to `en`, not the ambient default.
+        return new CompositionChartFactory(new ChartBuilder(), new MoneyFormatter(new LocaleSwitcher('en', [])));
     }
 
     private static function usd(int $minor): Money

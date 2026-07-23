@@ -36,21 +36,4 @@ final readonly class Money
     {
         return $this->minorAmount === $other->minorAmount && $this->currency === $other->currency;
     }
-
-    /**
-     * A localized currency rendering via ICU - e.g. en "$15.99"/"¥2,000", de_DE "1.599,99 $".
-     * Defaults to the request locale (\Locale::getDefault(), always en today), matching MoneyParser.
-     * Fraction digits follow the currency's stored convention rather than ICU's default, so a
-     * zero-decimal currency (JPY, HUF) never gains spurious decimals. See ADR-0012.
-     */
-    public function format(?string $locale = null): string
-    {
-        $locale ??= \Locale::getDefault();
-        $digits = $this->currency->fractionDigits();
-
-        $formatter = new \NumberFormatter($locale, \NumberFormatter::CURRENCY);
-        $formatter->setAttribute(\NumberFormatter::FRACTION_DIGITS, $digits);
-
-        return (string) $formatter->formatCurrency($this->minorAmount / (10 ** $digits), $this->currency->value);
-    }
 }

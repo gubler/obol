@@ -9,6 +9,7 @@ namespace App\Service;
 
 use App\Message\Query\Report\ObligationPoint;
 use App\Message\Query\Report\ObligationSeries;
+use App\Service\Money\MoneyFormatter;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
 use Symfony\UX\Chartjs\Model\Chart;
@@ -22,6 +23,7 @@ final readonly class ObligationTrendChartFactory
     public function __construct(
         private ChartBuilderInterface $chartBuilder,
         private TranslatorInterface $translator,
+        private MoneyFormatter $moneyFormatter,
     ) {
     }
 
@@ -42,7 +44,7 @@ final readonly class ObligationTrendChartFactory
                 'fill' => true,
                 'tension' => 0.3,
                 // Custom payload read by the obligation-trend Stimulus controller for the tooltip and y-axis.
-                'displayAmounts' => array_map(static fn (ObligationPoint $point): string => $point->amount->format(), $series->points),
+                'displayAmounts' => array_map(fn (ObligationPoint $point): string => $this->moneyFormatter->format($point->amount), $series->points),
                 'currencySymbol' => $displayCurrency?->symbol() ?? '',
                 'fractionDigits' => $displayCurrency?->fractionDigits() ?? 2,
             ]],

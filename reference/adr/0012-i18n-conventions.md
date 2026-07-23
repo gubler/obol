@@ -2,6 +2,14 @@
 
 - Status: Accepted
 - Date: 2026-06-17
+- Amended by: ADR-0025
+
+> **Amended by ADR-0025.** The value-formatting decision below - keep `Money::format()` on the
+> value object with an optional locale defaulting to `\Locale::getDefault()` - is superseded.
+> Formatting moved off the `Money` value object into a `MoneyFormatter` service (and a `money`
+> Twig filter) that resolves the locale through the injected `LocaleSwitcher`, never the ambient
+> global; `MoneyParser` did the same. Every other convention here (message-id scheme, catalogs,
+> enum labels, the key-leak tripwire) stands.
 
 ## Context
 
@@ -14,7 +22,7 @@ literals; `Money::format()` renders with a fixed symbol prefix and `number_forma
 empty and there are zero `trans` calls.
 
 Internationalization is a prerequisite for the multi-user work (ADR-0004): once
-accounts exist, locale becomes a per-user preference. This epic (#116) does the i18n
+accounts exist, locale becomes a per-user preference. This work does the i18n
 groundwork now, decoupled from accounts, so the day a second locale lands the app is
 already fully internationalized. The first target locale will be en-GB (a safe,
 checkable variant), then others.
@@ -31,10 +39,10 @@ no locale switching.** `default_locale: en` stays the only locale; there is no
 externalization itself: a single `messages.en-GB.yaml` (or any locale) dropped in later
 is immediately live once switching is wired.
 
-Scope line: **this epic owns full i18n (strings and formatting). The multi-user
-milestone owns locale *switching*, the per-user locale preference, and the
-currency-locale policy** (e.g. whether JPY always reads as Yen regardless of UI
-language). This epic does not answer those.
+Scope line: **this decision covers full i18n (strings and formatting). Locale
+*switching*, the per-user locale preference, and the currency-locale policy** (e.g.
+whether JPY always reads as Yen regardless of UI language) belong to the later
+multi-user work. This decision does not answer those.
 
 Conventions:
 
@@ -81,7 +89,7 @@ Conventions:
   seam correct without prematurely answering the per-user questions.
 - **Single big-bang PR** for the whole externalization - rejected. A diff touching every
   template, controller, form, and enum hides missed strings and is miserable to review.
-  The work is split into an epic with per-area child PRs instead.
+  The work is split into per-area child PRs instead.
 - **A "no bare text in Twig" linter** to catch un-externalized strings - rejected as not
   worth building (too many false positives). The key-leak test proves every key resolves;
   catching strings nobody converted is left to per-surface human review, aided by
@@ -95,7 +103,7 @@ Conventions:
   rather than moving to a presentation helper - least churn, consistent with
   `MoneyParser`, and call sites (`{{ amount.format() }}`) are untouched.
 - Shared mechanisms (the enum key pattern, `Money::format`, the cadence ICU message, the
-  test helper) land in dedicated horizontal child issues so they are not split across the
+  test helper) land in dedicated horizontal child PRs so they are not split across the
   per-area surface PRs.
 - The key-leak tripwire proves keys *resolve*, not that every string was *externalized*; a
   forgotten hardcoded string stays English and the test will not flag it.

@@ -11,23 +11,22 @@ use App\Enum\Currency;
 use App\Enum\ObligationTrendPeriod;
 use App\Message\Query\Report\ObligationPoint;
 use App\Message\Query\Report\ObligationSeries;
+use App\Service\Money\MoneyFormatter;
 use App\Service\ObligationTrendChartFactory;
-use App\Tests\Support\PinsDefaultLocale;
 use App\ValueObject\CalendarDate;
 use App\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Translation\LocaleSwitcher;
 use Symfony\Component\Translation\Translator;
 use Symfony\UX\Chartjs\Builder\ChartBuilder;
 use Symfony\UX\Chartjs\Model\Chart;
 
 final class ObligationTrendChartFactoryTest extends TestCase
 {
-    // The factory calls Money::format() with no locale, so the assertions below depend on the default.
-    use PinsDefaultLocale;
-
     public function testBuildsALineOverTheBucketsWithFormattedDisplayAmountsAndCurrencyFormatting(): void
     {
-        $factory = new ObligationTrendChartFactory(new ChartBuilder(), self::translator());
+        // An explicit-locale formatter: the display strings below are pinned to `en`, not the ambient default.
+        $factory = new ObligationTrendChartFactory(new ChartBuilder(), self::translator(), new MoneyFormatter(new LocaleSwitcher('en', [])));
 
         $chart = $factory->line(self::trendSeries([['Apr 2026', 0], ['May 2026', 5000], ['Jun 2026', 8000]]));
 

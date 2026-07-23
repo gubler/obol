@@ -56,7 +56,6 @@ final class MoneyPersistenceTest extends WebTestCase
         self::assertNotNull($reloaded);
         self::assertInstanceOf(Money::class, $reloaded->cost);
         self::assertTrue($reloaded->cost->equals(new Money(2000, Currency::JPY)));
-        self::assertSame('¥2,000', $reloaded->cost->format());
 
         /** @var Payment $payment */
         $payment = $reloaded->payments->first();

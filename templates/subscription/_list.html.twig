@@ -22,9 +22,9 @@
                             <span class="manual-payments-badge ml-2 inline-flex items-center rounded-full bg-warning-surface px-2.5 py-0.5 text-xs font-medium text-warning" title="{{ 'subscription.badge.manual_paused'|trans }}">{{ 'subscription.badge.manual'|trans }}</span>
                         {% endif %}
                     </td>
-                    <td class="whitespace-nowrap px-6 py-4 text-right text-fg">{{ subscription.monthlyCost.format() }}</td>
+                    <td class="whitespace-nowrap px-6 py-4 text-right text-fg">{{ subscription.monthlyCost|money }}</td>
                     <td class="whitespace-nowrap px-6 py-4 text-right text-fg">
-                        {{ subscription.cost.format() }} / {{ 'subscription.cadence'|trans({count: subscription.paymentPeriodCount, period: subscription.paymentPeriod.value}) }}
+                        {{ subscription.cost|money }} / {{ 'subscription.cadence'|trans({count: subscription.paymentPeriodCount, period: subscription.paymentPeriod.value}) }}
                     </td>
                     <td class="whitespace-nowrap px-6 py-4 text-fg">{{ subscription.nextRenewal|user_date }}</td>
                     <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">

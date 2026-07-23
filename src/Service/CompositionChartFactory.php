@@ -9,7 +9,7 @@ namespace App\Service;
 
 use App\Message\Query\Report\Composition;
 use App\Message\Query\Report\CompositionSlice;
-use App\ValueObject\Money;
+use App\Service\Money\MoneyFormatter;
 use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
 use Symfony\UX\Chartjs\Model\Chart;
 
@@ -35,6 +35,7 @@ final readonly class CompositionChartFactory
 
     public function __construct(
         private ChartBuilderInterface $chartBuilder,
+        private MoneyFormatter $moneyFormatter,
     ) {
     }
 
@@ -48,10 +49,10 @@ final readonly class CompositionChartFactory
                 'data' => array_map(static fn (CompositionSlice $slice): int => $slice->converted->minorAmount, $composition->slices),
                 'backgroundColor' => $this->sliceColours($composition->slices),
                 // Custom payload read by the composition-pie Stimulus controller's tooltip callbacks.
-                'displayAmounts' => array_map(static fn (CompositionSlice $slice): string => $slice->converted->format(), $composition->slices),
+                'displayAmounts' => array_map(fn (CompositionSlice $slice): string => $this->moneyFormatter->format($slice->converted), $composition->slices),
                 'nativeBreakdown' => array_map(
-                    static fn (CompositionSlice $slice): array => $slice->isApproximate
-                        ? array_map(static fn (Money $money): string => $money->format(), $slice->breakdown)
+                    fn (CompositionSlice $slice): array => $slice->isApproximate
+                        ? array_map($this->moneyFormatter->format(...), $slice->breakdown)
                         : [],
                     $composition->slices,
                 ),

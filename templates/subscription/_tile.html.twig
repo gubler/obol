@@ -9,7 +9,7 @@
         </div>
         <div class="text-xl font-bold leading-none"
              title="{{ 'subscription.tile_period'|trans({count: subscription.paymentPeriodCount, period: subscription.paymentPeriod.value}) }}">
-            {{ subscription.cost.format() }}
+            {{ subscription.cost|money }}
         </div>
     </div>
     <div>

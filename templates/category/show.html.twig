@@ -50,7 +50,7 @@
                         <li class="py-3">
                             <div class="flex justify-between items-center">
                                 <span class="text-fg">{{ subscription.name }}</span>
-                                <span class="text-fg-muted">{{ subscription.cost.format() }} / {{ 'subscription.cadence'|trans({count: subscription.paymentPeriodCount, period: subscription.paymentPeriod.value}) }}</span>
+                                <span class="text-fg-muted">{{ subscription.cost|money }} / {{ 'subscription.cadence'|trans({count: subscription.paymentPeriodCount, period: subscription.paymentPeriod.value}) }}</span>
                             </div>
                         </li>
                     {% endfor %}

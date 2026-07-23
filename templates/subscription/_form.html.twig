@@ -13,14 +13,16 @@
 
 {{ form_row(form.name) }}
 
-{# A past renewal is allowed (it switches the subscription to manual generation); warn softly. #}
+{# A past renewal is allowed; warn softly. For an automated subscription it switches generation to manual;
+   for one already manual (the restart control is offered), generation is already off and a future date is
+   what a restart needs - so the message reads for the context. #}
 <div data-controller="past-date-warning">
     {{ form_row(form.nextRenewal, {attr: {
         'data-past-date-warning-target': 'input',
         'data-action': 'input->past-date-warning#check',
     }}) }}
     <p class="past-date-warning mt-1 text-sm text-warning" data-past-date-warning-target="message" hidden>
-        {{ 'subscription.form.past_date_warning'|trans }}
+        {{ (form.restartPaymentGeneration is defined ? 'subscription.form.past_date_warning_manual' : 'subscription.form.past_date_warning')|trans }}
     </p>
 </div>
 

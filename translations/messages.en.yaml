@@ -429,6 +429,7 @@ subscription:
         name: Subscription Name
         next_renewal: Next Renewal Date
         past_date_warning: 'This date is in the past, so automatic payment generation will be switched off for this subscription.'
+        past_date_warning_manual: 'This date is in the past. Automatic payment generation is already off for this subscription; restarting it requires a future date.'
         payment_period: Payment Period
         payment_period_count: Payment Period Count
         cost: Cost

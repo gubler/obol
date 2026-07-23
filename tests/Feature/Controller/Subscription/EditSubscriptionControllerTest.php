@@ -339,6 +339,48 @@ final class EditSubscriptionControllerTest extends AuthenticatedTestCase
         self::assertFalse($updated->generatesPaymentsAutomatically());
     }
 
+    public function testPastDateWarningIsWiredOnTheEditForm(): void
+    {
+        // Parity with the create form: the soft past-date warning must render and be wired on edit too.
+        $client = $this->authenticatedClient();
+        $subscription = SubscriptionFactory::createOne(['name' => 'Netflix']);
+
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/' . $subscription->id . '/edit');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists(selector: '[data-controller~="past-date-warning"]');
+        self::assertSelectorExists(selector: 'input[name="edit_subscription[nextRenewal]"][data-past-date-warning-target="input"]');
+        self::assertSelectorExists(selector: 'p.past-date-warning[data-past-date-warning-target="message"]');
+    }
+
+    public function testAutomatedEditFormWarnsThatAPastDateSwitchesGenerationOff(): void
+    {
+        // An automated subscription edited to a past date really is switched to manual, so the create-oriented
+        // "will be switched off" copy is correct here.
+        $client = $this->authenticatedClient();
+        $subscription = SubscriptionFactory::createOne(['name' => 'Netflix']);
+
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/' . $subscription->id . '/edit');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains(selector: 'p.past-date-warning', text: 'automatic payment generation will be switched off');
+    }
+
+    public function testManualEditFormWarnsThatGenerationIsAlreadyOff(): void
+    {
+        // A manual subscription already has generation off, so "will be switched off" would be false; the manual
+        // copy states the actual situation and the future-date requirement for restarting instead.
+        $client = $this->authenticatedClient();
+        $subscription = SubscriptionFactory::new()->manual()->create(['name' => 'Netflix']);
+
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app/subscriptions/' . $subscription->id . '/edit');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains(selector: 'p.past-date-warning', text: 'already off');
+        self::assertSelectorTextContains(selector: 'p.past-date-warning', text: 'restarting it requires a future date');
+        self::assertSelectorTextNotContains(selector: 'p.past-date-warning', text: 'will be switched off');
+    }
+
     public function testPostRequestWithValidDataShowsSuccessFlashMessage(): void
     {
         $client = $this->authenticatedClient();

@@ -1,12 +1,9 @@
 <?php
 
-declare(strict_types=1);
-
 // This file is managed by 'mate discover'
 // You can manually edit to enable/disable extensions
 
 return [
-    'ineersa/database-extension' => ['enabled' => true],
     'matesofmate/composer-extension' => ['enabled' => true],
     'matesofmate/phpstan-extension' => ['enabled' => true],
     'matesofmate/phpunit-extension' => ['enabled' => true],

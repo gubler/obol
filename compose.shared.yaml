@@ -12,6 +12,10 @@ services:
     environment:
       # Container Caddy serves HTTP only — Traefik does TLS termination.
       SERVER_NAME: ":80"
+      # Absolute-URL origin for off-request generation. In shared mode the app is reached over
+      # https at the Lolly host, so build links from it (SERVER_NAME comes from .env.local, or the
+      # obol.lolly.localhost default that matches the Traefik label below).
+      DEFAULT_URI: https://${SERVER_NAME:-obol.lolly.localhost}
     networks:
       - default
       - lolly
@@ -24,6 +28,12 @@ services:
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME:-obol}.entrypoints=websecure"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME:-obol}.tls=true"
       - "traefik.http.services.${COMPOSE_PROJECT_NAME:-obol}.loadbalancer.server.port=80"
+
+  # The worker mints magic-link/verification URLs off-request, so it needs the same origin as php
+  # (it does not serve HTTP, so no Traefik/network wiring - just the URL host).
+  worker:
+    environment:
+      DEFAULT_URI: https://${SERVER_NAME:-obol.lolly.localhost}
 
 networks:
   lolly:

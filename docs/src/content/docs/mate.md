@@ -4,7 +4,7 @@ title: "Symfony AI Mate (dev-only MCP server)"
 
 [Symfony AI Mate](https://symfony.com/doc/current/ai/components/mate.html) is a
 development-only [MCP](https://modelcontextprotocol.io/) server that exposes live-app
-introspection and dev drivers (tests, static analysis, database, logs, container,
+introspection and dev drivers (tests, static analysis, logs, container,
 profiler, composer) to an AI assistant, so AI-assisted work on Obol is grounded in the
 running app instead of guesswork. It is never shipped to production.
 
@@ -12,8 +12,8 @@ running app instead of guesswork. It is never shipped to production.
 
 Mate runs *inside* the `php` container, not on the host. Obol has no host PHP in its
 workflow - every PHP tool runs via `./bin/dc exec -T php …`. Several extensions boot the
-Symfony kernel, read Doctrine DBAL, or read the log files, so they must run where the app,
-its environment, and the database live. Running in-container also means the PHPUnit /
+Symfony kernel or read the log files, so they must run where the app and its environment
+live. Running in-container also means the PHPUnit /
 PHPStan / Composer extensions invoke their binaries directly, with no `docker compose exec`
 wrapper to configure.
 
@@ -54,22 +54,22 @@ To exercise a single tool without the full MCP handshake:
 
 ## Extensions and tools
 
-Seven extensions are enabled in [`mate/extensions.php`](https://code.dev88.work/dev88/obol/src/branch/main/mate/extensions.php), giving 20
+Six extensions are enabled in [`mate/extensions.php`](https://code.dev88.work/dev88/obol/src/branch/main/mate/extensions.php), giving 19
 tools. Prefer these over the equivalent raw CLI - they return compact, structured output.
 
 | Extension (package) | Tools | Status |
 | --- | --- | --- |
 | Core (`symfony/ai-mate`) | `server-info` | works |
-| Symfony bridge (`symfony/ai-symfony-mate-extension`) | `symfony-services`, `symfony-profiler-list`, `symfony-profiler-get` | works (profiler tools need collected profiles - Obol runs `web-profiler-bundle` in dev/test) |
+| Symfony bridge (`symfony/ai-symfony-mate-extension`) | `symfony-services`, `symfony-service-detail`, `symfony-profiler-list`, `symfony-profiler-get` | works (profiler tools need collected profiles - Obol runs `web-profiler-bundle` in dev/test) |
 | Monolog (`symfony/ai-monolog-mate-extension`) | `monolog-search`, `monolog-context-search`, `monolog-tail`, `monolog-list-files`, `monolog-list-channels` | works |
 | Composer (`matesofmate/composer-extension`) | `composer-install`, `composer-require`, `composer-remove`, `composer-update`, `composer-explain` | tools work; the `composer://config` resource fails to register (see limitations) |
 | PHPStan (`matesofmate/phpstan-extension`) | `phpstan-analyse`, `phpstan-clear-cache` | works (see PHPStan note) |
 | PHPUnit (`matesofmate/phpunit-extension`) | `phpunit-run`, `phpunit-list-tests` | works |
-| Database (`ineersa/database-extension`) | `database-query`, `database-schema` | works |
 
-`database-query` is read-only by construction (only `SELECT` / `WITH`; a `SET
-default_transaction_read_only = on` is issued) and requires a `LIMIT` on un-filtered
-selects.
+Database introspection tools (`database-query`, `database-schema`) are not available: they
+came from `ineersa/database-extension`, which was dropped because its `symfony/ai-mate ^0.8`
+cap held the whole Mate stack back. Inspect the schema and run queries with the raw
+`./bin/dc exec -T php bin/console dbal:run-sql` / `doctrine:query:sql` instead.
 
 ### Configuration notes
 
@@ -82,10 +82,10 @@ selects.
 - *Monolog reads `var/log`.* No extra configuration was needed: Obol's dev logging already
   writes rotating files to `var/log` (`config/packages/monolog.yaml`), so the Monolog tools
   have logs to read out of the box (`var/` is gitignored).
-- *`helgesverre/toon` is required, not optional.* Mate suggests it for "reduced token
-  consumption," but `ineersa/database-extension` calls `Toon::encode()` unconditionally, so
-  it is a hard dependency for the database tools. It is in `require-dev`; the MatesOfMate
-  extensions also use it for compact output when present.
+- *`helgesverre/toon` is kept for compact output.* Mate suggests it for "reduced token
+  consumption." The MatesOfMate extensions use it for compact tool output when it is present,
+  so it stays in `require-dev` even though nothing hard-requires it since the database
+  extension (which called `Toon::encode()` directly) was dropped.
 
 ### Known limitations
 
@@ -94,8 +94,7 @@ selects.
   upstream issue affecting only that one resource - the five `composer-*` tools register and
   work, and the message goes to stderr, so it does not corrupt the MCP stream.
 
-(Unlike the twin Tollo integration, Obol's `database-schema` works - Obol registers no custom
-Doctrine types - and the profiler tools have data, since Obol runs the web profiler in dev.)
+(The profiler tools have data, since Obol runs the web profiler in dev/test.)
 
 ## Staying dev-only
 

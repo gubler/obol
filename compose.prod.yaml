@@ -17,6 +17,10 @@ services:
       # without this prod would inherit the dev `.env` null:// default and silently drop every
       # send. php runs app:mailer:smoke; verify a deploy with it. Sourced from the host deploy env.
       MAILER_DSN: ${MAILER_DSN}
+      # Origin for off-request absolute URLs (magic-link/verification links). Required, derived from
+      # the same SERVER_NAME the deploy already sets for serving, so an unset origin aborts the deploy
+      # rather than shipping http://localhost links in email.
+      DEFAULT_URI: https://${SERVER_NAME:?SERVER_NAME must be set in production}
 
   # Prod worker: same prod image as php (built by the php service), plus the app secret the kernel
   # needs. DATABASE_URL comes from the base compose anchor; depends_on (php healthy) from base too.
@@ -27,6 +31,9 @@ services:
     environment:
       APP_SECRET: ${APP_SECRET:?APP_SECRET must be set in production}
       MAILER_DSN: ${MAILER_DSN}
+      # The worker is where magic-link/verification URLs are actually generated, so DEFAULT_URI
+      # matters here most of all. Same required contract as php above.
+      DEFAULT_URI: https://${SERVER_NAME:?SERVER_NAME must be set in production}
 
   # Require the database password from the host env rather than letting the base compose fall back to
   # the repo-known !ChangeMe! default. This single required reference also gates DATABASE_URL, which

@@ -6,3 +6,13 @@ services:
   php:
     ports:
       - "127.0.0.1:${SOLO_HTTP_PORT:-8080}:80"
+    environment:
+      # Solo mode is reached over plain http on loopback, so off-request URL generation must build
+      # from that, not a Lolly https host. (Dev mail is null://, so these links are not actually
+      # delivered - this keeps a generated link pointing somewhere real if you wire a mail catcher.)
+      DEFAULT_URI: http://localhost:${SOLO_HTTP_PORT:-8080}
+
+  # The worker mints magic-link/verification URLs off-request, so it needs the same origin as php.
+  worker:
+    environment:
+      DEFAULT_URI: http://localhost:${SOLO_HTTP_PORT:-8080}

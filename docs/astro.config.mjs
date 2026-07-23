@@ -41,6 +41,7 @@ const sidebar = [
       { slug: 'development/testing' },
       { slug: 'development/git-hooks' },
       { slug: 'development/mise-tasks' },
+      { slug: 'development/dependencies' },
     ],
   },
   {

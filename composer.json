@@ -65,6 +65,7 @@
         "dama/doctrine-test-bundle": "^8.6",
         "friendsofphp/php-cs-fixer": "^3.95.15",
         "helgesverre/toon": "^3.2.1",
+        "igor-php/igor-php": "^0.8.1",
         "infection/infection": "^0.34",
         "matesofmate/composer-extension": "^0.4",
         "matesofmate/phpstan-extension": "^0.4",

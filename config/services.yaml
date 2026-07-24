@@ -30,6 +30,18 @@ services:
     # this creates a service per class whose id is the fully-qualified class name
     App\:
         resource: '../src/'
+        # These hold plain data or Doctrine-managed classes, never Symfony services: entities
+        # (per-row), enums, value objects, form-backing DTOs, and the DBAL types / DQL functions
+        # Doctrine instantiates itself (registered in doctrine.yaml, not injected). Leaving them in
+        # the resource registers each as a shared service it never is, polluting the container and
+        # tripping worker-mode audits. (Message/ stays in: its handlers are real services,
+        # intermixed with the command/query DTOs.)
+        exclude:
+            - '../src/Entity/'
+            - '../src/Enum/'
+            - '../src/ValueObject/'
+            - '../src/Dto/'
+            - '../src/Doctrine/'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

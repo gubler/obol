@@ -24,4 +24,5 @@ return [
     Knp\Bundle\TimeBundle\KnpTimeBundle::class => ['all' => true],
     Symfony\UX\Chartjs\ChartjsBundle::class => ['all' => true],
     Webauthn\Bundle\WebauthnBundle::class => ['all' => true],
+    IgorPhp\IgorBundle\IgorPhpBundle::class => ['dev' => true, 'test' => true],
 ];

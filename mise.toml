@@ -138,6 +138,17 @@ description = "Rector (dry-run; fails on drift)"
 depends = ["_ensure-up"]
 run = ["$DC_EXEC php vendor/bin/rector --dry-run"]
 
+# Igor - worker-mode state audit. On-demand ONLY, like `infection`: it is a blocking CI gate but is
+# NOT part of `check` or the git hooks, because each run must first regenerate the service map via
+# `cache:clear` (the IgorPhpBundle CompilerPass only fires on clear, not warmup) - too heavy for the
+# fast per-commit sprints. The Go binary self-downloads on first run. safe classes are in the
+# committed baseline (igor-baseline.json); entities/enums/VOs/DTOs/Doctrine types are kept out of the
+# container by the services.yaml exclude, not suppressed here. See docs/development/worker-mode.md.
+[tasks.igor]
+description = "Worker-mode state audit via Igor (Deep Audit; on-demand, not in check/hooks)"
+depends = ["_ensure-up"]
+run = ["$DC_EXEC sh -c 'php bin/console cache:clear --env=dev >/dev/null && vendor/bin/igor-php .'"]
+
 [tasks.seed]
 description = "Load fixtures (purges first, then seeds)"
 depends = ["_ensure-up"]

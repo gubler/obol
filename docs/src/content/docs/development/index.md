@@ -68,3 +68,4 @@ After merge: verify the issue was auto-closed, delete the feature branch.
 - [Testing](testing.md) — test suites, factories, coverage
 - [Git Hooks](git-hooks.md) — automated checks on commit, push, and merge
 - [Mise Tasks](mise-tasks.md) — task runner reference
+- [Worker-Mode Safety](worker-mode.md) — the Igor state-leak audit for FrankenPHP worker mode

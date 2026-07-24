@@ -141,6 +141,15 @@ jobs:
               if: always() && steps.install.outcome == 'success'
               run: vendor/bin/phpstan analyze -c phpstan-tests.neon --memory-limit=4G --no-progress --error-format=github
 
+            # Worker-mode state audit: fails the build if a shared service would leak state across
+            # requests under FrankenPHP worker mode. Needs the dev service map, which the IgorPhpBundle
+            # CompilerPass writes on cache:clear. The Go binary self-downloads on first run.
+            - name: "Igor (worker-mode state audit)"
+              if: always() && steps.install.outcome == 'success'
+              run: |
+                  php bin/console cache:clear --env=dev
+                  vendor/bin/igor-php .
+
             # JS toolchain checks (#133) - Biome (style + lint), tsc --checkJs (static
             # analysis), Vitest (unit tests). Independent of the PHP stack above.
             - name: "Biome (JS code style + lint)"

@@ -44,6 +44,7 @@ See [Frontend](../frontend.md#javascript-toolchain-dev-only) for what the JS too
 | `mise run coverage` | Tests with coverage, min 70% | `XDEBUG_MODE=coverage phpunit --coverage-clover` + `bin/coverage-min.php` |
 | `mise run coverage:report` | HTML coverage report under `var/coverage/` | `XDEBUG_MODE=coverage phpunit --coverage-html=var/coverage` |
 | `mise run infection` | Mutation testing over the Unit suite (on-demand; not in `check`/CI) | `XDEBUG_MODE=coverage infection --threads=4 --test-framework-options=--testsuite=Unit` |
+| `mise run igor` | Worker-mode state audit (on-demand + CI-blocking; not in `check`/hooks) | `cache:clear --env=dev` + `igor-php .` |
 | `mise run js:test` | JS unit tests via Vitest (host-side) | `npm run test` |
 
 ## Assets and Database

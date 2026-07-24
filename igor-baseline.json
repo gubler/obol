@@ -1,0 +1,662 @@
+{
+  "files": {
+    "src/Controller/AbstractBaseController.php": [
+      {
+        "message": "Mutation of state 'appLogger' in AbstractBaseController::autowireBaseController()"
+      },
+      {
+        "message": "Mutation of state 'commandBus' in AbstractBaseController::autowireBaseController()"
+      },
+      {
+        "message": "Mutation of state 'queryBus' in AbstractBaseController::autowireBaseController()"
+      },
+      {
+        "message": "Mutation of state 'translator' in AbstractBaseController::autowireBaseController()"
+      }
+    ],
+    "vendor/fakerphp/faker/src/Faker/Generator.php": [
+      {
+        "message": "Mutation of state 'formatters' in Generator::addProvider()"
+      },
+      {
+        "message": "Mutation of state 'uniqueGenerator' in Generator::unique()"
+      },
+      {
+        "message": "Mutation of state 'formatters' in Generator::getFormatter()"
+      },
+      {
+        "message": "Mutation of state 'formatters' in Generator::getFormatter()"
+      },
+      {
+        "message": "Mutation of state 'formatters' in Generator::getFormatter()"
+      },
+      {
+        "message": "Mutation of state 'formatters' in Generator::__wakeup()"
+      }
+    ],
+    "vendor/knplabs/knp-time-bundle/src/DateTimeFormatter.php": [
+      {
+        "message": "Usage of local static variable is dangerous in Worker mode."
+      },
+      {
+        "message": "Usage of local static variable is dangerous in Worker mode."
+      }
+    ],
+    "vendor/monolog/monolog/src/Monolog/Formatter/JsonFormatter.php": [
+      {
+        "message": "Mutation of state 'includeStacktraces' in JsonFormatter::includeStacktraces()"
+      },
+      {
+        "message": "Mutation of state 'appendNewline' in JsonFormatter::formatBatchNewlines()"
+      },
+      {
+        "message": "Mutation of state 'appendNewline' in JsonFormatter::formatBatchNewlines()"
+      }
+    ],
+    "vendor/monolog/monolog/src/Monolog/Formatter/LineFormatter.php": [
+      {
+        "message": "Mutation of state 'basePath' in LineFormatter::setBasePath()"
+      },
+      {
+        "message": "Mutation of state 'includeStacktraces' in LineFormatter::includeStacktraces()"
+      },
+      {
+        "message": "Mutation of state 'allowInlineLineBreaks' in LineFormatter::includeStacktraces()"
+      },
+      {
+        "message": "Mutation of state 'stacktracesParser' in LineFormatter::includeStacktraces()"
+      },
+      {
+        "message": "Mutation of state 'indentStacktraces' in LineFormatter::indentStacktraces()"
+      },
+      {
+        "message": "Mutation of state 'allowInlineLineBreaks' in LineFormatter::allowInlineLineBreaks()"
+      },
+      {
+        "message": "Mutation of state 'ignoreEmptyContextAndExtra' in LineFormatter::ignoreEmptyContextAndExtra()"
+      },
+      {
+        "message": "Mutation of state 'maxLevelNameLength' in LineFormatter::setMaxLevelNameLength()"
+      }
+    ],
+    "vendor/monolog/monolog/src/Monolog/Formatter/NormalizerFormatter.php": [
+      {
+        "message": "Mutation of state 'dateFormat' in NormalizerFormatter::setDateFormat()"
+      },
+      {
+        "message": "Mutation of state 'maxNormalizeDepth' in NormalizerFormatter::setMaxNormalizeDepth()"
+      },
+      {
+        "message": "Mutation of state 'maxNormalizeItemCount' in NormalizerFormatter::setMaxNormalizeItemCount()"
+      },
+      {
+        "message": "Mutation of state 'jsonEncodeOptions' in NormalizerFormatter::setJsonPrettyPrint()"
+      },
+      {
+        "message": "Mutation of state 'jsonEncodeOptions' in NormalizerFormatter::setJsonPrettyPrint()"
+      },
+      {
+        "message": "Mutation of state 'basePath' in NormalizerFormatter::setBasePath()"
+      },
+      {
+        "message": "Mutation of state 'jsonEncodeOptions' in NormalizerFormatter::addJsonEncodeOption()"
+      },
+      {
+        "message": "Mutation of state 'jsonEncodeOptions' in NormalizerFormatter::removeJsonEncodeOption()"
+      }
+    ],
+    "vendor/monolog/monolog/src/Monolog/Handler/RotatingFileHandler.php": [
+      {
+        "message": "Mutation of state 'filenameFormat' in RotatingFileHandler::setFilenameFormat()"
+      },
+      {
+        "message": "Mutation of state 'url' in RotatingFileHandler::setFilenameFormat()"
+      },
+      {
+        "message": "Mutation of state 'mustRotate' in RotatingFileHandler::write()"
+      },
+      {
+        "message": "Mutation of state 'mustRotate' in RotatingFileHandler::write()"
+      },
+      {
+        "message": "Mutation of state 'url' in RotatingFileHandler::rotate()"
+      },
+      {
+        "message": "Mutation of state 'nextRotation' in RotatingFileHandler::rotate()"
+      },
+      {
+        "message": "Mutation of state 'mustRotate' in RotatingFileHandler::rotate()"
+      },
+      {
+        "message": "Mutation of state 'dateFormat' in RotatingFileHandler::setDateFormat()"
+      }
+    ],
+    "vendor/monolog/monolog/src/Monolog/Logger.php": [
+      {
+        "message": "Property 'timezone' of Logger is mutated but not reset in reset()."
+      },
+      {
+        "message": "Property '$property' of Logger is mutated but not reset in reset()."
+      },
+      {
+        "message": "Property 'handlers' of Logger is mutated but not reset in reset()."
+      },
+      {
+        "message": "Property 'fiberLogDepth' of Logger is mutated but not reset in reset()."
+      },
+      {
+        "message": "Property 'microsecondTimestamps' of Logger is mutated but not reset in reset()."
+      },
+      {
+        "message": "Property 'detectCycles' of Logger is mutated but not reset in reset()."
+      },
+      {
+        "message": "Property 'logDepth' of Logger is mutated but not reset in reset()."
+      },
+      {
+        "message": "Property 'exceptionHandler' of Logger is mutated but not reset in reset()."
+      }
+    ],
+    "vendor/php-http/discovery/src/Psr17Factory.php": [
+      {
+        "message": "Usage of PHP Superglobal $_SERVER is discouraged in Worker mode."
+      },
+      {
+        "message": "Usage of PHP Superglobal $_FILES is discouraged in Worker mode."
+      },
+      {
+        "message": "Usage of PHP Superglobal $_GET is discouraged in Worker mode."
+      },
+      {
+        "message": "Usage of PHP Superglobal $_POST is discouraged in Worker mode."
+      },
+      {
+        "message": "Usage of PHP Superglobal $_COOKIE is discouraged in Worker mode."
+      },
+      {
+        "message": "Usage of PHP Superglobal $_SERVER is discouraged in Worker mode."
+      },
+      {
+        "message": "Mutation of state 'requestFactory' in Psr17Factory::setFactory()"
+      },
+      {
+        "message": "Mutation of state 'responseFactory' in Psr17Factory::setFactory()"
+      },
+      {
+        "message": "Mutation of state 'serverRequestFactory' in Psr17Factory::setFactory()"
+      },
+      {
+        "message": "Mutation of state 'streamFactory' in Psr17Factory::setFactory()"
+      },
+      {
+        "message": "Mutation of state 'uploadedFileFactory' in Psr17Factory::setFactory()"
+      },
+      {
+        "message": "Mutation of state 'uriFactory' in Psr17Factory::setFactory()"
+      },
+      {
+        "message": "Usage of PHP Superglobal $_SERVER is discouraged in Worker mode."
+      },
+      {
+        "message": "Usage of PHP Superglobal $_SERVER is discouraged in Worker mode."
+      },
+      {
+        "message": "Usage of PHP Superglobal $_SERVER is discouraged in Worker mode."
+      },
+      {
+        "message": "Usage of PHP Superglobal $_SERVER is discouraged in Worker mode."
+      },
+      {
+        "message": "Usage of PHP Superglobal $_SERVER is discouraged in Worker mode."
+      },
+      {
+        "message": "Usage of PHP Superglobal $_SERVER is discouraged in Worker mode."
+      },
+      {
+        "message": "Usage of PHP Superglobal $_SERVER is discouraged in Worker mode."
+      }
+    ],
+    "vendor/symfonycasts/tailwind-bundle/src/TailwindBuilder.php": [
+      {
+        "message": "Mutation of state 'output' in TailwindBuilder::setOutput()"
+      },
+      {
+        "message": "Mutation of state 'binary' in TailwindBuilder::createBinary()"
+      }
+    ],
+    "vendor/twig/cssinliner-extra/CssInlinerExtension.php": [
+      {
+        "message": "Usage of local static variable is dangerous in Worker mode."
+      }
+    ],
+    "vendor/twig/intl-extra/IntlExtension.php": [
+      {
+        "message": "Usage of local static variable is dangerous in Worker mode."
+      },
+      {
+        "message": "Mutation of state 'dateFormatters' in IntlExtension::createDateFormatter()"
+      },
+      {
+        "message": "Mutation of state 'numberFormatters' in IntlExtension::createNumberFormatter()"
+      }
+    ],
+    "vendor/twig/twig/src/Environment.php": [
+      {
+        "message": "Mutation of state 'debug' in Environment::enableDebug()"
+      },
+      {
+        "message": "Mutation of state 'debug' in Environment::disableDebug()"
+      },
+      {
+        "message": "Mutation of state 'autoReload' in Environment::enableAutoReload()"
+      },
+      {
+        "message": "Mutation of state 'autoReload' in Environment::disableAutoReload()"
+      },
+      {
+        "message": "Mutation of state 'strictVariables' in Environment::enableStrictVariables()"
+      },
+      {
+        "message": "Mutation of state 'strictVariables' in Environment::disableStrictVariables()"
+      },
+      {
+        "message": "Mutation of state 'hotCache' in Environment::removeCache()"
+      },
+      {
+        "message": "Mutation of state 'originalCache' in Environment::setCache()"
+      },
+      {
+        "message": "Mutation of state 'cache' in Environment::setCache()"
+      },
+      {
+        "message": "Mutation of state 'originalCache' in Environment::setCache()"
+      },
+      {
+        "message": "Mutation of state 'cache' in Environment::setCache()"
+      },
+      {
+        "message": "Mutation of state 'originalCache' in Environment::setCache()"
+      },
+      {
+        "message": "Mutation of state 'cache' in Environment::setCache()"
+      },
+      {
+        "message": "Mutation of state 'loadedTemplates' in Environment::loadTemplate()"
+      },
+      {
+        "message": "Mutation of state 'lexer' in Environment::setLexer()"
+      },
+      {
+        "message": "Mutation of state 'lexer' in Environment::tokenize()"
+      },
+      {
+        "message": "Mutation of state 'parser' in Environment::setParser()"
+      },
+      {
+        "message": "Mutation of state 'parser' in Environment::parse()"
+      },
+      {
+        "message": "Mutation of state 'compiler' in Environment::setCompiler()"
+      },
+      {
+        "message": "Mutation of state 'compiler' in Environment::compile()"
+      },
+      {
+        "message": "Mutation of state 'loader' in Environment::setLoader()"
+      },
+      {
+        "message": "Mutation of state 'charset' in Environment::setCharset()"
+      },
+      {
+        "message": "Mutation of state 'runtimeLoaders' in Environment::addRuntimeLoader()"
+      },
+      {
+        "message": "Mutation of state 'runtimes' in Environment::getRuntime()"
+      },
+      {
+        "message": "Mutation of state 'runtimes' in Environment::getRuntime()"
+      },
+      {
+        "message": "Mutation of state 'resolvedGlobals' in Environment::addGlobal()"
+      },
+      {
+        "message": "Mutation of state 'globals' in Environment::addGlobal()"
+      },
+      {
+        "message": "Mutation of state 'resolvedGlobals' in Environment::getGlobals()"
+      },
+      {
+        "message": "Mutation of state 'resolvedGlobals' in Environment::resetGlobals()"
+      },
+      {
+        "message": "Mutation of state 'optionsHash' in Environment::updateOptionsHash()"
+      }
+    ],
+    "vendor/twig/twig/src/Loader/ChainLoader.php": [
+      {
+        "message": "Mutation of state 'loaders' in ChainLoader::addLoader()"
+      },
+      {
+        "message": "Mutation of state 'hasSourceCache' in ChainLoader::addLoader()"
+      },
+      {
+        "message": "Mutation of state 'loaders' in ChainLoader::getLoaders()"
+      },
+      {
+        "message": "Mutation of state 'hasSourceCache' in ChainLoader::exists()"
+      },
+      {
+        "message": "Mutation of state 'hasSourceCache' in ChainLoader::exists()"
+      }
+    ],
+    "vendor/twig/twig/src/Loader/FilesystemLoader.php": [
+      {
+        "message": "Mutation of state 'paths' in FilesystemLoader::setPaths()"
+      },
+      {
+        "message": "Mutation of state 'cache' in FilesystemLoader::addPath()"
+      },
+      {
+        "message": "Mutation of state 'errorCache' in FilesystemLoader::addPath()"
+      },
+      {
+        "message": "Mutation of state 'paths' in FilesystemLoader::addPath()"
+      },
+      {
+        "message": "Mutation of state 'cache' in FilesystemLoader::prependPath()"
+      },
+      {
+        "message": "Mutation of state 'errorCache' in FilesystemLoader::prependPath()"
+      },
+      {
+        "message": "Mutation of state 'paths' in FilesystemLoader::prependPath()"
+      },
+      {
+        "message": "Mutation of state 'errorCache' in FilesystemLoader::findTemplate()"
+      },
+      {
+        "message": "Mutation of state 'cache' in FilesystemLoader::findTemplate()"
+      },
+      {
+        "message": "Mutation of state 'cache' in FilesystemLoader::findTemplate()"
+      },
+      {
+        "message": "Mutation of state 'errorCache' in FilesystemLoader::findTemplate()"
+      }
+    ],
+    "vendor/twig/twig/src/Profiler/Profile.php": [
+      {
+        "message": "Mutation of state 'profiles' in Profile::addProfile()"
+      },
+      {
+        "message": "Mutation of state 'starts' in Profile::enter()"
+      },
+      {
+        "message": "Mutation of state 'ends' in Profile::leave()"
+      }
+    ],
+    "vendor/twig/twig/src/Runtime/EscaperRuntime.php": [
+      {
+        "message": "Mutation of state 'escapers' in EscaperRuntime::setEscaper()"
+      },
+      {
+        "message": "Mutation of state 'safeClasses' in EscaperRuntime::setSafeClasses()"
+      },
+      {
+        "message": "Mutation of state 'safeLookup' in EscaperRuntime::setSafeClasses()"
+      },
+      {
+        "message": "Mutation of state 'safeClasses' in EscaperRuntime::addSafeClass()"
+      },
+      {
+        "message": "Mutation of state 'safeClasses' in EscaperRuntime::addSafeClass()"
+      },
+      {
+        "message": "Mutation of state 'safeLookup' in EscaperRuntime::addSafeClass()"
+      },
+      {
+        "message": "Mutation of state 'safeClasses' in EscaperRuntime::escape()"
+      },
+      {
+        "message": "Mutation of state 'safeClasses' in EscaperRuntime::escape()"
+      },
+      {
+        "message": "Mutation of state 'safeLookup' in EscaperRuntime::escape()"
+      },
+      {
+        "message": "Usage of local static variable is dangerous in Worker mode."
+      }
+    ],
+    "vendor/web-auth/cose-lib/src/Algorithm/Manager.php": [
+      {
+        "message": "Mutation of state 'algorithms' in Manager::add()"
+      }
+    ],
+    "vendor/web-auth/webauthn-lib/src/AttestationStatement/AttestationObjectLoader.php": [
+      {
+        "message": "Mutation of state 'dispatcher' in AttestationObjectLoader::setEventDispatcher()"
+      },
+      {
+        "message": "Mutation of state 'logger' in AttestationObjectLoader::setLogger()"
+      }
+    ],
+    "vendor/web-auth/webauthn-lib/src/AttestationStatement/AttestationStatementSupportManager.php": [
+      {
+        "message": "Mutation of state 'attestationStatementSupports' in AttestationStatementSupportManager::add()"
+      }
+    ],
+    "vendor/web-auth/webauthn-lib/src/AttestationStatement/NoneAttestationStatementSupport.php": [
+      {
+        "message": "Mutation of state 'dispatcher' in NoneAttestationStatementSupport::setEventDispatcher()"
+      }
+    ],
+    "vendor/web-auth/webauthn-lib/src/AuthenticationExtensions/ExtensionOutputCheckerHandler.php": [
+      {
+        "message": "Mutation of state 'checkers' in ExtensionOutputCheckerHandler::add()"
+      }
+    ],
+    "vendor/web-auth/webauthn-lib/src/AuthenticatorAssertionResponseValidator.php": [
+      {
+        "message": "Mutation of state 'logger' in AuthenticatorAssertionResponseValidator::setLogger()"
+      },
+      {
+        "message": "Mutation of state 'eventDispatcher' in AuthenticatorAssertionResponseValidator::setEventDispatcher()"
+      }
+    ],
+    "vendor/web-auth/webauthn-lib/src/AuthenticatorAttestationResponseValidator.php": [
+      {
+        "message": "Mutation of state 'logger' in AuthenticatorAttestationResponseValidator::setLogger()"
+      },
+      {
+        "message": "Mutation of state 'eventDispatcher' in AuthenticatorAttestationResponseValidator::setEventDispatcher()"
+      }
+    ],
+    "vendor/web-auth/webauthn-lib/src/CeremonyStep/CeremonyStepManagerFactory.php": [
+      {
+        "message": "Mutation of state 'counterChecker' in CeremonyStepManagerFactory::setCounterChecker()"
+      },
+      {
+        "message": "Mutation of state 'securedRelyingPartyId' in CeremonyStepManagerFactory::setSecuredRelyingPartyId()"
+      },
+      {
+        "message": "Mutation of state 'allowedOrigins' in CeremonyStepManagerFactory::setAllowedOrigins()"
+      },
+      {
+        "message": "Mutation of state 'allowSubdomains' in CeremonyStepManagerFactory::setAllowedOrigins()"
+      },
+      {
+        "message": "Mutation of state 'extensionOutputCheckerHandler' in CeremonyStepManagerFactory::setExtensionOutputCheckerHandler()"
+      },
+      {
+        "message": "Mutation of state 'attestationStatementSupportManager' in CeremonyStepManagerFactory::setAttestationStatementSupportManager()"
+      },
+      {
+        "message": "Mutation of state 'algorithmManager' in CeremonyStepManagerFactory::setAlgorithmManager()"
+      },
+      {
+        "message": "Mutation of state 'metadataStatementRepository' in CeremonyStepManagerFactory::enableMetadataStatementSupport()"
+      },
+      {
+        "message": "Mutation of state 'statusReportRepository' in CeremonyStepManagerFactory::enableMetadataStatementSupport()"
+      },
+      {
+        "message": "Mutation of state 'certificateChainValidator' in CeremonyStepManagerFactory::enableMetadataStatementSupport()"
+      },
+      {
+        "message": "Mutation of state 'certificateChainValidator' in CeremonyStepManagerFactory::enableCertificateChainValidator()"
+      },
+      {
+        "message": "Mutation of state 'topOriginValidator' in CeremonyStepManagerFactory::enableTopOriginValidator()"
+      }
+    ],
+    "vendor/web-auth/webauthn-lib/src/Counter/ThrowExceptionIfInvalid.php": [
+      {
+        "message": "Mutation of state 'logger' in ThrowExceptionIfInvalid::setLogger()"
+      }
+    ],
+    "vendor/web-auth/webauthn-symfony-bundle/src/Controller/AssertionControllerFactory.php": [
+      {
+        "message": "Mutation of state 'logger' in AssertionControllerFactory::setLogger()"
+      }
+    ],
+    "vendor/web-auth/webauthn-symfony-bundle/src/DataCollector/WebauthnCollector.php": [
+      {
+        "message": "Mutation of state 'data' in WebauthnCollector::collect()"
+      },
+      {
+        "message": "Mutation of state 'publicKeyCredentialCreationOptions' in WebauthnCollector::addPublicKeyCredentialCreationOptions()"
+      },
+      {
+        "message": "Mutation of state 'authenticatorAttestationResponseValidationSucceeded' in WebauthnCollector::addAuthenticatorAttestationResponseValidationSucceeded()"
+      },
+      {
+        "message": "Mutation of state 'authenticatorAttestationResponseValidationFailed' in WebauthnCollector::addAuthenticatorAttestationResponseValidationFailed()"
+      },
+      {
+        "message": "Mutation of state 'publicKeyCredentialRequestOptions' in WebauthnCollector::addPublicKeyCredentialRequestOptions()"
+      },
+      {
+        "message": "Mutation of state 'authenticatorAssertionResponseValidationSucceeded' in WebauthnCollector::addAuthenticatorAssertionResponseValidationSucceeded()"
+      },
+      {
+        "message": "Mutation of state 'authenticatorAssertionResponseValidationFailed' in WebauthnCollector::addAuthenticatorAssertionResponseValidationFailed()"
+      }
+    ],
+    "vendor/web-auth/webauthn-symfony-bundle/src/Repository/DummyPublicKeyCredentialSourceRepository.php": [
+      {
+        "message": "Mutation of state 'logger' in DummyPublicKeyCredentialSourceRepository::setLogger()"
+      }
+    ],
+    "vendor/web-auth/webauthn-symfony-bundle/src/Repository/DummyPublicKeyCredentialUserEntityRepository.php": [
+      {
+        "message": "Mutation of state 'logger' in DummyPublicKeyCredentialUserEntityRepository::setLogger()"
+      }
+    ],
+    "vendor/web-auth/webauthn-symfony-bundle/src/Security/Http/Authenticator/WebauthnAuthenticator.php": [
+      {
+        "message": "Mutation of state 'logger' in WebauthnAuthenticator::setLogger()"
+      }
+    ],
+    "vendor/web-auth/webauthn-symfony-bundle/src/Service/PublicKeyCredentialCreationOptionsFactory.php": [
+      {
+        "message": "Mutation of state 'eventDispatcher' in PublicKeyCredentialCreationOptionsFactory::setEventDispatcher()"
+      }
+    ],
+    "vendor/web-auth/webauthn-symfony-bundle/src/Service/PublicKeyCredentialRequestOptionsFactory.php": [
+      {
+        "message": "Mutation of state 'eventDispatcher' in PublicKeyCredentialRequestOptionsFactory::setEventDispatcher()"
+      }
+    ],
+    "vendor/zenstruck/foundry/src/Configuration.php": [
+      {
+        "message": "Mutation of state 'static::$instance' in Configuration::boot()"
+      },
+      {
+        "message": "Mutation of state 'static::$instance' in Configuration::bootForDataProvider()"
+      },
+      {
+        "message": "Mutation of state 'static::$instance' in Configuration::shutdown()"
+      },
+      {
+        "message": "Mutation of state 'inMemory' in Configuration::enableInMemory()"
+      }
+    ],
+    "vendor/zenstruck/foundry/src/FakerAdapter.php": [
+      {
+        "message": "Mutation of state 'static::$fakerSeed' in FakerAdapter::resetFakerSeed()"
+      },
+      {
+        "message": "Mutation of state 'static::$fakerSeedHasBeenSet' in FakerAdapter::resetFakerSeed()"
+      },
+      {
+        "message": "Mutation of state 'static::$fakerSeed' in FakerAdapter::seedFaker()"
+      },
+      {
+        "message": "Mutation of state 'static::$fakerSeedHasBeenSet' in FakerAdapter::seedFaker()"
+      }
+    ],
+    "vendor/zenstruck/foundry/src/InMemory/InMemoryRepositoryRegistry.php": [
+      {
+        "message": "Mutation of state 'genericInMemoryRepositories' in InMemoryRepositoryRegistry::get()"
+      }
+    ],
+    "vendor/zenstruck/foundry/src/Maker/Factory/FactoryClassMap.php": [
+      {
+        "message": "Mutation of state 'classesWithFactories' in FactoryClassMap::addFactoryForClass()"
+      }
+    ],
+    "vendor/zenstruck/foundry/src/ORM/ResetDatabase/BaseOrmResetter.php": [
+      {
+        "message": "Mutation of state 'static::$inFirstTest' in BaseOrmResetter::resetBeforeEachTest()"
+      }
+    ],
+    "vendor/zenstruck/foundry/src/Persistence/PersistenceManager.php": [
+      {
+        "message": "Mutation of state 'persist' in PersistenceManager::disablePersisting()"
+      },
+      {
+        "message": "Mutation of state 'persist' in PersistenceManager::enablePersisting()"
+      },
+      {
+        "message": "Mutation of state 'pendingForInsert' in PersistenceManager::scheduleForInsert()"
+      },
+      {
+        "message": "Mutation of state 'afterPersistCallbacks' in PersistenceManager::scheduleForInsert()"
+      },
+      {
+        "message": "Mutation of state 'pendingForInsert' in PersistenceManager::discardScheduled()"
+      },
+      {
+        "message": "Mutation of state 'flush' in PersistenceManager::flushAfter()"
+      },
+      {
+        "message": "Mutation of state 'flush' in PersistenceManager::flushAfter()"
+      },
+      {
+        "message": "Usage of local static variable is dangerous in Worker mode."
+      },
+      {
+        "message": "Mutation of state 'afterPersistCallbacks' in PersistenceManager::callPostPersistCallbacks()"
+      }
+    ],
+    "vendor/zenstruck/foundry/src/Persistence/ResetDatabase/ResetDatabaseManager.php": [
+      {
+        "message": "Mutation of state 'static::$hasDatabaseBeenReset' in ResetDatabaseManager::resetBeforeFirstTest()"
+      }
+    ],
+    "vendor/zenstruck/foundry/src/StoryRegistry.php": [
+      {
+        "message": "Mutation of state 'static::$instances' in StoryRegistry::load()"
+      },
+      {
+        "message": "Mutation of state 'static::$globalInstances' in StoryRegistry::loadGlobalStories()"
+      },
+      {
+        "message": "Mutation of state 'static::$globalInstances' in StoryRegistry::loadGlobalStories()"
+      },
+      {
+        "message": "Mutation of state 'static::$instances' in StoryRegistry::loadGlobalStories()"
+      }
+    ]
+  }
+}

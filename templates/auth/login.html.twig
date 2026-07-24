@@ -7,12 +7,9 @@
         <h1 class="mb-2 text-3xl font-bold">{{ 'auth.login.heading'|trans }}</h1>
         <p class="mb-6 text-fg/70">{{ 'auth.login.intro'|trans }}</p>
 
-        {% for message in app.flashes('notice') %}
-            <div class="flash-notice bg-success-surface border border-success text-success px-4 py-3 rounded mb-4">
-                {{ message }}
-            </div>
-        {% endfor %}
+        {{ include('components/_flashes.html.twig', with_context: false) }}
 
+        {# Not a flash - the security error from the last failed attempt, rendered straight from the request. #}
         {% if lastAuthError %}
             <div class="flash-error bg-danger-surface border border-danger text-danger px-4 py-3 rounded mb-4">
                 {{ lastAuthError.messageKey|trans(lastAuthError.messageData, 'security') }}

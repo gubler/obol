@@ -29,11 +29,7 @@
         </div>
     {% endif %}
 
-    {% for message in app.flashes('success') %}
-        <div class="flash-success bg-success-surface border border-success text-success px-4 py-3 rounded mb-4">
-            {{ message }}
-        </div>
-    {% endfor %}
+    {{ include('components/_flashes.html.twig', with_context: false) }}
 
     {% set subscription_count = listing.subscriptions|length %}
 

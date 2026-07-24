@@ -17,11 +17,7 @@
             <h2 class="text-lg font-semibold text-fg">{{ 'landing.updates.heading'|trans }}</h2>
             <p class="mt-1 text-sm text-fg-muted">{{ 'landing.updates.intro'|trans }}</p>
 
-            {% for message in app.flashes('success') %}
-                <div class="flash-success mt-4 rounded border border-success bg-success-surface px-4 py-3 text-success">
-                    {{ message }}
-                </div>
-            {% endfor %}
+            {{ include('components/_flashes.html.twig', {margin: 'mt-4'}, with_context: false) }}
 
             {{ form_start(form, {action: path('updates_subscribe'), method: 'POST', attr: {class: 'mt-4 flex flex-col gap-3 sm:flex-row sm:items-end'}}) }}
                 <div class="flex-1">

@@ -119,8 +119,15 @@ The sidebar is **data-driven**. Adding a section is three small steps, not a lay
 3. Add the sidebar label to the `account.hub.nav.*` translation keys.
 
 The existing sections are **Preferences** (display name, currency, language, date & time
-format, timezone) and **Access** (email addresses + passkeys). Flash messages for every
-section render once in the shell, so section templates do not repeat the flash loop.
+format, timezone) and **Access** (email addresses + passkeys). Flash messages render from
+one shared partial (`templates/components/_flashes.html.twig`, a dismiss button wired to the
+`dismissible` Stimulus controller) so every flash looks and closes the same way. They render
+once in the hub shell for the non-framed sections. **Preferences** is the exception:
+its edit form saves inside the `#account-preferences` Turbo Frame, and that frame swap
+replaces only the frame - a flash left in the shell would be discarded. So on a Turbo-Frame
+request the frame renders the flash and the shell skips it; on a full navigation the shell
+renders it and the frame skips it. The flash bag is consumed on read, so this header guard
+hands it to exactly one place per request and it never double-renders.
 
 **Preferences is view-then-edit.** The section shows the settings read-only (so nothing
 changes by accident) with an **Edit** link to `account_preferences_edit`. Both the view and the

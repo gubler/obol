@@ -1,0 +1,32 @@
+{# ABOUTME: Shared flash-message region - renders the queued flashes with a dismiss button. #}
+{# ABOUTME: The button is wired to the `dismissible` Stimulus controller (assets/controllers), which closes it. #}
+{#
+    app.flashes() consumes the flash bag, so include this exactly once per rendered response; a second
+    include on the same page renders nothing. Include with `with_context: false` to keep the caller's
+    variables out - only `app` (a global) and the params below are in scope.
+    Params:
+      margin  (string, default 'mb-4')  spacing class for each flash; e.g. 'mt-4' below a form
+#}
+{% set palettes = {
+    notice: 'bg-success-surface border-success text-success',
+    success: 'bg-success-surface border-success text-success',
+    warning: 'bg-warning-surface border-warning text-warning',
+    error: 'bg-danger-surface border-danger text-danger',
+} %}
+{% for type, palette in palettes %}
+    {% for message in app.flashes(type) %}
+        <div class="flash-{{ type }} {{ palette }} {{ margin|default('mb-4') }} flex items-start justify-between gap-3 rounded border px-4 py-3"
+             role="alert"
+             data-controller="dismissible"
+             data-test="flash-{{ type }}">
+            <span>{{ message }}</span>
+            <button type="button"
+                    class="-mr-1 shrink-0 rounded p-0.5 leading-none opacity-70 hover:opacity-100"
+                    data-action="dismissible#dismiss"
+                    data-test="flash-dismiss"
+                    aria-label="{{ 'common.action.dismiss'|trans }}">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    {% endfor %}
+{% endfor %}

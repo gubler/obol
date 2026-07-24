@@ -16,17 +16,7 @@
             {% endif %}
         </div>
 
-        {% for message in app.flashes('success') %}
-            <div class="flash-success bg-success-surface border border-success text-success px-4 py-3 rounded mb-4">
-                {{ message }}
-            </div>
-        {% endfor %}
-
-        {% for message in app.flashes('error') %}
-            <div class="flash-error bg-danger-surface border border-danger text-danger px-4 py-3 rounded mb-4">
-                {{ message }}
-            </div>
-        {% endfor %}
+        {{ include('components/_flashes.html.twig', with_context: false) }}
 
         <div class="bg-surface shadow-md rounded p-6 mb-6">
             <div class="flex justify-between items-center">

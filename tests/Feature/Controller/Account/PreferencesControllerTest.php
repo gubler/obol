@@ -112,6 +112,58 @@ final class PreferencesControllerTest extends WebTestCase
         self::assertSame(SavingsDisplay::MonthBefore, $reloaded->savingsDisplay);
     }
 
+    public function testTheFramedSaveRendersTheSuccessFlashInsideTheFrame(): void
+    {
+        // With JS, the save runs inside the Turbo Frame: every request the browser makes carries the
+        // Turbo-Frame header, and Turbo swaps only #account-preferences into the page. The flash has to
+        // render inside that frame, or the framed user sees no confirmation. Set the header on the
+        // client so it rides along on the edit GET, the POST, and the redirect Turbo follows.
+        $client = self::createClient();
+        $client->setServerParameter('HTTP_TURBO_FRAME', 'account-preferences');
+        $client->loginUser(UserFactory::createOne(['locale' => 'en-US']));
+
+        $crawler = $client->request(Request::METHOD_GET, '/app/account/preferences/edit');
+        $form = $crawler->filter('[data-test="preferences-form"]')->form();
+        $form['change_preferences[displayName]'] = 'Magos';
+        $form['change_preferences[displayCurrency]'] = Currency::GBP->value;
+        $form['change_preferences[language]'] = 'en-GB';
+        $form['change_preferences[dateFormat]'] = DateFormat::Short->value;
+        $form['change_preferences[timezone]'] = 'Europe/London';
+        $form['change_preferences[savingsDisplay]'] = SavingsDisplay::MonthBefore->value;
+        $client->submit($form);
+
+        self::assertResponseRedirects('/app/account/preferences');
+        $crawler = $client->followRedirect();
+
+        // Exactly one flash, and it lives inside the frame that Turbo will swap in (not the hub shell).
+        self::assertCount(1, $crawler->filter('.flash-success'));
+        self::assertCount(1, $crawler->filter('[id="account-preferences"] .flash-success'));
+    }
+
+    public function testTheSuccessFlashCarriesADismissControlWiredToTheStimulusController(): void
+    {
+        // The close button is universal (it renders from the one shared flash template) and is wired to
+        // the dismissible controller, which removes the flash on click. No JS: the button is inert.
+        $client = self::createClient();
+        $client->loginUser(UserFactory::createOne(['locale' => 'en-US']));
+
+        $crawler = $client->request(Request::METHOD_GET, '/app/account/preferences/edit');
+        $form = $crawler->filter('[data-test="preferences-form"]')->form();
+        $form['change_preferences[displayName]'] = 'Magos';
+        $form['change_preferences[displayCurrency]'] = Currency::GBP->value;
+        $form['change_preferences[language]'] = 'en-GB';
+        $form['change_preferences[dateFormat]'] = DateFormat::Short->value;
+        $form['change_preferences[timezone]'] = 'Europe/London';
+        $form['change_preferences[savingsDisplay]'] = SavingsDisplay::MonthBefore->value;
+        $client->submit($form);
+        $crawler = $client->followRedirect();
+
+        $flash = $crawler->filter('.flash-success');
+        self::assertCount(1, $flash);
+        self::assertSame('dismissible', $flash->attr('data-controller'));
+        self::assertCount(1, $flash->filter('[data-action="dismissible#dismiss"]'));
+    }
+
     public function testEachDateTimeFormatOptionIsHumanLabelledWithALiveExample(): void
     {
         // The picker offers Long/Medium/Short/ISO, each labelled with the current datetime in that

@@ -2,6 +2,11 @@
 
 {% block section %}
     <turbo-frame id="account-preferences">
+        {# Symmetric with the read-only view: on a Turbo-Frame request the frame owns the flash, since the
+           hub shell's copy would be discarded by the frame swap. See preferences/show for the full note. #}
+        {% if app.request.headers.get('Turbo-Frame') is not null %}
+            {{ include('components/_flashes.html.twig', with_context: false) }}
+        {% endif %}
         <section class="bg-surface shadow-md rounded p-6">
             <h2 class="text-lg font-semibold text-fg">{{ 'account.preferences.edit_heading'|trans }}</h2>
             <p class="mt-1 mb-4 text-sm text-fg/70">{{ 'account.preferences.intro'|trans }}</p>

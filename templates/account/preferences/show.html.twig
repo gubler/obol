@@ -4,6 +4,12 @@
     {# The frame lets the Edit link swap the form in place with JS; without JS the link is a normal
        navigation to the edit page. Both the view and the edit page carry a matching frame id. #}
     <turbo-frame id="account-preferences">
+        {# On a Turbo-Frame save the hub shell's flash is discarded with the rest of the page, so render
+           it inside the frame that gets swapped in. The hub shell owns it on a full navigation instead
+           (its header guard skips it here), so the two never both consume the one-shot flash bag. #}
+        {% if app.request.headers.get('Turbo-Frame') is not null %}
+            {{ include('components/_flashes.html.twig', with_context: false) }}
+        {% endif %}
         <section class="bg-surface shadow-md rounded p-6">
             <div class="flex flex-wrap items-center justify-between gap-2">
                 <h2 class="text-lg font-semibold text-fg">{{ 'account.preferences.heading'|trans }}</h2>

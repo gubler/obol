@@ -11,11 +11,7 @@
             </a>
         </div>
 
-        {% for message in app.flashes('success') %}
-            <div class="flash-success bg-success-surface border border-success text-success px-4 py-3 rounded mb-4">
-                {{ message }}
-            </div>
-        {% endfor %}
+        {{ include('components/_flashes.html.twig', with_context: false) }}
 
         {% if categories|length > 0 %}
             <div class="bg-surface shadow-md rounded overflow-x-auto">

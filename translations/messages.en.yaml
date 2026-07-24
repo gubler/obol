@@ -25,6 +25,7 @@ common:
         save: Save
         archive: Archive
         unarchive: Unarchive
+        dismiss: Dismiss
     as_of: as of
     relative:
         today: Today

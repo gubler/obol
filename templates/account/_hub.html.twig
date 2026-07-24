@@ -38,19 +38,14 @@
         </nav>
 
         <div class="min-w-0 grow">
-            {# Flashes for every section render here once, in the hub, rather than in each section template. #}
-            {% for message in app.flashes('notice') %}
-                <div class="flash-notice bg-success-surface border border-success text-success px-4 py-3 rounded mb-4">{{ message }}</div>
-            {% endfor %}
-            {% for message in app.flashes('success') %}
-                <div class="flash-success bg-success-surface border border-success text-success px-4 py-3 rounded mb-4">{{ message }}</div>
-            {% endfor %}
-            {% for message in app.flashes('warning') %}
-                <div class="flash-warning bg-warning-surface border border-warning text-warning px-4 py-3 rounded mb-4">{{ message }}</div>
-            {% endfor %}
-            {% for message in app.flashes('error') %}
-                <div class="flash-error bg-danger-surface border border-danger text-danger px-4 py-3 rounded mb-4">{{ message }}</div>
-            {% endfor %}
+            {# Flashes for the non-framed sections render here, once, rather than in each section template.
+               The Preferences edit saves inside the #account-preferences Turbo Frame, whose swap replaces
+               only the frame - a flash out here would be discarded. On a Turbo-Frame request the frame
+               renders the flash itself (see preferences/show + edit); the bag is consumed on read, so the
+               header guard hands it to exactly one place per request and it never double-renders. #}
+            {% if app.request.headers.get('Turbo-Frame') is null %}
+                {{ include('components/_flashes.html.twig', with_context: false) }}
+            {% endif %}
 
             {% block section %}{% endblock %}
         </div>

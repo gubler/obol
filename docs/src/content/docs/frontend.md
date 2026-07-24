@@ -54,6 +54,7 @@ These are run automatically in the Dockerfile builder stage and in CI.
 - `conditional_field_controller.js` — reveals a dependent field only while a trigger checkbox is checked (progressive enhancement)
 - `billing_cycle_controller.js` — pluralizes the subscription form's period dropdown against the count (the inline "Every N period" control)
 - `obligation_trend_controller.js` — formats the obligation-trend line chart's y-axis and tooltip as money
+- `dismissible_controller.js` — removes its element on click; wired from the shared flash template so any flash can be closed
 - `csrf_protection_controller.js` — CSRF token handling (recipe-shipped by Symfony)
 
 **Controller registration** is configured in `assets/controllers.json`, which also enables the Turbo UX bundle controller.

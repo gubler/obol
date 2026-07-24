@@ -142,8 +142,11 @@ The admin area (`/app/admin/*`) is the operator surface, behind `ROLE_ADMIN` (se
 reuses the same data-driven two-column hub as the account settings: the shell lives in
 `templates/admin/_hub.html.twig`, sections extend it and fill `{% block section %}`, and adding a
 section is the same three steps (controller + route, one `sections` entry, an `admin.hub.nav.*`
-label). The sections are **Overview**, **System Toggles** (the runtime system settings - e.g. the
-public sign-up switch, read via the query bus and flipped through per-setting commands; see ADR-0020),
+label). The sections are **Overview** (at-a-glance, read-only system metrics - total accounts,
+onboarded vs. not, recent signups, active subscriptions across all owners, and whether public sign-up
+is on - assembled by a single cross-owner `GetAdminOverviewQuery`), **System Toggles** (the runtime
+system settings - e.g. the public sign-up switch, read via the query bus and flipped through
+per-setting commands; see ADR-0020),
 and **Users** - a searchable, paginated table of every account (search matches a display name or any of
 a user's email addresses), each row linking to a read-only detail (email, display name, roles, joined
 date, onboarding status). The user list is the app's first deliberate cross-owner read (all accounts,

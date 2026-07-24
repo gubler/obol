@@ -124,6 +124,50 @@ class UserRepository extends ServiceEntityRepository implements PublicKeyCredent
     }
 
     /**
+     * Total number of accounts. A cross-owner count for the admin Overview (not owner-scoped, like the
+     * admin user list); see ADR-0015.
+     */
+    public function countAll(): int
+    {
+        return $this->countWhere(static function (QueryBuilder $qb): void {});
+    }
+
+    /**
+     * Accounts that have finished first-run onboarding (onboardingCompletedAt is set). The complement -
+     * accounts still in onboarding - is the total minus this, so only the two counts are queried.
+     */
+    public function countOnboarded(): int
+    {
+        return $this->countWhere(static fn (QueryBuilder $qb): QueryBuilder => $qb->andWhere('u.onboardingCompletedAt IS NOT NULL'));
+    }
+
+    /**
+     * Accounts created on or after the given instant - the admin Overview's "recent signups" window.
+     */
+    public function countCreatedSince(\DateTimeImmutable $since): int
+    {
+        return $this->countWhere(static fn (QueryBuilder $qb): QueryBuilder => $qb
+            ->andWhere('u.createdAt >= :since')
+            ->setParameter('since', $since));
+    }
+
+    /**
+     * Shared COUNT(u.id) scaffold for the cross-owner admin metrics: the caller narrows the builder with
+     * its predicate, this runs the count and normalizes the scalar result to an int.
+     *
+     * @param callable(QueryBuilder): mixed $narrow
+     */
+    private function countWhere(callable $narrow): int
+    {
+        $qb = $this->createQueryBuilder('u')->select('COUNT(u.id)');
+        $narrow($qb);
+
+        $count = $qb->getQuery()->getSingleScalarResult();
+
+        return is_numeric($count) ? (int) $count : 0;
+    }
+
+    /**
      * Guard the system invariant that at least one admin always remains: refuse to de-admin the given
      * user when they are the only admin, so the operator surface can never be locked out. A no-op for a
      * non-admin. Enforced here at the data layer so every caller - the console now, the web UI later -

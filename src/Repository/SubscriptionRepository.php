@@ -145,6 +145,22 @@ class SubscriptionRepository extends ServiceEntityRepository
         ;
     }
 
+    /**
+     * How many active (non-archived) subscriptions exist across every owner - a deliberate cross-owner
+     * count for the admin Overview (not owner-scoped, unlike the reporting finders); see ADR-0015.
+     */
+    public function countActive(): int
+    {
+        $count = $this->createQueryBuilder('s')
+            ->select('COUNT(s.id)')
+            ->andWhere('s.archived = false')
+            ->getQuery()
+            ->getSingleScalarResult()
+        ;
+
+        return is_numeric($count) ? (int) $count : 0;
+    }
+
     private function activeForOwnerQb(Ulid $ownerId): QueryBuilder
     {
         return $this->createQueryBuilder('s')

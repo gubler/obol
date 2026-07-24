@@ -1,10 +1,35 @@
-{# ABOUTME: The admin hub's Overview landing - the entry section behind the ROLE_ADMIN gate. #}
-{# ABOUTME: A neutral placeholder; System Toggles and User management sections are added in later slices. #}
+{# ABOUTME: The admin hub's Overview landing - at-a-glance system metrics behind the ROLE_ADMIN gate. #}
+{# ABOUTME: Read-only counts from GetAdminOverviewQuery; each tile carries a data-test hook for coverage. #}
 {% extends 'admin/_hub.html.twig' %}
 
 {% block section %}
     <div data-test="admin-overview">
         <h2 class="text-lg font-semibold text-fg">{{ 'admin.overview.heading'|trans }}</h2>
         <p class="mt-2 text-sm text-fg-muted">{{ 'admin.overview.intro'|trans }}</p>
+
+        <dl class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {% set tiles = [
+                {label: 'admin.overview.metrics.total_accounts'|trans, value: overview.totalAccounts, test: 'metric-total-accounts'},
+                {label: 'admin.overview.metrics.onboarded'|trans, value: overview.onboardedAccounts, test: 'metric-onboarded'},
+                {label: 'admin.overview.metrics.not_onboarded'|trans, value: overview.notOnboardedAccounts, test: 'metric-not-onboarded'},
+                {label: 'admin.overview.metrics.recent_signups'|trans({'%days%': overview.recentSignupDays}), value: overview.recentSignups, test: 'metric-recent-signups'},
+                {label: 'admin.overview.metrics.active_subscriptions'|trans, value: overview.activeSubscriptions, test: 'metric-active-subscriptions'},
+            ] %}
+
+            {% for tile in tiles %}
+                <div class="rounded border border-line bg-surface p-4 shadow-sm">
+                    <dt class="text-sm font-medium text-fg-muted">{{ tile.label }}</dt>
+                    <dd class="mt-1 text-2xl font-semibold text-fg" data-test="{{ tile.test }}">{{ tile.value }}</dd>
+                </div>
+            {% endfor %}
+
+            <div class="rounded border border-line bg-surface p-4 shadow-sm">
+                <dt class="text-sm font-medium text-fg-muted">{{ 'admin.overview.metrics.public_signup'|trans }}</dt>
+                <dd class="mt-1 text-2xl font-semibold {{ overview.publicSignupEnabled ? 'text-success' : 'text-fg' }}"
+                    data-test="metric-public-signup">
+                    {{ (overview.publicSignupEnabled ? 'admin.overview.metrics.enabled' : 'admin.overview.metrics.disabled')|trans }}
+                </dd>
+            </div>
+        </dl>
     </div>
 {% endblock %}

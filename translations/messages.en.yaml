@@ -216,6 +216,15 @@ admin:
     overview:
         heading: Overview
         intro: Manage system settings and user accounts.
+        metrics:
+            total_accounts: Total accounts
+            onboarded: Onboarded
+            not_onboarded: Not onboarded
+            recent_signups: 'Recent signups (last %days% days)'
+            active_subscriptions: Active subscriptions
+            public_signup: Public sign-up
+            enabled: 'On'
+            disabled: 'Off'
     users:
         heading: Users
         intro: Every account in the system.

@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace App\Controller\Admin;
 
 use App\Controller\AbstractBaseController;
+use App\Message\Query\Admin\GetAdminOverviewQuery;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -20,6 +21,8 @@ final class IndexController extends AbstractBaseController
     #[Route(path: '/app/admin', name: 'admin_index', methods: ['GET'])]
     public function __invoke(): Response
     {
-        return $this->render('admin/index.html.twig');
+        return $this->render('admin/index.html.twig', [
+            'overview' => $this->queryBus->query(new GetAdminOverviewQuery()),
+        ]);
     }
 }

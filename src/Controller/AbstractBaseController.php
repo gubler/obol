@@ -23,13 +23,15 @@ abstract class AbstractBaseController extends AbstractController
 
     public const string FLASH_NOTICE = 'notice';
 
-    protected CommandBus $commandBus;
+    // These are initialized once by the #[Required] setter below (Symfony calls it at instantiation)
+    // and never reassigned, so they are readonly - immutable after wiring, and safe under worker mode.
+    protected readonly CommandBus $commandBus;
 
-    protected QueryBus $queryBus;
+    protected readonly QueryBus $queryBus;
 
-    protected LoggerInterface $appLogger;
+    protected readonly LoggerInterface $appLogger;
 
-    protected TranslatorInterface $translator;
+    protected readonly TranslatorInterface $translator;
 
     #[Required]
     public function autowireBaseController(

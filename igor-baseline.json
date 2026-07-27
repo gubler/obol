@@ -1,19 +1,5 @@
 {
   "files": {
-    "src/Controller/AbstractBaseController.php": [
-      {
-        "message": "Mutation of state 'appLogger' in AbstractBaseController::autowireBaseController()"
-      },
-      {
-        "message": "Mutation of state 'commandBus' in AbstractBaseController::autowireBaseController()"
-      },
-      {
-        "message": "Mutation of state 'queryBus' in AbstractBaseController::autowireBaseController()"
-      },
-      {
-        "message": "Mutation of state 'translator' in AbstractBaseController::autowireBaseController()"
-      }
-    ],
     "vendor/fakerphp/faker/src/Faker/Generator.php": [
       {
         "message": "Mutation of state 'formatters' in Generator::addProvider()"
@@ -107,31 +93,25 @@
     ],
     "vendor/monolog/monolog/src/Monolog/Handler/RotatingFileHandler.php": [
       {
-        "message": "Mutation of state 'filenameFormat' in RotatingFileHandler::setFilenameFormat()"
+        "message": "Property 'url' of RotatingFileHandler is mutated but not reset in reset()."
       },
       {
-        "message": "Mutation of state 'url' in RotatingFileHandler::setFilenameFormat()"
+        "message": "Property 'mustRotate' of RotatingFileHandler is mutated but not reset in reset()."
       },
       {
-        "message": "Mutation of state 'mustRotate' in RotatingFileHandler::write()"
+        "message": "Property 'nextRotation' of RotatingFileHandler is mutated but not reset in reset()."
       },
       {
-        "message": "Mutation of state 'mustRotate' in RotatingFileHandler::write()"
+        "message": "Property 'dateFormat' of RotatingFileHandler is mutated but not reset in reset()."
       },
       {
-        "message": "Mutation of state 'url' in RotatingFileHandler::rotate()"
-      },
-      {
-        "message": "Mutation of state 'nextRotation' in RotatingFileHandler::rotate()"
-      },
-      {
-        "message": "Mutation of state 'mustRotate' in RotatingFileHandler::rotate()"
-      },
-      {
-        "message": "Mutation of state 'dateFormat' in RotatingFileHandler::setDateFormat()"
+        "message": "Property 'filenameFormat' of RotatingFileHandler is mutated but not reset in reset()."
       }
     ],
     "vendor/monolog/monolog/src/Monolog/Logger.php": [
+      {
+        "message": "Property 'exceptionHandler' of Logger is mutated but not reset in reset()."
+      },
       {
         "message": "Property 'timezone' of Logger is mutated but not reset in reset()."
       },
@@ -139,10 +119,10 @@
         "message": "Property '$property' of Logger is mutated but not reset in reset()."
       },
       {
-        "message": "Property 'handlers' of Logger is mutated but not reset in reset()."
+        "message": "Property 'fiberLogDepth' of Logger is mutated but not reset in reset()."
       },
       {
-        "message": "Property 'fiberLogDepth' of Logger is mutated but not reset in reset()."
+        "message": "Property 'handlers' of Logger is mutated but not reset in reset()."
       },
       {
         "message": "Property 'microsecondTimestamps' of Logger is mutated but not reset in reset()."
@@ -152,9 +132,6 @@
       },
       {
         "message": "Property 'logDepth' of Logger is mutated but not reset in reset()."
-      },
-      {
-        "message": "Property 'exceptionHandler' of Logger is mutated but not reset in reset()."
       }
     ],
     "vendor/php-http/discovery/src/Psr17Factory.php": [
@@ -216,6 +193,11 @@
         "message": "Usage of PHP Superglobal $_SERVER is discouraged in Worker mode."
       }
     ],
+    "vendor/symfonycasts/tailwind-bundle/src/Command/TailwindBuildCommand.php": [
+      {
+        "message": "Mutation detected on an injected dependency ($this-\u003etailwindBuilder). Risk of State Leak in a worker."
+      }
+    ],
     "vendor/symfonycasts/tailwind-bundle/src/TailwindBuilder.php": [
       {
         "message": "Mutation of state 'output' in TailwindBuilder::setOutput()"
@@ -242,94 +224,58 @@
     ],
     "vendor/twig/twig/src/Environment.php": [
       {
-        "message": "Mutation of state 'debug' in Environment::enableDebug()"
+        "message": "Property 'charset' of Environment is mutated but not reset in reset()."
       },
       {
-        "message": "Mutation of state 'debug' in Environment::disableDebug()"
+        "message": "Property 'resolvedGlobals' of Environment is mutated but not reset in reset()."
       },
       {
-        "message": "Mutation of state 'autoReload' in Environment::enableAutoReload()"
+        "message": "Property 'debug' of Environment is mutated but not reset in reset()."
       },
       {
-        "message": "Mutation of state 'autoReload' in Environment::disableAutoReload()"
+        "message": "Property 'autoReload' of Environment is mutated but not reset in reset()."
       },
       {
-        "message": "Mutation of state 'strictVariables' in Environment::enableStrictVariables()"
+        "message": "Property 'parser' of Environment is mutated but not reset in reset()."
       },
       {
-        "message": "Mutation of state 'strictVariables' in Environment::disableStrictVariables()"
+        "message": "Property 'loader' of Environment is mutated but not reset in reset()."
       },
       {
-        "message": "Mutation of state 'hotCache' in Environment::removeCache()"
+        "message": "Property 'runtimeLoaders' of Environment is mutated but not reset in reset()."
       },
       {
-        "message": "Mutation of state 'originalCache' in Environment::setCache()"
+        "message": "Property 'globals' of Environment is mutated but not reset in reset()."
       },
       {
-        "message": "Mutation of state 'cache' in Environment::setCache()"
+        "message": "Property 'optionsHash' of Environment is mutated but not reset in reset()."
       },
       {
-        "message": "Mutation of state 'originalCache' in Environment::setCache()"
+        "message": "Property 'loadedTemplates' of Environment is mutated but not reset in reset()."
       },
       {
-        "message": "Mutation of state 'cache' in Environment::setCache()"
+        "message": "Property 'extensionSet' of Environment is mutated but not reset in reset()."
       },
       {
-        "message": "Mutation of state 'originalCache' in Environment::setCache()"
+        "message": "Property 'hotCache' of Environment is mutated but not reset in reset()."
       },
       {
-        "message": "Mutation of state 'cache' in Environment::setCache()"
+        "message": "Property 'cache' of Environment is mutated but not reset in reset()."
       },
       {
-        "message": "Mutation of state 'loadedTemplates' in Environment::loadTemplate()"
+        "message": "Property 'runtimes' of Environment is mutated but not reset in reset()."
       },
       {
-        "message": "Mutation of state 'lexer' in Environment::setLexer()"
+        "message": "Property 'strictVariables' of Environment is mutated but not reset in reset()."
       },
       {
-        "message": "Mutation of state 'lexer' in Environment::tokenize()"
+        "message": "Property 'originalCache' of Environment is mutated but not reset in reset()."
       },
       {
-        "message": "Mutation of state 'parser' in Environment::setParser()"
+        "message": "Property 'lexer' of Environment is mutated but not reset in reset()."
       },
       {
-        "message": "Mutation of state 'parser' in Environment::parse()"
-      },
-      {
-        "message": "Mutation of state 'compiler' in Environment::setCompiler()"
-      },
-      {
-        "message": "Mutation of state 'compiler' in Environment::compile()"
-      },
-      {
-        "message": "Mutation of state 'loader' in Environment::setLoader()"
-      },
-      {
-        "message": "Mutation of state 'charset' in Environment::setCharset()"
-      },
-      {
-        "message": "Mutation of state 'runtimeLoaders' in Environment::addRuntimeLoader()"
-      },
-      {
-        "message": "Mutation of state 'runtimes' in Environment::getRuntime()"
-      },
-      {
-        "message": "Mutation of state 'runtimes' in Environment::getRuntime()"
-      },
-      {
-        "message": "Mutation of state 'resolvedGlobals' in Environment::addGlobal()"
-      },
-      {
-        "message": "Mutation of state 'globals' in Environment::addGlobal()"
-      },
-      {
-        "message": "Mutation of state 'resolvedGlobals' in Environment::getGlobals()"
-      },
-      {
-        "message": "Mutation of state 'resolvedGlobals' in Environment::resetGlobals()"
-      },
-      {
-        "message": "Mutation of state 'optionsHash' in Environment::updateOptionsHash()"
+        "message": "Property 'compiler' of Environment is mutated but not reset in reset()."
       }
     ],
     "vendor/twig/twig/src/Loader/ChainLoader.php": [
@@ -521,25 +467,22 @@
     ],
     "vendor/web-auth/webauthn-symfony-bundle/src/DataCollector/WebauthnCollector.php": [
       {
-        "message": "Mutation of state 'data' in WebauthnCollector::collect()"
+        "message": "Property 'publicKeyCredentialCreationOptions' of WebauthnCollector is mutated but not reset in reset()."
       },
       {
-        "message": "Mutation of state 'publicKeyCredentialCreationOptions' in WebauthnCollector::addPublicKeyCredentialCreationOptions()"
+        "message": "Property 'authenticatorAttestationResponseValidationSucceeded' of WebauthnCollector is mutated but not reset in reset()."
       },
       {
-        "message": "Mutation of state 'authenticatorAttestationResponseValidationSucceeded' in WebauthnCollector::addAuthenticatorAttestationResponseValidationSucceeded()"
+        "message": "Property 'authenticatorAttestationResponseValidationFailed' of WebauthnCollector is mutated but not reset in reset()."
       },
       {
-        "message": "Mutation of state 'authenticatorAttestationResponseValidationFailed' in WebauthnCollector::addAuthenticatorAttestationResponseValidationFailed()"
+        "message": "Property 'publicKeyCredentialRequestOptions' of WebauthnCollector is mutated but not reset in reset()."
       },
       {
-        "message": "Mutation of state 'publicKeyCredentialRequestOptions' in WebauthnCollector::addPublicKeyCredentialRequestOptions()"
+        "message": "Property 'authenticatorAssertionResponseValidationSucceeded' of WebauthnCollector is mutated but not reset in reset()."
       },
       {
-        "message": "Mutation of state 'authenticatorAssertionResponseValidationSucceeded' in WebauthnCollector::addAuthenticatorAssertionResponseValidationSucceeded()"
-      },
-      {
-        "message": "Mutation of state 'authenticatorAssertionResponseValidationFailed' in WebauthnCollector::addAuthenticatorAssertionResponseValidationFailed()"
+        "message": "Property 'authenticatorAssertionResponseValidationFailed' of WebauthnCollector is mutated but not reset in reset()."
       }
     ],
     "vendor/web-auth/webauthn-symfony-bundle/src/Repository/DummyPublicKeyCredentialSourceRepository.php": [
@@ -550,6 +493,11 @@
     "vendor/web-auth/webauthn-symfony-bundle/src/Repository/DummyPublicKeyCredentialUserEntityRepository.php": [
       {
         "message": "Mutation of state 'logger' in DummyPublicKeyCredentialUserEntityRepository::setLogger()"
+      }
+    ],
+    "vendor/web-auth/webauthn-symfony-bundle/src/Routing/Loader.php": [
+      {
+        "message": "Mutation detected on an injected dependency ($this-\u003eroutes). Risk of State Leak in a worker."
       }
     ],
     "vendor/web-auth/webauthn-symfony-bundle/src/Security/Http/Authenticator/WebauthnAuthenticator.php": [
@@ -565,97 +513,6 @@
     "vendor/web-auth/webauthn-symfony-bundle/src/Service/PublicKeyCredentialRequestOptionsFactory.php": [
       {
         "message": "Mutation of state 'eventDispatcher' in PublicKeyCredentialRequestOptionsFactory::setEventDispatcher()"
-      }
-    ],
-    "vendor/zenstruck/foundry/src/Configuration.php": [
-      {
-        "message": "Mutation of state 'static::$instance' in Configuration::boot()"
-      },
-      {
-        "message": "Mutation of state 'static::$instance' in Configuration::bootForDataProvider()"
-      },
-      {
-        "message": "Mutation of state 'static::$instance' in Configuration::shutdown()"
-      },
-      {
-        "message": "Mutation of state 'inMemory' in Configuration::enableInMemory()"
-      }
-    ],
-    "vendor/zenstruck/foundry/src/FakerAdapter.php": [
-      {
-        "message": "Mutation of state 'static::$fakerSeed' in FakerAdapter::resetFakerSeed()"
-      },
-      {
-        "message": "Mutation of state 'static::$fakerSeedHasBeenSet' in FakerAdapter::resetFakerSeed()"
-      },
-      {
-        "message": "Mutation of state 'static::$fakerSeed' in FakerAdapter::seedFaker()"
-      },
-      {
-        "message": "Mutation of state 'static::$fakerSeedHasBeenSet' in FakerAdapter::seedFaker()"
-      }
-    ],
-    "vendor/zenstruck/foundry/src/InMemory/InMemoryRepositoryRegistry.php": [
-      {
-        "message": "Mutation of state 'genericInMemoryRepositories' in InMemoryRepositoryRegistry::get()"
-      }
-    ],
-    "vendor/zenstruck/foundry/src/Maker/Factory/FactoryClassMap.php": [
-      {
-        "message": "Mutation of state 'classesWithFactories' in FactoryClassMap::addFactoryForClass()"
-      }
-    ],
-    "vendor/zenstruck/foundry/src/ORM/ResetDatabase/BaseOrmResetter.php": [
-      {
-        "message": "Mutation of state 'static::$inFirstTest' in BaseOrmResetter::resetBeforeEachTest()"
-      }
-    ],
-    "vendor/zenstruck/foundry/src/Persistence/PersistenceManager.php": [
-      {
-        "message": "Mutation of state 'persist' in PersistenceManager::disablePersisting()"
-      },
-      {
-        "message": "Mutation of state 'persist' in PersistenceManager::enablePersisting()"
-      },
-      {
-        "message": "Mutation of state 'pendingForInsert' in PersistenceManager::scheduleForInsert()"
-      },
-      {
-        "message": "Mutation of state 'afterPersistCallbacks' in PersistenceManager::scheduleForInsert()"
-      },
-      {
-        "message": "Mutation of state 'pendingForInsert' in PersistenceManager::discardScheduled()"
-      },
-      {
-        "message": "Mutation of state 'flush' in PersistenceManager::flushAfter()"
-      },
-      {
-        "message": "Mutation of state 'flush' in PersistenceManager::flushAfter()"
-      },
-      {
-        "message": "Usage of local static variable is dangerous in Worker mode."
-      },
-      {
-        "message": "Mutation of state 'afterPersistCallbacks' in PersistenceManager::callPostPersistCallbacks()"
-      }
-    ],
-    "vendor/zenstruck/foundry/src/Persistence/ResetDatabase/ResetDatabaseManager.php": [
-      {
-        "message": "Mutation of state 'static::$hasDatabaseBeenReset' in ResetDatabaseManager::resetBeforeFirstTest()"
-      }
-    ],
-    "vendor/zenstruck/foundry/src/StoryRegistry.php": [
-      {
-        "message": "Mutation of state 'static::$instances' in StoryRegistry::load()"
-      },
-      {
-        "message": "Mutation of state 'static::$globalInstances' in StoryRegistry::loadGlobalStories()"
-      },
-      {
-        "message": "Mutation of state 'static::$globalInstances' in StoryRegistry::loadGlobalStories()"
-      },
-      {
-        "message": "Mutation of state 'static::$instances' in StoryRegistry::loadGlobalStories()"
       }
     ]
   }

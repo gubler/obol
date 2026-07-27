@@ -1,6 +1,6 @@
 {
   "exclude": [],
-  "safe_namespaces": ["Symfony\\", "Doctrine\\", "IgorPhp\\IgorBundle\\"],
+  "safe_namespaces": ["Symfony\\", "Doctrine\\", "IgorPhp\\IgorBundle\\", "Zenstruck\\Foundry\\"],
   "console_path": "bin/console",
   "env": "dev",
   "baseline": "igor-baseline.json"

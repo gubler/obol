@@ -64,18 +64,19 @@ intermixed with the (readonly) command/query DTOs.
 
 ## The baseline
 
-Findings Igor cannot act on - third-party services in `vendor/`, and one safe project pattern - are
-recorded in `igor-baseline.json` so the audit is green while still surfacing any **new** finding.
-The baseline is regenerated with:
+Findings Igor cannot act on - third-party services in `vendor/` - are recorded in
+`igor-baseline.json` so the audit is green while still surfacing any **new** finding. The baseline is
+regenerated with:
 
 ```bash
 mise run dce -- sh -c 'php bin/console cache:clear --env=dev && vendor/bin/igor-php -generate-baseline .'
 ```
 
 Regenerate it deliberately - for example after a dependency bump changes which vendor services exist
-- and review the diff, so a genuinely new leak is never baselined by accident. The single project
-entry is `AbstractBaseController`: its `#[Required]` setter injects the buses, logger, and
-translator once at wiring time - stateless collaborators, not per-request state.
+- and review the diff, so a genuinely new leak is never baselined by accident. The baseline is
+vendor-only: the one project pattern Igor used to flag, `AbstractBaseController`'s `#[Required]`
+setter, is fixed rather than baselined by declaring the injected buses, logger, and translator
+`readonly` (Igor ignores readonly properties), so no project code sits in the baseline.
 
 ## Suppressing a finding
 
@@ -86,7 +87,8 @@ Prefer, in order:
 2. **Exclude a non-service** from the container in `config/services.yaml` (as above) if the class
    is data or framework-managed, not a service.
 3. **`safe_namespaces`** in `igor.json` for whole namespaces that are never worker-relevant
-   (`Symfony\`, `Doctrine\`, the Igor bundle itself).
+   (`Symfony\`, `Doctrine\`, the Igor bundle itself, and `Zenstruck\Foundry\` - its bundle is
+   dev/test-only, so its services never exist in a prod worker).
 4. **Baseline** a known-safe finding that none of the above fit.
 
 Line- and element-level `// @igor-ignore` comments and the `#[WorkerSafe]` attribute exist too, but

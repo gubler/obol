@@ -22,7 +22,17 @@ services:
       # from the bind-mount for better performance by enabling the next line:
       #- /app/vendor
     environment:
-      FRANKENPHP_WORKER_CONFIG: watch
+      # Scope the worker's file watcher to the source dirs a reload actually needs. A bare `watch`
+      # defaults to `./**/*.{env,php,twig,yaml,yml}` under /app, which includes var/cache - so a
+      # Symfony dev-cache rebuild (cache:clear, or a lazy rebuild after a config/source edit) rewrites
+      # ~2000 container files at once and storms the watcher into a reload loop that wedges the worker
+      # (HTTP stops responding). Watching only src/config/templates/translations keeps hot-reload while
+      # breaking that var/cache feedback loop.
+      FRANKENPHP_WORKER_CONFIG: |
+        watch /app/src
+        watch /app/config
+        watch /app/templates
+        watch /app/translations
       FRANKENPHP_SITE_CONFIG: hot_reload
       # The Mercure hub is dev-only: it powers FrankenPHP's hot_reload (which refuses to boot
       # without a configured hub) and the demo debugger UI. Injecting it here via

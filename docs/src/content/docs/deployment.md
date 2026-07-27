@@ -65,6 +65,13 @@ Three services:
 ### Development overrides (`compose.override.yaml`)
 
 - Exposes the database port locally (random port)
+- Runs FrankenPHP in worker mode with hot-reload. `FRANKENPHP_WORKER_CONFIG` scopes the worker's file
+  watcher to `src`, `config`, `templates`, and `translations` rather than the bare `watch` default
+  (`./**/*.{env,php,twig,yaml,yml}` under `/app`). The default also watches `var/cache`, so a Symfony
+  dev-cache rebuild - a `cache:clear`, or a lazy rebuild after a config/source edit - rewrites ~2000
+  container files at once and storms the watcher into a reload loop that wedges the worker (HTTP stops
+  responding). Scoping the watch keeps hot-reload for real edits while breaking that feedback loop; if
+  the app ever hangs, `bin/dc restart php` clears a wedged worker.
 - Outbound mail uses whatever `MAILER_DSN` you set in `.env.local` (there is no Mailpit catcher). For local/early dev, point it at Fastmail SMTP with an app password; the committed default is `null://null`, a no-op. Verify wiring with `app:mailer:smoke`.
   - URL-encode any reserved characters in the DSN username - notably the `@` in an email login becomes `%40`, so `test@example.com` is written `test%40example.com`: `smtp://test%40example.com:APP_PASSWORD@smtp.fastmail.com:465`.
 

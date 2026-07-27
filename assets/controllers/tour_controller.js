@@ -1,4 +1,4 @@
-// ABOUTME: Starts the driver.js product tour on demand (the footer link and the post-onboarding offer).
+// ABOUTME: Starts the driver.js product tour on demand (the footer link) or automatically on the tour page.
 // ABOUTME: Step selectors and order live here; the copy arrives translated via the labels value.
 
 import { Controller } from '@hotwired/stimulus';
@@ -11,8 +11,11 @@ const STEP_SELECTORS = [
     { key: 'subscriptions', selector: '[data-tour="subscriptions"]' },
     { key: 'add', selector: '[data-tour="add"]' },
     { key: 'totals', selector: '[data-tour="totals"]' },
+    { key: 'tile', selector: '[data-tour="tile"]' },
     { key: 'categories', selector: '[data-tour="categories"]' },
+    { key: 'payment_sources', selector: '[data-tour="payment_sources"]' },
     { key: 'reports', selector: '[data-tour="reports"]' },
+    { key: 'account', selector: '[data-tour="account"]' },
     { key: 'theme', selector: '[data-tour="theme"]' },
 ];
 
@@ -29,7 +32,17 @@ export function buildSteps(labels) {
 export default class extends Controller {
     static values = {
         labels: Object,
+        // The dedicated tour page sets these: autostart drives the walkthrough on load, and returnUrl is
+        // where the user lands once the tour ends (leaving the non-persisted sample behind).
+        autostart: Boolean,
+        returnUrl: String,
     };
+
+    connect() {
+        if (this.autostartValue) {
+            this.start();
+        }
+    }
 
     start(event) {
         if (event) {
@@ -43,9 +56,23 @@ export default class extends Controller {
         );
 
         if (steps.length === 0) {
+            // Autostarted onto a page with nothing to highlight: don't strand the user - send them home.
+            if (this.returnUrlValue) {
+                this.navigateHome(this.returnUrlValue);
+            }
             return;
         }
 
-        driver({ showProgress: true, steps }).drive();
+        const config = { showProgress: true, steps };
+        if (this.returnUrlValue) {
+            // driver.js fires onDestroyed when the tour finishes or is dismissed; either way, leave.
+            config.onDestroyed = () => this.navigateHome(this.returnUrlValue);
+        }
+
+        driver(config).drive();
+    }
+
+    navigateHome(url) {
+        window.location.assign(url);
     }
 }

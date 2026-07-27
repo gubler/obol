@@ -63,6 +63,14 @@ These are run automatically in the Dockerfile builder stage and in CI.
 
 Create a file in `assets/controllers/` following the naming convention `{name}_controller.js`. It is auto-registered by the Stimulus bundle — no manual import needed.
 
+## Product tour
+
+The driver.js walkthrough runs on its own route, `GET /app/tour` (`TourController`), rather than in place on the dashboard. The tour is aimed at brand-new users, who by definition have nothing on their dashboard for the interesting steps to point at, so the route stages a **sample subscription** and renders the real homepage template from it — a tile, a populated totals panel, and the grouping/sort/archived controls. Every user who starts the tour sees the same guided demo, regardless of their own data.
+
+The sample is presentation-only. `SampleDashboardFactory` (`src/Tour/`) builds a non-persisted `Subscription` and mirrors the homepage read models (`HomepageListing` + `TotalObligation`) entirely in memory; it never touches the `EntityManager`, so it cannot be saved and cannot leak into real totals or reports. Because the sample uses the owner's own display currency, no conversion is needed and the currency rate data is never read. A reassurance banner tells the user nothing was added to their account, and the tile is rendered as a non-navigating element (it has no detail page).
+
+`tour_controller.js` drives it: the tour page mounts the controller with `autostart` (it starts on `connect`, no click) and a `returnUrl`, and when driver.js is destroyed — whether the tour finishes or is dismissed — the controller navigates back to `/app`, leaving the sample behind. The tour is offered from the post-onboarding welcome banner, the empty-state call to action, and the dashboard footer, all of which link to `/app/tour`.
+
 ## JavaScript toolchain (dev-only)
 
 The Stimulus controllers get the same three guard rails as the PHP code, mirroring the PHP stack one-for-one. None of it ships to the browser - AssetMapper + importmap stay the runtime; this is Node tooling that runs only at dev/CI time. A `package.json` declares the devDependencies and a `package-lock.json` is committed; run `npm ci` once after pulling (the `composer install` equivalent for JS).

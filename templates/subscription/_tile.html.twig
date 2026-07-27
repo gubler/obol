@@ -1,6 +1,8 @@
-{# A single subscription tile. Expects: subscription (Subscription). #}
-<a href="{{ path('subscription_show', {id: subscription.id}) }}"
-   class="subscription-tile {{ subscription.color.gradientClasses() }} relative flex aspect-[5/3] flex-col justify-between overflow-hidden rounded-xl p-4 text-white shadow-sm transition hover:brightness-110">
+{# A single subscription tile. Expects: subscription (Subscription).
+   Optional: demo (bool) - renders a non-navigating tile for the tour's sample, which has no detail page. #}
+{% set demo = demo|default(false) %}
+{% set tile_classes = 'subscription-tile ' ~ subscription.color.gradientClasses() ~ ' relative flex aspect-[5/3] flex-col justify-between overflow-hidden rounded-xl p-4 text-white shadow-sm transition hover:brightness-110' %}
+{% set tile_body %}
     <div class="flex items-start justify-between gap-2">
         <div class="text-2xl font-bold leading-none">
             {% if subscription.logo %}
@@ -25,4 +27,9 @@
             </span>
         {% endif %}
     </div>
-</a>
+{% endset %}
+{% if demo %}
+    <div class="{{ tile_classes }}" data-tour="tile">{{ tile_body }}</div>
+{% else %}
+    <a href="{{ path('subscription_show', {id: subscription.id}) }}" class="{{ tile_classes }}">{{ tile_body }}</a>
+{% endif %}

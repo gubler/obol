@@ -34,21 +34,11 @@
         {% endblock %}
     </head>
     <body class="h-full">
-    {% if app.user %}
-        {% set tour_labels = {
-            subscriptions: {title: 'tour.step.subscriptions.title'|trans, body: 'tour.step.subscriptions.body'|trans},
-            add: {title: 'tour.step.add.title'|trans, body: 'tour.step.add.body'|trans},
-            totals: {title: 'tour.step.totals.title'|trans, body: 'tour.step.totals.body'|trans},
-            categories: {title: 'tour.step.categories.title'|trans, body: 'tour.step.categories.body'|trans},
-            reports: {title: 'tour.step.reports.title'|trans, body: 'tour.step.reports.body'|trans},
-            theme: {title: 'tour.step.theme.title'|trans, body: 'tour.step.theme.body'|trans},
-        } %}
-    {% endif %}
     {# Capture the page's header so an empty one collapses the colored band instead of leaving a
        slab of dead space above the content (pages like the detail/edit views set no header). #}
     {% set header_content %}{% block header %}{% endblock %}{% endset %}
     {% set has_header = header_content|trim is not empty %}
-    <div class="min-h-full pwa-safe-bottom"{% if app.user %} data-controller="tour" data-tour-labels-value="{{ tour_labels|json_encode }}"{% endif %}>
+    <div class="min-h-full pwa-safe-bottom">
         <div class="relative bg-header{{ has_header ? ' pb-16 sm:pb-32' : '' }}">
             <nav class="bg-header">
                 <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -65,7 +55,7 @@
                                     <div class="ml-10 flex items-baseline space-x-4">
                                         <a href="{{ path('subscription_index') }}" data-tour="subscriptions" class="rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.subscriptions'|trans }}</a>
                                         <a href="{{ path('category_index') }}" data-tour="categories" class="rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.categories'|trans }}</a>
-                                        <a href="{{ path('payment_source_index') }}" class="rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.payment_sources'|trans }}</a>
+                                        <a href="{{ path('payment_source_index') }}" data-tour="payment_sources" class="rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.payment_sources'|trans }}</a>
                                         <a href="{{ path('reports_index') }}" data-tour="reports" class="rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.reports'|trans }}</a>
                                         {% if is_granted('ROLE_ADMIN') %}
                                         <a href="{{ path('admin_index') }}" data-test="nav-admin" class="rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg">{{ 'common.nav.admin'|trans }}</a>
@@ -83,7 +73,7 @@
                                         </svg>
                                         {{ 'common.nav.help'|trans }}
                                     </a>
-                                    <a href="{{ path('account_preferences') }}" class="hidden items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg md:inline-flex" data-test="nav-account">
+                                    <a href="{{ path('account_preferences') }}" data-tour="account" class="hidden items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium text-header-muted hover:bg-white/5 hover:text-header-fg md:inline-flex" data-test="nav-account">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true" class="size-5">
                                             <path d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.24-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.281Z" stroke-linecap="round" stroke-linejoin="round" />
                                             <path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" stroke-linecap="round" stroke-linejoin="round" />
@@ -158,10 +148,10 @@
         <footer class="mx-auto max-w-7xl px-4 pb-10 sm:px-6 lg:px-8">
             <div class="flex flex-col items-center justify-between gap-2 border-t border-line pt-6 text-sm text-fg-muted sm:flex-row">
                 <p>&copy; {{ 'now'|date('Y') }} Obol</p>
-                {# The tour highlights the dashboard, so it can only run there; offer it only there rather
-                   than hook nothing (or force a navigation away) from other pages. #}
+                {# The tour opens its own guided demo (a dedicated page staged with a sample), so offer it
+                   from the dashboard footer as the natural home rather than on every page. #}
                 {% if app.request.attributes.get('_route') == 'subscription_index' %}
-                    <button type="button" data-action="tour#start" class="font-medium text-brand hover:text-brand-strong">{{ 'tour.footer.link'|trans }}</button>
+                    <a href="{{ path('subscription_tour') }}" class="font-medium text-brand hover:text-brand-strong">{{ 'tour.footer.link'|trans }}</a>
                 {% endif %}
             </div>
         </footer>

@@ -186,6 +186,12 @@ tour:
         body: Take a 60-second walk through the essentials. You can start it again anytime from the link at the foot of your dashboard.
         start: Take the tour
         dismiss: No thanks
+    sample:
+        heading: This is a sample
+        body: The figures below come from a sample subscription, shown only for the tour. Nothing has been added to your account.
+        exit: Exit the tour
+        name: Obol
+        category: Finance
     step:
         subscriptions:
             title: Your subscriptions
@@ -196,12 +202,21 @@ tour:
         totals:
             title: What you are spending
             body: Your combined outlay, converted to your default currency.
+        tile:
+            title: Open a subscription
+            body: Each tile is a subscription. Click one to see its details and payment history, or to edit it.
         categories:
             title: Categories
-            body: Group subscriptions - streaming, utilities, tools - to see where the money goes.
+            body: Categories group your subscriptions to show where the money goes. Manage them here - assigning one is optional, so a subscription can stay uncategorized, and you can change it anytime.
+        payment_sources:
+            title: Payment sources
+            body: Track the cards and accounts your subscriptions are charged to, and see what each one carries.
         reports:
             title: Reports
             body: Break your spending down over time and by category.
+        account:
+            title: Your account
+            body: Set your currency, timezone, language, and date format, and manage your sign-in - email addresses and passkeys.
         theme:
             title: Light or dark
             body: Switch between light and dark whenever you like.
@@ -402,6 +417,8 @@ subscription:
         empty:
             title: No subscriptions found
             subtitle: Get started by creating your first subscription
+            add: Add your first subscription
+            tour: Take the tour
     capstone:
         global_totals: Global totals
         remaining: Remaining

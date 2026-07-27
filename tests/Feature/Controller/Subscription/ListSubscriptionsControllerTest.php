@@ -226,6 +226,19 @@ final class ListSubscriptionsControllerTest extends AuthenticatedTestCase
         self::assertSelectorExists(selector: '.empty-state');
     }
 
+    public function testEmptyStateOffersAddingAFirstSubscriptionAndTakingTheTour(): void
+    {
+        // A brand-new user lands here; give them a clear next action - add their first subscription,
+        // or take the guided tour - rather than a dead-end message.
+        $client = $this->authenticatedClient();
+
+        $client->request(method: \Symfony\Component\HttpFoundation\Request::METHOD_GET, uri: '/app');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists(selector: '.empty-state a[href="/app/subscriptions/new"]');
+        self::assertSelectorExists(selector: '.empty-state a[href="/app/tour"]');
+    }
+
     public function testDefaultsToTheTilesView(): void
     {
         $client = $this->authenticatedClient();

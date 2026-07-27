@@ -14,6 +14,35 @@
 {% endblock %}
 
 {% block body %}
+    {% set demo = demo|default(false) %}
+
+    {% if demo %}
+        {% set tour_labels = {
+            subscriptions: {title: 'tour.step.subscriptions.title'|trans, body: 'tour.step.subscriptions.body'|trans},
+            add: {title: 'tour.step.add.title'|trans, body: 'tour.step.add.body'|trans},
+            totals: {title: 'tour.step.totals.title'|trans, body: 'tour.step.totals.body'|trans},
+            tile: {title: 'tour.step.tile.title'|trans, body: 'tour.step.tile.body'|trans},
+            categories: {title: 'tour.step.categories.title'|trans, body: 'tour.step.categories.body'|trans},
+            payment_sources: {title: 'tour.step.payment_sources.title'|trans, body: 'tour.step.payment_sources.body'|trans},
+            reports: {title: 'tour.step.reports.title'|trans, body: 'tour.step.reports.body'|trans},
+            account: {title: 'tour.step.account.title'|trans, body: 'tour.step.account.body'|trans},
+            theme: {title: 'tour.step.theme.title'|trans, body: 'tour.step.theme.body'|trans},
+        } %}
+        <div class="tour-sample-notice mb-6 rounded-lg border border-info bg-info-surface px-4 py-3"
+             data-controller="tour"
+             data-tour-autostart-value="true"
+             data-tour-return-url-value="{{ path('subscription_index') }}"
+             data-tour-labels-value="{{ tour_labels|json_encode }}">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <p class="font-semibold text-fg">{{ 'tour.sample.heading'|trans }}</p>
+                    <p class="mt-1 text-sm text-fg-muted">{{ 'tour.sample.body'|trans }}</p>
+                </div>
+                <a href="{{ path('subscription_index') }}" class="shrink-0 rounded px-3 py-2 text-sm font-medium text-fg-muted hover:bg-surface-2">{{ 'tour.sample.exit'|trans }}</a>
+            </div>
+        </div>
+    {% endif %}
+
     {% if app.request.query.get('welcome') %}
         <div class="tour-welcome mb-6 rounded-lg border border-info bg-info-surface px-4 py-3">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -22,7 +51,7 @@
                     <p class="mt-1 text-sm text-fg-muted">{{ 'tour.welcome.body'|trans }}</p>
                 </div>
                 <div class="flex shrink-0 gap-2">
-                    <button type="button" data-action="tour#start" class="rounded bg-brand px-3 py-2 text-sm font-bold text-on-brand hover:bg-brand-strong">{{ 'tour.welcome.start'|trans }}</button>
+                    <a href="{{ path('subscription_tour') }}" class="rounded bg-brand px-3 py-2 text-sm font-bold text-on-brand hover:bg-brand-strong">{{ 'tour.welcome.start'|trans }}</a>
                     <a href="{{ path('subscription_index') }}" class="rounded px-3 py-2 text-sm font-medium text-fg-muted hover:bg-surface-2">{{ 'tour.welcome.dismiss'|trans }}</a>
                 </div>
             </div>
@@ -37,6 +66,10 @@
         <div class="empty-state bg-surface-2 border border-line rounded-lg px-6 py-12 text-center">
             <p class="text-fg-muted text-lg">{{ 'subscription.index.empty.title'|trans }}</p>
             <p class="text-fg-muted mt-2">{{ 'subscription.index.empty.subtitle'|trans }}</p>
+            <div class="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                <a href="{{ path('subscription_new') }}" class="rounded bg-brand px-4 py-2 font-bold text-on-brand hover:bg-brand-strong">{{ 'subscription.index.empty.add'|trans }}</a>
+                <a href="{{ path('subscription_tour') }}" class="font-medium text-brand hover:text-brand-strong">{{ 'subscription.index.empty.tour'|trans }}</a>
+            </div>
         </div>
     {% else %}
         {% set toggle_link = 'rounded-md px-3 py-2 text-sm font-medium transition' %}
@@ -116,7 +149,7 @@
                         </span>
                     </h2>
                     {% if view == 'tiles' %}
-                        {{ include('subscription/_tiles.html.twig', {subscriptions: group.subscriptions}) }}
+                        {{ include('subscription/_tiles.html.twig', {subscriptions: group.subscriptions, demo: demo}) }}
                     {% else %}
                         {{ include('subscription/_list.html.twig', {subscriptions: group.subscriptions}) }}
                     {% endif %}
@@ -124,7 +157,7 @@
             {% endfor %}
         {% else %}
             {% if view == 'tiles' %}
-                {{ include('subscription/_tiles.html.twig', {subscriptions: listing.subscriptions}) }}
+                {{ include('subscription/_tiles.html.twig', {subscriptions: listing.subscriptions, demo: demo}) }}
             {% else %}
                 {{ include('subscription/_list.html.twig', {subscriptions: listing.subscriptions}) }}
             {% endif %}

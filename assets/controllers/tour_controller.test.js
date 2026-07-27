@@ -87,3 +87,67 @@ describe('tour_controller', () => {
         expect(driver).not.toHaveBeenCalled();
     });
 });
+
+describe('tour_controller autostart', () => {
+    const mountAutostart = ({ labels, returnUrl }) => {
+        document.body.innerHTML = `
+            <div data-controller="tour"
+                 data-tour-autostart-value="true"
+                 ${returnUrl ? `data-tour-return-url-value="${returnUrl}"` : ''}
+                 data-tour-labels-value='${JSON.stringify(labels)}'>
+                <a data-tour="subscriptions">Subscriptions</a>
+            </div>
+        `;
+        application = Application.start();
+        application.register('tour', TourController);
+    };
+
+    it('drives the tour on connect, with no interaction, when autostart is set', async () => {
+        mountAutostart({
+            labels: { subscriptions: { title: 'Subs', body: 'body' } },
+            returnUrl: '/app',
+        });
+        await tick();
+
+        // No click - the dedicated tour page starts the walkthrough as soon as it loads.
+        expect(driver).toHaveBeenCalledOnce();
+        expect(drive).toHaveBeenCalledOnce();
+    });
+
+    it('returns to the dashboard when the driven tour is destroyed', async () => {
+        const navigate = vi
+            .spyOn(TourController.prototype, 'navigateHome')
+            .mockImplementation(() => {});
+        mountAutostart({
+            labels: { subscriptions: { title: 'Subs', body: 'body' } },
+            returnUrl: '/app',
+        });
+        await tick();
+
+        const config = /** @type {any} */ (driver).mock.calls[0][0];
+        expect(config.onDestroyed).toBeTypeOf('function');
+
+        // driver.js fires onDestroyed on both completion and dismissal; either way we leave the sample.
+        config.onDestroyed();
+        expect(navigate).toHaveBeenCalledWith('/app');
+
+        navigate.mockRestore();
+    });
+
+    it('goes straight home when autostarted onto a page with no available steps', async () => {
+        const navigate = vi
+            .spyOn(TourController.prototype, 'navigateHome')
+            .mockImplementation(() => {});
+        // The only label points at an element that is not present, so no step survives.
+        mountAutostart({
+            labels: { reports: { title: 'Reports', body: 'body' } },
+            returnUrl: '/app',
+        });
+        await tick();
+
+        expect(driver).not.toHaveBeenCalled();
+        expect(navigate).toHaveBeenCalledWith('/app');
+
+        navigate.mockRestore();
+    });
+});

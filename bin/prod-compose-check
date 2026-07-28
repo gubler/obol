@@ -1,0 +1,212 @@
+#!/usr/bin/env sh
+# ABOUTME: Contract check for the production compose stack - renders the deploy file chain and asserts
+# ABOUTME: the resolved origin, passkey, image, ingress and volume shape, plus the fail-fast guards.
+#
+# Runs on the host (it needs the docker CLI, not a running stack - `docker compose config` only
+# renders). Nothing here starts a container.
+#
+# The assertions exist because every one of these is a silent failure otherwise: a passkey bound to
+# `localhost` cannot be rebound, a mailer that resolves to null:// drops every magic link, and the dev
+# override merging into a production `up` would publish the profiler and PostgreSQL to the internet.
+
+set -u
+
+FIXTURE_ENV="deploy.env.example"
+PROD_CHAIN="compose.yaml:compose.prod.yaml"
+DEPLOY_CHAIN="compose.yaml:compose.prod.yaml:compose.tunnel.yaml"
+WORK_DIR="var/prod-compose-check"
+
+failures=0
+
+pass() {
+    printf '  ok    %s\n' "$1"
+}
+
+fail() {
+    printf '  FAIL  %s\n' "$1"
+    failures=$((failures + 1))
+}
+
+# Each entry of a rendered `environment` map is one line, so a line count is an occurrence count.
+# Two occurrences means "on both php and worker", which is the whole point for the mail and passkey
+# variables - the worker is where magic links are actually minted.
+assert_count() {
+    _desc="$1"
+    _expected="$2"
+    _needle="$3"
+    _file="$4"
+
+    _actual=$(grep -c -F -- "$_needle" "$_file" 2>/dev/null || true)
+    if [ "$_actual" = "$_expected" ]; then
+        pass "$_desc"
+    else
+        fail "$_desc (expected $_expected occurrence(s) of '$_needle', found $_actual)"
+    fi
+}
+
+assert_aborts() {
+    _desc="$1"
+    _chain="$2"
+    _env="$3"
+
+    if COMPOSE_FILE="$_chain" COMPOSE_ENV_FILES="$_env" docker compose config >/dev/null 2>&1; then
+        fail "$_desc (the command succeeded - the guard is missing)"
+    else
+        pass "$_desc"
+    fi
+}
+
+# Renders the resolved stack as YAML, minus the top-level `x-` extension keys. Those keys hold the
+# environment anchor the overlay shares between php and worker, and Compose echoes them back
+# verbatim - leaving them in would add a phantom third copy of every shared variable and make the
+# per-service occurrence counts meaningless. Top-level YAML keys start at column zero, so dropping
+# from an `x-` key to the next unindented line removes exactly the extension blocks.
+# Runs bin/dc-prod with stdin closed, so the guard sees a non-interactive caller. The throwaway
+# project name means that if a guard ever fails open, the command it lets through targets a project
+# that does not exist rather than a real stack.
+assert_refuses() {
+    _desc="$1"
+    shift
+
+    if COMPOSE_ENV_FILES="$FIXTURE_ENV" COMPOSE_PROJECT_NAME=obol-dc-prod-guard-check \
+        ./bin/dc-prod "$@" </dev/null >/dev/null 2>&1; then
+        fail "$_desc (the command was allowed to run)"
+    else
+        pass "$_desc"
+    fi
+}
+
+assert_allows() {
+    _desc="$1"
+    shift
+
+    if OBOL_CONFIRM_DOWN=1 COMPOSE_ENV_FILES="$FIXTURE_ENV" COMPOSE_PROJECT_NAME=obol-dc-prod-guard-check \
+        ./bin/dc-prod "$@" </dev/null >/dev/null 2>&1; then
+        pass "$_desc"
+    else
+        fail "$_desc (the escape hatch did not work)"
+    fi
+}
+
+render() {
+    _chain="$1"
+    _env="$2"
+    _out="$3"
+
+    if ! COMPOSE_FILE="$_chain" COMPOSE_ENV_FILES="$_env" docker compose config >"$_out.raw" 2>"$_out.err"; then
+        printf 'Could not render %s:\n' "$_chain" >&2
+        cat "$_out.err" >&2
+        exit 1
+    fi
+
+    awk '/^x-/ { skip = 1; next } /^[^ ]/ { skip = 0 } !skip' "$_out.raw" >"$_out"
+}
+
+# A copy of the deploy env with one variable removed, for the fail-fast assertions.
+env_without() {
+    _name="$1"
+    _path="$WORK_DIR/without-$_name.env"
+
+    grep -v "^$_name=" "$FIXTURE_ENV" >"$_path"
+    printf '%s' "$_path"
+}
+
+if ! command -v docker >/dev/null 2>&1; then
+    echo 'docker is not available; this check renders the compose chain on the host.' >&2
+    exit 1
+fi
+
+rm -rf "$WORK_DIR"
+mkdir -p "$WORK_DIR"
+trap 'rm -rf "$WORK_DIR"' EXIT INT TERM
+
+DEPLOY_RENDER="$WORK_DIR/deploy.yaml"
+PROD_RENDER="$WORK_DIR/prod.yaml"
+
+render "$DEPLOY_CHAIN" "$FIXTURE_ENV" "$DEPLOY_RENDER"
+render "$PROD_CHAIN" "$FIXTURE_ENV" "$PROD_RENDER"
+
+echo 'Public origin'
+assert_count 'DEFAULT_URI is built from APP_HOST, on php and worker' 2 \
+    'DEFAULT_URI: https://obol.example' "$DEPLOY_RENDER"
+assert_count 'DEFAULT_URI never carries the Caddy listen address' 0 \
+    'DEFAULT_URI: https://:80' "$DEPLOY_RENDER"
+assert_count 'SERVER_NAME is a listen address, not the public host' 1 \
+    'SERVER_NAME: :80' "$DEPLOY_RENDER"
+
+echo 'Passkeys (irreversible once a credential is registered)'
+assert_count 'WEBAUTHN_RP_ID resolves to the registrable apex, on php and worker' 2 \
+    'WEBAUTHN_RP_ID: obol.example' "$DEPLOY_RENDER"
+assert_count 'WEBAUTHN_RP_ID never resolves to localhost' 0 \
+    'WEBAUTHN_RP_ID: localhost' "$DEPLOY_RENDER"
+assert_count 'WEBAUTHN_ALLOWED_ORIGINS is the public origin, on php and worker' 2 \
+    'WEBAUTHN_ALLOWED_ORIGINS: https://obol.example' "$DEPLOY_RENDER"
+
+echo 'Mail'
+assert_count 'MAILER_FROM reaches php and worker' 2 \
+    'MAILER_FROM: Obol <noreply@obol.example>' "$DEPLOY_RENDER"
+assert_count 'MAILER_DSN never resolves to the dev no-op' 0 \
+    'MAILER_DSN: null://null' "$DEPLOY_RENDER"
+
+echo 'Image and storage'
+assert_count 'php and worker run the pinned deploy image' 2 \
+    'image: code.dev88.work/dev88/obol:0000.0.0-replace-with-a-released-tag' "$DEPLOY_RENDER"
+assert_count 'the database uses a named volume' 1 \
+    'source: database_data' "$DEPLOY_RENDER"
+assert_count 'the database is not on a checkout-relative bind mount' 0 \
+    'docker/db/data' "$DEPLOY_RENDER"
+
+echo 'Ingress'
+assert_count 'the tunnel connector is present' 1 '  cloudflared:' "$DEPLOY_RENDER"
+assert_count 'the connector image is pinned to a release' 1 \
+    'image: cloudflare/cloudflared:' "$DEPLOY_RENDER"
+assert_count 'the connector image is not a floating tag' 0 \
+    'image: cloudflare/cloudflared:latest' "$DEPLOY_RENDER"
+assert_count 'nothing publishes a host port' 0 'published:' "$DEPLOY_RENDER"
+
+echo 'The dev override never merges in'
+assert_count 'no Tailwind watcher' 0 '  tailwind:' "$DEPLOY_RENDER"
+assert_count 'no Xdebug' 0 'XDEBUG_MODE' "$DEPLOY_RENDER"
+assert_count 'no dev APP_ENV' 0 'APP_ENV: dev' "$DEPLOY_RENDER"
+assert_count 'no dev Mercure hub' 0 'MERCURE_PUBLISHER_JWT_KEY' "$DEPLOY_RENDER"
+
+echo 'The prod overlay stands alone (the connector needs a tunnel that only exists on a host)'
+assert_count 'php, worker and database render without the tunnel overlay' 1 \
+    'source: database_data' "$PROD_RENDER"
+assert_count 'no connector without the tunnel overlay' 0 '  cloudflared:' "$PROD_RENDER"
+
+echo 'Required secrets abort the command rather than falling back'
+# Deliberately checked with the repo's own .env present: pinning COMPOSE_ENV_FILES is what stops
+# Compose consulting it, and without that these guards resolve to the committed dev defaults instead
+# of aborting.
+assert_aborts 'a missing APP_HOST aborts' "$DEPLOY_CHAIN" "$(env_without APP_HOST)"
+assert_aborts 'a missing APP_SECRET aborts' "$DEPLOY_CHAIN" "$(env_without APP_SECRET)"
+assert_aborts 'a missing POSTGRES_PASSWORD aborts' "$DEPLOY_CHAIN" "$(env_without POSTGRES_PASSWORD)"
+assert_aborts 'a missing MAILER_DSN aborts' "$DEPLOY_CHAIN" "$(env_without MAILER_DSN)"
+assert_aborts 'a missing MAILER_FROM aborts' "$DEPLOY_CHAIN" "$(env_without MAILER_FROM)"
+assert_aborts 'a missing tunnel token aborts' "$DEPLOY_CHAIN" "$(env_without CLOUDFLARE_TUNNEL_TOKEN)"
+assert_aborts 'a missing OBOL_IMAGE aborts' "$DEPLOY_CHAIN" "$(env_without OBOL_IMAGE)"
+
+echo 'The deploy wrapper resolves the whole chain'
+WRAPPER_RENDER="$WORK_DIR/wrapper.yaml"
+if COMPOSE_ENV_FILES="$FIXTURE_ENV" ./bin/dc-prod config >"$WRAPPER_RENDER" 2>/dev/null; then
+    assert_count 'bin/dc-prod includes the tunnel overlay' 1 '  cloudflared:' "$WRAPPER_RENDER"
+    assert_count 'bin/dc-prod excludes the dev override' 0 '  tailwind:' "$WRAPPER_RENDER"
+else
+    fail 'bin/dc-prod could not render the deploy chain'
+fi
+
+echo 'The deploy wrapper will not tear the stack down by accident'
+assert_refuses 'down needs confirmation' down
+assert_refuses 'down -v needs confirmation' down -v
+assert_refuses 'down --volumes needs confirmation' down --volumes
+assert_refuses 'a global flag does not smuggle down past the guard' --progress quiet down
+assert_allows 'OBOL_CONFIRM_DOWN lets deliberate automation through' down
+
+echo
+if [ "$failures" -ne 0 ]; then
+    printf 'Production compose contract: %s check(s) failed\n' "$failures" >&2
+    exit 1
+fi
+
+echo 'Production compose contract: all checks passed'

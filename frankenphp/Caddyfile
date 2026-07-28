@@ -42,6 +42,23 @@
 	@manifest path /manifest.webmanifest
 	header @manifest Content-Type "application/manifest+json"
 
+	# Content-addressed output only: AssetMapper digests compiled asset filenames, and the help
+	# manual's build digests everything under its _astro directory. Both change name whenever they
+	# change content, so a year-long immutable policy can never serve something stale. The manual's
+	# own pages are deliberately excluded - their URLs are stable, so an immutable copy in a reader's
+	# browser could not be replaced by any later deploy. They keep ETag revalidation.
+	#
+	# Requiring the file to exist is what confines this to production and keeps it clear of PHP. Both
+	# directories are populated only by the image build, so in development - where AssetMapper serves
+	# /assets through PHP - nothing matches and a developer never caches their own edits for a year.
+	# It is also the exact inverse of the @phpRoute matcher below, so dynamic responses keep the
+	# private, must-revalidate policy Symfony sets on them.
+	@immutable {
+		path /assets/* /help/_astro/*
+		file {path}
+	}
+	header @immutable Cache-Control "public, max-age=31536000, immutable"
+
 	@phpRoute {
 		not path /.well-known/mercure*
 		not file {path}

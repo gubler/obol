@@ -1,0 +1,30 @@
+---
+# Cloudflare Tunnel ingress - the only way into the production stack, which publishes no ports.
+#
+# Deliberately a separate overlay rather than part of compose.prod.yaml: the connector needs a real
+# tunnel credential, and folding it into the prod overlay would make the whole production stack
+# unrenderable anywhere a tunnel does not exist - including the local prod-mode verification that
+# happens before a host is provisioned. Production composes all three files; bin/dc-prod pins the
+# chain so nobody assembles it by hand.
+services:
+  cloudflared:
+    # Pin a release tag. The connector ships frequently, and a floating tag can swap during an
+    # unrelated `up`, breaking tunnel authentication with nothing on our side having changed.
+    image: cloudflare/cloudflared:2026.7.3
+    restart: unless-stopped
+    # Token-managed tunnel: the ingress rule (which service to forward to) lives on the tunnel's
+    # dashboard page, so the host holds no credentials file and no config that would have to be
+    # recreated by hand when the stack moves to another machine. The token is the whole credential.
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:?CLOUDFLARE_TUNNEL_TOKEN must be set in production}
+    # A compose service rather than a host process, so it can address the app as `php` over the
+    # stack's internal network. Run on the host it would need a published localhost port, which
+    # defeats the point of having no open ports at all.
+    #
+    # Waiting for php to be healthy means the tunnel is only advertised once the app can answer: a
+    # restart loop shows visitors Cloudflare's own error page rather than origin errors from a
+    # half-started stack.
+    depends_on:
+      php:
+        condition: service_healthy

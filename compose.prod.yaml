@@ -1,44 +1,79 @@
 ---
-# Production environment override
+# Production environment override.
+#
+# Required values use the ${VAR:?msg} form: an unset one aborts the whole `docker compose` command at
+# interpolation time, so a forgotten secret fails the deploy loudly instead of silently falling back
+# to a repo-known dev default. That only holds when the interpolation environment is a deploy-owned
+# env file - Compose otherwise reads the checkout's `.env`, whose committed defaults would satisfy
+# these guards. bin/dc-prod pins both the file chain and the env file; use it rather than assembling
+# `docker compose` invocations by hand.
+
+# Everything origin-shaped derives from APP_HOST, the application's public identity: what users type,
+# what appears in magic-link emails, and what passkeys bind to. It is deliberately NOT SERVER_NAME,
+# which is a Caddy directive naming the address to listen on. The two coincided in development and
+# stop coinciding behind a tunnel, where TLS terminates upstream and Caddy listens on plain HTTP.
+#
+# Carried by php and worker alike: the worker is where magic-link and verification URLs are actually
+# minted, and where mail is actually sent, so it needs the same origin and mail configuration the web
+# container has.
+x-app-environment: &app_environment
+  # Signs magic links, remember-me cookies, and email-verification URIs - a known value is a full
+  # auth compromise.
+  APP_SECRET: ${APP_SECRET:?APP_SECRET must be set in production}
+  # Magic links are the only way into the application, so a silently dropped send is a lockout. There
+  # is deliberately no fallback; php ships app:mailer:smoke, so a deploy can be proven.
+  MAILER_DSN: ${MAILER_DSN:?MAILER_DSN must be set in production}
+  MAILER_FROM: ${MAILER_FROM:?MAILER_FROM must be set in production}
+  # Origin for absolute URLs built off-request (CLI and worker), where there is no request to derive
+  # a host from. Derived from APP_HOST rather than SERVER_NAME, which behind a tunnel is `:80` and
+  # would produce `https://:80`.
+  DEFAULT_URI: https://${APP_HOST:?APP_HOST must be set in production}
+  # The relying party passkeys bind to, permanently - a credential cannot be rebound after
+  # registration. Pinned to the registrable apex rather than a host, so passkeys survive the
+  # application later moving onto a subdomain (reference/adr/0018). APP_HOST is that apex, so it
+  # supplies the default; the override exists only so the apex can be held fixed if the application
+  # host ever stops being the apex. This is the one value here that cannot be corrected afterwards.
+  WEBAUTHN_RP_ID: ${WEBAUTHN_RP_ID:-${APP_HOST:?APP_HOST must be set in production}}
+  # The exact origin browsers send during a ceremony (scheme + host + port).
+  WEBAUTHN_ALLOWED_ORIGINS: https://${APP_HOST:?APP_HOST must be set in production}
+
 services:
   php:
-    image: ${IMAGES_PREFIX:-}obol-php-prod
+    # A single reference the deploy pins to a released tag, so a rollback is one line in the deploy
+    # env plus `bin/dc-prod up -d`. Required rather than defaulted: a floating tag would let an
+    # unrelated restart pull something unreviewed, the same hazard the connector's pinned tag avoids.
+    image: ${OBOL_IMAGE:?OBOL_IMAGE must be set in production}
     build:
       context: .
       target: frankenphp_prod
     environment:
-      # Required secrets use the ${VAR:?msg} form: an unset var aborts the whole `docker compose`
-      # command at interpolation time, so a forgotten secret fails the deploy loudly instead of
-      # silently falling back to the repo-known weak default in the base compose. APP_SECRET signs
-      # magic links, remember-me cookies, and email-verification URIs - a known value is a full auth
-      # compromise.
-      APP_SECRET: ${APP_SECRET:?APP_SECRET must be set in production}
-      # Transactional mail (magic-link/signup). The base compose sets no MAILER_DSN, so
-      # without this prod would inherit the dev `.env` null:// default and silently drop every
-      # send. php runs app:mailer:smoke; verify a deploy with it. Sourced from the host deploy env.
-      MAILER_DSN: ${MAILER_DSN}
-      # Origin for off-request absolute URLs (magic-link/verification links). Required, derived from
-      # the same SERVER_NAME the deploy already sets for serving, so an unset origin aborts the deploy
-      # rather than shipping http://localhost links in email.
-      DEFAULT_URI: https://${SERVER_NAME:?SERVER_NAME must be set in production}
+      <<: *app_environment
+      # Caddy's listen address, nothing more. TLS terminates at Cloudflare and the connector reaches
+      # this container over plain HTTP on the stack's internal network, so there is no certificate to
+      # fetch and no public hostname to bind here.
+      SERVER_NAME: ":80"
 
-  # Prod worker: same prod image as php (built by the php service), plus the app secret the kernel
-  # needs. DATABASE_URL comes from the base compose anchor; depends_on (php healthy) from base too.
-  # Carries MAILER_DSN too: async mail dispatch routes the actual SMTP send through this worker,
-  # not the web request, so it needs the mailer env just as much as the php container.
+  # Same prod image as php. DATABASE_URL comes from the base compose anchor; depends_on (php healthy)
+  # from base too. It carries the full application environment because async dispatch routes the real
+  # send and the real URL generation through this container, not the web request.
   worker:
-    image: ${IMAGES_PREFIX:-}obol-php-prod
-    environment:
-      APP_SECRET: ${APP_SECRET:?APP_SECRET must be set in production}
-      MAILER_DSN: ${MAILER_DSN}
-      # The worker is where magic-link/verification URLs are actually generated, so DEFAULT_URI
-      # matters here most of all. Same required contract as php above.
-      DEFAULT_URI: https://${SERVER_NAME:?SERVER_NAME must be set in production}
+    image: ${OBOL_IMAGE:?OBOL_IMAGE must be set in production}
+    environment: *app_environment
 
-  # Require the database password from the host env rather than letting the base compose fall back to
-  # the repo-known !ChangeMe! default. This single required reference also gates DATABASE_URL, which
-  # the base compose builds from POSTGRES_PASSWORD - so an unset password aborts the deploy before
-  # anything starts, and a set one flows through to the app's connection string unchanged.
+  ###> doctrine/doctrine-bundle ###
   database:
     environment:
+      # Also gates DATABASE_URL, which the base compose composes from POSTGRES_PASSWORD - so an unset
+      # password aborts the deploy before anything starts, and a set one flows through to the
+      # application's connection string unchanged.
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in production}
+    volumes:
+      # A named volume rather than the base compose's checkout-relative bind mount: the database must
+      # not be tied to the deploy checkout's working directory, where re-cloning or moving the
+      # checkout would strand it. Compose merges service volumes by mount target, so this replaces
+      # the base entry instead of adding a second mount at the same path.
+      - database_data:/var/lib/postgresql/data
+  ###< doctrine/doctrine-bundle ###
+
+volumes:
+  database_data:

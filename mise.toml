@@ -56,6 +56,12 @@ description = "Lint YAML translation catalogs via Symfony's lint:yaml"
 depends = ["_ensure-up"]
 run = ["$DC_EXEC php bin/console lint:yaml translations"]
 
+# Host-side: it needs the docker CLI to render the compose chain, but starts nothing and does not
+# need the stack up. Not in CI - the Lint & Test job runs inside a container with no Docker socket.
+[tasks."check:prod-compose"]
+description = "Assert the production compose contract (renders the deploy chain; starts nothing)"
+run = ["./bin/prod-compose-check"]
+
 [tasks.sa]
 description = "Static Analysis via PHPStan"
 depends = ["_ensure-up"]
@@ -223,8 +229,8 @@ description = "Regenerate docs/src/content/docs/palette.md (light + dark token s
 run = ["npm run palette"]
 
 [tasks.check]
-description = "Run all checks: PHPStan (src + tests), tests, CS Fixer, Twig CS, Rector, and the JS toolchain"
-depends = ["lint:yaml", "sa", "sa:tests", "test", "cs", "cs:twig", "rector:check", "js:sa", "js:test", "js:cs"]
+description = "Run all checks: PHPStan (src + tests), tests, CS Fixer, Twig CS, Rector, the JS toolchain, and the prod compose contract"
+depends = ["lint:yaml", "check:prod-compose", "sa", "sa:tests", "test", "cs", "cs:twig", "rector:check", "js:sa", "js:test", "js:cs"]
 
 [tasks."docs:install"]
 description = "Install dev-docs dependencies (one-time, after clone)"

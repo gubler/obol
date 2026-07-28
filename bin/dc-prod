@@ -1,0 +1,72 @@
+#!/usr/bin/env sh
+# ABOUTME: Thin wrapper around `docker compose` for production - pins the overlay chain and the
+# ABOUTME: deploy env file so no invocation can merge the dev override or read the checkout's .env.
+
+set -eu
+
+# Compose auto-merges compose.override.yaml when no file set is given, which in production means
+# APP_ENV=dev, the web profiler, Xdebug, a source bind-mount and PostgreSQL published to the host -
+# full debug disclosure on the public internet, from a command that looks completely ordinary.
+# Pinning the chain here removes the opportunity to forget it.
+export COMPOSE_FILE="compose.yaml:compose.prod.yaml:compose.tunnel.yaml"
+
+# Compose falls back to the checkout's own .env when no env file is pinned, and that file carries dev
+# defaults for MAILER_DSN, WEBAUTHN_RP_ID and DATABASE_URL. Those defaults satisfy the ${VAR:?} guards
+# in the prod overlay, so a deploy missing its real secrets would boot with a no-op mailer and a
+# `localhost` passkey relying party instead of refusing to start. Pinning an env file outside the
+# checkout is what makes those guards mean anything.
+: "${COMPOSE_ENV_FILES:=/etc/obol/deploy.env}"
+export COMPOSE_ENV_FILES
+
+# Deploys are `pull` then `up -d`. `down` is never part of one, and it is the command most likely to
+# be reached for out of habit: it stops PostgreSQL along with everything else, turning a routine
+# deploy into an avoidable outage. `down -v` is worse - it deletes the database volume outright.
+#
+# Fail closed: treat `down` appearing anywhere in the arguments as a teardown, rather than working
+# out which token is the subcommand. Compose's global flags take values (`--progress quiet down`), so
+# identifying the subcommand positionally needs a table of which flags consume the next argument - a
+# table that drifts with every Compose release, and whose failure mode is the guard silently not
+# firing on the one command it exists to catch. The cost of the broad rule is a spurious prompt if
+# `down` is ever a legitimate argument to something else, which OBOL_CONFIRM_DOWN covers.
+tears_down=no
+removes_volumes=no
+for arg in "$@"; do
+    case "$arg" in
+        down) tears_down=yes ;;
+        -v | --volumes) removes_volumes=yes ;;
+    esac
+done
+
+if [ "$tears_down" = "yes" ]; then
+
+    if [ "${OBOL_CONFIRM_DOWN:-}" = "" ]; then
+        # No TTY means a script, a cron job or an agent. Refuse outright rather than prompt into the
+        # void: the caller has to say so deliberately.
+        if [ ! -t 0 ]; then
+            echo 'Refusing to run `down` non-interactively. Set OBOL_CONFIRM_DOWN=1 if this is deliberate.' >&2
+            exit 1
+        fi
+
+        if [ "$removes_volumes" = "yes" ]; then
+            echo 'This DELETES the database volume. Every account, subscription and payment goes with it.' >&2
+            echo 'Restoring means a dump: there is no undo.' >&2
+            printf 'Type "delete the database" to continue: ' >&2
+            read -r reply
+            if [ "$reply" != "delete the database" ]; then
+                echo 'Aborted.' >&2
+                exit 1
+            fi
+        else
+            echo 'This stops PostgreSQL too, so the site goes down until the stack is back up.' >&2
+            echo 'A deploy does not need this - use `pull` then `up -d`, which recreates only what changed.' >&2
+            printf 'Continue? [y/N] ' >&2
+            read -r reply
+            case "$reply" in
+                y | Y | yes | YES) ;;
+                *) echo 'Aborted.' >&2; exit 1 ;;
+            esac
+        fi
+    fi
+fi
+
+exec docker compose "$@"

@@ -1,5 +1,10 @@
 ---
-x-database-url: &database_url postgresql://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-!ChangeMe!}@database:5432/${POSTGRES_DB:-app}?serverVersion=${POSTGRES_VERSION:-16}&charset=${POSTGRES_CHARSET:-utf8}
+# Assembled from the POSTGRES_* parts by default, so the local stack needs no configuration.
+# DATABASE_URL_OVERRIDE supplies a complete DSN instead, for pointing the application at a database
+# outside this stack. Named `_OVERRIDE` rather than DATABASE_URL on purpose: the committed `.env`
+# defines DATABASE_URL as a host-side 127.0.0.1 DSN for tooling run outside Docker, and reusing that
+# name here would inject an unreachable address into the container the moment Compose read that file.
+x-database-url: &database_url ${DATABASE_URL_OVERRIDE:-postgresql://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-!ChangeMe!}@database:5432/${POSTGRES_DB:-app}?serverVersion=${POSTGRES_VERSION:-16}&charset=${POSTGRES_CHARSET:-utf8}}
 
 services:
   php:

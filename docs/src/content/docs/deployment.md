@@ -8,46 +8,73 @@ Obol runs in Docker using FrankenPHP, a single binary that combines Caddy (web s
 
 The `Dockerfile` uses a multi-stage build:
 
-### Builder stage
+### Builder stage (`frankenphp_prod_builder`)
 
-1. Base image: `dunglas/frankenphp:php8.5-trixie` (Debian 13)
-2. Installs system packages: `libpq-dev`, `libicu-dev`, `unzip`
-3. Installs PHP extensions: `pdo_pgsql`, `intl`
+1. Builds on `frankenphp_base`, itself `dunglas/frankenphp:1-php8.5`
+2. Installs PHP extensions via `install-php-extensions`: `apcu`, `intl`, `opcache`, `zip`, `pdo_pgsql`
+3. Uses production `php.ini`
 4. `composer install --no-dev` (production dependencies only)
 5. Copies application source
-6. Dumps optimized autoloader and compiled `.env`
-7. Compiles frontend assets: `importmap:install`, `tailwind:build`, `asset-map:compile`
+6. Dumps the classmap-authoritative autoloader and compiles `.env` to `.env.local.php`
+   via `composer dump-env prod`
+7. Compiles frontend assets: `tailwind:build --minify` and `asset-map:compile`
 8. Bakes in the end-user help manual: a separate Node stage builds the `docs-user/`
    Astro Starlight site with `DOCS_BASE=/help` and its output is copied to `public/help`,
    so the manual ships in lock-step with the app. Caddy/FrankenPHP serves those files
    statically ahead of PHP, so `/help` needs no Symfony route (ADR-0018).
+9. Collects the shared libraries the FrankenPHP and PHP binaries link against, for the
+   runtime stage to copy in
 
-### App stage
+### App stage (`frankenphp_prod`)
 
-1. Same base image with the same PHP extensions
-2. Uses production `php.ini`
-3. Copies the entire `/app` directory from the builder
-4. Sets up the entrypoint script and upload directories
-5. Exposes ports 80 and 443
+1. `debian:13-slim` - **not** the FrankenPHP image. Only the binaries, extensions,
+   collected libraries and PHP configuration are copied across from the builder
+2. CA certificates plus `file`/libmagic, for TLS and Symfony's MIME type detection
+3. Copies the built `/app` directory from the builder
+4. Drops setuid/setgid bits and runs as `www-data`
+5. Declares no `EXPOSE`; the container listens on the port `SERVER_NAME` names (`:80` in
+   production, where TLS terminates upstream)
+
+:::note
+The compiled `.env.local.php` baked in at build time carries the repository's development
+defaults, including `WEBAUTHN_RP_ID=localhost`. Real environment variables take precedence over
+it, which is why the production overlay must forward every value the application needs - and why
+a deploy verifies the resolved values inside the running container rather than trusting the
+compose file to look right.
+:::
 
 ## Docker Compose
 
-### Production (`compose.yaml` + `compose.prod.yaml`)
+### Production (`compose.yaml` + `compose.prod.yaml` + `compose.tunnel.yaml`)
 
-The production stack is the base `compose.yaml` plus the `compose.prod.yaml`
-overlay (prod image, app secret, `MAILER_DSN`). The dev `compose.override.yaml`
-must be excluded - see [Running in Production](#running-in-production) for how
-`COMPOSE_FILE` pins this.
+The production stack is the base `compose.yaml`, the `compose.prod.yaml` overlay
+(deploy image, the required secrets, the public origin, the named database volume)
+and the `compose.tunnel.yaml` overlay (the Cloudflare Tunnel connector). The dev
+`compose.override.yaml` must never be loaded - see
+[Running in Production](#running-in-production), where `bin/dc-prod` pins the whole
+chain so it cannot be assembled wrongly by hand.
 
-Three services:
+The tunnel connector lives in its own overlay because it needs a real tunnel
+credential: keeping it separate means the rest of the production stack can still be
+started and inspected somewhere no tunnel exists.
 
-**`php`** — the Obol application (FrankenPHP)
+Four services:
 
-- Listens on `80`/`443` inside the container; the base stack publishes no host ports (the dev overlays add loopback publishing). Front it with the host's reverse proxy.
+**`php`** - the Obol application (FrankenPHP)
+
+- Listens on the address `SERVER_NAME` names. In production that is `:80`: TLS terminates at Cloudflare, and the connector reaches the container over plain HTTP on the stack's internal network.
+- Publishes no host ports. The connector is the only route in.
 - Depends on `database` with healthcheck
 - Volume: `uploads_data` mounted at `/app/public/uploads`
 
-**`worker`** — long-running Messenger consumer
+**`cloudflared`** - the Cloudflare Tunnel connector (`compose.tunnel.yaml`)
+
+- Official `cloudflare/cloudflared` image, pinned to a release tag. The connector ships frequently, and a floating tag could swap during an unrelated restart and break tunnel authentication with nothing on our side having changed.
+- Token-managed: the ingress rule (which service to forward to) lives on the tunnel's dashboard page, so the host holds no credentials file to recreate when the stack moves.
+- Runs as a compose service rather than on the host, so it can address the app as `php` over the internal network. On the host it would need a published localhost port, defeating the point of having no open ports.
+- Waits for `php` to be healthy, so the tunnel is only advertised once the app can answer.
+
+**`worker`** - long-running Messenger consumer
 
 - Same image as `php`, run with `messenger:consume mail async scheduler_default --time-limit=3600`
 - Drains three transports in priority order (mail first): `mail` (outbound transactional email), `async` (general off-request work, empty for now), and `scheduler_default` (the Symfony Scheduler)
@@ -55,12 +82,23 @@ Three services:
 - Depends on `php` being healthy (so vendor install and migrations are already done before it boots), and on `database`
 - `restart: unless-stopped`; recycles hourly via the time limit
 - Present in dev too (base + override), so the scheduler and mail delivery run locally
-- In production it carries `MAILER_DSN` (async mail is delivered here, not in the web request)
+- In production it carries the full application environment, not just the app secret: async dispatch means the real send **and** the magic-link URL generation happen here rather than in the web request, so it needs the same mail and origin configuration `php` has
 
-**`database`** — PostgreSQL 16 Alpine
+**`database`** - PostgreSQL 16 Alpine
 
 - Healthcheck via `pg_isready`
-- Volume: `database_data` for persistent storage
+- Storage differs by environment: the base compose uses a checkout-relative bind mount (`./docker/db/data`) for development, and the prod overlay replaces it with the named `database_data` volume so the database is not tied to the deploy checkout's working directory
+
+:::caution
+`docker compose down` does **not** remove the named volume - the data survives a stop, a restart and a
+recreate. `docker compose down --volumes` (`-v`) deletes it outright, and there is no undo. That is
+the one command that can destroy the database, which is why `bin/dc-prod` refuses to run any `down`
+without an explicit confirmation, and demands a typed phrase when `-v` is present.
+
+Backups do not read this volume. A file-level copy of a running PostgreSQL data directory is not a
+valid backup at all - the files are mid-write. Backups are logical dumps taken through the database,
+so the storage type underneath is irrelevant to them.
+:::
 
 ### Development overrides (`compose.override.yaml`)
 
@@ -78,33 +116,69 @@ Three services:
 ## Environment Variables
 
 The base `compose.yaml` carries dev-friendly fallbacks (the `Dev default` column) so the local stack
-runs with no configuration. The prod overlay (`compose.prod.yaml`) deliberately drops those fallbacks
-for the security-critical secrets: it sources them from the host env with `${VAR:?...}`, so a missing
-one **aborts `docker compose` before anything starts** rather than booting with a repo-known weak
-value. Set every var marked *fail-fast* in the deploy environment.
+runs with no configuration. The prod overlay deliberately drops those fallbacks for everything the
+deploy must get right: it sources them with `${VAR:?...}`, so a missing one **aborts `docker compose`
+before anything starts** rather than booting with a repo-known weak value.
+
+`deploy.env.example` in the repository root is a filled-out template of exactly this table. Copy it to
+the host, complete it, and point `COMPOSE_ENV_FILES` at it.
+
+**The application's public identity is `APP_HOST`, not `SERVER_NAME`.** The two are different things
+that only coincided in development. `SERVER_NAME` is a Caddy directive: which address to listen on,
+and whether to fetch a certificate for it. Behind the tunnel, TLS terminates upstream and Caddy
+listens on plain HTTP inside a private network, so `SERVER_NAME` is `:80` - at which point deriving an
+origin from it would produce `https://:80`. `APP_HOST` is what users type, what appears in magic-link
+emails, and what passkeys bind to; `DEFAULT_URI`, `WEBAUTHN_RP_ID` and `WEBAUTHN_ALLOWED_ORIGINS` are
+all derived from it.
 
 | Variable | Prod | Dev default | Description |
 |----------|------|-------------|-------------|
 | `APP_ENV` | Baked `prod` | `dev` | Symfony environment. The prod image bakes `prod`; do not set it in the deploy env. |
+| `APP_HOST` | **Required (fail-fast)** | not used | The public host, without scheme (e.g. `obol.example`). Drives `DEFAULT_URI`, `WEBAUTHN_RP_ID` and `WEBAUTHN_ALLOWED_ORIGINS`. Read by Compose when it renders the stack; nothing in the application reads it, so it is not itself forwarded into the container. |
 | `APP_SECRET` | **Required (fail-fast)** | committed dev value (`.env.dev`) | Signs magic links, remember-me cookies, and email-verification URIs. A known value is a full auth compromise. |
+| `OBOL_IMAGE` | **Required (fail-fast)** | not used (dev builds locally) | The image to run, pinned to a released tag (e.g. `code.dev88.work/dev88/obol:2026.7.1`). Rolling back is editing this one line and running `bin/dc-prod up -d`. |
 | `POSTGRES_PASSWORD` | **Required (fail-fast)** | `!ChangeMe!` | PostgreSQL password. Also feeds `DATABASE_URL`, which the base compose composes from the `POSTGRES_*` vars. |
+| `MAILER_DSN` | **Required (fail-fast)** | `null://null` | Outbound mail transport. URL-encode reserved characters in the username (`@` becomes `%40`). Verify with `app:mailer:smoke`. |
+| `MAILER_FROM` | **Required (fail-fast)** | `Obol <noreply@dev88.co>` | Default sender for transactional mail. Must be an address the transport is authorized to send as. |
+| `CLOUDFLARE_TUNNEL_TOKEN` | **Required (fail-fast)** | not used | Connector credential from the tunnel's dashboard page. Only read by `compose.tunnel.yaml`. |
 | `POSTGRES_USER` | Optional | `app` | PostgreSQL username. |
 | `POSTGRES_DB` | Optional | `app` | PostgreSQL database name. |
-| `MAILER_DSN` | Required | `null://null` | Outbound mail transport. Set to a real SMTP DSN (e.g. Fastmail app password); the `null://null` default silently drops mail. URL-encode reserved characters in the username (`@` becomes `%40`). Verify with `app:mailer:smoke`. |
-| `SERVER_NAME` | Required | `obol.lolly.localhost` | The deployed host (e.g. `obol.dev88.co`). Drives Caddy's site address and `DEFAULT_URI`. |
-| `DEFAULT_URI` | Derived from `SERVER_NAME` | `https://obol.lolly.localhost` | Base URI for URLs generated off-request (emails, magic links). Defaults to `https://${SERVER_NAME}`. |
-| `WEBAUTHN_RP_ID` | Required | `localhost` | Passkey relying-party id: a registrable-domain suffix of the site's origin, **without** scheme or port (e.g. `obol.dev88.co`). Passkeys bind to this, so it must be set correctly at first launch and stay stable across deploys - changing it invalidates every existing passkey. |
-| `WEBAUTHN_ALLOWED_ORIGINS` | Required | `https://obol.lolly.localhost` | The exact origin(s) browsers send during a passkey ceremony (scheme + host + port). Must match the deployed site's origin (e.g. `https://obol.dev88.co`). |
+| `SERVER_NAME` | Set to `:80` by the overlay | `obol.lolly.localhost` | Caddy's listen address. Not the public host, and not something the deploy env sets. |
+| `DEFAULT_URI` | Derived: `https://${APP_HOST}` | per compose mode | Base URI for URLs generated off-request (emails, magic links), where there is no request to derive a host from. |
+| `WEBAUTHN_RP_ID` | Derived: `${APP_HOST}` | `localhost` | Passkey relying-party id, **without** scheme or port. Overridable, but should stay unset - see the caution below. |
+| `WEBAUTHN_ALLOWED_ORIGINS` | Derived: `https://${APP_HOST}` | `https://obol.lolly.localhost` | The exact origin(s) browsers send during a passkey ceremony (scheme + host + port). |
+| `DATABASE_URL_OVERRIDE` | Optional | not used | A complete DSN, replacing the one composed from the `POSTGRES_*` parts. Only needed to point at a database outside this stack. |
 
 :::danger
-The *fail-fast* secrets (`APP_SECRET`, `POSTGRES_PASSWORD`) have **no prod
-fallback**. If any is unset the deploy aborts with an error naming the missing var - by design. Compose
-only catches an *unset* var, not one deliberately set to a weak or default value, so still generate
-strong, unique secrets.
+Those guards only work when the interpolation environment is a **deploy-owned env file outside the
+checkout**. Compose otherwise falls back to reading the repository's own `.env`, whose committed
+development defaults - `MAILER_DSN=null://null`, `WEBAUTHN_RP_ID=localhost`, a host-side
+`DATABASE_URL` - would satisfy every `${VAR:?}` above. A deploy missing its real secrets would then
+boot silently with a no-op mailer and a `localhost` passkey relying party instead of refusing to
+start. `bin/dc-prod` pins `COMPOSE_ENV_FILES` for exactly this reason.
+
+Compose only catches an *unset* var, never one set to a weak value, so still generate strong, unique
+secrets.
 :::
 
 :::caution
-Set `WEBAUTHN_RP_ID` and `WEBAUTHN_ALLOWED_ORIGINS` to the real deployed host before anyone registers a passkey. The RP id in particular is a permanent binding: if it changes later, every passkey registered under the old value stops working and users fall back to magic-link email. Magic-link login does not depend on these variables, so a misconfiguration never locks anyone out - it only disables the passkey fast path.
+The passkey relying-party id is a **permanent** binding: a credential cannot be rebound after
+registration, so if the RP id changes, every passkey registered under the old value stops working.
+It is pinned to the registrable apex rather than a host (ADR-0018), so passkeys would survive the
+application later moving onto a subdomain. `APP_HOST` is that apex, so leave `WEBAUTHN_RP_ID` unset
+and let it derive; set it explicitly only if the application host ever stops being the apex, in which
+case it must keep its original value.
+
+Verify the resolved value **inside the running container**, not in the compose file - the image bakes
+a compiled `.env.local.php` carrying `WEBAUTHN_RP_ID=localhost`, and this is the one setting that
+cannot be corrected after the fact:
+
+```bash
+bin/dc-prod exec php php -r 'echo getenv("WEBAUTHN_RP_ID"), "\n";'
+```
+
+Magic-link login does not depend on these variables, so a misconfiguration never locks anyone out -
+it only disables the passkey fast path.
 :::
 
 ## Process timezone
@@ -114,60 +188,127 @@ timezone, applied at read time (see [ADR-0021](https://code.dev88.work/dev88/obo
 
 ## Entrypoint
 
-The `docker/entrypoint.sh` script runs before FrankenPHP starts:
+`frankenphp/docker-entrypoint.sh` (installed as `/usr/local/bin/docker-entrypoint`) runs before
+FrankenPHP starts, for any `frankenphp`, `php` or `bin/console` command:
 
-```bash
-php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
-exec "$@"
-```
+1. Installs `vendor/` if it is empty. In the prod image it is baked in, so this is a no-op.
+2. Waits up to 60 seconds for the database to answer `SELECT 1`, and exits non-zero if it never does.
+3. Runs `doctrine:migrations:migrate --no-interaction --all-or-nothing`.
 
-Migrations run automatically on every container start. The `--allow-no-migration` flag prevents errors when there are no pending migrations.
+:::caution
+A failed migration is currently **non-fatal**: the entrypoint prints a warning and lets FrankenPHP
+start anyway, so the container serves traffic against a schema the code does not expect. Check the
+container logs for `WARNING: doctrine:migrations:migrate failed` after any deploy that carries a
+migration.
+:::
 
 ## Running in Production
 
 :::danger
-A bare `docker compose up -d` is **not** safe in production. With no file
-selection, Compose auto-merges `compose.override.yaml`, which forces the dev
-posture: `APP_ENV=dev`, the web profiler and debug toolbar, Xdebug, a source
-bind-mount, and PostgreSQL published to the host - full debug/info disclosure on
-the public internet. Production must run the base plus the prod overlay and must
-never load the override.
+A bare `docker compose` command is **not** safe in production, and it fails in two
+directions at once. With no file selection Compose auto-merges
+`compose.override.yaml`, forcing the dev posture - `APP_ENV=dev`, the web profiler
+and debug toolbar, Xdebug, a source bind-mount, PostgreSQL published to the host -
+which is full debug disclosure on the public internet from a command that looks
+completely ordinary. With no env file pinned it also reads the checkout's `.env`,
+whose development defaults quietly satisfy the required-secret guards.
+
+Never type `docker compose` on the deploy host. Use `bin/dc-prod`.
 :::
 
-Pin the file set with `COMPOSE_FILE` so every `docker compose` command in the
-deploy resolves to `compose.yaml` + `compose.prod.yaml` and can never auto-load
-the override. Set it in the deploy environment alongside the app's own variables,
-and make it **persistent** - a sourced env file, the deploy user's shell profile,
-or the systemd unit - so it is present for every future `pull`/`up`/`logs`, not
-just the current shell.
+`bin/dc-prod` is a thin wrapper that pins both, then hands off to `docker compose`
+with whatever arguments you gave it:
+
+- `COMPOSE_FILE=compose.yaml:compose.prod.yaml:compose.tunnel.yaml`
+- `COMPOSE_ENV_FILES=/etc/obol/deploy.env` (override the variable to point elsewhere)
+
+Set up the deploy env file once, from the template in the repository root:
 
 ```bash
-# Pin the prod file set - excludes compose.override.yaml
-export COMPOSE_FILE=compose.yaml:compose.prod.yaml
-
-# Required secrets - the deploy aborts if any of these is unset (see the table above)
-export APP_SECRET="your-secret-here"
-export POSTGRES_PASSWORD="your-db-password"
-
-# Other prod environment (see the table above for the full set)
-export MAILER_DSN="smtp://user%40example.com:app-password@smtp.example.com:465"
-export SERVER_NAME="obol.example.com"
-export WEBAUTHN_RP_ID="obol.example.com"
-export WEBAUTHN_ALLOWED_ORIGINS="https://obol.example.com"
-export POSTGRES_USER="obol"
-export POSTGRES_DB="obol"
-
-# Start the stack
-docker compose up -d
-
-# Check logs
-docker compose logs -f php
+sudo install -m 600 -o "$USER" deploy.env.example /etc/obol/deploy.env
+sudo -e /etc/obol/deploy.env
 ```
 
-With `COMPOSE_FILE` exported the plain `docker compose` invocations above are
-safe; without it, add `-f compose.yaml -f compose.prod.yaml` to every command
-instead. The `php` container waits for the database healthcheck to pass before
-starting. Migrations run automatically, then FrankenPHP begins serving.
+Then every deploy operation goes through the wrapper:
+
+```bash
+bin/dc-prod pull
+bin/dc-prod up -d
+bin/dc-prod logs -f php
+```
+
+### Making a stray `docker compose` harmless
+
+Nothing can genuinely force a shell to route `docker compose` through the wrapper. What you can do
+is make the accidental command **correct** rather than dangerous, by exporting the same two variables
+in the deploy user's profile so they are already set for any shell:
+
+```bash
+# ~/.profile on the deploy host
+export COMPOSE_FILE=compose.yaml:compose.prod.yaml:compose.tunnel.yaml
+export COMPOSE_ENV_FILES=/etc/obol/deploy.env
+```
+
+With those exported, a bare `docker compose up -d` resolves the same file chain and the same env file
+the wrapper would - so the dev override still cannot merge in, and the required-secret guards still
+fire. `bin/dc-prod` sets both itself and respects an existing `COMPOSE_ENV_FILES`, so the two agree
+rather than fight.
+
+What the environment cannot provide is the teardown guard below, so the wrapper stays the documented
+command. If you want the stray invocation to nag as well, a shell function in the same profile does
+it:
+
+```bash
+docker() {
+    if [ "$1" = "compose" ]; then
+        echo 'Use bin/dc-prod on this host.' >&2
+    fi
+    command docker "$@"
+}
+```
+
+:::caution
+Deploy with `pull` then `up -d`, never `down` then `up`. Tearing the stack down stops PostgreSQL along
+with everything else, turning a routine deploy into an avoidable outage. `up -d` recreates only the
+containers whose configuration or image actually changed.
+
+`bin/dc-prod` enforces this rather than just advising it. Any `down` prompts for confirmation first,
+and `down -v` - the one command that deletes the database - demands the phrase `delete the database`
+typed in full. Run non-interactively, from a script or an agent, `down` is refused outright unless
+`OBOL_CONFIRM_DOWN` is set, so nothing tears the stack down without someone having meant it.
+:::
+
+The `php` container waits for the database healthcheck to pass before starting,
+runs migrations, and then FrankenPHP begins serving. The connector waits for `php`
+to report healthy before advertising the tunnel.
+
+### Verifying a deploy
+
+```bash
+# The origin and passkey binding as the containers actually resolved them, not as
+# the compose file reads. Check the worker too - it mints the magic-link URLs.
+bin/dc-prod exec php php -r 'foreach (["DEFAULT_URI","WEBAUTHN_RP_ID","WEBAUTHN_ALLOWED_ORIGINS"] as $k) printf("%-26s %s\n", $k, getenv($k));'
+bin/dc-prod exec worker php -r 'echo getenv("DEFAULT_URI"), "\n";'
+
+# Outbound mail actually leaves the host
+bin/dc-prod exec php php bin/console app:mailer:smoke you@example.com
+
+# No migration failure hid behind a warning
+bin/dc-prod logs php | grep -i 'migrations:migrate failed'
+```
+
+### Cloudflare-side configuration
+
+Two settings live on the Cloudflare dashboard rather than in this repository, and
+the application depends on both:
+
+- The tunnel's **ingress rule**, pointing the public hostname at `http://php:80`.
+  Token-managed tunnels keep this dashboard-side, which is what saves the host from
+  holding a credentials file.
+- A **Transform Rule overwriting `X-Forwarded-For`** with the connecting IP. The
+  application trusts private-range proxies and honours that header, so without the
+  rule a client could choose the address the application records - which is what
+  rate limiting buckets on.
 
 ## Container Registry
 
@@ -180,4 +321,19 @@ code.dev88.work/dev88/obol:{short-sha}
 
 Each tag is a single **`linux/amd64`** image, built natively on the Hex runner - the sole deploy target (x86_64).
 
+Set `OBOL_IMAGE` in the deploy env to one of these references, pinned to a specific tag rather than
+`latest`, so an unrelated restart can never pull something unreviewed and a rollback is one edit.
+
 See [CI/CD](ci-cd.md#native-amd64-build) for details on the build pipeline.
+
+## Caching
+
+Compiled assets (`/assets`) and the help manual's build output (`/help/_astro`) are served with
+`Cache-Control: public, max-age=31536000, immutable`. Both are content-addressed - their filenames
+change whenever their contents do - so a cached copy can never be stale.
+
+Everything else keeps `ETag`/`Last-Modified` revalidation. That deliberately includes the help
+manual's own pages: their URLs are stable, so an immutable copy in a reader's browser could not be
+replaced by any later deploy. Dynamic responses keep the `private, max-age=0, must-revalidate` policy
+Symfony sets on them; the cache rule matches only paths that exist as files on disk, which is the
+exact inverse of the rule routing requests into PHP.

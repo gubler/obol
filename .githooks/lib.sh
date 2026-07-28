@@ -14,6 +14,9 @@ fast_checks() {
     mise run rector:check  || status=1
     mise run js:cs:check   || status=1
     mise run js:sa         || status=1
+    # Host-side, and deliberately in the hooks rather than CI: the CI job runs inside a container
+    # with no Docker socket, so this contract is only ever enforced here.
+    mise run check:prod-compose || status=1
     return "$status"
 }
 

@@ -23,6 +23,25 @@ when@dev:
         trusted_proxies: 'private_ranges'
         trusted_headers: ['x-forwarded-for', 'x-forwarded-host', 'x-forwarded-proto', 'x-forwarded-port', 'x-forwarded-prefix']
 
+when@prod:
+    framework:
+        # Behind the Cloudflare Tunnel connector, TLS terminates at Cloudflare and the app is reached
+        # over plain HTTP from the connector container. Without trusting it, Symfony would see every
+        # request as insecure - building http:// absolute URLs, and recording the connector's own
+        # address as the client IP, which would collapse rate limiting onto a single bucket.
+        #
+        # Private ranges rather than a Cloudflare IP list: the production stack publishes no ports, so
+        # the connector on the internal Docker network is the only thing that can reach the app at
+        # all. That makes this both correct and self-maintaining - there is no upstream address list
+        # to track and nothing to drift.
+        #
+        # X-Forwarded-For is only trustworthy alongside a Cloudflare Transform Rule that overwrites it
+        # with the connecting IP, so a client-supplied header cannot influence what the app records.
+        trusted_proxies: 'private_ranges'
+        # Deliberately narrower than dev: host and prefix are not forwarded by anything upstream, and
+        # trusting them would open a host-header poisoning seam for no benefit.
+        trusted_headers: ['x-forwarded-for', 'x-forwarded-proto', 'x-forwarded-port']
+
 when@test:
     framework:
         test: true

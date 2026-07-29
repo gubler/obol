@@ -51,6 +51,11 @@ services:
       # Caddy's listen address, nothing more. TLS terminates at Cloudflare and the connector reaches
       # this container over plain HTTP on the stack's internal network, so there is no certificate to
       # fetch and no public hostname to bind here.
+      #
+      # This is also why the production stack mounts no volume for Caddy's state: with nothing to
+      # issue, /data holds nothing worth keeping. Point this at a public hostname and automatic HTTPS
+      # starts - at which case a missing /data means re-issuing certificates on every container
+      # recreate, straight into Let's Encrypt's rate limits. Restore the volume before doing that.
       SERVER_NAME: ":80"
 
   # Same prod image as php. DATABASE_URL comes from the base compose anchor; depends_on (php healthy)

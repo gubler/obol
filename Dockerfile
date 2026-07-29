@@ -193,11 +193,14 @@ RUN <<-EOF
 EOF
 
 COPY --link --exclude=var --from=frankenphp_prod_builder /app /app
+# var/ ships with the image and stays on the container's writable layer - deliberately no VOLUME.
+# An anonymous volume here would be reused when Compose recreates the container, so the previous
+# release's compiled cache and built CSS would shadow the ones baked into the new image and the
+# upgrade would silently not take effect. Everything that has to survive a container is in
+# PostgreSQL instead (reference/adr/0026), which leaves var/ holding only what the image can rebuild.
 COPY --chown=www-data:www-data --from=frankenphp_prod_builder /app/var /app/var
 
 COPY --link --chmod=755 frankenphp/docker-entrypoint.sh /usr/local/bin/docker-entrypoint
-
-VOLUME /app/var/
 
 USER www-data
 

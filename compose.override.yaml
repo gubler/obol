@@ -16,6 +16,15 @@ services:
       # VOLUME /app/var, so without an explicit shared volume each container gets its own
       # var/tailwind and php would never see the sidecar's builds.
       - tailwind_build:/app/var/tailwind
+      # Caddy's own state and uploaded files. Development-only, because production keeps no mounts
+      # at all: there it listens on :80 with TLS terminating upstream, so Caddy issues no
+      # certificates and has nothing to persist. Solo mode does reach Caddy's automatic HTTPS, so
+      # keeping /data here saves it regenerating its internal CA on every recreate; the uploads
+      # volume keeps files written in development out of the checkout, since public/uploads is not
+      # gitignored.
+      - caddy_data:/data
+      - caddy_config:/config
+      - uploads_data:/app/public/uploads
       # Solo mode publishes plain HTTP on loopback; browser-trusted TLS comes
       # from Lolly in shared mode. No per-app cert mount needed.
       # If you develop on Mac or Windows you can remove the vendor/ directory
@@ -102,6 +111,10 @@ services:
 ###< doctrine/doctrine-bundle ###
 
 # Named volume shared between php and the tailwind watcher so the compiled CSS the sidecar writes
-# (var/tailwind/app.built.css) is the file php serves (#188).
+# (var/tailwind/app.built.css) is the file php serves (#188). The other three are development-only
+# too - production declares no application volumes at all, only the database's.
 volumes:
   tailwind_build:
+  caddy_data:
+  caddy_config:
+  uploads_data:

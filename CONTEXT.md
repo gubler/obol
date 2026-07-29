@@ -167,6 +167,11 @@ Recorded under `reference/adr/`:
 - ADR-0019 - Admin authorization (ROLE_ADMIN, firewall rule plus IsGranted)
 - ADR-0020 - System settings as an app-global singleton
 - ADR-0021 - CalendarDate value object (encodes the naive/zoned frame in the type system; refines ADR-0016)
+- ADR-0022 - CSRF protection follows the shape of the action (Form component vs. attribute)
+- ADR-0023 - Mercure is dev-only (no hub in production; reintroduction criteria recorded)
+- ADR-0024 - Obol is an installable PWA (manifest only, no offline)
+- ADR-0025 - Money and number formatting resolve locale through LocaleSwitcher, not an ambient global
+- ADR-0026 - Deploy-durable state lives in PostgreSQL (sessions and the application cache pool; no application volumes)
 
 ADR-0006 records the CQRS-via-Messenger decision (keep the command/query buses; data
 access confined to the handler layer). ADR-0007 extends it with the write-path

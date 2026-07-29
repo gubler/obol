@@ -24,18 +24,38 @@ graph LR
 ## Updating the Server
 
 ```bash
-docker compose pull
-docker compose up -d
+bin/dc-prod pull
+bin/dc-prod up -d
 ```
 
 :::caution
-These bare commands are safe **only** when `COMPOSE_FILE=compose.yaml:compose.prod.yaml`
-is set in the deploy environment. Without it, Compose auto-loads the dev
-`compose.override.yaml` and redeploys the dev stack (`APP_ENV=dev`, profiler,
-Xdebug, published database). See [Running in Production](../deployment.md#running-in-production).
+Use the wrapper, not a bare `docker compose`. `bin/dc-prod` pins the whole file chain
+(`compose.yaml:compose.prod.yaml:compose.tunnel.yaml`) and the deploy env file. Without that pinning,
+Compose auto-loads the dev `compose.override.yaml` and redeploys the dev stack (`APP_ENV=dev`,
+profiler, Xdebug, published database), and reads the checkout's own `.env`, whose committed defaults
+quietly satisfy the guards meant to catch a missing secret. See
+[Running in Production](../deployment.md#running-in-production).
 :::
 
-The entrypoint script runs `doctrine:migrations:migrate --no-interaction --allow-no-migration` before starting FrankenPHP. Migrations are applied automatically on every container start.
+`pull` then `up -d`, never `down` then `up`: recreating only the containers whose image or definition
+changed leaves the database running, where a teardown stops it too.
+
+The entrypoint script runs `doctrine:migrations:migrate --no-interaction --all-or-nothing` before
+starting FrankenPHP, so migrations are applied on every container start and always finish before the
+server accepts a request.
+
+### What a recreate discards, and what survives
+
+Recreating the application container throws away everything in `var/` - the compiled cache, the built
+CSS, the logs. That is deliberate, and it is what makes a pull-and-recreate reliable: the image
+carries its own compiled cache and built CSS, so the release you pulled is the one that serves.
+
+What survives does so because it is in PostgreSQL, not because a volume held it: domain data,
+signed-in sessions, the scheduler's missed-run state, and the magic-link replay guard. A deploy
+therefore leaves users signed in and leaves redeemed magic links redeemed. See
+[State and storage](../deployment.md#state-and-storage).
+
+Application logs are the exception - they are written to `var/log` and go with the container.
 
 ## Writing Migrations
 
@@ -87,13 +107,30 @@ Docker images are tagged with the short commit SHA. To roll back to a previous v
 # Find the previous image tag
 docker image ls code.dev88.work/dev88/obol
 
-# Update compose to use a specific tag, or pull directly
-docker compose pull
-docker compose up -d
+# Point OBOL_IMAGE at it in the deploy env file, then recreate
+bin/dc-prod pull
+bin/dc-prod up -d
 ```
 
-Alternatively, pin the image tag in `compose.yaml` to a known good SHA.
+`OBOL_IMAGE` in the deploy env file is the single reference the deploy pins, so a rollback is one
+line there plus a recreate.
+
+:::caution
+Rolling back far enough to reach an image that keeps sessions in `var/` signs every user out, because
+that image looks on the filesystem and finds nothing. Rolling forward again does the same in reverse.
+Plan for it, or roll back outside peak hours.
+
+The `sessions` and `cache_items` tables are harmless to such an image, which ignores them, so no
+schema rollback is needed.
+:::
 
 ## Fixtures
 
 Fixtures (`php bin/console doctrine:fixtures:load`) are for development only. Never load fixtures in production — they truncate tables before inserting sample data.
+
+---
+
+## Changelog
+
+- 2026-07-29 - Recorded what a container recreate discards and what survives it, now that sessions and
+  scheduler state are in PostgreSQL. Update and rollback commands corrected to `bin/dc-prod`.

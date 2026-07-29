@@ -70,6 +70,11 @@ when@prod:
     framework:
         cache:
             pools:
+                # The application pool is database-backed, so this result cache would store query
+                # results in the database it is caching queries from. Inert today - nothing calls
+                # enableResultCache(), so the pool is never written - but anything that starts using
+                # it should move this to cache.system first, or the cache costs the round trip it is
+                # meant to save.
                 doctrine.result_cache_pool:
                     adapter: cache.app
                 doctrine.system_cache_pool:

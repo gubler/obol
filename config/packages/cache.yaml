@@ -1,18 +1,31 @@
 framework:
     cache:
-        # Unique name of your app: used to compute stable namespaces for cache keys.
-        #prefix_seed: your_vendor_name/app_name
+        # Namespaces every pool key. Left unset, Symfony derives the namespace from the project
+        # directory and the generated container class, which ties rows that now outlive their
+        # container to a filesystem path - move WORKDIR and the whole pool orphans silently, with no
+        # way left to reclaim the rows. An explicit seed is also the only lever for throwing the pool
+        # away wholesale, which matters now that a payload serialized by one release survives into
+        # the next. Note that dev and prod compute the same namespace from it; they use different
+        # databases, so that is harmless.
+        prefix_seed: obol
 
-        # The "app" cache stores to the filesystem by default.
-        # The data in this cache should persist between deploys.
-        # Other options include:
+        # The application pool is database-backed. It holds what has to outlive a container: the
+        # scheduler's missed-run checkpoint (src/Schedule.php makes the schedule stateful on this
+        # pool) and the magic-link replay guard (cache.login_link below, which inherits this
+        # backend). On the filesystem both died with the container, so a deploy re-fired missed
+        # schedules and re-armed every already-redeemed magic link for the rest of its lifetime.
+        #
+        # The adapter runs on the default Doctrine connection. Its cache_items table is owned by a
+        # migration rather than by the adapter's own auto-create, so the runtime role needs no DDL
+        # rights - and on PostgreSQL that fallback could not work anyway, because the statement that
+        # hit the missing table has already aborted the surrounding transaction.
+        app: cache.adapter.doctrine_dbal
 
-        # Redis
-        #app: cache.adapter.redis
-        #default_redis_provider: redis://localhost
-
-        # APCu (not recommended with heavy random-write workloads as memory fragmentation can cause perf issues)
-        #app: cache.adapter.apcu
+        # `system` is deliberately left unset, and stays on the filesystem under var/cache, keyed by
+        # the container build id. It caches things derived from the image itself - compiled metadata,
+        # the asset map, the ORM query cache - so discarding it with the container is correct rather
+        # than a loss. Moving it would add a round trip to data the image already contains, and would
+        # put container boot behind database availability.
 
         # Namespaced pools use the above "app" backend by default
         pools:

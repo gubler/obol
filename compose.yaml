@@ -13,10 +13,11 @@ services:
     environment:
       SERVER_NAME: ${SERVER_NAME:-obol.lolly.localhost}, php:80
       DATABASE_URL: *database_url
-    volumes:
-      - caddy_data:/data
-      - caddy_config:/config
-      - uploads_data:/app/public/uploads
+    # Deliberately no volumes. Everything that has to outlive a container lives in PostgreSQL
+    # (reference/adr/0026), so the database's is the only mount production has and a host move is a
+    # dump and restore rather than a hand-copied set of volumes. The development stack's own mounts
+    # are in compose.override.yaml: a volume declared here could not be removed by an overlay, since
+    # Compose merges service volumes by mount target rather than replacing the list.
     depends_on:
       database:
         condition: service_healthy
@@ -63,9 +64,5 @@ services:
 ###> symfony/mercure-bundle ###
 ###< symfony/mercure-bundle ###
 
-volumes:
-  caddy_data:
-  caddy_config:
-  uploads_data:
-###> symfony/mercure-bundle ###
-###< symfony/mercure-bundle ###
+# No top-level volumes: each overlay declares its own - the development mounts in
+# compose.override.yaml, the database's in compose.prod.yaml.

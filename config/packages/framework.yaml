@@ -4,10 +4,27 @@ framework:
 
     # Note that the session will be started ONLY if you read or write from it.
     session:
+        # Sessions live in PostgreSQL, not on the container filesystem. The production image declares
+        # no volume for var/, so a file-backed session would die with its container and every deploy
+        # would sign everyone out - landing them back on the 30-day remember-me cookie, which
+        # silently downgrades whatever authentication produced the session (a passkey assertion
+        # becomes a cookie). Symfony recognises a DSN here and routes it through
+        # SessionHandlerFactory, which builds a PdoSessionHandler on its own lazy PDO connection -
+        # deliberately not the ORM's. The handler's default transactional locking holds a row lock
+        # for the life of the request, and sharing that with the request's business transaction would
+        # make each block the other. The `sessions` table is owned by a migration.
+        handler_id: '%env(resolve:DATABASE_URL)%'
+
         # Pin the SameSite policy explicitly rather than leaning on Symfony's default. Lax lets the
         # session cookie ride top-level GET navigations (magic-link and email-verify links arrive that
         # way) while withholding it from cross-site POSTs - defense in depth behind the CSRF tokens.
         cookie_samesite: lax
+
+        # PHP's own default, pinned rather than changed. A session is now a row someone can read
+        # rather than a file PHP quietly cleaned up, so the idle horizon should be a number in the
+        # config instead of an invisible property of the save handler. What that number ought to be
+        # is a product question, deliberately left where it is here.
+        gc_maxlifetime: 1440
 
     #esi: true
     #fragments: true
@@ -46,4 +63,10 @@ when@test:
     framework:
         test: true
         session:
+            # Mock file storage bypasses session.handler entirely, so the database-backed handler is
+            # inert here and never opens its connection. handler_id is deliberately left in place
+            # rather than nulled, so the container builds the same handler the other environments do
+            # and the wiring stays assertable. Note the handler's DSN is the raw DATABASE_URL, which
+            # knows nothing about doctrine-bundle's `_test` dbname suffix - so schema tooling that
+            # consults the handler must be run in dev, never with APP_ENV=test.
             storage_factory_id: session.storage.factory.mock_file

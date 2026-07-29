@@ -155,6 +155,12 @@ assert_count 'the database uses a named volume' 1 \
     'source: database_data' "$DEPLOY_RENDER"
 assert_count 'the database is not on a checkout-relative bind mount' 0 \
     'docker/db/data' "$DEPLOY_RENDER"
+# Everything that has to outlive a container is in PostgreSQL, so the database's volume should be
+# the only mount in the whole stack - that is what makes a host move a dump and restore rather than
+# a hand-copied set of volumes. Counting every `source:` rather than naming the mounts we know about
+# means one added later trips this instead of sliding past, and catches bind mounts too.
+assert_count 'the database volume is the only mount in the stack' 1 \
+    'source: ' "$DEPLOY_RENDER"
 
 echo 'Ingress'
 assert_count 'the tunnel connector is present' 1 '  cloudflared:' "$DEPLOY_RENDER"

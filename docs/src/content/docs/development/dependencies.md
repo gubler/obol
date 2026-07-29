@@ -30,8 +30,10 @@ composer update --with-all-dependencies    # from the host
 ```
 
 Run it with `--no-scripts`: the post-update auto-scripts (`cache:clear`, `assets:install`,
-`importmap:install`) are container-runtime concerns, and `var/` is a separate volume in the
-container. Clear the container cache separately if needed:
+`importmap:install`) are container-runtime concerns, and the development image declares `var/` as its
+own volume, so the host's copy is not the one the container reads. (The production image declares no
+volume - see [State and storage](../deployment.md#state-and-storage).) Clear the container cache
+separately if needed:
 
 ```bash
 ./bin/dc exec -T php php bin/console cache:clear

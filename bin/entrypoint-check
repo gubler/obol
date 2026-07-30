@@ -1,0 +1,203 @@
+#!/usr/bin/env sh
+# ABOUTME: Behavior check for the container entrypoint - runs it against stub binaries and asserts
+# ABOUTME: that a failed migration stops the boot and that only the migration owner migrates.
+#
+# Runs anywhere a POSIX shell does; it starts no container and needs no database. The entrypoint is
+# driven inside a throwaway fixture directory with `php` and `docker-php-entrypoint` replaced by
+# stubs, so each scenario can force a migration failure and then inspect what was actually invoked.
+#
+# The assertions exist because the failure this guards against is silent by construction: a
+# container that migrated badly and served anyway looks identical from the outside to one that
+# migrated cleanly, and the image healthcheck probes Caddy rather than the application, so it
+# reports healthy either way.
+
+set -u
+
+ENTRYPOINT="frankenphp/docker-entrypoint.sh"
+WORK_DIR="var/entrypoint-check"
+
+failures=0
+
+pass() {
+    printf '  ok    %s\n' "$1"
+}
+
+fail() {
+    printf '  FAIL  %s\n' "$1"
+    failures=$((failures + 1))
+}
+
+# A fixture is a minimal image filesystem: the `.env` the entrypoint greps for DATABASE_URL, a
+# non-empty vendor/ so it skips composer install, one migration file so it reaches the migrate
+# branch, and a stub bin/ that stands in for the PHP and FrankenPHP binaries.
+#
+# The `php` stub appends its arguments to invoked.log and exits 0, except for the two commands a
+# scenario needs to be able to break: the migrate command fails when a `fail-migrate` marker is
+# present, and the up-to-date check fails when `fail-up-to-date` is. The `docker-php-entrypoint` stub
+# writes the `EXEC` line, which is what "the server started" means here - its absence is how a test
+# tells that the entrypoint stopped before handing off.
+fixture() {
+    _dir="$WORK_DIR/$1"
+
+    rm -rf "$_dir"
+    mkdir -p "$_dir/vendor" "$_dir/migrations" "$_dir/stub-bin"
+
+    echo 'DATABASE_URL="postgresql://app:app@database:5432/app"' >"$_dir/.env"
+    : >"$_dir/vendor/autoload.php"
+    : >"$_dir/migrations/Version00000000000000.php"
+    : >"$_dir/invoked.log"
+
+    cat >"$_dir/stub-bin/php" <<'STUB'
+#!/bin/sh
+echo "php $*" >>"$FIXTURE/invoked.log"
+case "$*" in
+    *doctrine:migrations:migrate*)
+        [ -f "$FIXTURE/fail-migrate" ] && exit 1
+        ;;
+    *doctrine:migrations:up-to-date*)
+        [ -f "$FIXTURE/fail-up-to-date" ] && exit 1
+        ;;
+esac
+exit 0
+STUB
+
+    cat >"$_dir/stub-bin/docker-php-entrypoint" <<'STUB'
+#!/bin/sh
+echo "EXEC $*" >>"$FIXTURE/invoked.log"
+exit 0
+STUB
+
+    chmod +x "$_dir/stub-bin/php" "$_dir/stub-bin/docker-php-entrypoint"
+
+    printf '%s' "$_dir"
+}
+
+# Runs the entrypoint inside a fixture the way the image does - as the `frankenphp` command - and
+# reports its exit status. Every path the entrypoint touches is relative to its working directory,
+# so the fixture has to be the working directory rather than an argument. The second argument is the
+# OBOL_RUN_MIGRATIONS value, or empty to leave it unset the way a plain `docker run` would.
+run_entrypoint() {
+    _dir="$1"
+    _run_migrations="${2-}"
+    _abs_entrypoint="$PWD/$ENTRYPOINT"
+
+    (
+        cd "$_dir" || exit 127
+        [ -n "$_run_migrations" ] && export OBOL_RUN_MIGRATIONS="$_run_migrations"
+        FIXTURE="$PWD" PATH="$PWD/stub-bin:$PATH" \
+            sh "$_abs_entrypoint" frankenphp run >stdout.log 2>&1
+    )
+}
+
+assert_status() {
+    _desc="$1"
+    _expected="$2"
+    _actual="$3"
+
+    if [ "$_actual" = "$_expected" ]; then
+        pass "$_desc"
+    else
+        fail "$_desc (expected exit $_expected, got $_actual)"
+    fi
+}
+
+assert_nonzero_status() {
+    _desc="$1"
+    _actual="$2"
+
+    if [ "$_actual" != "0" ]; then
+        pass "$_desc"
+    else
+        fail "$_desc (the entrypoint exited 0)"
+    fi
+}
+
+assert_invoked() {
+    _desc="$1"
+    _dir="$2"
+    _needle="$3"
+
+    if grep -q -F -- "$_needle" "$_dir/invoked.log"; then
+        pass "$_desc"
+    else
+        fail "$_desc (nothing matching '$_needle' was invoked)"
+    fi
+}
+
+assert_not_invoked() {
+    _desc="$1"
+    _dir="$2"
+    _needle="$3"
+
+    if grep -q -F -- "$_needle" "$_dir/invoked.log"; then
+        fail "$_desc ('$_needle' was invoked)"
+    else
+        pass "$_desc"
+    fi
+}
+
+if [ ! -f "$ENTRYPOINT" ]; then
+    echo "Run this from the repository root; $ENTRYPOINT was not found." >&2
+    exit 1
+fi
+
+rm -rf "$WORK_DIR"
+mkdir -p "$WORK_DIR"
+trap 'rm -rf "$WORK_DIR"' EXIT INT TERM
+
+echo 'Migrating is opted into, not opted out of'
+dir=$(fixture default-does-not-migrate)
+run_entrypoint "$dir"
+status=$?
+assert_status 'the entrypoint exits zero' 0 "$status"
+assert_not_invoked 'an unconfigured container does not migrate' "$dir" 'doctrine:migrations:migrate '
+assert_invoked 'it still verifies the schema' "$dir" 'doctrine:migrations:up-to-date'
+assert_invoked 'the server is started' "$dir" 'EXEC frankenphp run'
+
+echo 'The migration owner migrates'
+dir=$(fixture owner-clean)
+run_entrypoint "$dir" 1
+status=$?
+assert_status 'the entrypoint exits zero' 0 "$status"
+assert_invoked 'migrations ran' "$dir" 'doctrine:migrations:migrate '
+assert_invoked 'the schema is verified afterwards' "$dir" 'doctrine:migrations:up-to-date'
+assert_invoked 'the server is started' "$dir" 'EXEC frankenphp run'
+
+echo "The owner's failed migration stops the boot"
+dir=$(fixture owner-failed-migration)
+touch "$dir/fail-migrate"
+run_entrypoint "$dir" 1
+status=$?
+assert_nonzero_status 'the entrypoint exits non-zero' "$status"
+assert_invoked 'migrations were attempted' "$dir" 'doctrine:migrations:migrate '
+assert_not_invoked 'the server is never started' "$dir" 'EXEC'
+
+# The check is what makes opting in safe. Configure nobody to migrate and every container refuses to
+# boot, so the mistake surfaces as a stack that will not come up rather than as an application
+# running against a schema older than its code.
+echo 'An unmigrated schema stops every container, owner or not'
+dir=$(fixture non-owner-stale-schema)
+touch "$dir/fail-up-to-date"
+run_entrypoint "$dir"
+status=$?
+assert_nonzero_status 'a non-owner exits non-zero' "$status"
+assert_not_invoked 'it did not try to migrate its way out' "$dir" 'doctrine:migrations:migrate '
+assert_not_invoked 'the server is never started' "$dir" 'EXEC'
+
+# The owner cannot pass its own check either: a migrate that exits 0 while leaving the schema behind
+# would otherwise boot on the strength of its own exit code.
+dir=$(fixture owner-stale-schema)
+touch "$dir/fail-up-to-date"
+run_entrypoint "$dir" 1
+status=$?
+assert_nonzero_status 'the owner exits non-zero' "$status"
+assert_invoked 'migrations were attempted' "$dir" 'doctrine:migrations:migrate '
+assert_not_invoked 'the server is never started' "$dir" 'EXEC'
+
+echo
+if [ "$failures" -ne 0 ]; then
+    printf 'Container entrypoint contract: %s check(s) failed\n' "$failures" >&2
+    exit 1
+fi
+
+echo 'Container entrypoint contract: all checks passed'

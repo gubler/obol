@@ -31,7 +31,9 @@ See [Local Setup](../getting-started.md) for how solo and shared modes work.
 | `mise run js:sa` | JS static analysis, `tsc --checkJs` (host-side) | `npm run sa` |
 | `mise run js:cs` | JS code style + lint via Biome, auto-fix (host-side) | `npm run cs` |
 | `mise run js:cs:check` | JS code style + lint via Biome, check only (host-side) | `npm run cs:check` |
-| `mise run check` | Run `sa`, `sa:tests`, `test`, `cs`, `cs:twig`, `js:sa`, `js:test`, `js:cs` in sequence | — |
+| `mise run check:prod-compose` | Assert the production compose contract (host-side; starts nothing) | `bin/prod-compose-check` |
+| `mise run check:entrypoint` | Assert the container entrypoint contract (host-side; starts nothing) | `bin/entrypoint-check` |
+| `mise run check` | Run every check above plus `test` and `js:test` | — |
 
 See [Frontend](../frontend.md#javascript-toolchain-dev-only) for what the JS toolchain covers.
 

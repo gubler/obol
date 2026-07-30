@@ -42,7 +42,15 @@ changed leaves the database running, where a teardown stops it too.
 
 The entrypoint script runs `doctrine:migrations:migrate --no-interaction --all-or-nothing` before
 starting FrankenPHP, so migrations are applied on every container start and always finish before the
-server accepts a request.
+server accepts a request. Only the `php` container runs them, and every container independently
+refuses to start against a schema older than its code; see [Entrypoint](../deployment.md#entrypoint).
+
+:::caution[A failed migration stops the container rather than starting it]
+The deploy fails visibly - `php` restart-loops instead of coming up - which is the intended outcome: a
+container serving against a half-migrated schema throws on every request that touches a session, and
+the healthcheck cannot tell the difference. Read `bin/dc-prod logs php` for the Doctrine error and fix
+the migration.
+:::
 
 ### What a recreate discards, and what survives
 
@@ -132,5 +140,7 @@ Fixtures (`php bin/console doctrine:fixtures:load`) are for development only. Ne
 
 ## Changelog
 
+- 2026-07-30 - Noted that a failed migration now stops the container, that only `php` migrates, and
+  that every container verifies the schema before starting.
 - 2026-07-29 - Recorded what a container recreate discards and what survives it, now that sessions and
   scheduler state are in PostgreSQL. Update and rollback commands corrected to `bin/dc-prod`.

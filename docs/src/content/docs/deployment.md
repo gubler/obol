@@ -120,6 +120,7 @@ Four services:
 - Drains three transports in priority order (mail first): `mail` (outbound transactional email), `async` (general off-request work, empty for now), and `scheduler_default` (the Symfony Scheduler)
 - Drives the hourly payment-generation schedule; without it the scheduler never fires, and queued mail never sends
 - Depends on `php` being healthy (so vendor install and migrations are already done before it boots), and on `database`
+- Sets no `OBOL_RUN_MIGRATIONS`, so it does not migrate - `php` owns that. It still verifies the schema is current and refuses to start if it is not (see [Which container migrates](#which-container-migrates))
 - `restart: unless-stopped`; recycles hourly via the time limit
 - Present in dev too (base + override), so the scheduler and mail delivery run locally
 - In production it carries the full application environment, not just the app secret: async dispatch means the real send *and* the magic-link URL generation happen here rather than in the web request, so it needs the same mail and origin configuration `php` has
@@ -241,21 +242,49 @@ FrankenPHP starts, for any `frankenphp`, `php` or `bin/console` command:
 
 1. Installs `vendor/` if it is empty. In the prod image it is baked in, so this is a no-op.
 2. Waits up to 60 seconds for the database to answer `SELECT 1`, and exits non-zero if it never does.
-3. Runs `doctrine:migrations:migrate --no-interaction --all-or-nothing`.
+3. Runs `doctrine:migrations:migrate --no-interaction --all-or-nothing`, but only when
+   `OBOL_RUN_MIGRATIONS=1` marks this container the migration owner.
+4. Runs `doctrine:migrations:up-to-date` regardless, and exits non-zero if any of its own migrations
+   are unapplied.
 
 Migrations therefore always complete before the server accepts a request, which is what makes it safe
 for a release to ship a migration and the code depending on it in the same image.
 
-:::caution
-A failed migration is currently non-fatal: the entrypoint prints a warning and lets FrankenPHP
-start anyway, so the container serves traffic against a schema the code does not expect. Check the
-container logs for `WARNING: doctrine:migrations:migrate failed` after any deploy that carries a
-migration.
+:::danger[A failed migration is fatal]
+The entrypoint exits non-zero and FrankenPHP never starts, so the container never serves traffic
+against a schema the code does not expect. Under `restart: unless-stopped` it then restart-loops,
+which is the visible symptom: a deploy that keeps recreating `php` is a migration that keeps failing,
+and `bin/dc-prod logs php` carries the Doctrine error.
 
-The `sessions` and `cache_items` tables are on the request path, so a failure that leaves them
-missing means every request touching a session throws - while the healthcheck, which probes Caddy's
-admin endpoint rather than the application, still reports the container healthy.
+There is no flag to soften this. The `sessions` and `cache_items` tables are on the request path, so
+a migration failure that leaves them missing means every request touching a session throws - and the
+healthcheck probes Caddy's admin endpoint rather than the application, so it would report a container
+serving nothing but 500s as healthy. Not starting is the safe outcome.
 :::
+
+### Which container migrates
+
+Every container built from this image runs this entrypoint, so migrating had to become something a
+container is told to do rather than something it does by default: one service that forgets to opt out
+is a second `doctrine:migrations:migrate` racing the first against one database. `php` sets
+`OBOL_RUN_MIGRATIONS=1` and is the only container that migrates, which is the right ownership because
+it is the container the rest of the stack already gates on. Anything that says nothing - `worker`
+today, anything added later - does not migrate.
+
+Step 4 is what makes opting in safe rather than fragile, and it applies to every container including
+the owner. Each one asks the database whether its own migrations are applied and refuses to start if
+they are not, so:
+
+- Configure nobody to migrate and the whole stack declines to boot. The mistake surfaces as a stack
+  that will not come up, not as an application quietly serving against a schema older than its code.
+- The worker does not take `php`'s word for it. It gates on `php`'s healthcheck, but it also checks
+  the database itself, so a migration that exited zero without doing its job still stops it.
+
+The check deliberately omits `--fail-on-unregistered`. Rolling back to an older image leaves
+migrations in the database that its codebase does not carry, and that has to stay bootable; the
+question being asked is "is anything of mine unapplied", not "does the database match me exactly".
+
+`bin/prod-compose-check` asserts the wiring: exactly one container opts in, and it is `php`.
 
 ## Running in Production
 
@@ -334,8 +363,9 @@ typed in full. Run non-interactively, from a script or an agent, `down` is refus
 :::
 
 The `php` container waits for the database healthcheck to pass before starting,
-runs migrations, and then FrankenPHP begins serving. The connector waits for `php`
-to report healthy before advertising the tunnel.
+runs migrations, and then FrankenPHP begins serving. A migration that fails stops
+it there, so nothing downstream comes up: the connector waits for `php` to report
+healthy before advertising the tunnel, and the worker waits on the same signal.
 
 ### Verifying a deploy
 
@@ -348,8 +378,8 @@ bin/dc-prod exec worker php -r 'echo getenv("DEFAULT_URI"), "\n";'
 # Outbound mail actually leaves the host
 bin/dc-prod exec php php bin/console app:mailer:smoke you@example.com
 
-# No migration failure hid behind a warning
-bin/dc-prod logs php | grep -i 'migrations:migrate failed'
+# The application container is up rather than restart-looping on a failed migration
+bin/dc-prod ps php
 
 # The tables the request path depends on exist, and sessions are actually landing in them.
 # A signed-in user across the deploy means a non-zero count here.
@@ -437,6 +467,9 @@ exact inverse of the rule routing requests into PHP.
 
 ## Changelog
 
+- 2026-07-30 - A failed migration now stops the container instead of starting it with a warning.
+  Migrating is opted into via `OBOL_RUN_MIGRATIONS=1` on `php` alone, and every container verifies the
+  schema is current before it starts.
 - 2026-07-29 - Sessions and the application cache pool moved into PostgreSQL; the production image
   and stack now declare no volume but the database's. Added the State and storage section and a
   diagram of how the compose files combine.

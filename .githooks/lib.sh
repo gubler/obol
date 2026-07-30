@@ -17,6 +17,9 @@ fast_checks() {
     # Host-side, and deliberately in the hooks rather than CI: the CI job runs inside a container
     # with no Docker socket, so this contract is only ever enforced here.
     mise run check:prod-compose || status=1
+    # The entrypoint contract needs no Docker, so CI enforces it too; it is here as well so a broken
+    # entrypoint fails before the push rather than after.
+    mise run check:entrypoint   || status=1
     return "$status"
 }
 

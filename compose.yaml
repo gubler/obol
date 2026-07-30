@@ -13,6 +13,12 @@ services:
     environment:
       SERVER_NAME: ${SERVER_NAME:-obol.lolly.localhost}, php:80
       DATABASE_URL: *database_url
+      # The one container that migrates. Every container built from this image runs the same
+      # entrypoint, which migrates only when told to and otherwise just verifies the schema is
+      # current, so this single line is what makes the ownership exclusive rather than a race the
+      # dependency graph happens to serialize. php is the right owner because it is the container
+      # the rest of the stack already gates on.
+      OBOL_RUN_MIGRATIONS: "1"
     # Deliberately no volumes. Everything that has to outlive a container lives in PostgreSQL
     # (reference/adr/0026), so the database's is the only mount production has and a host move is a
     # dump and restore rather than a hand-copied set of volumes. The development stack's own mounts
@@ -27,7 +33,7 @@ services:
   # empty for now), and `scheduler_default` (the Symfony Scheduler transport - without it the
   # daily GeneratePayments schedule never fires). Same image as php, different command; it waits
   # for php to be healthy so vendor install and migrations (run by php's entrypoint) are already
-  # done, which makes its own entrypoint setup a no-op and avoids racing php on first boot.
+  # done, which makes its own entrypoint setup a no-op.
   worker:
     image: ${IMAGES_PREFIX:-}obol-php
     restart: unless-stopped
@@ -35,6 +41,9 @@ services:
     # The image healthcheck probes the Caddy admin endpoint, which this command does not serve.
     healthcheck:
       disable: true
+    # Deliberately no OBOL_RUN_MIGRATIONS: php owns migrations, and a container that says nothing
+    # does not migrate. The entrypoint still makes this container verify the schema is current and
+    # refuse to start if it is not, so it does not simply trust that php's migration worked.
     environment:
       DATABASE_URL: *database_url
     depends_on:

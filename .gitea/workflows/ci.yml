@@ -122,6 +122,13 @@ jobs:
               if: always() && steps.install.outcome == 'success'
               run: php bin/console lint:container --no-debug
 
+            # The container entrypoint's contract: a failed migration stops the boot, and only the
+            # migration owner migrates. Pure shell against stub binaries, so unlike the production
+            # compose contract (which needs a Docker socket this job does not have) it runs here.
+            - name: "Container entrypoint contract"
+              if: always()
+              run: ./bin/entrypoint-check
+
             - name: "Lint Doctrine entities"
               if: always() && steps.install.outcome == 'success'
               run: php bin/console doctrine:schema:validate --skip-sync -vvv --no-interaction

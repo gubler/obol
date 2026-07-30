@@ -35,11 +35,33 @@ if [ "$1" = 'frankenphp' ] || [ "$1" = 'php' ] || [ "$1" = 'bin/console' ]; then
 		fi
 
 		if [ "$(find ./migrations -iname '*.php' -print -quit)" ]; then
-			# Non-fatal: a failure here (e.g. dialect mismatch — see #57) shouldn't
-			# restart-loop the container; surface the warning and let Caddy start so
-			# developers can still exec in to debug.
-			php bin/console doctrine:migrations:migrate --no-interaction --all-or-nothing \
-				|| echo 'WARNING: doctrine:migrations:migrate failed — the app may not function until migrations succeed.'
+			# Migrating is opted into, never a default. Every container built from this image
+			# runs this entrypoint, so a container that migrates unless told otherwise means
+			# any service added later races the others against one database until someone
+			# remembers to opt it out. Exactly one container sets this, and it is the one the
+			# rest of the stack waits on.
+			#
+			# A failure is fatal on purpose. A half-migrated schema is not a degraded
+			# application, it is a broken one: sessions and the cache pool are database tables
+			# on the request path, so a missing table means every request throws - while the
+			# healthcheck, which probes Caddy rather than the application, still reports
+			# healthy. Exiting here fails the deploy loudly instead of serving traffic that
+			# cannot work.
+			if [ "${OBOL_RUN_MIGRATIONS:-0}" = '1' ]; then
+				php bin/console doctrine:migrations:migrate --no-interaction --all-or-nothing
+			fi
+
+			# Then every container checks the schema for itself, migrator or not, and refuses to
+			# start against one older than its code expects. This is what makes opting in safe:
+			# configure nobody to migrate and the whole stack declines to boot, rather than
+			# quietly serving against a stale schema. It also keeps a non-migrating container
+			# from trusting the migrator's exit code over the state of the database.
+			#
+			# Deliberately without --fail-on-unregistered: a rollback to an older image leaves
+			# migrations in the database that its codebase does not carry, and that has to stay
+			# bootable. The check asks "is anything of mine unapplied", not "does the database
+			# match me exactly".
+			php bin/console doctrine:migrations:up-to-date
 		fi
 	fi
 

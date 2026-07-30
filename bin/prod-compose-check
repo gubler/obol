@@ -102,6 +102,22 @@ render() {
     awk '/^x-/ { skip = 1; next } /^[^ ]/ { skip = 0 } !skip' "$_out.raw" >"$_out"
 }
 
+# Renders one service and its dependencies rather than the whole stack, for assertions about which
+# service carries a setting rather than how many carry it.
+render_service() {
+    _chain="$1"
+    _env="$2"
+    _service="$3"
+    _out="$4"
+
+    if ! COMPOSE_FILE="$_chain" COMPOSE_ENV_FILES="$_env" \
+        docker compose config "$_service" >"$_out" 2>"$_out.err"; then
+        printf 'Could not render service %s:\n' "$_service" >&2
+        cat "$_out.err" >&2
+        exit 1
+    fi
+}
+
 # A copy of the deploy env with one variable removed, for the fail-fast assertions.
 env_without() {
     _name="$1"
@@ -161,6 +177,24 @@ assert_count 'the database is not on a checkout-relative bind mount' 0 \
 # means one added later trips this instead of sliding past, and catches bind mounts too.
 assert_count 'the database volume is the only mount in the stack' 1 \
     'source: ' "$DEPLOY_RENDER"
+
+echo 'Migrations'
+# The entrypoint migrates only when opted in, so "exactly one opt-in" is the same statement as
+# "exactly one container migrates". Counting rather than naming the owner also catches the mistake in
+# the other direction - a second container opting in, which races the first against one database.
+assert_count 'exactly one container opts into migrations' 1 \
+    'OBOL_RUN_MIGRATIONS: "1"' "$DEPLOY_RENDER"
+# Which one it is matters as much as how many. `config php` renders php and its dependencies, never
+# the worker, so finding the opt-in there names the web container as the owner - the right one,
+# because it is the container whose readiness the rest of the stack waits on.
+PHP_RENDER="$WORK_DIR/php.yaml"
+render_service "$DEPLOY_CHAIN" "$FIXTURE_ENV" php "$PHP_RENDER"
+assert_count 'the web container is the one that migrates' 1 \
+    'OBOL_RUN_MIGRATIONS: "1"' "$PHP_RENDER"
+# There is no opt-out to carry. A container set to anything other than 1 reads as "configured about
+# migrations" while doing what saying nothing already does, so it is a leftover rather than a setting.
+assert_count 'no container carries a stale opt-out' 0 \
+    'OBOL_RUN_MIGRATIONS: "0"' "$DEPLOY_RENDER"
 
 echo 'Ingress'
 assert_count 'the tunnel connector is present' 1 '  cloudflared:' "$DEPLOY_RENDER"

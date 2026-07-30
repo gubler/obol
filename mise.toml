@@ -62,6 +62,13 @@ run = ["$DC_EXEC php bin/console lint:yaml translations"]
 description = "Assert the production compose contract (renders the deploy chain; starts nothing)"
 run = ["./bin/prod-compose-check"]
 
+# Pure shell against stub binaries - no Docker, no database, no stack. That makes it the one
+# container-shaped check CI can run, which matters because the behavior it pins (a failed migration
+# stops the boot) is invisible from outside the container.
+[tasks."check:entrypoint"]
+description = "Assert the container entrypoint contract (drives it against stubs; starts nothing)"
+run = ["./bin/entrypoint-check"]
+
 [tasks.sa]
 description = "Static Analysis via PHPStan"
 depends = ["_ensure-up"]
@@ -229,8 +236,8 @@ description = "Regenerate docs/src/content/docs/palette.md (light + dark token s
 run = ["npm run palette"]
 
 [tasks.check]
-description = "Run all checks: PHPStan (src + tests), tests, CS Fixer, Twig CS, Rector, the JS toolchain, and the prod compose contract"
-depends = ["lint:yaml", "check:prod-compose", "sa", "sa:tests", "test", "cs", "cs:twig", "rector:check", "js:sa", "js:test", "js:cs"]
+description = "Run all checks: PHPStan (src + tests), tests, CS Fixer, Twig CS, Rector, the JS toolchain, and the prod compose and entrypoint contracts"
+depends = ["lint:yaml", "check:prod-compose", "check:entrypoint", "sa", "sa:tests", "test", "cs", "cs:twig", "rector:check", "js:sa", "js:test", "js:cs"]
 
 [tasks."docs:install"]
 description = "Install dev-docs dependencies (one-time, after clone)"

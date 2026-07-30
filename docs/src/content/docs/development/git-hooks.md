@@ -11,7 +11,7 @@ nothing copied into `.git/hooks/`.
 | Hook | Trigger | What Runs |
 |------|---------|-----------|
 | `pre-commit` | Commit to `main` | **BLOCKED** - use a feature branch |
-| `pre-commit` | Commit to any branch | Fast sprint: `lint:php`, `cs:check`, `cs:twig:check`, `js:cs:check`, `js:sa` |
+| `pre-commit` | Commit to any branch | Fast sprint: `lint:php`, `lint:yaml`, `cs:check`, `cs:twig:check`, `rector:check`, `js:cs:check`, `js:sa`, `check:prod-compose`, `check:entrypoint` |
 | `pre-push` | Push (any branch) | Full set: the fast sprint, then `sa`, then `test`, then `js:test` |
 | `pre-merge-commit` | Any merge | Full set (identical to `pre-push`) |
 
@@ -51,10 +51,14 @@ git config --local core.hooksPath .githooks
 ### Pre-commit
 
 - **On `main`**: prints an error and exits non-zero. Direct commits to `main` are not allowed.
-- **On any other branch**: runs the fast sprint (`lint:php`, `cs:check`, `cs:twig:check`,
-  `js:cs:check`, `js:sa`). Style runs in **check mode** for CI parity - the hook never
-  rewrites your commit. On a style failure, run `mise run cs` (or `cs:twig` / `js:cs`) to
-  fix, then re-stage.
+- **On any other branch**: runs the fast sprint listed above. Style runs in **check mode**
+  for CI parity - the hook never rewrites your commit. On a style failure, run `mise run cs`
+  (or `cs:twig` / `js:cs`) to fix, then re-stage.
+
+  Two of the fast checks are contract assertions rather than linters. `check:prod-compose`
+  renders the deploy compose chain and asserts its shape; it needs the Docker CLI, which the
+  CI job does not have, so the hooks are the only place it runs. `check:entrypoint` drives
+  the container entrypoint against stub binaries; it needs nothing, so CI runs it too.
 
 ### Pre-push
 

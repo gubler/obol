@@ -63,10 +63,12 @@ that one class by name in the architecture test.
 ### Session firewall with remember-me
 
 Authentication is session-based (magic link today; passkeys join later). `always_remember_me` issues a
-30-day cookie so testers are not re-prompted every visit; without a `tokensInvalidatedAt` column yet
+cookie so testers are not re-prompted every visit; without a `tokensInvalidatedAt` column yet
 (server-side force-logout is a later, SaaS-stage concern), the cookie signs on the primary `email`, so a
 primary-email change invalidates outstanding cookies. The whole app is authenticated-by-default; only
-the login, logout, and magic-link routes are public.
+the login, logout, and magic-link routes are public. How long that cookie and the session behind it
+last, and why the cookie rather than the session is the credential that keeps people signed in, is
+ADR-0028.
 
 ## Considered options
 

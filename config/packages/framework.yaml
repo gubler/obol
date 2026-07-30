@@ -6,7 +6,7 @@ framework:
     session:
         # Sessions live in PostgreSQL, not on the container filesystem. The production image declares
         # no volume for var/, so a file-backed session would die with its container and every deploy
-        # would sign everyone out - landing them back on the 30-day remember-me cookie, which
+        # would sign everyone out - landing them back on the remember-me cookie, which
         # silently downgrades whatever authentication produced the session (a passkey assertion
         # becomes a cookie). Symfony recognises a DSN here and routes it through
         # SessionHandlerFactory, which builds a PdoSessionHandler on its own lazy PDO connection -
@@ -20,10 +20,21 @@ framework:
         # way) while withholding it from cross-site POSTs - defense in depth behind the CSRF tokens.
         cookie_samesite: lax
 
-        # PHP's own default, pinned rather than changed. A session is now a row someone can read
-        # rather than a file PHP quietly cleaned up, so the idle horizon should be a number in the
-        # config instead of an invisible property of the save handler. What that number ought to be
-        # is a product question, deliberately left where it is here.
+        # PHP's own default, kept deliberately rather than by omission. This number is not
+        # load-bearing in either direction, which is the reason to leave it alone rather than an
+        # excuse for not deciding.
+        #
+        # It does not govern how often anyone signs in: no cookie_lifetime is set, so the session
+        # cookie already dies on browser close, and the rolling remember-me cookie is what carries a
+        # returning user back in. Nor can raising it protect the authentication that produced the
+        # session - under always_remember_me the downgrade to a cookie is inevitable at every value,
+        # and a longer horizon only postpones it. The fix for that is requiring a fresh proof at the
+        # point of use, not a bigger number here.
+        #
+        # Setting cookie_lifetime to extend a session past a browser restart is a trap worth naming:
+        # PHP emits Set-Cookie only when it creates the session id, so a session cookie's lifetime
+        # runs from login and never from last use. It cannot express an idle horizon, only a fixed
+        # cliff that fires however active the user has been. See reference/adr/0028.
         gc_maxlifetime: 1440
 
     #esi: true

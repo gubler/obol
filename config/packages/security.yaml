@@ -45,12 +45,20 @@ security:
                         options_path: /login/passkey/options
                         result_path: /login/passkey/result
 
-            # Keep sessions alive across browser restarts. No tokensInvalidatedAt yet (server-side
-            # force-logout is Stage 2), so the cookie signs on the primary email - a primary-email
-            # change invalidates outstanding cookies.
+            # This, not the session, is what keeps people signed in. The session cookie has no
+            # lifetime of its own, so it dies on browser close and every restart lands here.
+            #
+            # The cookie is rolling: SignatureRememberMeHandler reissues it on every restore, so the
+            # lifetime is an idle horizon - 45 days since the user was last here - not an absolute
+            # one. That makes it insensitive to how often people actually use Obol, which we do not
+            # know: only the longest gap between two visits matters, and 45 days clears a five-week
+            # absence with room to spare.
+            #
+            # No tokensInvalidatedAt yet (server-side force-logout is Stage 2), so the cookie signs on
+            # the primary email - a primary-email change invalidates outstanding cookies.
             remember_me:
                 secret: '%kernel.secret%'
-                lifetime: 2592000 # 30 days
+                lifetime: 3888000 # 45 days
                 path: /
                 secure: auto
                 samesite: lax

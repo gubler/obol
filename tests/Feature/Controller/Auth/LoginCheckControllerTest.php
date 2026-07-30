@@ -67,6 +67,29 @@ final class LoginCheckControllerTest extends WebTestCase
         self::assertResponseIsSuccessful();
     }
 
+    /**
+     * The cookie is what actually keeps people signed in: the session cookie dies on browser close,
+     * so every restart falls back to this. It is rolling - reissued on each restore - so the lifetime
+     * is an idle horizon rather than an absolute one, and 45 days is the longest gap between two
+     * visits we are willing to let pass without a re-login.
+     */
+    public function testTheRememberMeCookieLastsFortyFiveDays(): void
+    {
+        $url = $this->createLoginLinkUrl();
+
+        $crawler = $this->client->request(method: Request::METHOD_GET, uri: $url);
+        $this->client->submit($crawler->filter('form')->form());
+
+        $cookie = $this->client->getCookieJar()->get('REMEMBERME');
+
+        self::assertNotNull($cookie);
+        self::assertEqualsWithDelta(
+            new \DateTimeImmutable('+45 days')->getTimestamp(),
+            $cookie->getExpiresTime(),
+            60.0,
+        );
+    }
+
     public function testAConsumedLinkCannotBeReplayed(): void
     {
         $url = $this->createLoginLinkUrl();

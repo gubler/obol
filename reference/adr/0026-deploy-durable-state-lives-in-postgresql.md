@@ -17,7 +17,7 @@ consequences compounded in a way that had no correct setting:
   reason.
 
 Sessions landed in PHP's default save path inside that same volume, so a redeploy signed every user
-out. The 30-day remember-me cookie masked it rather than fixing it, and doing so silently downgraded
+out. The remember-me cookie masked it rather than fixing it, and doing so silently downgraded
 whatever authentication had produced the session - a passkey assertion became a cookie.
 
 The magic-link replay guard (`used_link_cache`, ADR-0014) sat on the filesystem-backed application

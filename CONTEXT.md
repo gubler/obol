@@ -172,6 +172,8 @@ Recorded under `reference/adr/`:
 - ADR-0024 - Obol is an installable PWA (manifest only, no offline)
 - ADR-0025 - Money and number formatting resolve locale through LocaleSwitcher, not an ambient global
 - ADR-0026 - Deploy-durable state lives in PostgreSQL (sessions and the application cache pool; no application volumes)
+- ADR-0027 - Production logs go to the host journal (Monolog to stderr, `journald` driver; size bounds are host configuration)
+- ADR-0028 - Session and remember-me horizons (the rolling cookie is the credential that keeps people signed in; the session horizon is not load-bearing)
 
 ADR-0006 records the CQRS-via-Messenger decision (keep the command/query buses; data
 access confined to the handler layer). ADR-0007 extends it with the write-path

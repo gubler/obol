@@ -96,8 +96,13 @@ monitor. Weigh that, not the config diff.
 - **Uploaded files have no durable home.** Uploads are disabled for launch, and the volume that used
   to back them is development-only now. Re-enabling them requires object storage or a database
   column - not a volume, which would reintroduce exactly what this decision removes.
-- Two tables grow without bound until something prunes them. The application pool's adapter is
-  pruneable and the session handler garbage-collects, but neither runs on its own schedule here.
+- **Both new tables are bounded, by different mechanisms.** `PdoSessionHandler` collects expired
+  sessions itself, on roughly one request in a thousand - `session.gc_probability` and
+  `gc_divisor` in the image are `1` and `1000`. `cache_items` has nothing equivalent: Symfony never
+  calls `prune()` on its own, and the adapter's opportunistic cleanup only reaches rows a read
+  happens to touch, which the magic-link replay guard - written once on redemption and then never
+  looked at again - never is. A daily job on the application's own scheduler prunes it, so the bound
+  needs no host cron entry (`src/Schedule.php`).
 - A failed migration is more serious than it was. The entrypoint runs migrations before starting the
   server, so ordering is correct by construction, but a failure that used to degrade gracefully now
   means every request touching a session throws.

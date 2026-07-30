@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App;
 
 use App\Message\Scheduler\GeneratePaymentsMessage;
+use App\Message\Scheduler\PruneExpiredCacheItemsMessage;
 use App\Message\Scheduler\PullExchangeRatesMessage;
 use Symfony\Component\Scheduler\Attribute\AsSchedule;
 use Symfony\Component\Scheduler\RecurringMessage;
@@ -29,6 +30,10 @@ readonly class Schedule implements ScheduleProviderInterface
             // hourly cadence catches every owner's local renewal rollover within the hour (see ADR-0016).
             ->add(RecurringMessage::every('1 hour', new GeneratePaymentsMessage()))
             ->add(RecurringMessage::every('1 day', new PullExchangeRatesMessage()))
+            // Nothing else removes expired cache_items rows: Symfony never calls prune() on its own,
+            // and the adapter's opportunistic cleanup only reaches rows a read happens to touch - which
+            // the magic-link replay guard, written once and never re-read, never is.
+            ->add(RecurringMessage::every('1 day', new PruneExpiredCacheItemsMessage()))
         ;
     }
 }

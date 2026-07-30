@@ -119,7 +119,7 @@ Four services:
 
 - Same image as `php`, run with `messenger:consume mail async scheduler_default --time-limit=3600`
 - Drains three transports in priority order (mail first): `mail` (outbound transactional email), `async` (general off-request work, empty for now), and `scheduler_default` (the Symfony Scheduler)
-- Drives the hourly payment-generation schedule; without it the scheduler never fires, and queued mail never sends
+- Drives every recurring job - hourly payment generation, the daily exchange-rate pull, and the daily cache prune; without it the scheduler never fires, queued mail never sends, and `cache_items` grows without bound
 - Depends on `php` being healthy (so vendor install and migrations are already done before it boots), and on `database`
 - Sets no `OBOL_RUN_MIGRATIONS`, so it does not migrate - `php` owns that. It still verifies the schema is current and refuses to start if it is not (see [Which container migrates](#which-container-migrates))
 - `restart: unless-stopped`; recycles hourly via the time limit
@@ -486,6 +486,13 @@ you want if a cached payload's shape changes across a release.
 The session handler opens its *own* PDO connection rather than sharing the ORM's. Its default
 transactional locking holds a row lock for the life of the request, and sharing that with the
 request's business transaction would make each block the other.
+
+Each table is kept from growing without bound, by a different mechanism. Expired sessions are
+collected by `PdoSessionHandler` itself, on roughly one request in a thousand. `cache_items` has no
+equivalent - Symfony never calls `prune()` on its own, and the adapter only clears expired rows a
+read happens to touch, which the replay guard never is - so a daily job on the application's own
+scheduler prunes it. That is why it is the `worker` service, not a host cron entry, that bounds the
+table.
 
 :::caution
 Uploaded files have no durable home. Uploads are disabled for launch, and the mount backing them is

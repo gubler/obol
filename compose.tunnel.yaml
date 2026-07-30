@@ -28,3 +28,8 @@ services:
     depends_on:
       php:
         condition: service_healthy
+    # The same host journal the rest of the production stack logs to. Written out rather than shared,
+    # because the anchor carrying it lives in compose.prod.yaml and YAML anchors do not cross files.
+    # Why journald, and where the size bound actually lives, is documented there.
+    logging:
+      driver: journald

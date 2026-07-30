@@ -234,7 +234,7 @@ it only disables the passkey fast path.
 ## Process timezone
 
 The application must run with its process timezone set to UTC. Calendar dates carry the owner's
-timezone, applied at read time (see [ADR-0021](https://code.dev88.work/dev88/obol/src/branch/main/reference/adr/0021-calendar-date-value-object.md)), but instant storage (`createdAt` timestamps) and any ambient-zone date path must not vary with the host's `TZ`. The app pins `date_default_timezone_set('UTC')` at boot (`public/index.php` and `bin/console`) as belt-and-braces; deployments should also set PHP's `date.timezone=UTC` (the FrankenPHP base image already does). The bundled container needs no extra configuration; a custom PHP configuration must not override it to a local zone.
+timezone, applied at read time (see ADR-0021), but instant storage (`createdAt` timestamps) and any ambient-zone date path must not vary with the host's `TZ`. The app pins `date_default_timezone_set('UTC')` at boot (`public/index.php` and `bin/console`) as belt-and-braces; deployments should also set PHP's `date.timezone=UTC` (the FrankenPHP base image already does). The bundled container needs no extra configuration; a custom PHP configuration must not override it to a local zone.
 
 ## Entrypoint
 
@@ -318,7 +318,7 @@ The rule of thumb is that the probe should only test things this container can b
 ### The endpoint
 
 `GET /health` is public, sits outside `/app` because it is infrastructure rather than application
-surface (see [ADR-0018](https://code.dev88.work/dev88/obol/src/branch/main/reference/adr/0018-url-surface-structure.md)),
+surface (see ADR-0018),
 and returns `200 ok` or `503 unavailable`. Public because the probe runs inside the container with no
 session to authenticate; behind the firewall it would answer a redirect to the login page, which
 reads as "reachable" to anything that only checks for a response. The body is a bare token for the
@@ -466,7 +466,7 @@ See [CI/CD](ci-cd.md#native-amd64-build) for details on the build pipeline.
 The rule the production stack is built on: **anything that must outlive a container lives in
 PostgreSQL; everything else is ephemeral and comes from the image.** The reasoning, and the
 alternatives weighed, are in
-[ADR-0026](https://code.dev88.work/dev88/obol/src/branch/main/reference/adr/0026-deploy-durable-state-lives-in-postgresql.md).
+ADR-0026: Deploy-durable state lives in PostgreSQL.
 
 | What | Where | Survives a container recreate |
 |---|---|---|
@@ -475,7 +475,7 @@ alternatives weighed, are in
 | Scheduler missed-run state, magic-link replay guard | `cache_items` table, via the application cache pool | Yes |
 | Compiled container, asset map, ORM query cache | `var/cache`, the system cache pool | No, and correctly so - the image rebuilds it |
 | Compiled assets and built CSS | Baked into the image at build time | No - the point is that the new image's copy wins |
-| Application logs | `var/log` | No - see the caution below |
+| Application logs | The host's systemd journal, via the container's output | Yes - see [Container logs](#container-logs) |
 
 Both database tables are created by a migration rather than by the adapters' own auto-create, so the
 runtime database role needs no DDL rights. `framework.cache.prefix_seed` is pinned to `obol`: rows now
@@ -488,13 +488,50 @@ transactional locking holds a row lock for the life of the request, and sharing 
 request's business transaction would make each block the other.
 
 :::caution
-Logs written to `var/log` die with the container. Until container log output has a destination,
-treat error tracking rather than log files as the record of what happened in production.
-
-Uploaded files likewise have no durable home. Uploads are disabled for launch, and the mount backing
-them is development-only, so re-enabling them needs object storage or a database column rather than
-a volume.
+Uploaded files have no durable home. Uploads are disabled for launch, and the mount backing them is
+development-only, so re-enabling them needs object storage or a database column rather than a
+volume.
 :::
+
+## Container logs
+
+Production writes no log files. Monolog's handlers stream to the container's stderr, and every
+service in the production chain - `php`, `worker`, `database` and `cloudflared` - declares the
+`journald` log driver, so that output goes to the host's systemd journal. The journal lives on the
+host rather than under the container id, so logs outlive a recreate, and `bin/dc-prod logs` still
+reads them.
+
+Container logs are distinct from the application's own log rotation, which production does not use at
+all. Development does: it writes rotating files under `var/log`, which persist in the volume the
+development image declares at `/app/var`.
+
+The reasoning, and why logs are not shipped to a hosted service yet, is in
+ADR-0027: Production logs go to the host journal.
+
+### The bound lives on the host, not in this repository
+
+journald has no per-container size cap, so nothing in the compose files limits how large the journal
+grows. Two settings in `/etc/systemd/journald.conf` are what actually keep the disk safe, and both
+are host provisioning steps:
+
+| Setting | Why |
+|---|---|
+| `SystemMaxUse` | Caps total journal size. Left unset it defaults to 10% of the filesystem, which on a disk shared with the database volume is several gigabytes competing with PostgreSQL. |
+| `SystemKeepFree` | Reserves free space, so the journal yields disk before the database does. A truncated journal is an inconvenience; a database with no space is an outage. |
+
+:::caution[journald drops messages past its rate limit]
+The defaults are `RateLimitIntervalSec=30s` and `RateLimitBurst=10000` per service, and messages past
+the burst are discarded rather than queued. `worker` logs every scheduler tick and every message
+handled, so it is the service most likely to reach it.
+
+Nothing at read time indicates the record is incomplete, beyond a single "suppressed N messages"
+line. Raise or disable the limit when provisioning the host.
+:::
+
+Development is not bounded, and is on the daemon's default driver. That is deliberate: the `journald`
+driver needs systemd on the *daemon* host, and Docker Desktop and OrbStack both run the daemon inside
+a VM that has none, so declaring it in the base compose would stop a development stack from starting
+at all.
 
 ## HTTP caching
 
@@ -512,6 +549,12 @@ exact inverse of the rule routing requests into PHP.
 
 ## Changelog
 
+- 2026-07-30 - ADRs are named rather than linked to the repository host, so the page does not assume
+  where the code is hosted.
+- 2026-07-30 - Production logs go to the host's systemd journal: Monolog streams to the container's
+  stderr and every production service declares the `journald` driver. Added the Container logs
+  section, including the two host settings that bound the journal and the rate limit that drops
+  messages past a burst.
 - 2026-07-30 - The container healthcheck probes the application's `/health` rather than Caddy's admin
   endpoint, so "healthy" means the application can serve. Added the Healthcheck section.
 - 2026-07-30 - A failed migration now stops the container instead of starting it with a warning.

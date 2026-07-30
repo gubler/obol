@@ -206,7 +206,7 @@ Those PNGs are generated from the SVG, not drawn by hand:
 mise run icons   # rasterize assets/icons/obol-coin.svg -> public/*.png
 ```
 
-The task ([`bin/generate-icons.mjs`](https://code.dev88.work/dev88/obol/src/branch/main/bin/generate-icons.mjs), host-side via `sharp`) renders the tiled icons from the full coin, and derives a flat-rim variant on the fly for the 16/32px favicons — the beaded rim turns to noise that small. Re-run it after editing the SVG and commit the refreshed PNGs. It is intentionally **not** part of `mise run check`, the hooks, or CI: the outputs are committed artifacts, regenerated only when the mark changes.
+The task (`bin/generate-icons.mjs`, host-side via `sharp`) renders the tiled icons from the full coin, and derives a flat-rim variant on the fly for the 16/32px favicons — the beaded rim turns to noise that small. Re-run it after editing the SVG and commit the refreshed PNGs. It is intentionally **not** part of `mise run check`, the hooks, or CI: the outputs are committed artifacts, regenerated only when the mark changes.
 
 The same `obol-coin.svg` is the Dashy homelab tile (tracked in the homelab repo).
 

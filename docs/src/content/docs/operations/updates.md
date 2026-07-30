@@ -54,7 +54,7 @@ container serving against a half-migrated schema throws on every request that to
 ### What a recreate discards, and what survives
 
 Recreating the application container throws away everything in `var/` - the compiled cache, the built
-CSS, the logs. That is deliberate, and it is what makes a pull-and-recreate reliable: the image
+CSS. That is deliberate, and it is what makes a pull-and-recreate reliable: the image
 carries its own compiled cache and built CSS, so the release you pulled is the one that serves.
 
 What survives does so because it is in PostgreSQL, not because a volume held it: domain data,
@@ -62,7 +62,9 @@ signed-in sessions, the scheduler's missed-run state, and the magic-link replay 
 therefore leaves users signed in and leaves redeemed magic links redeemed. See
 [State and storage](../deployment.md#state-and-storage).
 
-Application logs are the exception - they are written to `var/log` and go with the container.
+Logs survive too, by a different route: production writes none to `var/`, streaming them to the
+container's output and on to the host's systemd journal instead. A recreate does not reach them. See
+[Container logs](../deployment.md#container-logs).
 
 ## Writing Migrations
 
@@ -133,12 +135,14 @@ schema rollback is needed.
 
 ## Fixtures
 
-Fixtures (`php bin/console doctrine:fixtures:load`) are for development only. Never load fixtures in production — they truncate tables before inserting sample data.
+Fixtures (`php bin/console doctrine:fixtures:load`) are for development only. Never load fixtures in production - they truncate tables before inserting sample data.
 
 ---
 
 ## Changelog
 
+- 2026-07-30 - Corrected what a recreate discards: production logs go to the host journal rather than
+  to `var/log`, so they are no longer lost with the container.
 - 2026-07-30 - Noted that a failed migration now stops the container, that only `php` migrates, and
   that every container verifies the schema before starting.
 - 2026-07-29 - Recorded what a container recreate discards and what survives it, now that sessions and

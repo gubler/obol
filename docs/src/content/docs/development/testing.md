@@ -93,8 +93,8 @@ $subscription = SubscriptionFactory::createOne([
 - All classes in `App\Repository` must have a `Repository` suffix
 - All enums in `App\Enum` must be backed
 - Entities must not depend on controllers
-- Data access (repositories and the `EntityManager`) is confined to the handler layer — only `App\Message`, `App\Entity` and `App\Repository` may reference them (see [ADR-0006](https://code.dev88.work/dev88/obol/src/branch/main/reference/adr/0006-cqrs-buses-data-access-boundary.md) / [ADR-0007](https://code.dev88.work/dev88/obol/src/branch/main/reference/adr/0007-write-path-message-conventions.md))
-- The calendar-date frame is locked in place (see [ADR-0021](https://code.dev88.work/dev88/obol/src/branch/main/reference/adr/0021-calendar-date-value-object.md)): the five calendar-date fields are `CalendarDate`, only `User` and `CalendarDate` may touch a timezone, no code hand-rolls `->format('Y-m-d')`, no DTO constrains a date to the future, entities take no clock, and time-sensitive code never reads the ambient `new \DateTimeImmutable()`
+- Data access (repositories and the `EntityManager`) is confined to the handler layer — only `App\Message`, `App\Entity` and `App\Repository` may reference them (see ADR-0006 and ADR-0007)
+- The calendar-date frame is locked in place (see ADR-0021): the five calendar-date fields are `CalendarDate`, only `User` and `CalendarDate` may touch a timezone, no code hand-rolls `->format('Y-m-d')`, no DTO constrains a date to the future, entities take no clock, and time-sensitive code never reads the ambient `new \DateTimeImmutable()`
 
 The "no debugging functions" rule (`dump`, `dd`, `var_dump`, `print_r`, `ray`) is enforced by PHPStan instead — function-call rules are not something reflection can express. It lives in the Symplify `ForbiddenFuncCallRule` in `phpstan.dist.neon` and runs under `mise run sa`.
 
@@ -164,7 +164,7 @@ mise run infection                            # Mutation test the Unit suite
 mise run infection -- --filter=Subscription.php   # One source file
 ```
 
-Configuration lives in [`infection.json5`](https://code.dev88.work/dev88/obol/src/branch/main/infection.json5). Reports are written to the gitignored `var/infection/` (text, HTML, and a summary log).
+Configuration lives in `infection.json5`. Reports are written to the gitignored `var/infection/` (text, HTML, and a summary log).
 
 **On-demand only.** Infection is deliberately absent from `mise run check`, the git hooks, and CI — it is a periodic rigor check, not a gate. A run takes around 3 minutes. The task targets the **Unit suite**: Feature and Integration are slow and DB/HTTP-bound, and the unit-tested domain logic (entities, enums, value objects) is the meaningful mutation target.
 

@@ -37,6 +37,27 @@ x-app-environment: &app_environment
   # The exact origin browsers send during a ceremony (scheme + host + port).
   WEBAUTHN_ALLOWED_ORIGINS: https://${APP_HOST:?APP_HOST must be set in production}
 
+# Container output goes to the host's systemd journal rather than to json files under the container
+# id. That is one driver for two separate problems: the host's disk is shared with the PostgreSQL
+# volume, so unbounded logs are an outage rather than an annoyance and present as a full disk that
+# looks nothing like "logs got large"; and json-file logs are deleted along with the container, which
+# discards them on exactly the event - a recreate - you most want to read them after. The journal
+# lives on the host, so it survives that, and `docker logs` still answers from it.
+#
+# Deliberately not in the base compose, which would otherwise be the tidier home for one rule. The
+# driver needs systemd on the *daemon* host, and Docker Desktop and OrbStack both run the daemon
+# inside a VM that has none, so a development stack would refuse to start rather than merely log
+# somewhere else. Development stays on the daemon default, where frequent image churn keeps logs from
+# accumulating in the first place.
+#
+# The size bound is host configuration rather than anything in this file: journald has no
+# per-container cap, so `SystemMaxUse` and `SystemKeepFree` in /etc/systemd/journald.conf are what
+# actually keep the disk safe, and they belong to host provisioning. Its default rate limit also
+# *drops* messages past a burst rather than queuing them, which the worker's steady output can reach.
+# Both are covered in the deployment documentation; the decision itself is reference/adr/0027.
+x-logging: &logging
+  driver: journald
+
 services:
   php:
     # A single reference the deploy pins to a released tag, so a rollback is one line in the deploy
@@ -57,6 +78,7 @@ services:
       # starts - at which case a missing /data means re-issuing certificates on every container
       # recreate, straight into Let's Encrypt's rate limits. Restore the volume before doing that.
       SERVER_NAME: ":80"
+    logging: *logging
 
   # Same prod image as php. DATABASE_URL comes from the base compose anchor; depends_on (php healthy)
   # from base too. It carries the full application environment because async dispatch routes the real
@@ -64,6 +86,9 @@ services:
   worker:
     image: ${OBOL_IMAGE:?OBOL_IMAGE must be set in production}
     environment: *app_environment
+    # The service most likely to produce steady volume, since it logs every scheduler tick and every
+    # message handled - so it is the one the journal's rate limit is most likely to drop from.
+    logging: *logging
 
   ###> doctrine/doctrine-bundle ###
   database:
@@ -78,6 +103,7 @@ services:
       # checkout would strand it. Compose merges service volumes by mount target, so this replaces
       # the base entry instead of adding a second mount at the same path.
       - database_data:/var/lib/postgresql/data
+    logging: *logging
   ###< doctrine/doctrine-bundle ###
 
 volumes:

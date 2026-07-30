@@ -67,7 +67,7 @@ Runs only on pushes to `production` (a merged `main` -> `production` release). I
 
 The build job runs on the `amd64` runner label (Hex, x86_64) and builds a single **`linux/amd64`** image natively - no QEMU emulation and no multi-arch manifest. Hex is the sole deploy target, so amd64 is the only architecture that needs to ship. `provenance: false` keeps the published manifest free of `unknown/unknown` attestation entries in Gitea's package view.
 
-This replaces the earlier QEMU-emulated multi-arch build (the amd64 leg used to run under emulation on the arm64 runner; tracked in [#123](https://code.dev88.work/dev88/obol/issues/123) and [#259](https://code.dev88.work/dev88/obol/issues/259)). If an arm64 deploy target appears later, restore the second leg as a matrix build on the `arm64` runner and stitch the two with a manifest-merge job.
+This replaces the earlier QEMU-emulated multi-arch build (the amd64 leg used to run under emulation on the arm64 runner). If an arm64 deploy target appears later, restore the second leg as a matrix build on the `arm64` runner and stitch the two with a manifest-merge job.
 
 ### Registry Authentication
 

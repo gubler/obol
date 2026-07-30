@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 # ABOUTME: Contract check for the production compose stack - renders the deploy file chain and asserts
-# ABOUTME: the resolved origin, passkey, image, ingress and volume shape, plus the fail-fast guards.
+# ABOUTME: the origin, passkey, image, ingress, logging and volume shape, plus the fail-fast guards.
 #
 # Runs on the host (it needs the docker CLI, not a running stack - `docker compose config` only
 # renders). Nothing here starts a container.
@@ -41,6 +41,26 @@ assert_count() {
         pass "$_desc"
     else
         fail "$_desc (expected $_expected occurrence(s) of '$_needle', found $_actual)"
+    fi
+}
+
+# Counted against the rendered service list rather than a hard-coded number, because the failure this
+# guards is a service added later without the driver - and a fixed count would still be satisfied by
+# the services that already have it. Unequal counts name the gap without needing to know which
+# service is new.
+assert_every_service_logs_to_the_journal() {
+    _desc="$1"
+    _chain="$2"
+    _env="$3"
+    _render="$4"
+
+    _services=$(COMPOSE_FILE="$_chain" COMPOSE_ENV_FILES="$_env" docker compose config --services | wc -l | tr -d ' ')
+    _declared=$(grep -c -F 'driver: journald' "$_render" 2>/dev/null || true)
+
+    if [ "$_services" = "$_declared" ]; then
+        pass "$_desc (all $_services services)"
+    else
+        fail "$_desc (only $_declared of $_services services declare it)"
     fi
 }
 
@@ -177,6 +197,19 @@ assert_count 'the database is not on a checkout-relative bind mount' 0 \
 # means one added later trips this instead of sliding past, and catches bind mounts too.
 assert_count 'the database volume is the only mount in the stack' 1 \
     'source: ' "$DEPLOY_RENDER"
+
+echo 'Container logs'
+# The disk this stack runs on is shared with the PostgreSQL volume, so unbounded container logs are
+# an outage rather than an annoyance - and the presenting symptom of a full disk looks nothing like
+# "logs got large". journald also fixes the other half: its files live on the host rather than under
+# the container id, so logs survive the recreate you most want to read them after.
+assert_every_service_logs_to_the_journal 'every service logs to the host journal' \
+    "$DEPLOY_CHAIN" "$FIXTURE_ENV" "$DEPLOY_RENDER"
+# The bound itself (SystemMaxUse) is host configuration, not repository configuration, so it cannot be
+# asserted here - it belongs to host provisioning. What this file can pin is that nothing quietly
+# falls back to the daemon default driver, which writes unbounded json under the container id.
+assert_count 'nothing falls back to an unbounded json-file driver' 0 \
+    'driver: json-file' "$DEPLOY_RENDER"
 
 echo 'Migrations'
 # The entrypoint migrates only when opted in, so "exactly one opt-in" is the same statement as

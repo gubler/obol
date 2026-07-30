@@ -48,35 +48,47 @@ when@test:
                 level: debug
                 max_files: 10
 
+# Production writes to the container's stderr rather than to files. `var/log` there is ephemeral -
+# the image declares no volume and the stack mounts nothing but the database's (reference/adr/0026) -
+# so a rotating file would discard its history on a container recreate, the event you most want to
+# read logs after. Handing the lines to the container instead puts them behind the compose log
+# driver, which carries them somewhere that outlives it.
+#
+# The channels stay split across separate handlers even though every one now writes to the same
+# place: they carry different minimum levels, and `symfony` is buffered where the rest are not.
 when@prod: &prod
     monolog:
         handlers:
+            # Buffered: nothing is emitted until a request produces an error, and then the whole
+            # request's debug trail is emitted at once. That is what keeps the framework channel from
+            # logging every request in full, which matters more than usual now that the destination is
+            # the host journal - journald rate-limits and *drops* past its burst rather than queuing.
             symfony:
                 type: fingers_crossed
                 handler: symfony_nested
                 channels: [ "!event", "!scheduler", "!email", "!app" ]
                 excluded_http_codes: [ 404, 405 ]
             symfony_nested:
-                path: "%kernel.logs_dir%/%kernel.environment%-symfony.log"
-                type: rotating_file
-                max_files: 35
+                type: stream
+                path: "php://stderr"
+                level: debug
+            # Kept so a command run through `bin/dc-prod exec` prints its own log output to the
+            # terminal running it. At normal verbosity this emits warnings and above, so the overlap
+            # with the handlers below is small and only covers lines worth seeing twice.
             console:
                 channels: [ "!event", "!doctrine" ]
             app:
-                type: rotating_file
-                path: "%kernel.logs_dir%/%kernel.environment%-app.log"
+                type: stream
+                path: "php://stderr"
                 level: info
                 channels: [ "app" ]
-                max_files: 35
             emails:
-                type: rotating_file
-                path: "%kernel.logs_dir%/%kernel.environment%-email.log"
+                type: stream
+                path: "php://stderr"
                 channels: [ "email" ]
                 level: info
-                max_files: 35
             scheduler:
-                type: rotating_file
-                path: "%kernel.logs_dir%/%kernel.environment%-scheduler.log"
+                type: stream
+                path: "php://stderr"
                 channels: [ "scheduler" ]
                 level: info
-                max_files: 35

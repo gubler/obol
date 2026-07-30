@@ -89,9 +89,10 @@ monitor. Weigh that, not the config diff.
   cookie, and a redeemed magic link stays redeemed across a cache clear.
 - `messenger:stop-workers` reaches the worker container for the first time, because the pool it
   signals through is now shared rather than per-container.
-- **`var/log` is ephemeral.** Logs written inside the container die with it. Container log output and
-  where it should go is a separate operational decision; until it is made, error tracking rather than
-  log files is the record of what happened.
+- **`var/log` is ephemeral.** Logs written inside the container die with it. Production therefore
+  does not write them: Monolog hands its output to the container, and the container's output goes to
+  the host's systemd journal, which outlives a recreate. ADR-0027 records that decision and the
+  reasoning behind it.
 - **Uploaded files have no durable home.** Uploads are disabled for launch, and the volume that used
   to back them is development-only now. Re-enabling them requires object storage or a database
   column - not a volume, which would reintroduce exactly what this decision removes.

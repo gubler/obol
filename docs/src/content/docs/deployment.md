@@ -450,14 +450,16 @@ the application depends on both:
 Docker images are built by CI and pushed to the Gitea Container Registry:
 
 ```
-code.dev88.work/dev88/obol:latest
+code.dev88.work/dev88/obol:2026.7.3
 code.dev88.work/dev88/obol:{short-sha}
+code.dev88.work/dev88/obol:latest
 ```
 
 Each tag is a single `linux/amd64` image, built natively on the Hex runner - the sole deploy target (x86_64).
 
-Set `OBOL_IMAGE` in the deploy env to one of these references, pinned to a specific tag rather than
-`latest`, so an unrelated restart can never pull something unreviewed and a rollback is one edit.
+Set `OBOL_IMAGE` in the deploy env to the version tag rather than `latest`, so an unrelated restart
+can never pull something unreviewed and a rollback is one edit. The version is CalVer, derived by CI
+from the repository's git tags; see [Releases and Versioning](operations/releases.md).
 
 See [CI/CD](ci-cd.md#native-amd64-build) for details on the build pipeline.
 

@@ -16,6 +16,15 @@ Most tasks run **inside the `php` container** via `./bin/dc exec`. The exception
 
 See [Local Setup](../getting-started.md) for how solo and shared modes work.
 
+## Releases
+
+| Task | Description | Underlying Command |
+|------|-------------|-------------------|
+| `mise run version` | Print the version the current commit would be released as (host-side) | `bin/next-version` |
+
+Releases are cut by CI on a `main` -> `production` merge; this task only answers what the next
+version would be. See [Releases and Versioning](../operations/releases.md).
+
 ## Code Quality
 
 | Task | Description | Underlying Command |
@@ -33,6 +42,7 @@ See [Local Setup](../getting-started.md) for how solo and shared modes work.
 | `mise run js:cs:check` | JS code style + lint via Biome, check only (host-side) | `npm run cs:check` |
 | `mise run check:prod-compose` | Assert the production compose contract (host-side; starts nothing) | `bin/prod-compose-check` |
 | `mise run check:entrypoint` | Assert the container entrypoint contract (host-side; starts nothing) | `bin/entrypoint-check` |
+| `mise run check:release` | Assert the release version contract (host-side; starts nothing) | `bin/release-check` |
 | `mise run check` | Run every check above plus `test` and `js:test` | — |
 
 See [Frontend](../frontend.md#javascript-toolchain-dev-only) for what the JS toolchain covers.

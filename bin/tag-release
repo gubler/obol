@@ -1,0 +1,36 @@
+#!/usr/bin/env sh
+# ABOUTME: Cuts a release - derives the version, tags HEAD with it, publishes the tag, and prints the
+# ABOUTME: version so the caller can tag the built image with the same string.
+#
+# Run by the build job on a production merge, before the image is pushed. That ordering is the point:
+# a tag with no image behind it is a visible, harmless gap, while an image published under a version
+# that never reached git is silently wrong - the next build derives the same number again and
+# overwrites it, leaving two different images answering to one tag.
+
+set -eu
+
+version=$("$(dirname "$0")/next-version")
+tag="v${version}"
+
+# The tag is minted by the release process rather than by whoever's shell it runs in, so the identity
+# is supplied here instead of read from configuration. That also means a CI runner needs no git
+# identity of its own. `.invalid` is reserved precisely so it can never resolve, which is honest:
+# there is no mailbox behind this address.
+git_as_release() {
+    git -c user.name='Obol Release' -c user.email='release@obol.invalid' "$@"
+}
+
+# Created only when it is not already there. A rebuild of an already-released commit is a legitimate
+# thing to want - a registry hiccup, a cancelled job - and refusing at this point would block it.
+if ! git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
+    # Annotated, not lightweight: the version is only accurate to the month, so the tag object's own
+    # timestamp is the only record of when the release was actually cut.
+    git_as_release tag -a "$tag" -m "Release ${version}"
+fi
+
+# Pushed even when the tag already existed locally. Creating and publishing are two steps, so a run
+# that managed only the first leaves a tag nobody else can see; pushing one the remote already has
+# costs nothing.
+git push --quiet origin "refs/tags/${tag}"
+
+printf '%s\n' "$version"

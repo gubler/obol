@@ -129,6 +129,13 @@ jobs:
               if: always()
               run: ./bin/entrypoint-check
 
+            # The release scripts the build job below runs. Pure shell against throwaway git
+            # repositories and a stubbed clock, so it runs here rather than only on the release that
+            # would otherwise be the first thing to exercise them.
+            - name: "Release version contract"
+              if: always()
+              run: ./bin/release-check
+
             - name: "Lint Doctrine entities"
               if: always() && steps.install.outcome == 'success'
               run: php bin/console doctrine:schema:validate --skip-sync -vvv --no-interaction
@@ -204,6 +211,11 @@ jobs:
         # production already passed it on the PR.
         if: gitea.event_name == 'push' && gitea.ref == 'refs/heads/production'
 
+        # This job cuts the release tag, so it writes to the repository - the workflow-wide default
+        # above is read-only, and a job-level block replaces it rather than adding to it.
+        permissions:
+            contents: write
+
         env:
             REGISTRY: code.dev88.work
             IMAGE: code.dev88.work/dev88/obol
@@ -211,12 +223,24 @@ jobs:
         steps:
             - name: "Checkout code"
               uses: actions/checkout@v5
+              with:
+                  # Full history and tags. The release version is derived from the version tags
+                  # already in the repository, and the default shallow checkout fetches none of
+                  # them - which would silently restart the counter at .0 every release.
+                  fetch-depth: 0
 
             - name: "Set up Docker Buildx"
               uses: docker/setup-buildx-action@v3
 
-            - name: "Set short SHA"
-              run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+            # Cuts the release before the image is built, so the version can never be published to
+            # the registry without also existing in git. bin/tag-release derives the version from the
+            # tags, creates and pushes it, and prints it; re-running it on an already-released commit
+            # reuses that commit's version rather than minting a second one. See
+            # docs/src/content/docs/operations/releases.md.
+            - name: "Cut the release"
+              run: |
+                  echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+                  echo "VERSION=$(./bin/tag-release)" >> $GITHUB_ENV
 
             - name: "Login to Gitea Container Registry"
               uses: docker/login-action@v3
@@ -239,6 +263,10 @@ jobs:
                   # No unknown/unknown attestation entries in Gitea's package view.
                   provenance: false
                   push: true
+                  # Three tags for three jobs: the version is what a deploy pins and what a human
+                  # reads, the short SHA ties the image to a commit, and latest is a convenience that
+                  # nothing in production is allowed to pin (compose requires OBOL_IMAGE explicitly).
                   tags: |
                       ${{ env.IMAGE }}:latest
                       ${{ env.IMAGE }}:${{ env.SHORT_SHA }}
+                      ${{ env.IMAGE }}:${{ env.VERSION }}

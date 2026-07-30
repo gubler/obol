@@ -69,6 +69,17 @@ run = ["./bin/prod-compose-check"]
 description = "Assert the container entrypoint contract (drives it against stubs; starts nothing)"
 run = ["./bin/entrypoint-check"]
 
+# The release scripts run exactly once per release, on a production merge - the worst place to find a
+# bug in them. This drives them against throwaway repositories and a stubbed clock instead, so the
+# counter's behavior is checked on every commit rather than once a month.
+[tasks."check:release"]
+description = "Assert the release version contract (drives bin/next-version and bin/tag-release against fixtures)"
+run = ["./bin/release-check"]
+
+[tasks.version]
+description = "Print the CalVer version the current commit would be released as"
+run = ["./bin/next-version"]
+
 [tasks.sa]
 description = "Static Analysis via PHPStan"
 depends = ["_ensure-up"]
@@ -236,8 +247,8 @@ description = "Regenerate docs/src/content/docs/palette.md (light + dark token s
 run = ["npm run palette"]
 
 [tasks.check]
-description = "Run all checks: PHPStan (src + tests), tests, CS Fixer, Twig CS, Rector, the JS toolchain, and the prod compose and entrypoint contracts"
-depends = ["lint:yaml", "check:prod-compose", "check:entrypoint", "sa", "sa:tests", "test", "cs", "cs:twig", "rector:check", "js:sa", "js:test", "js:cs"]
+description = "Run all checks: PHPStan (src + tests), tests, CS Fixer, Twig CS, Rector, the JS toolchain, and the prod compose, entrypoint and release contracts"
+depends = ["lint:yaml", "check:prod-compose", "check:entrypoint", "check:release", "sa", "sa:tests", "test", "cs", "cs:twig", "rector:check", "js:sa", "js:test", "js:cs"]
 
 [tasks."docs:install"]
 description = "Install dev-docs dependencies (one-time, after clone)"

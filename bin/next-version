@@ -1,0 +1,56 @@
+#!/usr/bin/env sh
+# ABOUTME: Prints the CalVer version the current commit should be released as - YYYY.M.PATCH, with
+# ABOUTME: the patch counted within the month - derived from the version tags already in the repo.
+#
+# Derived rather than declared: a version file has to be edited by hand on the release PR, and the
+# edit that gets forgotten is invisible until two releases have shipped under one number. The tags
+# are the record, so reading them is the one source that cannot drift from what was actually cut.
+#
+# Prints the bare version. The git tag adds a `v` prefix (`v2026.7.3`); the image tag does not
+# (`code.dev88.work/dev88/obol:2026.7.3`).
+
+set -eu
+
+if ! git rev-parse --git-dir >/dev/null 2>&1; then
+    echo 'Not a git repository: there are no tags to derive a version from.' >&2
+    exit 1
+fi
+
+# A commit is released once. If HEAD already carries a version tag then that tag *is* this commit's
+# version, so print it rather than minting a second one: re-running a build - a registry hiccup, a
+# cancelled job - has to republish the same version, not advance the counter and leave two version
+# tags pointing at one commit. Checked before the period, so a re-run that crosses a month boundary
+# still answers with the version the commit was released as.
+released=$(git tag --points-at HEAD | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1 || true)
+if [ -n "$released" ]; then
+    printf '%s\n' "${released#v}"
+    exit 0
+fi
+
+# UTC, because which period a release belongs to should not depend on which runner picked up the job.
+period=$(date -u '+%Y %m')
+year=${period% *}
+month=${period#* }
+# `date -u +%-m` would drop the padding directly, but `%-m` is a GNU/BSD extension rather than POSIX.
+month=${month#0}
+
+# The highest patch this month has already used. Sorted numerically: a lexical sort puts 10 before 9,
+# which would hand out one version twice and then walk the counter backwards. The shape is matched
+# again in sed because the glob also accepts things like v2026.7.x, which is not a release and must
+# not count.
+highest=$(
+    git tag --list "v${year}.${month}.*" |
+        sed -n "s/^v${year}\.${month}\.\([0-9][0-9]*\)\$/\1/p" |
+        sort -n |
+        tail -n 1
+)
+
+if [ -z "$highest" ]; then
+    # The first release of the month, which is also the first release ever in a repository that has
+    # no version tags at all.
+    patch=0
+else
+    patch=$((highest + 1))
+fi
+
+printf '%s.%s.%s\n' "$year" "$month" "$patch"

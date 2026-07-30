@@ -20,6 +20,9 @@ fast_checks() {
     # The entrypoint contract needs no Docker, so CI enforces it too; it is here as well so a broken
     # entrypoint fails before the push rather than after.
     mise run check:entrypoint   || status=1
+    # Same arrangement for the release scripts, and the same reason with a sharper edge: they run
+    # only on a production merge, so without this the first sign of a broken one is a failed release.
+    mise run check:release      || status=1
     return "$status"
 }
 

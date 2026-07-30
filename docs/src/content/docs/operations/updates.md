@@ -8,7 +8,7 @@ This page covers how to deploy new versions of Obol and handle database migratio
 
 ```mermaid
 graph LR
-    A[Merge to main] --> B[CI: Lint & Test]
+    A[Merge main into production] --> B[CI: Tag the release]
     B --> C[CI: Build Docker Image]
     C --> D[Push to Registry]
     D --> E[Pull on Server]
@@ -16,10 +16,13 @@ graph LR
     F --> G[FrankenPHP: Serve]
 ```
 
-1. Merge a PR to `main`
-2. CI runs the full lint and test suite
-3. CI builds a Docker image and pushes it to `code.dev88.work/dev88/obol` with `:latest` and `:{sha}` tags
-4. On the server, pull the new image and restart
+1. Merge a `main` -> `production` PR (the PR itself ran the full lint and test suite)
+2. CI derives the next CalVer version and pushes the git tag
+3. CI builds a Docker image and pushes it to `code.dev88.work/dev88/obol` under the version, the
+   short SHA, and `:latest`
+4. On the server, point `OBOL_IMAGE` at the new version, pull, and recreate
+
+See [Releases and Versioning](releases.md) for the version scheme and the full release procedure.
 
 ## Updating the Server
 
@@ -110,19 +113,18 @@ Rollback requires `down()` methods in the migration. Not all migrations are reve
 
 ## Rollback Strategy for Bad Deployments
 
-Docker images are tagged with the short commit SHA. To roll back to a previous version:
+Images are tagged with a CalVer version (`2026.7.3`), so the release to return to is the previous
+version rather than a SHA you have to date by hand. Point `OBOL_IMAGE` at it in the deploy env file
+and recreate:
 
 ```bash
-# Find the previous image tag
-docker image ls code.dev88.work/dev88/obol
-
-# Point OBOL_IMAGE at it in the deploy env file, then recreate
 bin/dc-prod pull
 bin/dc-prod up -d
 ```
 
-`OBOL_IMAGE` in the deploy env file is the single reference the deploy pins, so a rollback is one
-line there plus a recreate.
+`OBOL_IMAGE` is the single reference the deploy pins, so a rollback is one line there plus a
+recreate. The full procedure, including how to tell what a rollback range carried, is in
+[Rolling back](releases.md#rolling-back).
 
 :::caution
 Rolling back far enough to reach an image that keeps sessions in `var/` signs every user out, because
@@ -141,6 +143,8 @@ Fixtures (`php bin/console doctrine:fixtures:load`) are for development only. Ne
 
 ## Changelog
 
+- 2026-07-30 - Deploy flow and rollback updated for CalVer-versioned images; the release procedure
+  itself now lives in Releases and Versioning.
 - 2026-07-30 - Corrected what a recreate discards: production logs go to the host journal rather than
   to `var/log`, so they are no longer lost with the container.
 - 2026-07-30 - Noted that a failed migration now stops the container, that only `php` migrates, and

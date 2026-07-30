@@ -47,7 +47,10 @@ const sidebar = [
   },
   {
     label: 'Operations',
-    items: [{ slug: 'operations/updates' }],
+    items: [
+      { slug: 'operations/releases' },
+      { slug: 'operations/updates' },
+    ],
   },
 ];
 

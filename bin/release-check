@@ -1,0 +1,300 @@
+#!/usr/bin/env sh
+# ABOUTME: Behavior check for the release scripts - drives bin/next-version and bin/tag-release
+# ABOUTME: against throwaway git repositories and a stubbed clock to pin how a version is minted.
+#
+# Everything here runs exactly once per release, on a production merge, which is the worst possible
+# place to discover a bug in it: the feedback loop is a merge to the deploy branch. So the shell
+# lives in scripts rather than in the workflow, and this drives it locally against real git
+# repositories - real tags, a real remote, no network and no runner.
+
+set -u
+
+SCRIPT="bin/next-version"
+TAG_SCRIPT="bin/tag-release"
+WORK_DIR="var/release-check"
+
+# Every git command below - the fixtures and the scripts under test alike - runs against an empty
+# configuration. Otherwise whoever runs this brings their own settings along (a signing key, a
+# default branch name, an identity a CI runner would not have), and the check would answer a
+# slightly different question on every machine than it does in CI.
+GIT_CONFIG_GLOBAL=/dev/null
+GIT_CONFIG_SYSTEM=/dev/null
+export GIT_CONFIG_GLOBAL GIT_CONFIG_SYSTEM
+
+failures=0
+
+pass() {
+    printf '  ok    %s\n' "$1"
+}
+
+fail() {
+    printf '  FAIL  %s\n' "$1"
+    failures=$((failures + 1))
+}
+
+# A fixture is a throwaway git repository holding two commits: an earlier one carrying whatever tags
+# the scenario needs, and an untagged HEAD standing in for the release about to be cut. Tags belong
+# on the earlier commit because that is where released versions actually sit - putting them on HEAD
+# means something different (see the already-released scenarios, which use tag_head for exactly
+# that).
+fixture() {
+    _name="$1"
+    shift
+
+    _dir="$WORK_DIR/$_name"
+
+    rm -rf "$_dir"
+    mkdir -p "$_dir/stub-bin"
+
+    git init -q "$_dir" >/dev/null 2>&1
+
+    (
+        cd "$_dir" || exit 127
+        # A fresh repository inherits no identity, and CI containers have none to inherit.
+        git config user.email 'check@obol.example'
+        git config user.name 'Version Check'
+        git commit -q --allow-empty -m 'released work'
+        for _tag in "$@"; do
+            git tag "$_tag"
+        done
+        git commit -q --allow-empty -m 'unreleased work'
+    )
+
+    printf '%s' "$_dir"
+}
+
+tag_head() {
+    (cd "$1" && git tag "$2")
+}
+
+# The tagging scenarios need somewhere to push to. A bare repository beside the fixture stands in for
+# the Gitea remote, so "did it actually publish the tag" is a question this can answer without a
+# network.
+give_origin() {
+    _dir="$1"
+    _remote="${_dir}.git"
+
+    rm -rf "$_remote"
+    git init -q --bare "$_remote" >/dev/null 2>&1
+    (cd "$_dir" && git remote add origin "../$(basename "$_remote")")
+}
+
+origin_has_tag() {
+    (cd "${1}.git" && git tag --list "$2" | grep -q .)
+}
+
+# Which month it is has to be an input to the test rather than whatever day CI happens to run on,
+# otherwise none of the reset scenarios can be written down. A stub `date` on PATH supplies it. The
+# scenarios that omit the stub run against the real clock, which is what proves the script asks the
+# real `date` for a format it actually produces.
+stub_clock() {
+    cat >"$1/stub-bin/date" <<STUB
+#!/bin/sh
+echo '$2'
+STUB
+    chmod +x "$1/stub-bin/date"
+}
+
+run_in_fixture() {
+    _dir="$1"
+    _script="$2"
+
+    (
+        cd "$_dir" || exit 127
+        [ -x stub-bin/date ] && PATH="$PWD/stub-bin:$PATH" && export PATH
+        sh "$_script"
+    )
+}
+
+run_next_version() {
+    run_in_fixture "$1" "$ABS_SCRIPT"
+}
+
+run_tag_release() {
+    run_in_fixture "$1" "$ABS_TAG_SCRIPT"
+}
+
+assert_version() {
+    _desc="$1"
+    _expected="$2"
+    _actual="$3"
+
+    if [ "$_actual" = "$_expected" ]; then
+        pass "$_desc"
+    else
+        fail "$_desc (expected $_expected, got '$_actual')"
+    fi
+}
+
+assert_nonzero_status() {
+    _desc="$1"
+    _actual="$2"
+
+    if [ "$_actual" != "0" ]; then
+        pass "$_desc"
+    else
+        fail "$_desc (it exited 0)"
+    fi
+}
+
+assert_true() {
+    _desc="$1"
+    shift
+
+    if "$@"; then
+        pass "$_desc"
+    else
+        fail "$_desc"
+    fi
+}
+
+assert_tag_count() {
+    _desc="$1"
+    _dir="$2"
+    _expected="$3"
+    _actual=$(cd "$_dir" && git tag --points-at HEAD | grep -c -E '^v[0-9]+\.[0-9]+\.[0-9]+$')
+
+    if [ "$_actual" = "$_expected" ]; then
+        pass "$_desc"
+    else
+        fail "$_desc (expected $_expected version tag(s) on HEAD, found $_actual)"
+    fi
+}
+
+for _required in "$SCRIPT" "$TAG_SCRIPT"; do
+    if [ ! -f "$_required" ]; then
+        echo "Run this from the repository root; $_required was not found." >&2
+        exit 1
+    fi
+done
+
+# Resolved once, up here: every scenario runs the scripts from inside a fixture, where a path
+# relative to the repository root no longer resolves.
+ABS_SCRIPT="$PWD/$SCRIPT"
+ABS_TAG_SCRIPT="$PWD/$TAG_SCRIPT"
+
+rm -rf "$WORK_DIR"
+mkdir -p "$WORK_DIR"
+trap 'rm -rf "$WORK_DIR"' EXIT INT TERM
+
+echo 'The patch counter starts at zero and increments within the month'
+dir=$(fixture first-release-of-the-month)
+stub_clock "$dir" '2026 07'
+assert_version 'the first release of a month is .0' '2026.7.0' "$(run_next_version "$dir")"
+
+# The version carries no day component on purpose, so this is also what several releases in one day
+# look like: the counter simply keeps going.
+dir=$(fixture subsequent-release v2026.7.0 v2026.7.1 v2026.7.2)
+stub_clock "$dir" '2026 07'
+assert_version 'the next release takes the following patch' '2026.7.3' "$(run_next_version "$dir")"
+
+# A lexical sort puts 10 before 9, which would hand out 2026.7.10 twice and then walk the counter
+# backwards for the rest of the month.
+dir=$(fixture double-digit-patches v2026.7.8 v2026.7.9 v2026.7.10)
+stub_clock "$dir" '2026 07'
+assert_version 'patches are ordered numerically, not lexically' '2026.7.11' "$(run_next_version "$dir")"
+
+echo 'The counter resets when the period changes'
+dir=$(fixture new-month v2026.7.0 v2026.7.1 v2026.7.2)
+stub_clock "$dir" '2026 08'
+assert_version 'a new month restarts at .0' '2026.8.0' "$(run_next_version "$dir")"
+
+dir=$(fixture new-year v2026.12.4)
+stub_clock "$dir" '2027 01'
+assert_version 'a new year restarts at .0' '2027.1.0' "$(run_next_version "$dir")"
+
+dir=$(fixture ignores-other-months v2026.6.9 v2026.7.0)
+stub_clock "$dir" '2026 07'
+assert_version 'last month does not raise this month' '2026.7.1' "$(run_next_version "$dir")"
+
+# The repository holds tags that are not releases, and one day will hold more of them. Anything that
+# is not exactly vYYYY.M.PATCH has no bearing on the counter.
+dir=$(fixture ignores-non-release-tags v1 nightly v2026.7.0 v2026.7.x)
+stub_clock "$dir" '2026 07'
+assert_version 'non-release tags are ignored' '2026.7.1' "$(run_next_version "$dir")"
+
+# Re-running a build - a registry hiccup, a cancelled job - must republish the version the commit
+# already has. Minting a second one would leave two version tags on one commit and let a rollback to
+# either land on the same code under a different name.
+echo 'A commit that is already released keeps its version'
+dir=$(fixture already-released v2026.7.2)
+tag_head "$dir" 'v2026.7.3'
+stub_clock "$dir" '2026 07'
+assert_version 'the existing tag is reused rather than advanced' '2026.7.3' "$(run_next_version "$dir")"
+
+dir=$(fixture already-released-last-month v2026.7.2)
+tag_head "$dir" 'v2026.7.3'
+stub_clock "$dir" '2026 08'
+assert_version 'a re-run in a later month still reuses it' '2026.7.3' "$(run_next_version "$dir")"
+
+# The stubbed clock cannot prove the script asks the real `date` for a format it actually produces,
+# so one scenario runs against the real one. It only asserts the shape, since the answer changes
+# with the calendar.
+echo 'The real clock supplies the period'
+dir=$(fixture real-clock)
+actual=$(run_next_version "$dir")
+expected="$(date -u +%Y).$(date -u +%m | sed 's/^0//').0"
+assert_version 'the current year and month, unpadded' "$expected" "$actual"
+
+# Outside a repository there are no tags to read, so every version would look like the first release
+# of the month. Failing is the only honest answer.
+echo 'Outside a git repository it fails rather than guessing'
+outside=$(mktemp -d)
+(cd "$outside" && sh "$ABS_SCRIPT" >/dev/null 2>&1)
+status=$?
+rm -rf "$outside"
+assert_nonzero_status 'it exits non-zero' "$status"
+
+echo 'Cutting a release tags the commit and publishes the tag'
+dir=$(fixture tags-and-pushes v2026.7.0)
+give_origin "$dir"
+stub_clock "$dir" '2026 07'
+version=$(run_tag_release "$dir")
+assert_version 'it reports the version it cut' '2026.7.1' "$version"
+assert_tag_count 'HEAD carries exactly one version tag' "$dir" 1
+assert_true 'the tag reached the remote' origin_has_tag "$dir" 'v2026.7.1'
+# Annotated rather than lightweight: the version is only accurate to the month, so the tag object's
+# own timestamp is the only record of when a release was actually cut.
+assert_version 'the tag is annotated' 'tag' "$(cd "$dir" && git cat-file -t 'v2026.7.1')"
+
+# The whole point of reusing an existing version: a re-run has to be safe. It republishes, it does
+# not re-number.
+echo 'Re-cutting an already-released commit is a no-op that still succeeds'
+dir=$(fixture rerun v2026.7.0)
+give_origin "$dir"
+stub_clock "$dir" '2026 07'
+run_tag_release "$dir" >/dev/null
+version=$(run_tag_release "$dir")
+status=$?
+assert_version 'the second run reports the same version' '2026.7.1' "$version"
+assert_version 'the second run exits zero' '0' "$status"
+assert_tag_count 'no second tag was added to HEAD' "$dir" 1
+
+# The tag is created locally and pushed as two steps, so a failed push leaves a tag that exists in
+# one place only. The next run has to finish the job rather than consider it done.
+echo 'A tag that never reached the remote is pushed on the next run'
+dir=$(fixture unpushed-tag v2026.7.0)
+give_origin "$dir"
+stub_clock "$dir" '2026 07'
+tag_head "$dir" 'v2026.7.1'
+run_tag_release "$dir" >/dev/null
+assert_true 'the existing tag is published' origin_has_tag "$dir" 'v2026.7.1'
+
+# An annotated tag needs a tagger, and a CI runner has no git identity of its own. The release
+# process supplies one, so this has to work in a repository where none is configured at all.
+echo 'Cutting a release needs no configured git identity'
+dir=$(fixture no-identity v2026.7.0)
+give_origin "$dir"
+stub_clock "$dir" '2026 07'
+(cd "$dir" && git config --unset user.email && git config --unset user.name)
+version=$(run_tag_release "$dir")
+assert_version 'it still cuts the release' '2026.7.1' "$version"
+assert_true 'and publishes the tag' origin_has_tag "$dir" 'v2026.7.1'
+
+echo
+if [ "$failures" -ne 0 ]; then
+    printf 'Release contract: %s check(s) failed\n' "$failures" >&2
+    exit 1
+fi
+
+echo 'Release contract: all checks passed'

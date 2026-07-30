@@ -35,6 +35,8 @@ Runs on the `default` runner label (Asgard, arm64) with PHP 8.5 and Xdebug (for 
 | Lint XLIFF | Validate translation files |
 | Lint translations | Validate translation contents |
 | Lint container | Validate Symfony service definitions |
+| Entrypoint contract | `bin/entrypoint-check` - drives the container entrypoint against stub binaries |
+| Release contract | `bin/release-check` - drives the release scripts against throwaway git repositories |
 | Lint Doctrine | Validate entity mapping (`doctrine:schema:validate --skip-sync`) |
 | Composer audit | Check for known security vulnerabilities in dependencies |
 | PHPStan | Static analysis at level 9 (`--error-format=github` for inline annotations) |
@@ -55,13 +57,20 @@ Runs only on pushes to `production` (a merged `main` -> `production` release). I
 
 ### Steps
 
-1. Checkout the code
+1. Checkout the code, full history and tags (`fetch-depth: 0`) - the version is derived from the tags
 2. Set up Docker Buildx (`docker/setup-buildx-action`)
-3. Set a short SHA environment variable (first 7 chars of the commit hash)
+3. Cut the release: `bin/tag-release` derives the next CalVer version, pushes the git tag, and prints the version
 4. Login to the Gitea Container Registry at `code.dev88.work`
-5. Build and push the image (see below) with two tags:
-    - `code.dev88.work/dev88/obol:latest`
+5. Build and push the image (see below) with three tags:
+    - `code.dev88.work/dev88/obol:{version}`
     - `code.dev88.work/dev88/obol:{short-sha}`
+    - `code.dev88.work/dev88/obol:latest`
+
+The job declares `permissions: contents: write`, overriding the workflow-wide read-only default,
+because it pushes the release tag. The tag is created before the image is built, so a version can
+never reach the registry without also existing in git. See
+[Releases and Versioning](operations/releases.md) for the scheme, the rollback procedure, and what
+happens when a release has to be cut again.
 
 ### Native amd64 build
 
@@ -83,9 +92,18 @@ The CI pipeline matches what you can run locally:
 | Twig-CS-Fixer | `mise run cs:twig:check` |
 | PHPStan | `mise run sa` |
 | PHPStan (tests) | `mise run sa:tests` |
+| Entrypoint contract | `mise run check:entrypoint` |
+| Release contract | `mise run check:release` |
 | Biome | `mise run js:cs:check` |
 | tsc --checkJs | `mise run js:sa` |
 | Vitest | `mise run js:test` |
 | PHPUnit with coverage | `mise run coverage` |
 
 Running `mise run coverage` locally before pushing ensures CI will pass.
+
+---
+
+## Changelog
+
+- 2026-07-30 - The build job now derives a CalVer version from the git tags, cuts the release tag, and
+  publishes the image under that version as well as the short SHA and `latest`.

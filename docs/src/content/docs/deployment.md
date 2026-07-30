@@ -105,6 +105,7 @@ Four services:
 - Listens on the address `SERVER_NAME` names. In production that is `:80`: TLS terminates at Cloudflare, and the connector reaches the container over plain HTTP on the stack's internal network.
 - Publishes no host ports. The connector is the only route in.
 - Depends on `database` with healthcheck
+- Reports healthy by probing its own `/health` over HTTP, so "healthy" means the application can serve a request rather than that Caddy is up (see [Healthcheck](#healthcheck))
 - Mounts nothing. Sessions and the application cache pool are in PostgreSQL, so the container holds nothing worth keeping. Caddy's `/data` and `/config` and the uploads mount are development-only, declared in `compose.override.yaml`
 
 **`cloudflared`** - the Cloudflare Tunnel connector (`compose.tunnel.yaml`)
@@ -256,10 +257,10 @@ against a schema the code does not expect. Under `restart: unless-stopped` it th
 which is the visible symptom: a deploy that keeps recreating `php` is a migration that keeps failing,
 and `bin/dc-prod logs php` carries the Doctrine error.
 
-There is no flag to soften this. The `sessions` and `cache_items` tables are on the request path, so
-a migration failure that leaves them missing means every request touching a session throws - and the
-healthcheck probes Caddy's admin endpoint rather than the application, so it would report a container
-serving nothing but 500s as healthy. Not starting is the safe outcome.
+There is no flag to soften this. The `sessions` and `cache_items` tables are on the request path, so a
+migration failure that leaves them missing means every request touching a session throws. Not
+starting is the safe outcome: a container that never comes up is unmistakable, where one that came up
+broken has to be noticed.
 :::
 
 ### Which container migrates
@@ -285,6 +286,49 @@ migrations in the database that its codebase does not carry, and that has to sta
 question being asked is "is anything of mine unapplied", not "does the database match me exactly".
 
 `bin/prod-compose-check` asserts the wiring: exactly one container opts in, and it is `php`.
+
+## Healthcheck
+
+The image healthcheck requests `GET /health` against the container's own Caddy and fails on anything
+that is not a 2xx. That makes "healthy" mean the application can serve a request, which matters
+because two other services gate on the signal: the worker waits for `php` before consuming, and the
+tunnel connector waits before advertising the tunnel. A signal that means less than they assume sends
+visitors to a container that cannot answer them.
+
+### What it covers, and where it stops
+
+Answering at all establishes most of it - Caddy routes, PHP executes, the kernel boots, the container
+compiles. On top of that the endpoint makes one round trip to the database, because every real
+request touches it: sessions and the application cache pool are tables (see
+[State and storage](#state-and-storage)), so a container that cannot reach PostgreSQL throws on
+everything a visitor might do while remaining perfectly able to serve a static file.
+
+It deliberately stops there.
+
+- **No schema-version check.** The entrypoint already refuses to boot against an unapplied migration,
+  and the schema cannot drift while the process runs, so a per-probe check would re-answer a settled
+  question every thirty seconds.
+- **No external services.** A probe that fails when a third party is down marks this container
+  unhealthy for something restarting it cannot fix. Mail is the case in point: it is dispatched
+  through the worker's queue, so a provider outage delays delivery without making the web container
+  unable to serve.
+
+The rule of thumb is that the probe should only test things this container can be restarted to fix.
+
+### The endpoint
+
+`GET /health` is public, sits outside `/app` because it is infrastructure rather than application
+surface (see [ADR-0018](https://code.dev88.work/dev88/obol/src/branch/main/reference/adr/0018-url-surface-structure.md)),
+and returns `200 ok` or `503 unavailable`. Public because the probe runs inside the container with no
+session to authenticate; behind the firewall it would answer a redirect to the login page, which
+reads as "reachable" to anything that only checks for a response. The body is a bare token for the
+same reason it is public - the status code carries the whole answer, and anything more descriptive
+would be served to the internet. The reason a check failed goes to the application log instead.
+
+Failure detection is not instant. Docker's defaults probe every 30 seconds and require three
+consecutive failures, so a container that breaks reports unhealthy about 90 seconds later. Docker
+does not restart an unhealthy container on its own either - the status is a signal for the operator
+and for the services that gate on it, not a self-healing mechanism.
 
 ## Running in Production
 
@@ -378,7 +422,8 @@ bin/dc-prod exec worker php -r 'echo getenv("DEFAULT_URI"), "\n";'
 # Outbound mail actually leaves the host
 bin/dc-prod exec php php bin/console app:mailer:smoke you@example.com
 
-# The application container is up rather than restart-looping on a failed migration
+# The application container is up rather than restart-looping on a failed migration, and healthy
+# rather than merely running - healthy now means it answered its own /health, database included
 bin/dc-prod ps php
 
 # The tables the request path depends on exist, and sessions are actually landing in them.
@@ -467,6 +512,8 @@ exact inverse of the rule routing requests into PHP.
 
 ## Changelog
 
+- 2026-07-30 - The container healthcheck probes the application's `/health` rather than Caddy's admin
+  endpoint, so "healthy" means the application can serve. Added the Healthcheck section.
 - 2026-07-30 - A failed migration now stops the container instead of starting it with a warning.
   Migrating is opted into via `OBOL_RUN_MIGRATIONS=1` on `php` alone, and every container verifies the
   schema is current before it starts.

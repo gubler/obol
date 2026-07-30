@@ -59,7 +59,16 @@ COPY --link frankenphp/Caddyfile /etc/frankenphp/Caddyfile
 
 ENTRYPOINT ["docker-entrypoint"]
 
-HEALTHCHECK --start-period=60s CMD php -r 'exit(false === @file_get_contents("http://localhost:2019/metrics", context: stream_context_create(["http" => ["timeout" => 5]])) ? 1 : 0);'
+# Probes the application, not the web server. Caddy's admin endpoint answers whether Caddy is up,
+# which a container serving nothing but 500s also does - and both the worker and the tunnel
+# connector gate on this signal, so it has to mean "can serve a request". /health goes through PHP
+# and the kernel and checks the database; file_get_contents returns false for a connection failure
+# and for any non-2xx alike, so a 503 from the endpoint fails the check.
+#
+# Host: php rather than the request's own 127.0.0.1, because the Caddyfile has one site block and no
+# catch-all. Production and Lolly-shared mode listen on ":80" and match any host, but solo mode
+# listens on the SERVER_NAME pair, of which `php` is the half that never varies per worktree.
+HEALTHCHECK --start-period=60s --timeout=10s CMD php -r 'exit(false === @file_get_contents("http://127.0.0.1/health", context: stream_context_create(["http" => ["timeout" => 5, "header" => "Host: php"]])) ? 1 : 0);'
 CMD [ "frankenphp", "run", "--config", "/etc/frankenphp/Caddyfile" ]
 
 # Dev FrankenPHP image
@@ -208,5 +217,14 @@ WORKDIR /app
 
 ENTRYPOINT ["docker-entrypoint"]
 
-HEALTHCHECK --start-period=60s CMD php -r 'exit(false === @file_get_contents("http://localhost:2019/metrics", context: stream_context_create(["http" => ["timeout" => 5]])) ? 1 : 0);'
+# Probes the application, not the web server. Caddy's admin endpoint answers whether Caddy is up,
+# which a container serving nothing but 500s also does - and both the worker and the tunnel
+# connector gate on this signal, so it has to mean "can serve a request". /health goes through PHP
+# and the kernel and checks the database; file_get_contents returns false for a connection failure
+# and for any non-2xx alike, so a 503 from the endpoint fails the check.
+#
+# Host: php rather than the request's own 127.0.0.1, because the Caddyfile has one site block and no
+# catch-all. Production and Lolly-shared mode listen on ":80" and match any host, but solo mode
+# listens on the SERVER_NAME pair, of which `php` is the half that never varies per worktree.
+HEALTHCHECK --start-period=60s --timeout=10s CMD php -r 'exit(false === @file_get_contents("http://127.0.0.1/health", context: stream_context_create(["http" => ["timeout" => 5, "header" => "Host: php"]])) ? 1 : 0);'
 CMD [ "frankenphp", "run", "--config", "/etc/frankenphp/Caddyfile" ]

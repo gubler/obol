@@ -68,6 +68,10 @@ security:
         - { path: ^/$, roles: PUBLIC_ACCESS }
         # The landing "sign up for updates" form posts here from anonymous visitors.
         - { path: ^/updates$, roles: PUBLIC_ACCESS }
+        # The container healthcheck probes this from inside the container, where there is no session
+        # to authenticate with. Behind the firewall it would answer 302-to-login while the database
+        # was on fire, which is exactly the false healthy this endpoint exists to stop.
+        - { path: ^/health$, roles: PUBLIC_ACCESS }
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/logout, roles: PUBLIC_ACCESS }
         # The secondary-email verification link is clicked from the target mailbox, possibly on a device

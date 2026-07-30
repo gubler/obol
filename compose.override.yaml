@@ -88,7 +88,8 @@ services:
     # through the base PHP entrypoint to the watch command.
     entrypoint: ["docker-php-entrypoint"]
     command: php bin/console tailwind:build --watch
-    # The image healthcheck probes Caddy's admin endpoint, which this command does not serve.
+    # The image healthcheck probes the application over HTTP, which this command does not serve - it
+    # is a CSS builder. Its liveness is that the process is running.
     healthcheck:
       disable: true
     volumes:

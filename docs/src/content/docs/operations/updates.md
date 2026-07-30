@@ -47,9 +47,8 @@ refuses to start against a schema older than its code; see [Entrypoint](../deplo
 
 :::caution[A failed migration stops the container rather than starting it]
 The deploy fails visibly - `php` restart-loops instead of coming up - which is the intended outcome: a
-container serving against a half-migrated schema throws on every request that touches a session, and
-the healthcheck cannot tell the difference. Read `bin/dc-prod logs php` for the Doctrine error and fix
-the migration.
+container serving against a half-migrated schema throws on every request that touches a session. Read
+`bin/dc-prod logs php` for the Doctrine error and fix the migration.
 :::
 
 ### What a recreate discards, and what survives

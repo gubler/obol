@@ -38,7 +38,8 @@ services:
     image: ${IMAGES_PREFIX:-}obol-php
     restart: unless-stopped
     command: php bin/console messenger:consume mail async scheduler_default --time-limit=3600
-    # The image healthcheck probes the Caddy admin endpoint, which this command does not serve.
+    # The image healthcheck probes the application over HTTP, which this command does not serve - it
+    # consumes a queue and answers nothing. Its liveness is that the process is running.
     healthcheck:
       disable: true
     # Deliberately no OBOL_RUN_MIGRATIONS: php owns migrations, and a container that says nothing

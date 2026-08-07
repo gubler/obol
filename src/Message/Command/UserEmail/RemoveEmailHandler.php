@@ -32,6 +32,7 @@ final readonly class RemoveEmailHandler
             throw new CannotRemovePrimaryEmailException();
         }
 
+        // @igor-ignore - Delegates to the entity manager, which is reset per request via the kernel.reset-tagged registry.
         $this->userEmails->remove($userEmail);
     }
 }

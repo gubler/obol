@@ -57,6 +57,13 @@ older docs.
   through Subscription). Repository finders are owner-scoped (`findForOwner`), so one user's id never
   resolves another's row - a cross-owner lookup returns null and the controller 404s. Categories,
   payment sources, and obligation snapshots carry their own immutable `owner` the same way. See ADR-0015.
+- **step-up** - re-proving identity before an action that could take over the account: the admin
+  surface, and adding, removing, promoting or re-verifying an email address or passkey. These demand
+  **full authentication** (`IS_AUTHENTICATED_FULLY`), which a session restored from the remember-me
+  cookie is not - so a replayed cookie can read the account but never change how it is signed into.
+  Reading is deliberately outside it. A refused request is not signed out: it is sent to the login page
+  and returns to where it was headed. _Avoid_ "re-auth" and "2FA" - there is no second factor, only the
+  same credentials proved again. See ADR-0014.
 - **UserEmail** - one address a User controls, independently verified, with at most one marked
   **primary**. A magic link resolves to its User via any *verified* UserEmail (so a second verified
   address is a recovery credential); the primary is the canonical identity. Unverified rows cannot

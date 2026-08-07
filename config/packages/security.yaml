@@ -70,6 +70,11 @@ security:
                 target: app_login
 
     # Note: Only the *first* access control that matches will be used.
+    #
+    # The `allow_if` rules below are expressions rather than `roles:` lists on purpose. A `roles:` list
+    # is an OR: RoleVoter grants on the first attribute the token carries, and the decision strategy is
+    # affirmative, so `roles: [ROLE_ADMIN, IS_AUTHENTICATED_FULLY]` would let either one through - a
+    # weaker rule than the plain role check, not a stronger one. Only an expression means "and".
     access_control:
         # The public front door: logged-out `/` renders the landing, logged-in `/` the dashboard. The
         # `$` anchors this to the root only, so every deeper route still falls to the ROLE_USER catch-all.
@@ -90,7 +95,21 @@ security:
         - { path: ^/_test, roles: PUBLIC_ACCESS }
         # The operator surface. Above the ROLE_USER catch-all (first match wins), so every /app/admin
         # route demands ROLE_ADMIN: a signed-in non-admin gets 403, an anonymous visitor is sent to login.
-        - { path: ^/app/admin, roles: ROLE_ADMIN }
+        # It also demands full authentication, so a remember-me cookie alone cannot reach it.
+        - { path: ^/app/admin, allow_if: "is_granted('ROLE_ADMIN') and is_fully_authenticated()" }
+        # Credential management: adding and removing addresses and passkeys, promoting a primary, and
+        # resending a verification. These are the actions that can take over the account, so they
+        # demand a fresh proof - a cookie-restored session is refused and sent to re-prove (ADR-0014).
+        #
+        # Prefixes, not per-route rules, because the WebAuthn bundle owns the registration ceremony at
+        # /app/account/passkeys/{options,result} (webauthn.yaml controllers.creation) and there is no
+        # app class there to carry an attribute. The firewall is those two endpoints' only guard.
+        #
+        # Reading is deliberately left open: the lists live at /app/account/access, which falls to the
+        # catch-all below. The public /account/emails/{id}/verify link is matched further up and is not
+        # under /app, so it is untouched.
+        - { path: ^/app/account/emails, allow_if: "is_granted('ROLE_USER') and is_fully_authenticated()" }
+        - { path: ^/app/account/passkeys, allow_if: "is_granted('ROLE_USER') and is_fully_authenticated()" }
         - { path: ^/, roles: ROLE_USER }
 
 when@test:

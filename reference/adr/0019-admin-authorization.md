@@ -23,15 +23,17 @@ restated on the controllers.**
 
 - **The role reuses `User.roles`.** `User` holds a `roles` JSON array and `getRoles()` merges in
   `ROLE_USER`. `ROLE_ADMIN` is just a value in that array - no schema change, no new entity.
-- **The firewall guards the whole surface.** A single `access_control` rule, `^/app/admin` requiring
-  `ROLE_ADMIN`, sits above the `^/` `ROLE_USER` catch-all (first match wins). A signed-in non-admin
-  hitting any `/app/admin` route gets 403; an anonymous visitor is sent to login by the entry point.
-  One rule covers every current and future admin route, matching the deny-by-default posture ADR-0018
-  keeps for `/app` as a whole.
-- **Controllers restate the requirement with `#[IsGranted('ROLE_ADMIN')]`.** Belt-and-suspenders over
-  the firewall rule: the check travels with the action, so an admin action is still guarded if a future
-  route ever escapes the `^/app/admin` prefix, and the requirement is legible at the controller. These
-  admin controllers are the codebase's first use of the `IsGranted` / `is_granted()` pattern.
+- **The firewall guards the whole surface.** A single `access_control` rule for `^/app/admin` sits above
+  the `^/` `ROLE_USER` catch-all (first match wins). A signed-in non-admin hitting any `/app/admin`
+  route gets 403; an anonymous visitor is sent to login by the entry point. One rule covers every
+  current and future admin route, matching the deny-by-default posture ADR-0018 keeps for `/app` as a
+  whole. The rule demands `ROLE_ADMIN` *and* full authentication, so a session restored from the
+  remember-me cookie is sent to re-prove rather than admitted - see ADR-0014, which also explains why
+  that pairing has to be written as an expression rather than a list of roles.
+- **Controllers restate the requirement with `#[IsGranted]`.** Belt-and-suspenders over the firewall
+  rule: the check travels with the action, so an admin action is still guarded if a future route ever
+  escapes the `^/app/admin` prefix, and the requirement is legible at the controller. These admin
+  controllers are the codebase's first use of the `IsGranted` / `is_granted()` pattern.
 - **The nav entry is gated by `is_granted('ROLE_ADMIN')`.** The "Admin" link renders only for admins,
   in both the desktop and mobile navigation - the surface is invisible to regular users, not merely
   link-hidden-but-reachable (the firewall enforces the latter).
@@ -53,8 +55,13 @@ restated on the controllers.**
 - Adding an admin route requires nothing for authorization: the `^/app/admin` rule already covers it.
   The `#[IsGranted]` attribute on each controller is a deliberate, cheap restatement, not load-bearing
   wiring.
-- `ROLE_ADMIN` on `User.roles` means an admin is an ordinary account with an extra role, so all existing
-  authentication (magic-link, passkeys, remember-me) works unchanged for admins.
+- `ROLE_ADMIN` on `User.roles` means an admin is an ordinary account with an extra role, so an admin
+  signs in exactly as anyone else does, by magic link or passkey. The remember-me cookie is the one
+  place the two diverge: it carries an admin around the rest of the application but not into the
+  operator surface, which asks for the sign-in again.
+- The "Admin" nav link renders for an admin whose session came from the cookie, and following it leads
+  to the login page rather than the hub. That is the intended shape - the alternative, hiding the link
+  from an account that genuinely holds the role, would read as the surface having vanished.
 - There is no finer-grained permission model: it is one flat operator role. If distinct operator
   capabilities ever need to diverge (read-only auditor vs. full operator), that is a later decision.
 - Role changes are not audited and not reachable from the UI, so a second admin still requires console

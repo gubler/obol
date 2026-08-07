@@ -17,6 +17,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class ListUsersController extends AbstractBaseController
 {
     #[IsGranted(attribute: 'ROLE_ADMIN')]
+    #[IsGranted(attribute: 'IS_AUTHENTICATED_FULLY')]
     #[Route(path: '/app/admin/users', name: 'admin_users', methods: ['GET'])]
     public function __invoke(Request $request): Response
     {

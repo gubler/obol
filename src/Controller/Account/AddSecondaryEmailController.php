@@ -14,9 +14,13 @@ use App\Message\Command\UserEmail\AddSecondaryEmailCommand;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final class AddSecondaryEmailController extends AbstractBaseController
 {
+    // Belt-and-suspenders with the `^/app/account/emails` access_control rule (ADR-0014): adding an
+    // address is a credential change, so a remember-me-restored session must re-prove first.
+    #[IsGranted(attribute: 'IS_AUTHENTICATED_FULLY')]
     #[Route(path: '/app/account/emails', name: 'account_email_add', methods: ['POST'])]
     public function __invoke(Request $request): RedirectResponse
     {

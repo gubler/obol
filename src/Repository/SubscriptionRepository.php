@@ -91,6 +91,7 @@ class SubscriptionRepository extends ServiceEntityRepository
         if ($category instanceof Category) {
             // Bind the id with the ULID type: comparing the association to the entity leaves Doctrine to
             // stringify the Ulid as base32, which the uuid column rejects.
+            // @igor-ignore - $qb is a fresh QueryBuilder from createQueryBuilder(), local to this call.
             $qb->andWhere('s.category = :category')->setParameter('category', $category->id, UlidType::NAME);
         } else {
             $qb->andWhere('s.category IS NULL');
@@ -111,6 +112,7 @@ class SubscriptionRepository extends ServiceEntityRepository
 
         if ($source instanceof PaymentSource) {
             // Bind the id with the ULID type (see findActiveForOwnerByCategory).
+            // @igor-ignore - $qb is a fresh QueryBuilder from createQueryBuilder(), local to this call.
             $qb->andWhere('s.paymentSource = :source')->setParameter('source', $source->id, UlidType::NAME);
         } else {
             $qb->andWhere('s.paymentSource IS NULL');

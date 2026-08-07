@@ -23,6 +23,7 @@ Every address on your account is listed with a label:
 
 A few things worth knowing:
 
+- If it's been a while since you signed in, the **Access** section shows **Sign in again** instead of the address buttons. Adding, removing, or promoting an address needs a fresh sign-in - see [Signing in again to make changes](account.md#signing-in-again-to-make-changes). Confirming an address from your mailbox is unaffected; that link works on any device, signed in or not.
 - The address starts as **Pending verification** and becomes a usable backup only once you click the link.
 - The confirmation link is valid for **24 hours**. If it expires, select **Resend link** next to the pending address for a fresh one.
 - For your privacy, the confirmation message is the same whether or not the address was available - so the page never reveals whether an address is already in use on another account. If an address is already verified on someone else's account, you simply won't be able to confirm it.

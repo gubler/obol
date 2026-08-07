@@ -22,6 +22,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class InviteUserController extends AbstractBaseController
 {
     #[IsGranted(attribute: 'ROLE_ADMIN')]
+    #[IsGranted(attribute: 'IS_AUTHENTICATED_FULLY')]
     #[Route(path: '/app/admin/users/invite', name: 'admin_user_invite', methods: ['GET', 'POST'])]
     public function __invoke(Request $request): Response
     {

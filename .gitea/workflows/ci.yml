@@ -157,12 +157,15 @@ jobs:
 
             # Worker-mode state audit: fails the build if a shared service would leak state across
             # requests under FrankenPHP worker mode. Needs the dev service map, which the IgorPhpBundle
-            # CompilerPass writes on cache:clear. The Go binary self-downloads on first run.
+            # CompilerPass writes on cache:clear. The Go binary is fetched at the version composer
+            # resolved, so this gate moves only when the lockfile does.
+            #
+            # memory_limit=-1 for the same reason PHPStan raises it: the image caps it at 128M.
             - name: "Igor (worker-mode state audit)"
               if: always() && steps.install.outcome == 'success'
               run: |
-                  php bin/console cache:clear --env=dev
-                  vendor/bin/igor-php .
+                  php -d memory_limit=-1 bin/console cache:clear --env=dev
+                  php -d memory_limit=-1 vendor/bin/igor-php .
 
             # JS toolchain checks (#133) - Biome (style + lint), tsc --checkJs (static
             # analysis), Vitest (unit tests). Independent of the PHP stack above.

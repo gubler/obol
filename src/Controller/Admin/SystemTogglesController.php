@@ -21,6 +21,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class SystemTogglesController extends AbstractBaseController
 {
     #[IsGranted(attribute: 'ROLE_ADMIN')]
+    #[IsGranted(attribute: 'IS_AUTHENTICATED_FULLY')]
     #[Route(path: '/app/admin/system-toggles', name: 'admin_system_toggles', methods: ['GET', 'POST'])]
     public function __invoke(Request $request): Response
     {

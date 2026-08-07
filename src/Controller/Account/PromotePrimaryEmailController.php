@@ -17,10 +17,12 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Requirement\Requirement;
 use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Uid\Ulid;
 
 final class PromotePrimaryEmailController extends AbstractBaseController
 {
+    #[IsGranted(attribute: 'IS_AUTHENTICATED_FULLY')]
     #[IsCsrfTokenValid(id: 'submit')]
     #[Route(
         path: '/app/account/emails/{id}/promote',

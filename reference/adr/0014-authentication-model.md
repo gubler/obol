@@ -70,6 +70,47 @@ the login, logout, and magic-link routes are public. How long that cookie and th
 last, and why the cookie rather than the session is the credential that keeps people signed in, is
 ADR-0028.
 
+### Credential management and the admin surface demand full authentication
+
+Because `always_remember_me` issues a cookie on every login, a session that lapses is restored by that
+cookie, and the restored session is indistinguishable from the one strong authentication produced. A
+passkey holder becomes a bearer-cookie holder. No cookie or session lifetime changes that (ADR-0028
+establishes it directly): the downgrade is inevitable at every horizon, so the only thing that helps is
+telling the two strengths apart at the point of use.
+
+**Actions that could take over the account require `IS_AUTHENTICATED_FULLY`; reading does not.** Gated:
+the whole `^/app/admin` surface, and under `/app/account` the email mutations (add, remove, promote,
+resend a verification) and the passkey ones (register, revoke, rename). Not gated: the account hub, the
+address and passkey lists, and preferences. Reading discloses nothing a cookie holder cannot already see
+elsewhere in the application, so gating it would put a mailbox round trip in front of ordinary
+navigation for no security.
+
+The signed `/account/emails/{id}/verify` link stays public. It is clicked from the target mailbox,
+possibly on a device where the user has never signed in; the signature is the credential there, and the
+in-app action that a cookie must not perform is *resending* that mail, which is gated.
+
+Three mechanics shape how it is expressed:
+
+- **`access_control` prefixes carry it, not attributes alone.** The WebAuthn bundle owns the passkey
+  registration ceremony at `/app/account/passkeys/{options,result}`, and there is no application class
+  there to annotate. The `^/app/account/passkeys` rule is those two endpoints' only guard. Controllers
+  restate the requirement with `#[IsGranted]` in the belt-and-suspenders style of ADR-0019.
+- **The rules are `allow_if` expressions, not `roles` lists.** A `roles` list is an OR - `RoleVoter`
+  grants on the first attribute the token carries and the decision strategy is affirmative - so adding
+  `IS_AUTHENTICATED_FULLY` to `roles: [ROLE_ADMIN]` would weaken the rule rather than tighten it. Only
+  an expression means "and". Stacked `#[IsGranted]` attributes are an AND, because the attribute is
+  repeatable and every one is checked.
+- **A refused cookie-restored session is not signed out.** Symfony's `ExceptionListener` sees a token
+  that is not full-fledged, records the target path and hands off to `LoginRedirectEntryPoint`, so the
+  user re-proves - magic link or passkey - and lands back where they were headed. The login page draws
+  the same distinction: it sends away only the fully authenticated, so a remembered visitor arriving to
+  re-prove reaches the form rather than bouncing back to the dashboard.
+- **The target path is only recorded for safe requests.** That leaves the credential mutations, which
+  are POSTs, with nowhere to return to. So the access page swaps its action forms for a prompt when the
+  session is cookie-restored, and the prompt is a GET (`/app/account/access/confirm`) whose refusal
+  round-trips back to the page with the forms live. On that route the `#[IsGranted]` attribute is the
+  mechanism rather than a restatement.
+
 ## Considered options
 
 - **Passwords / password + magic-link** - rejected. Storing password hashes is exactly the liability a
@@ -91,3 +132,11 @@ ADR-0028.
   `login_link` firewall for passkeys, and roles for the eventual admin surface.
 - The prod mailer must be live and `app:mailer:smoke` must pass before the founder migration, or the
   first magic-link login locks the founder out.
+- Convenience rides the cookie and consequence does not. A stolen or replayed remember-me cookie reads
+  the account but cannot take it over, which is what makes ADR-0028's 45-day horizon comfortable rather
+  than merely tolerable.
+- Adding a credential-mutating route under `/app/account/emails` or `/app/account/passkeys` needs
+  nothing for the gate; a new one outside those prefixes needs its own rule, since the `#[IsGranted]`
+  attribute alone is a restatement rather than the guard.
+- Anyone whose session has lapsed pays a mailbox round trip to manage credentials. Registering a passkey
+  is the sharpest case, because the reason to want one is to avoid exactly that trip.

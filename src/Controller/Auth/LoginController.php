@@ -25,7 +25,10 @@ final class LoginController extends AbstractBaseController
     #[Route(path: '/login', name: 'app_login', methods: ['GET', 'POST'])]
     public function __invoke(Request $request): Response
     {
-        if ($this->getUser() instanceof \Symfony\Component\Security\Core\User\UserInterface) {
+        // Full authentication, not merely "has a user": a remember-me-restored session lands here on
+        // its way to re-proving identity for the admin surface or credential management (ADR-0014).
+        // Bouncing it back to the dashboard would leave the step-up with nowhere to go.
+        if ($this->isGranted(attribute: 'IS_AUTHENTICATED_FULLY')) {
             return $this->redirectToRoute(route: 'subscription_index');
         }
 

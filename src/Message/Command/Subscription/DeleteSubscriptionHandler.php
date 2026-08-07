@@ -30,6 +30,7 @@ final readonly class DeleteSubscriptionHandler
             throw new \InvalidArgumentException(\sprintf('Subscription with ID "%s" not found.', $command->subscriptionId));
         }
 
+        // @igor-ignore - Doctrine's UnitOfWork; the entity manager is reset per request via the kernel.reset-tagged registry.
         $this->entityManager->remove($subscription);
 
         $this->subscriptionChangeNotifier->notifyChanged($command->ownerUserId);

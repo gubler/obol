@@ -27,3 +27,9 @@ The **Access** section gathers everything about signing in:
 
 - **Your email addresses** - add, verify, promote, or remove addresses. See [Email addresses](emails.md).
 - **Your passkeys** - register, rename, or remove passkeys for faster sign-in. See [Passkeys](passkeys.md).
+
+### Signing in again to make changes
+
+Obol keeps you signed in between visits, so the sign-in that got you here may be weeks old. Changing how you sign in - adding or removing an address or a passkey - needs a fresh one, so a saved session on its own can never change your credentials. Anyone who got hold of that saved session could read your account, but not take it over.
+
+When a fresh sign-in is needed, the **Access** section shows **Sign in again** in place of the usual buttons. Select it, sign in the way you normally do, and you land back on the same page with everything available. You are not signed out in the meantime, and the rest of Obol carries on as usual.

@@ -33,6 +33,7 @@ final readonly class DeleteCategoryHandler
             throw new CategoryHasSubscriptionsException((string) $command->categoryId);
         }
 
+        // @igor-ignore - Doctrine's UnitOfWork; the entity manager is reset per request via the kernel.reset-tagged registry.
         $this->entityManager->remove($category);
     }
 }

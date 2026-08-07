@@ -27,6 +27,7 @@ final readonly class RevokePasskeyHandler
             throw new \InvalidArgumentException(\sprintf('Passkey with ID "%s" not found.', $command->credentialId));
         }
 
+        // @igor-ignore - Delegates to the entity manager, which is reset per request via the kernel.reset-tagged registry.
         $this->passkeyCredentials->remove($credential);
     }
 }

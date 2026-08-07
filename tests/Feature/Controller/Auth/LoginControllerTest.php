@@ -87,6 +87,15 @@ final class LoginControllerTest extends WebTestCase
         self::assertResponseRedirects('/login');
     }
 
+    public function testAFullyAuthenticatedUserIsSentAwayFromTheLoginPage(): void
+    {
+        $this->client->loginUser(UserFactory::founder());
+
+        $this->client->request(method: Request::METHOD_GET, uri: '/login');
+
+        self::assertResponseRedirects('/app');
+    }
+
     public function testAuthenticatedUsersReachTheApp(): void
     {
         $this->client->loginUser(UserFactory::founder());

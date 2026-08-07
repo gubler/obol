@@ -298,6 +298,11 @@ account:
         nav:
             preferences: Preferences
             access: Access
+    access:
+        step_up:
+            heading: Sign in again to change these
+            body: You are signed in with an old session. For security, you need to re-sign in before updating emails or passkeys.
+            submit: Sign in again
     preferences:
         heading: Preferences
         intro: How Obol displays information for you.

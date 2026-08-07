@@ -23,9 +23,17 @@ the service map with `cache:clear`, which is too slow for the per-commit sprints
 mise run igor
 ```
 
-The task clears the dev cache (to refresh the service map, see below) and runs the audit. The Go
-binary self-downloads on first run. A clean run reports every shared service as worker-safe; a new
-finding exits non-zero and fails CI.
+The task clears the dev cache (to refresh the service map, see below) and runs the audit. A clean run
+reports every shared service as worker-safe; a new finding exits non-zero and fails CI.
+
+The analyzer is a Go binary that the composer package fetches on first run, at the version composer
+resolved - so `composer.lock` decides which analyzer runs, and the gate moves only when the lockfile
+does. The constraint is pinned to an exact version rather than a range, because Igor's rule set and
+its finding wording both change between releases, and the baseline matches on wording: a floating
+constraint turns an upstream release into a red build on an unchanged commit.
+
+Both commands run with `memory_limit=-1`, for the same reason PHPStan does: the FrankenPHP image caps
+it at 128M, which clearing the dev cache exhausts while rewriting the container dump.
 
 ## How the audit stays accurate
 
@@ -69,14 +77,18 @@ Findings Igor cannot act on - third-party services in `vendor/` - are recorded i
 regenerated with:
 
 ```bash
-mise run dce -- sh -c 'php bin/console cache:clear --env=dev && vendor/bin/igor-php -generate-baseline .'
+mise run dce -- sh -c 'php -d memory_limit=-1 bin/console cache:clear --env=dev && php -d memory_limit=-1 vendor/bin/igor-php -generate-baseline .'
 ```
 
-Regenerate it deliberately - for example after a dependency bump changes which vendor services exist
-- and review the diff, so a genuinely new leak is never baselined by accident. The baseline is
-vendor-only: the one project pattern Igor used to flag, `AbstractBaseController`'s `#[Required]`
-setter, is fixed rather than baselined by declaring the injected buses, logger, and translator
-`readonly` (Igor ignores readonly properties), so no project code sits in the baseline.
+Regenerate it deliberately - after a dependency bump changes which vendor services exist, or after an
+Igor upgrade changes the rules or their wording - and review the diff, so a genuinely new leak is
+never baselined by accident. Fill in each entry's `reason` field; the generator leaves a `TODO` there,
+and an unexplained entry is indistinguishable from a suppressed bug.
+
+**The baseline is vendor-only, and stays that way.** Project findings are resolved in the code:
+`AbstractBaseController`'s `#[Required]` setter by declaring the injected buses, logger, and
+translator `readonly` (Igor ignores readonly properties), and the rest by the annotation below. A
+finding in `src/` never belongs here.
 
 ## Suppressing a finding
 
@@ -89,7 +101,14 @@ Prefer, in order:
 3. **`safe_namespaces`** in `igor.json` for whole namespaces that are never worker-relevant
    (`Symfony\`, `Doctrine\`, the Igor bundle itself, and `Zenstruck\Foundry\` - its bundle is
    dev/test-only, so its services never exist in a prod worker).
-4. **Baseline** a known-safe finding that none of the above fit.
+4. **`// @igor-ignore`** on the line, with the reason on the same comment, when the finding is a
+   false positive rather than something to fix. Igor is deliberately over-eager - its own
+   documentation says it reports as many potential issues as it can and leaves the judgement to you -
+   so it flags ordinary method calls on injected dependencies. The ones in `src/` today are Doctrine
+   removals (the entity manager is reset per request through the `kernel.reset`-tagged registry), a
+   `QueryBuilder` built fresh per call, a `Money` value object reassigned in a loop, and a clock read.
+   Keep the reason on the annotation: the point is that a reviewer can check the judgement.
+5. **Baseline** a vendor finding that none of the above fit.
 
-Line- and element-level `// @igor-ignore` comments and the `#[WorkerSafe]` attribute exist too, but
-the attribute imports a dev-only class into the annotated file, so it is avoided in shipped code.
+The `#[WorkerSafe]` attribute does the same job at class, method, or property level, but it imports a
+dev-only class into the annotated file, so it is avoided in shipped code. The comment imports nothing.

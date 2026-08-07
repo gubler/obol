@@ -33,6 +33,7 @@ final readonly class DeletePaymentSourceHandler
             throw new PaymentSourceHasSubscriptionsException((string) $command->paymentSourceId);
         }
 
+        // @igor-ignore - Doctrine's UnitOfWork; the entity manager is reset per request via the kernel.reset-tagged registry.
         $this->entityManager->remove($source);
     }
 }

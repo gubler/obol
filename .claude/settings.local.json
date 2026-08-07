@@ -16,9 +16,13 @@
             "Bash(php:*)",
             "Bash(mise tasks:*)",
             "Bash(mise config:*)",
-            "mcp__mate__*"
+            "mcp__mate__*",
+            "mcp__gitea__*"
         ],
         "deny": [],
         "ask": []
-    }
+    },
+    "enabledMcpjsonServers": [
+        "mate"
+    ]
 }

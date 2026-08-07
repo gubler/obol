@@ -26,6 +26,7 @@ PHPStan enforces a rule that `AbstractController` subclasses must not define a c
 - **HTTP method restrictions** — every route specifies `methods: ['GET']`, `methods: ['POST']`, or `methods: ['GET', 'POST']`
 - **URL surfaces (ADR-0018)** — authenticated application routes live under `/app` (protected by the `^/` deny-by-default firewall). Public routes stay at the root: the landing (`/`), login/magic-link, and the signed email-verification link (`/account/emails/{id}/verify`), which sits deliberately outside `/app` so it works from a logged-out mailbox.
 - **Admin authorization (ADR-0019)** — the operator surface at `/app/admin/*` requires `ROLE_ADMIN`. It is guarded by an `access_control` rule (`^/app/admin`, above the `^/` `ROLE_USER` catch-all) and restated with `#[IsGranted('ROLE_ADMIN')]` on the admin controllers; the "Admin" nav link is gated by `is_granted('ROLE_ADMIN')`. `ROLE_ADMIN` is a value on `User.roles` (no schema change); it is granted from the console (`app:user:admin --grant|--revoke`, which refuses to remove the last admin), not the UI.
+- **Step-up authentication (ADR-0014)** — the admin surface and the credential mutations under `/app/account` also require `IS_AUTHENTICATED_FULLY`, so a session restored from the remember-me cookie is refused and sent to re-prove. The rules are `allow_if` expressions rather than `roles` lists, because a `roles` list is an OR and would have loosened the check; stacked `#[IsGranted]` attributes on a controller are an AND. Two prefixes carry it, `^/app/account/emails` and `^/app/account/passkeys` — the passkey one is the only guard on the WebAuthn bundle's registration endpoints, which have no application controller to annotate. Read-only account views stay outside the gate.
 
 ## Controller Inventory
 
@@ -119,7 +120,11 @@ The sidebar is **data-driven**. Adding a section is three small steps, not a lay
 3. Add the sidebar label to the `account.hub.nav.*` translation keys.
 
 The existing sections are **Preferences** (display name, currency, language, date & time
-format, timezone) and **Access** (email addresses + passkeys). Flash messages render from
+format, timezone) and **Access** (email addresses + passkeys). Access renders its action
+forms only for a fully authenticated session; a cookie-restored one gets a prompt linking to
+`account_access_confirm` instead, which is a GET whose refusal round-trips back to the page
+(the mutations are POSTs, and Symfony records a post-login target path only for safe
+requests). Flash messages render from
 one shared partial (`templates/components/_flashes.html.twig`, a dismiss button wired to the
 `dismissible` Stimulus controller) so every flash looks and closes the same way. They render
 once in the hub shell for the non-framed sections. **Preferences** is the exception:
@@ -138,7 +143,8 @@ the formatting settings in one `ChangePreferencesCommand`.
 
 ## The admin hub (operator surface)
 
-The admin area (`/app/admin/*`) is the operator surface, behind `ROLE_ADMIN` (see ADR-0019). It
+The admin area (`/app/admin/*`) is the operator surface, behind `ROLE_ADMIN` and full
+authentication (see ADR-0019 and ADR-0014). It
 reuses the same data-driven two-column hub as the account settings: the shell lives in
 `templates/admin/_hub.html.twig`, sections extend it and fill `{% block section %}`, and adding a
 section is the same three steps (controller + route, one `sections` entry, an `admin.hub.nav.*`

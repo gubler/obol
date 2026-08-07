@@ -2,517 +2,880 @@
   "files": {
     "vendor/fakerphp/faker/src/Faker/Generator.php": [
       {
-        "message": "Mutation of state 'formatters' in Generator::addProvider()"
+        "message": "Mutation of state 'formatters' in Generator::addProvider()",
+        "reason": "Test-data generator; dev-only, never wired into a prod request."
       },
       {
-        "message": "Mutation of state 'uniqueGenerator' in Generator::unique()"
+        "message": "Mutation of state 'uniqueGenerator' in Generator::unique()",
+        "reason": "Test-data generator; dev-only, never wired into a prod request."
       },
       {
-        "message": "Mutation of state 'formatters' in Generator::getFormatter()"
+        "message": "Mutation of state 'formatters' in Generator::getFormatter()",
+        "reason": "Test-data generator; dev-only, never wired into a prod request."
       },
       {
-        "message": "Mutation of state 'formatters' in Generator::getFormatter()"
+        "message": "Mutation of state 'formatters' in Generator::getFormatter()",
+        "reason": "Test-data generator; dev-only, never wired into a prod request."
       },
       {
-        "message": "Mutation of state 'formatters' in Generator::getFormatter()"
+        "message": "Mutation of state 'formatters' in Generator::getFormatter()",
+        "reason": "Test-data generator; dev-only, never wired into a prod request."
       },
       {
-        "message": "Mutation of state 'formatters' in Generator::__wakeup()"
+        "message": "Mutation of state 'formatters' in Generator::__wakeup()",
+        "reason": "Test-data generator; dev-only, never wired into a prod request."
       }
     ],
     "vendor/knplabs/knp-time-bundle/src/DateTimeFormatter.php": [
       {
-        "message": "Usage of local static variable is dangerous in Worker mode."
+        "message": "Usage of local static variable is dangerous in Worker mode.",
+        "reason": "Formatter caches keyed by locale; derived from input, carries no request data."
       },
       {
-        "message": "Usage of local static variable is dangerous in Worker mode."
+        "message": "Usage of local static variable is dangerous in Worker mode.",
+        "reason": "Formatter caches keyed by locale; derived from input, carries no request data."
       }
     ],
     "vendor/monolog/monolog/src/Monolog/Formatter/JsonFormatter.php": [
       {
-        "message": "Mutation of state 'includeStacktraces' in JsonFormatter::includeStacktraces()"
+        "message": "Mutation of state 'includeStacktraces' in JsonFormatter::includeStacktraces()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
       },
       {
-        "message": "Mutation of state 'appendNewline' in JsonFormatter::formatBatchNewlines()"
+        "message": "Mutation of state 'appendNewline' in JsonFormatter::formatBatchNewlines()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
       },
       {
-        "message": "Mutation of state 'appendNewline' in JsonFormatter::formatBatchNewlines()"
+        "message": "Mutation of state 'appendNewline' in JsonFormatter::formatBatchNewlines()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
       }
     ],
     "vendor/monolog/monolog/src/Monolog/Formatter/LineFormatter.php": [
       {
-        "message": "Mutation of state 'basePath' in LineFormatter::setBasePath()"
+        "message": "Mutation of state 'basePath' in LineFormatter::setBasePath()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
       },
       {
-        "message": "Mutation of state 'includeStacktraces' in LineFormatter::includeStacktraces()"
+        "message": "Mutation of state 'includeStacktraces' in LineFormatter::includeStacktraces()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
       },
       {
-        "message": "Mutation of state 'allowInlineLineBreaks' in LineFormatter::includeStacktraces()"
+        "message": "Mutation of state 'allowInlineLineBreaks' in LineFormatter::includeStacktraces()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
       },
       {
-        "message": "Mutation of state 'stacktracesParser' in LineFormatter::includeStacktraces()"
+        "message": "Mutation of state 'stacktracesParser' in LineFormatter::includeStacktraces()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
       },
       {
-        "message": "Mutation of state 'indentStacktraces' in LineFormatter::indentStacktraces()"
+        "message": "Mutation of state 'indentStacktraces' in LineFormatter::indentStacktraces()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
       },
       {
-        "message": "Mutation of state 'allowInlineLineBreaks' in LineFormatter::allowInlineLineBreaks()"
+        "message": "Mutation of state 'allowInlineLineBreaks' in LineFormatter::allowInlineLineBreaks()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
       },
       {
-        "message": "Mutation of state 'ignoreEmptyContextAndExtra' in LineFormatter::ignoreEmptyContextAndExtra()"
+        "message": "Mutation of state 'ignoreEmptyContextAndExtra' in LineFormatter::ignoreEmptyContextAndExtra()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
       },
       {
-        "message": "Mutation of state 'maxLevelNameLength' in LineFormatter::setMaxLevelNameLength()"
+        "message": "Mutation of state 'maxLevelNameLength' in LineFormatter::setMaxLevelNameLength()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
       }
     ],
     "vendor/monolog/monolog/src/Monolog/Formatter/NormalizerFormatter.php": [
       {
-        "message": "Mutation of state 'dateFormat' in NormalizerFormatter::setDateFormat()"
+        "message": "Mutation of state 'dateFormat' in NormalizerFormatter::setDateFormat()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
       },
       {
-        "message": "Mutation of state 'maxNormalizeDepth' in NormalizerFormatter::setMaxNormalizeDepth()"
+        "message": "Mutation of state 'maxNormalizeDepth' in NormalizerFormatter::setMaxNormalizeDepth()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
       },
       {
-        "message": "Mutation of state 'maxNormalizeItemCount' in NormalizerFormatter::setMaxNormalizeItemCount()"
+        "message": "Mutation of state 'maxNormalizeItemCount' in NormalizerFormatter::setMaxNormalizeItemCount()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
       },
       {
-        "message": "Mutation of state 'jsonEncodeOptions' in NormalizerFormatter::setJsonPrettyPrint()"
+        "message": "Mutation of state 'jsonEncodeOptions' in NormalizerFormatter::setJsonPrettyPrint()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
       },
       {
-        "message": "Mutation of state 'jsonEncodeOptions' in NormalizerFormatter::setJsonPrettyPrint()"
+        "message": "Mutation of state 'jsonEncodeOptions' in NormalizerFormatter::setJsonPrettyPrint()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
       },
       {
-        "message": "Mutation of state 'basePath' in NormalizerFormatter::setBasePath()"
+        "message": "Mutation of state 'basePath' in NormalizerFormatter::setBasePath()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
       },
       {
-        "message": "Mutation of state 'jsonEncodeOptions' in NormalizerFormatter::addJsonEncodeOption()"
+        "message": "Mutation of state 'jsonEncodeOptions' in NormalizerFormatter::addJsonEncodeOption()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
       },
       {
-        "message": "Mutation of state 'jsonEncodeOptions' in NormalizerFormatter::removeJsonEncodeOption()"
+        "message": "Mutation of state 'jsonEncodeOptions' in NormalizerFormatter::removeJsonEncodeOption()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
+      }
+    ],
+    "vendor/monolog/monolog/src/Monolog/Handler/AbstractHandler.php": [
+      {
+        "message": "Property 'level' of AbstractHandler is mutated but not reset in reset().",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
+      },
+      {
+        "message": "Property 'bubble' of AbstractHandler is mutated but not reset in reset().",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
+      }
+    ],
+    "vendor/monolog/monolog/src/Monolog/Handler/FormattableHandlerTrait.php": [
+      {
+        "message": "Mutation of state 'formatter' in FormattableHandlerTrait::setFormatter()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
+      },
+      {
+        "message": "Mutation of state 'formatter' in FormattableHandlerTrait::getFormatter()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
       }
     ],
     "vendor/monolog/monolog/src/Monolog/Handler/RotatingFileHandler.php": [
       {
-        "message": "Property 'url' of RotatingFileHandler is mutated but not reset in reset()."
+        "message": "Property 'dateFormat' of RotatingFileHandler is mutated but not reset in reset().",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
       },
       {
-        "message": "Property 'mustRotate' of RotatingFileHandler is mutated but not reset in reset()."
+        "message": "Property 'filenameFormat' of RotatingFileHandler is mutated but not reset in reset().",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
       },
       {
-        "message": "Property 'nextRotation' of RotatingFileHandler is mutated but not reset in reset()."
+        "message": "Property 'mustRotate' of RotatingFileHandler is mutated but not reset in reset().",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
       },
       {
-        "message": "Property 'dateFormat' of RotatingFileHandler is mutated but not reset in reset()."
+        "message": "Property 'nextRotation' of RotatingFileHandler is mutated but not reset in reset().",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
+      }
+    ],
+    "vendor/monolog/monolog/src/Monolog/Handler/StreamHandler.php": [
+      {
+        "message": "Mutation of state 'stream' in StreamHandler::close()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
       },
       {
-        "message": "Property 'filenameFormat' of RotatingFileHandler is mutated but not reset in reset()."
+        "message": "Mutation of state 'dirCreated' in StreamHandler::close()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
+      },
+      {
+        "message": "Mutation of state 'errorMessage' in StreamHandler::write()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
+      },
+      {
+        "message": "Mutation of state 'stream' in StreamHandler::write()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
+      },
+      {
+        "message": "Mutation of state 'stream' in StreamHandler::write()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
+      },
+      {
+        "message": "Mutation of state 'inodeUrl' in StreamHandler::write()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
+      },
+      {
+        "message": "Mutation of state 'errorMessage' in StreamHandler::write()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
+      },
+      {
+        "message": "Mutation of state 'retrying' in StreamHandler::write()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
+      },
+      {
+        "message": "Mutation of state 'retrying' in StreamHandler::write()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
+      },
+      {
+        "message": "Mutation of state 'errorMessage' in StreamHandler::customErrorHandler()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
+      },
+      {
+        "message": "Mutation of state 'errorMessage' in StreamHandler::createDir()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
+      },
+      {
+        "message": "Mutation of state 'dirCreated' in StreamHandler::createDir()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
+      },
+      {
+        "message": "Mutation of state 'retrying' in StreamHandler::hasUrlInodeWasChanged()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
       }
     ],
     "vendor/monolog/monolog/src/Monolog/Logger.php": [
       {
-        "message": "Property 'exceptionHandler' of Logger is mutated but not reset in reset()."
+        "message": "Property 'handlers' of Logger is mutated but not reset in reset().",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
       },
       {
-        "message": "Property 'timezone' of Logger is mutated but not reset in reset()."
+        "message": "Property 'microsecondTimestamps' of Logger is mutated but not reset in reset().",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
       },
       {
-        "message": "Property '$property' of Logger is mutated but not reset in reset()."
+        "message": "Property 'fiberLogDepth' of Logger is mutated but not reset in reset().",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
       },
       {
-        "message": "Property 'fiberLogDepth' of Logger is mutated but not reset in reset()."
+        "message": "Property 'exceptionHandler' of Logger is mutated but not reset in reset().",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
       },
       {
-        "message": "Property 'handlers' of Logger is mutated but not reset in reset()."
+        "message": "Property 'timezone' of Logger is mutated but not reset in reset().",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
       },
       {
-        "message": "Property 'microsecondTimestamps' of Logger is mutated but not reset in reset()."
+        "message": "Property 'detectCycles' of Logger is mutated but not reset in reset().",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
       },
       {
-        "message": "Property 'detectCycles' of Logger is mutated but not reset in reset()."
-      },
-      {
-        "message": "Property 'logDepth' of Logger is mutated but not reset in reset()."
+        "message": "Property 'logDepth' of Logger is mutated but not reset in reset().",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
       }
     ],
     "vendor/php-http/discovery/src/Psr17Factory.php": [
       {
-        "message": "Usage of PHP Superglobal $_SERVER is discouraged in Worker mode."
+        "message": "Usage of PHP Superglobal $_SERVER is discouraged in Worker mode.",
+        "reason": "PSR-17 factory discovery cache; deterministic, carries no request data."
       },
       {
-        "message": "Usage of PHP Superglobal $_FILES is discouraged in Worker mode."
+        "message": "Usage of PHP Superglobal $_FILES is discouraged in Worker mode.",
+        "reason": "PSR-17 factory discovery cache; deterministic, carries no request data."
       },
       {
-        "message": "Usage of PHP Superglobal $_GET is discouraged in Worker mode."
+        "message": "Usage of PHP Superglobal $_GET is discouraged in Worker mode.",
+        "reason": "PSR-17 factory discovery cache; deterministic, carries no request data."
       },
       {
-        "message": "Usage of PHP Superglobal $_POST is discouraged in Worker mode."
+        "message": "Usage of PHP Superglobal $_POST is discouraged in Worker mode.",
+        "reason": "PSR-17 factory discovery cache; deterministic, carries no request data."
       },
       {
-        "message": "Usage of PHP Superglobal $_COOKIE is discouraged in Worker mode."
+        "message": "Usage of PHP Superglobal $_COOKIE is discouraged in Worker mode.",
+        "reason": "PSR-17 factory discovery cache; deterministic, carries no request data."
       },
       {
-        "message": "Usage of PHP Superglobal $_SERVER is discouraged in Worker mode."
+        "message": "Usage of PHP Superglobal $_SERVER is discouraged in Worker mode.",
+        "reason": "PSR-17 factory discovery cache; deterministic, carries no request data."
       },
       {
-        "message": "Mutation of state 'requestFactory' in Psr17Factory::setFactory()"
+        "message": "Mutation of state 'requestFactory' in Psr17Factory::setFactory()",
+        "reason": "PSR-17 factory discovery cache; deterministic, carries no request data."
       },
       {
-        "message": "Mutation of state 'responseFactory' in Psr17Factory::setFactory()"
+        "message": "Mutation of state 'responseFactory' in Psr17Factory::setFactory()",
+        "reason": "PSR-17 factory discovery cache; deterministic, carries no request data."
       },
       {
-        "message": "Mutation of state 'serverRequestFactory' in Psr17Factory::setFactory()"
+        "message": "Mutation of state 'serverRequestFactory' in Psr17Factory::setFactory()",
+        "reason": "PSR-17 factory discovery cache; deterministic, carries no request data."
       },
       {
-        "message": "Mutation of state 'streamFactory' in Psr17Factory::setFactory()"
+        "message": "Mutation of state 'streamFactory' in Psr17Factory::setFactory()",
+        "reason": "PSR-17 factory discovery cache; deterministic, carries no request data."
       },
       {
-        "message": "Mutation of state 'uploadedFileFactory' in Psr17Factory::setFactory()"
+        "message": "Mutation of state 'uploadedFileFactory' in Psr17Factory::setFactory()",
+        "reason": "PSR-17 factory discovery cache; deterministic, carries no request data."
       },
       {
-        "message": "Mutation of state 'uriFactory' in Psr17Factory::setFactory()"
+        "message": "Mutation of state 'uriFactory' in Psr17Factory::setFactory()",
+        "reason": "PSR-17 factory discovery cache; deterministic, carries no request data."
       },
       {
-        "message": "Usage of PHP Superglobal $_SERVER is discouraged in Worker mode."
+        "message": "Usage of PHP Superglobal $_SERVER is discouraged in Worker mode.",
+        "reason": "PSR-17 factory discovery cache; deterministic, carries no request data."
       },
       {
-        "message": "Usage of PHP Superglobal $_SERVER is discouraged in Worker mode."
+        "message": "Usage of PHP Superglobal $_SERVER is discouraged in Worker mode.",
+        "reason": "PSR-17 factory discovery cache; deterministic, carries no request data."
       },
       {
-        "message": "Usage of PHP Superglobal $_SERVER is discouraged in Worker mode."
+        "message": "Usage of PHP Superglobal $_SERVER is discouraged in Worker mode.",
+        "reason": "PSR-17 factory discovery cache; deterministic, carries no request data."
       },
       {
-        "message": "Usage of PHP Superglobal $_SERVER is discouraged in Worker mode."
+        "message": "Usage of PHP Superglobal $_SERVER is discouraged in Worker mode.",
+        "reason": "PSR-17 factory discovery cache; deterministic, carries no request data."
       },
       {
-        "message": "Usage of PHP Superglobal $_SERVER is discouraged in Worker mode."
+        "message": "Usage of PHP Superglobal $_SERVER is discouraged in Worker mode.",
+        "reason": "PSR-17 factory discovery cache; deterministic, carries no request data."
       },
       {
-        "message": "Usage of PHP Superglobal $_SERVER is discouraged in Worker mode."
+        "message": "Usage of PHP Superglobal $_SERVER is discouraged in Worker mode.",
+        "reason": "PSR-17 factory discovery cache; deterministic, carries no request data."
       },
       {
-        "message": "Usage of PHP Superglobal $_SERVER is discouraged in Worker mode."
+        "message": "Usage of PHP Superglobal $_SERVER is discouraged in Worker mode.",
+        "reason": "PSR-17 factory discovery cache; deterministic, carries no request data."
+      }
+    ],
+    "vendor/psr/log/src/LoggerAwareTrait.php": [
+      {
+        "message": "Mutation of state 'logger' in LoggerAwareTrait::setLogger()",
+        "reason": "setLogger() wiring, called at container build time rather than per request."
       }
     ],
     "vendor/symfonycasts/tailwind-bundle/src/Command/TailwindBuildCommand.php": [
       {
-        "message": "Mutation detected on an injected dependency ($this-\u003etailwindBuilder). Risk of State Leak in a worker."
+        "message": "Mutation detected on an injected dependency ($this->tailwindBuilder). Risk of State Leak in a worker.",
+        "reason": "Dev-only asset build command; not present in the production image."
+      },
+      {
+        "message": "Potential Memory Leak: Injection of a closure capturing local state into a shared service.",
+        "reason": "Dev-only asset build command; not present in the production image."
       }
     ],
     "vendor/symfonycasts/tailwind-bundle/src/TailwindBuilder.php": [
       {
-        "message": "Mutation of state 'output' in TailwindBuilder::setOutput()"
+        "message": "Mutation of state 'output' in TailwindBuilder::setOutput()",
+        "reason": "Dev-only asset build command; not present in the production image."
       },
       {
-        "message": "Mutation of state 'binary' in TailwindBuilder::createBinary()"
+        "message": "Mutation of state 'binary' in TailwindBuilder::createBinary()",
+        "reason": "Dev-only asset build command; not present in the production image."
       }
     ],
     "vendor/twig/cssinliner-extra/CssInlinerExtension.php": [
       {
-        "message": "Usage of local static variable is dangerous in Worker mode."
+        "message": "Usage of local static variable is dangerous in Worker mode.",
+        "reason": "Extension bootstrap state, derived from the template rather than the request."
       }
     ],
     "vendor/twig/intl-extra/IntlExtension.php": [
       {
-        "message": "Usage of local static variable is dangerous in Worker mode."
+        "message": "Usage of local static variable is dangerous in Worker mode.",
+        "reason": "Formatter caches keyed by locale and pattern; derived from input, carries no request data."
       },
       {
-        "message": "Mutation of state 'dateFormatters' in IntlExtension::createDateFormatter()"
+        "message": "Mutation of state 'dateFormatters' in IntlExtension::createDateFormatter()",
+        "reason": "Formatter caches keyed by locale and pattern; derived from input, carries no request data."
       },
       {
-        "message": "Mutation of state 'numberFormatters' in IntlExtension::createNumberFormatter()"
+        "message": "Mutation of state 'numberFormatters' in IntlExtension::createNumberFormatter()",
+        "reason": "Formatter caches keyed by locale and pattern; derived from input, carries no request data."
+      },
+      {
+        "message": "Mutation detected on an injected dependency ($this->numberFormatters). Risk of State Leak in a worker.",
+        "reason": "Formatter caches keyed by locale and pattern; derived from input, carries no request data."
+      },
+      {
+        "message": "Mutation detected on an injected dependency ($this->numberFormatters). Risk of State Leak in a worker.",
+        "reason": "Formatter caches keyed by locale and pattern; derived from input, carries no request data."
+      },
+      {
+        "message": "Mutation detected on an injected dependency ($this->numberFormatters). Risk of State Leak in a worker.",
+        "reason": "Formatter caches keyed by locale and pattern; derived from input, carries no request data."
       }
     ],
     "vendor/twig/twig/src/Environment.php": [
       {
-        "message": "Property 'charset' of Environment is mutated but not reset in reset()."
+        "message": "Property 'debug' of Environment is mutated but not reset in reset().",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Property 'resolvedGlobals' of Environment is mutated but not reset in reset()."
+        "message": "Property 'autoReload' of Environment is mutated but not reset in reset().",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Property 'debug' of Environment is mutated but not reset in reset()."
+        "message": "Property 'charset' of Environment is mutated but not reset in reset().",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Property 'autoReload' of Environment is mutated but not reset in reset()."
+        "message": "Property 'runtimeLoaders' of Environment is mutated but not reset in reset().",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Property 'parser' of Environment is mutated but not reset in reset()."
+        "message": "Property 'extensionSet' of Environment is mutated but not reset in reset().",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Property 'loader' of Environment is mutated but not reset in reset()."
+        "message": "Property 'resolvedGlobals' of Environment is mutated but not reset in reset().",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Property 'runtimeLoaders' of Environment is mutated but not reset in reset()."
+        "message": "Property 'strictVariables' of Environment is mutated but not reset in reset().",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Property 'globals' of Environment is mutated but not reset in reset()."
+        "message": "Property 'hotCache' of Environment is mutated but not reset in reset().",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Property 'optionsHash' of Environment is mutated but not reset in reset()."
+        "message": "Property 'originalCache' of Environment is mutated but not reset in reset().",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Property 'loadedTemplates' of Environment is mutated but not reset in reset()."
+        "message": "Property 'lexer' of Environment is mutated but not reset in reset().",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Property 'extensionSet' of Environment is mutated but not reset in reset()."
+        "message": "Property 'loader' of Environment is mutated but not reset in reset().",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Property 'hotCache' of Environment is mutated but not reset in reset()."
+        "message": "Property 'globals' of Environment is mutated but not reset in reset().",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Property 'cache' of Environment is mutated but not reset in reset()."
+        "message": "Property 'cache' of Environment is mutated but not reset in reset().",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Property 'runtimes' of Environment is mutated but not reset in reset()."
+        "message": "Property 'compiler' of Environment is mutated but not reset in reset().",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Property 'strictVariables' of Environment is mutated but not reset in reset()."
+        "message": "Property 'loadedTemplates' of Environment is mutated but not reset in reset().",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Property 'originalCache' of Environment is mutated but not reset in reset()."
+        "message": "Property 'parser' of Environment is mutated but not reset in reset().",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Property 'lexer' of Environment is mutated but not reset in reset()."
+        "message": "Property 'runtimes' of Environment is mutated but not reset in reset().",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Property 'compiler' of Environment is mutated but not reset in reset()."
+        "message": "Property 'optionsHash' of Environment is mutated but not reset in reset().",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      }
+    ],
+    "vendor/twig/twig/src/Extension/ProfilerExtension.php": [
+      {
+        "message": "Mutation detected on an injected dependency ($this->actives). Risk of State Leak in a worker.",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      }
+    ],
+    "vendor/twig/twig/src/Lexer.php": [
+      {
+        "message": "Mutation of state 'regexes' in Lexer::initialize()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      },
+      {
+        "message": "Mutation of state 'isInitialized' in Lexer::initialize()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      },
+      {
+        "message": "Mutation of state 'source' in Lexer::tokenize()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      },
+      {
+        "message": "Mutation of state 'code' in Lexer::tokenize()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      },
+      {
+        "message": "Mutation of state 'cursor' in Lexer::tokenize()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      },
+      {
+        "message": "Mutation of state 'lineno' in Lexer::tokenize()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      },
+      {
+        "message": "Mutation of state 'end' in Lexer::tokenize()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      },
+      {
+        "message": "Mutation of state 'tokens' in Lexer::tokenize()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      },
+      {
+        "message": "Mutation of state 'state' in Lexer::tokenize()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      },
+      {
+        "message": "Mutation of state 'states' in Lexer::tokenize()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      },
+      {
+        "message": "Mutation of state 'brackets' in Lexer::tokenize()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      },
+      {
+        "message": "Mutation of state 'position' in Lexer::tokenize()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      },
+      {
+        "message": "Mutation of state 'positions' in Lexer::tokenize()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      },
+      {
+        "message": "Mutation of state 'position' in Lexer::lexData()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      },
+      {
+        "message": "Mutation of state 'position' in Lexer::lexData()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      },
+      {
+        "message": "Mutation of state 'lineno' in Lexer::lexData()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      },
+      {
+        "message": "Mutation of state 'currentVarBlockLine' in Lexer::lexData()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      },
+      {
+        "message": "Mutation of state 'currentVarBlockLine' in Lexer::lexData()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      },
+      {
+        "message": "Mutation of state 'brackets' in Lexer::lexExpression()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      },
+      {
+        "message": "Mutation of state 'brackets' in Lexer::lexString()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      },
+      {
+        "message": "Mutation of state 'tokens' in Lexer::pushToken()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      },
+      {
+        "message": "Mutation of state 'cursor' in Lexer::moveCursor()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      },
+      {
+        "message": "Mutation of state 'lineno' in Lexer::moveCursor()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      },
+      {
+        "message": "Mutation of state 'states' in Lexer::pushState()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      },
+      {
+        "message": "Mutation of state 'state' in Lexer::pushState()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      },
+      {
+        "message": "Mutation of state 'state' in Lexer::popState()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      },
+      {
+        "message": "Mutation of state 'brackets' in Lexer::checkBrackets()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       }
     ],
     "vendor/twig/twig/src/Loader/ChainLoader.php": [
       {
-        "message": "Mutation of state 'loaders' in ChainLoader::addLoader()"
+        "message": "Mutation of state 'loaders' in ChainLoader::addLoader()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Mutation of state 'hasSourceCache' in ChainLoader::addLoader()"
+        "message": "Mutation of state 'hasSourceCache' in ChainLoader::addLoader()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Mutation of state 'loaders' in ChainLoader::getLoaders()"
+        "message": "Mutation of state 'loaders' in ChainLoader::getLoaders()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Mutation of state 'hasSourceCache' in ChainLoader::exists()"
+        "message": "Mutation of state 'hasSourceCache' in ChainLoader::exists()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Mutation of state 'hasSourceCache' in ChainLoader::exists()"
+        "message": "Mutation of state 'hasSourceCache' in ChainLoader::exists()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       }
     ],
     "vendor/twig/twig/src/Loader/FilesystemLoader.php": [
       {
-        "message": "Mutation of state 'paths' in FilesystemLoader::setPaths()"
+        "message": "Mutation of state 'paths' in FilesystemLoader::setPaths()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Mutation of state 'cache' in FilesystemLoader::addPath()"
+        "message": "Mutation of state 'cache' in FilesystemLoader::addPath()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Mutation of state 'errorCache' in FilesystemLoader::addPath()"
+        "message": "Mutation of state 'errorCache' in FilesystemLoader::addPath()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Mutation of state 'paths' in FilesystemLoader::addPath()"
+        "message": "Mutation of state 'paths' in FilesystemLoader::addPath()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Mutation of state 'cache' in FilesystemLoader::prependPath()"
+        "message": "Mutation of state 'cache' in FilesystemLoader::prependPath()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Mutation of state 'errorCache' in FilesystemLoader::prependPath()"
+        "message": "Mutation of state 'errorCache' in FilesystemLoader::prependPath()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Mutation of state 'paths' in FilesystemLoader::prependPath()"
+        "message": "Mutation of state 'paths' in FilesystemLoader::prependPath()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Mutation of state 'errorCache' in FilesystemLoader::findTemplate()"
+        "message": "Mutation of state 'errorCache' in FilesystemLoader::findTemplate()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Mutation of state 'cache' in FilesystemLoader::findTemplate()"
+        "message": "Mutation of state 'cache' in FilesystemLoader::findTemplate()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Mutation of state 'cache' in FilesystemLoader::findTemplate()"
+        "message": "Mutation of state 'cache' in FilesystemLoader::findTemplate()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Mutation of state 'errorCache' in FilesystemLoader::findTemplate()"
+        "message": "Mutation of state 'errorCache' in FilesystemLoader::findTemplate()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       }
     ],
     "vendor/twig/twig/src/Profiler/Profile.php": [
       {
-        "message": "Mutation of state 'profiles' in Profile::addProfile()"
+        "message": "Mutation of state 'profiles' in Profile::addProfile()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Mutation of state 'starts' in Profile::enter()"
+        "message": "Mutation of state 'starts' in Profile::enter()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Mutation of state 'ends' in Profile::leave()"
+        "message": "Mutation of state 'ends' in Profile::leave()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       }
     ],
     "vendor/twig/twig/src/Runtime/EscaperRuntime.php": [
       {
-        "message": "Mutation of state 'escapers' in EscaperRuntime::setEscaper()"
+        "message": "Mutation of state 'escapers' in EscaperRuntime::setEscaper()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Mutation of state 'safeClasses' in EscaperRuntime::setSafeClasses()"
+        "message": "Mutation of state 'safeClasses' in EscaperRuntime::setSafeClasses()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Mutation of state 'safeLookup' in EscaperRuntime::setSafeClasses()"
+        "message": "Mutation of state 'safeLookup' in EscaperRuntime::setSafeClasses()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Mutation of state 'safeClasses' in EscaperRuntime::addSafeClass()"
+        "message": "Mutation of state 'safeClasses' in EscaperRuntime::addSafeClass()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Mutation of state 'safeClasses' in EscaperRuntime::addSafeClass()"
+        "message": "Mutation of state 'safeClasses' in EscaperRuntime::addSafeClass()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Mutation of state 'safeLookup' in EscaperRuntime::addSafeClass()"
+        "message": "Mutation of state 'safeLookup' in EscaperRuntime::addSafeClass()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Mutation of state 'safeClasses' in EscaperRuntime::escape()"
+        "message": "Mutation of state 'safeClasses' in EscaperRuntime::escape()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Mutation of state 'safeClasses' in EscaperRuntime::escape()"
+        "message": "Mutation of state 'safeClasses' in EscaperRuntime::escape()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Mutation of state 'safeLookup' in EscaperRuntime::escape()"
+        "message": "Mutation of state 'safeLookup' in EscaperRuntime::escape()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       },
       {
-        "message": "Usage of local static variable is dangerous in Worker mode."
+        "message": "Usage of local static variable is dangerous in Worker mode.",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       }
     ],
     "vendor/web-auth/cose-lib/src/Algorithm/Manager.php": [
       {
-        "message": "Mutation of state 'algorithms' in Manager::add()"
+        "message": "Mutation of state 'algorithms' in Manager::add()",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       }
     ],
     "vendor/web-auth/webauthn-lib/src/AttestationStatement/AttestationObjectLoader.php": [
       {
-        "message": "Mutation of state 'dispatcher' in AttestationObjectLoader::setEventDispatcher()"
+        "message": "Mutation of state 'dispatcher' in AttestationObjectLoader::setEventDispatcher()",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       },
       {
-        "message": "Mutation of state 'logger' in AttestationObjectLoader::setLogger()"
+        "message": "Mutation of state 'logger' in AttestationObjectLoader::setLogger()",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       }
     ],
     "vendor/web-auth/webauthn-lib/src/AttestationStatement/AttestationStatementSupportManager.php": [
       {
-        "message": "Mutation of state 'attestationStatementSupports' in AttestationStatementSupportManager::add()"
+        "message": "Mutation of state 'attestationStatementSupports' in AttestationStatementSupportManager::add()",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       }
     ],
     "vendor/web-auth/webauthn-lib/src/AttestationStatement/NoneAttestationStatementSupport.php": [
       {
-        "message": "Mutation of state 'dispatcher' in NoneAttestationStatementSupport::setEventDispatcher()"
+        "message": "Mutation of state 'dispatcher' in NoneAttestationStatementSupport::setEventDispatcher()",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       }
     ],
     "vendor/web-auth/webauthn-lib/src/AuthenticationExtensions/ExtensionOutputCheckerHandler.php": [
       {
-        "message": "Mutation of state 'checkers' in ExtensionOutputCheckerHandler::add()"
+        "message": "Mutation of state 'checkers' in ExtensionOutputCheckerHandler::add()",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       }
     ],
     "vendor/web-auth/webauthn-lib/src/AuthenticatorAssertionResponseValidator.php": [
       {
-        "message": "Mutation of state 'logger' in AuthenticatorAssertionResponseValidator::setLogger()"
+        "message": "Mutation of state 'logger' in AuthenticatorAssertionResponseValidator::setLogger()",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       },
       {
-        "message": "Mutation of state 'eventDispatcher' in AuthenticatorAssertionResponseValidator::setEventDispatcher()"
+        "message": "Mutation of state 'eventDispatcher' in AuthenticatorAssertionResponseValidator::setEventDispatcher()",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       }
     ],
     "vendor/web-auth/webauthn-lib/src/AuthenticatorAttestationResponseValidator.php": [
       {
-        "message": "Mutation of state 'logger' in AuthenticatorAttestationResponseValidator::setLogger()"
+        "message": "Mutation of state 'logger' in AuthenticatorAttestationResponseValidator::setLogger()",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       },
       {
-        "message": "Mutation of state 'eventDispatcher' in AuthenticatorAttestationResponseValidator::setEventDispatcher()"
+        "message": "Mutation of state 'eventDispatcher' in AuthenticatorAttestationResponseValidator::setEventDispatcher()",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       }
     ],
     "vendor/web-auth/webauthn-lib/src/CeremonyStep/CeremonyStepManagerFactory.php": [
       {
-        "message": "Mutation of state 'counterChecker' in CeremonyStepManagerFactory::setCounterChecker()"
+        "message": "Mutation of state 'counterChecker' in CeremonyStepManagerFactory::setCounterChecker()",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       },
       {
-        "message": "Mutation of state 'securedRelyingPartyId' in CeremonyStepManagerFactory::setSecuredRelyingPartyId()"
+        "message": "Mutation of state 'securedRelyingPartyId' in CeremonyStepManagerFactory::setSecuredRelyingPartyId()",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       },
       {
-        "message": "Mutation of state 'allowedOrigins' in CeremonyStepManagerFactory::setAllowedOrigins()"
+        "message": "Mutation of state 'allowedOrigins' in CeremonyStepManagerFactory::setAllowedOrigins()",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       },
       {
-        "message": "Mutation of state 'allowSubdomains' in CeremonyStepManagerFactory::setAllowedOrigins()"
+        "message": "Mutation of state 'allowSubdomains' in CeremonyStepManagerFactory::setAllowedOrigins()",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       },
       {
-        "message": "Mutation of state 'extensionOutputCheckerHandler' in CeremonyStepManagerFactory::setExtensionOutputCheckerHandler()"
+        "message": "Mutation of state 'extensionOutputCheckerHandler' in CeremonyStepManagerFactory::setExtensionOutputCheckerHandler()",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       },
       {
-        "message": "Mutation of state 'attestationStatementSupportManager' in CeremonyStepManagerFactory::setAttestationStatementSupportManager()"
+        "message": "Mutation of state 'attestationStatementSupportManager' in CeremonyStepManagerFactory::setAttestationStatementSupportManager()",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       },
       {
-        "message": "Mutation of state 'algorithmManager' in CeremonyStepManagerFactory::setAlgorithmManager()"
+        "message": "Mutation of state 'algorithmManager' in CeremonyStepManagerFactory::setAlgorithmManager()",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       },
       {
-        "message": "Mutation of state 'metadataStatementRepository' in CeremonyStepManagerFactory::enableMetadataStatementSupport()"
+        "message": "Mutation of state 'metadataStatementRepository' in CeremonyStepManagerFactory::enableMetadataStatementSupport()",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       },
       {
-        "message": "Mutation of state 'statusReportRepository' in CeremonyStepManagerFactory::enableMetadataStatementSupport()"
+        "message": "Mutation of state 'statusReportRepository' in CeremonyStepManagerFactory::enableMetadataStatementSupport()",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       },
       {
-        "message": "Mutation of state 'certificateChainValidator' in CeremonyStepManagerFactory::enableMetadataStatementSupport()"
+        "message": "Mutation of state 'certificateChainValidator' in CeremonyStepManagerFactory::enableMetadataStatementSupport()",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       },
       {
-        "message": "Mutation of state 'certificateChainValidator' in CeremonyStepManagerFactory::enableCertificateChainValidator()"
+        "message": "Mutation of state 'certificateChainValidator' in CeremonyStepManagerFactory::enableCertificateChainValidator()",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       },
       {
-        "message": "Mutation of state 'topOriginValidator' in CeremonyStepManagerFactory::enableTopOriginValidator()"
+        "message": "Mutation of state 'topOriginValidator' in CeremonyStepManagerFactory::enableTopOriginValidator()",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       }
     ],
     "vendor/web-auth/webauthn-lib/src/Counter/ThrowExceptionIfInvalid.php": [
       {
-        "message": "Mutation of state 'logger' in ThrowExceptionIfInvalid::setLogger()"
+        "message": "Mutation of state 'logger' in ThrowExceptionIfInvalid::setLogger()",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       }
     ],
     "vendor/web-auth/webauthn-symfony-bundle/src/Controller/AssertionControllerFactory.php": [
       {
-        "message": "Mutation of state 'logger' in AssertionControllerFactory::setLogger()"
+        "message": "Mutation of state 'logger' in AssertionControllerFactory::setLogger()",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       }
     ],
     "vendor/web-auth/webauthn-symfony-bundle/src/DataCollector/WebauthnCollector.php": [
       {
-        "message": "Property 'publicKeyCredentialCreationOptions' of WebauthnCollector is mutated but not reset in reset()."
+        "message": "Property 'authenticatorAssertionResponseValidationSucceeded' of WebauthnCollector is mutated but not reset in reset().",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       },
       {
-        "message": "Property 'authenticatorAttestationResponseValidationSucceeded' of WebauthnCollector is mutated but not reset in reset()."
+        "message": "Property 'authenticatorAssertionResponseValidationFailed' of WebauthnCollector is mutated but not reset in reset().",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       },
       {
-        "message": "Property 'authenticatorAttestationResponseValidationFailed' of WebauthnCollector is mutated but not reset in reset()."
+        "message": "Property 'publicKeyCredentialCreationOptions' of WebauthnCollector is mutated but not reset in reset().",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       },
       {
-        "message": "Property 'publicKeyCredentialRequestOptions' of WebauthnCollector is mutated but not reset in reset()."
+        "message": "Property 'authenticatorAttestationResponseValidationSucceeded' of WebauthnCollector is mutated but not reset in reset().",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       },
       {
-        "message": "Property 'authenticatorAssertionResponseValidationSucceeded' of WebauthnCollector is mutated but not reset in reset()."
+        "message": "Property 'authenticatorAttestationResponseValidationFailed' of WebauthnCollector is mutated but not reset in reset().",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       },
       {
-        "message": "Property 'authenticatorAssertionResponseValidationFailed' of WebauthnCollector is mutated but not reset in reset()."
+        "message": "Property 'publicKeyCredentialRequestOptions' of WebauthnCollector is mutated but not reset in reset().",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       }
     ],
     "vendor/web-auth/webauthn-symfony-bundle/src/Repository/DummyPublicKeyCredentialSourceRepository.php": [
       {
-        "message": "Mutation of state 'logger' in DummyPublicKeyCredentialSourceRepository::setLogger()"
+        "message": "Mutation of state 'logger' in DummyPublicKeyCredentialSourceRepository::setLogger()",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       }
     ],
     "vendor/web-auth/webauthn-symfony-bundle/src/Repository/DummyPublicKeyCredentialUserEntityRepository.php": [
       {
-        "message": "Mutation of state 'logger' in DummyPublicKeyCredentialUserEntityRepository::setLogger()"
+        "message": "Mutation of state 'logger' in DummyPublicKeyCredentialUserEntityRepository::setLogger()",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       }
     ],
     "vendor/web-auth/webauthn-symfony-bundle/src/Routing/Loader.php": [
       {
-        "message": "Mutation detected on an injected dependency ($this-\u003eroutes). Risk of State Leak in a worker."
+        "message": "Mutation detected on an injected dependency ($this->routes). Risk of State Leak in a worker.",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       }
     ],
     "vendor/web-auth/webauthn-symfony-bundle/src/Security/Http/Authenticator/WebauthnAuthenticator.php": [
       {
-        "message": "Mutation of state 'logger' in WebauthnAuthenticator::setLogger()"
+        "message": "Mutation of state 'logger' in WebauthnAuthenticator::setLogger()",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
+      }
+    ],
+    "vendor/web-auth/webauthn-symfony-bundle/src/Security/Storage/SessionStorage.php": [
+      {
+        "message": "Mutation detected on a local reference to a shared service ($session). Risk of State Leak in a worker.",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
+      },
+      {
+        "message": "Mutation detected on a local reference to a shared service ($session). Risk of State Leak in a worker.",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       }
     ],
     "vendor/web-auth/webauthn-symfony-bundle/src/Service/PublicKeyCredentialCreationOptionsFactory.php": [
       {
-        "message": "Mutation of state 'eventDispatcher' in PublicKeyCredentialCreationOptionsFactory::setEventDispatcher()"
+        "message": "Mutation of state 'eventDispatcher' in PublicKeyCredentialCreationOptionsFactory::setEventDispatcher()",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       }
     ],
     "vendor/web-auth/webauthn-symfony-bundle/src/Service/PublicKeyCredentialRequestOptionsFactory.php": [
       {
-        "message": "Mutation of state 'eventDispatcher' in PublicKeyCredentialRequestOptionsFactory::setEventDispatcher()"
+        "message": "Mutation of state 'eventDispatcher' in PublicKeyCredentialRequestOptionsFactory::setEventDispatcher()",
+        "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
       }
     ]
   }

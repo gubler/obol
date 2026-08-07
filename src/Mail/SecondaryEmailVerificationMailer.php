@@ -30,6 +30,7 @@ final readonly class SecondaryEmailVerificationMailer
 
     public function send(UserEmail $userEmail): void
     {
+        // @igor-ignore - Reads the clock; the add() is on the returned immutable instant, not the clock.
         $expiresAt = $this->clock->now()->add(new \DateInterval('PT' . $this->verifyTtlSeconds . 'S'));
         $verifyUrl = $this->uriSigner->sign($userEmail, $expiresAt);
 

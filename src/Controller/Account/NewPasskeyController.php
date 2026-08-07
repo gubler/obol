@@ -12,9 +12,13 @@ use App\Entity\PasskeyCredential;
 use App\Message\Query\PasskeyCredential\FindPasskeysForUserQuery;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final class NewPasskeyController extends AbstractBaseController
 {
+    // Belt-and-suspenders with the `^/app/account/passkeys` access_control rule (ADR-0014). The page
+    // is a GET, but it opens the registration ceremony, so it is a credential change like the rest.
+    #[IsGranted(attribute: 'IS_AUTHENTICATED_FULLY')]
     #[Route(path: '/app/account/passkeys/new', name: 'account_passkey_new', methods: ['GET'])]
     public function __invoke(): Response
     {

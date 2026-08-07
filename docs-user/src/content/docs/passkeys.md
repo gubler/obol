@@ -26,6 +26,7 @@ That's it - the new passkey appears in your list. It gets a default name like "P
 
 A couple of things worth knowing:
 
+- If it's been a while since you signed in, the **Access** section shows **Sign in again** instead of the passkey buttons. Adding or removing a passkey needs a fresh sign-in - see [Signing in again to make changes](account.md#signing-in-again-to-make-changes).
 - Passkeys work only over a secure (HTTPS) connection, which Obol always uses.
 - You can add more than one - for example, one on your phone and one on your laptop - so you're never locked out if a device isn't handy.
 

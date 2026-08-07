@@ -22,6 +22,7 @@ use Symfony\Component\Uid\Ulid;
 final class ResendLoginLinkController extends AbstractBaseController
 {
     #[IsGranted(attribute: 'ROLE_ADMIN')]
+    #[IsGranted(attribute: 'IS_AUTHENTICATED_FULLY')]
     #[IsCsrfTokenValid(id: 'submit')]
     #[Route(path: '/app/admin/users/{id}/resend-login-link', name: 'admin_user_resend_login_link', methods: ['POST'])]
     public function __invoke(Ulid $id, Request $request): RedirectResponse

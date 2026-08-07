@@ -17,10 +17,12 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Uid\Ulid;
 
 final class RenamePasskeyController extends AbstractBaseController
 {
+    #[IsGranted(attribute: 'IS_AUTHENTICATED_FULLY')]
     #[Route(path: '/app/account/passkeys/{id}/name', name: 'account_passkey_rename', methods: ['POST'])]
     public function __invoke(Ulid $id, Request $request): RedirectResponse
     {

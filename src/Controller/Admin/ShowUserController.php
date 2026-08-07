@@ -19,6 +19,7 @@ use Symfony\Component\Uid\Ulid;
 final class ShowUserController extends AbstractBaseController
 {
     #[IsGranted(attribute: 'ROLE_ADMIN')]
+    #[IsGranted(attribute: 'IS_AUTHENTICATED_FULLY')]
     #[Route(path: '/app/admin/users/{id}', name: 'admin_user_show', methods: ['GET'])]
     public function __invoke(Ulid $id): Response
     {

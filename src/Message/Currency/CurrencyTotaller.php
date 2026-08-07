@@ -38,6 +38,7 @@ final readonly class CurrencyTotaller
                 $approximate = true;
             }
 
+            // @igor-ignore - $converted is a local Money value object, reassigned; Money is immutable.
             $converted = $converted->add($this->converter->convert($money, $display, $asOf));
         }
 

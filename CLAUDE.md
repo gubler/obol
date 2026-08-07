@@ -276,6 +276,35 @@ should**, or even **observe**. A calculator doesn't observe anything - it is jus
 in terms of the user and their settings ("how much you should have set aside, according to your
 savings preference"), never the app's expectations of them.
 
+Keep it short. A UI string is read at a glance, not studied: state the situation, then what to do,
+and stop. Explaining the mechanism behind a rule belongs in `docs-user/`, not in the panel. Two plain
+sentences beat one careful paragraph, and a heading that restates its own body is the first thing to
+cut.
+
+### Suppressing an analyzer finding
+When PHPStan, Rector, CS Fixer, Biome, or Igor flags something, resolve it - either fix the code, or,
+where it is genuinely a false positive, suppress it **at the line with the reason written next to
+it** (`// @igor-ignore - why`, a targeted `ignoreErrors` entry with a message and a path). Triage
+every finding on its own before reaching for any suppression mechanism.
+
+Never make a build green by regenerating a baseline over first-party code. A baseline is an
+unreviewable blob: a real bug hidden there is indistinguishable from a false positive, and no one
+reads it again. Baselines are for third-party code that cannot be changed - `igor-baseline.json` is
+vendor-only for exactly this reason (see `docs/src/content/docs/development/worker-mode.md`), and
+every entry still carries a filled-in `reason`.
+
+If the honest answer is "all of these are false positives", say so and show the reasoning. Do not
+perform a fix on correct code to make a tool happy.
+
+### Pinning the tools that gate CI
+Anything that can fail the build is pinned to an exact version, not a range. A gate that moves on its
+own is not a gate, and a tool whose suppressions match on message text goes stale the moment it
+rewords a finding - which surfaces as a red build on a commit that changed nothing.
+
+So when a check fails and the diff looks unrelated, check the tool's running version against the
+lockfile, and check whether the same failure reproduces on `main`. That settles "did I break this" in
+one run, before any code gets investigated.
+
 ### Type Coverage
 100% type coverage required for:
 - Return types

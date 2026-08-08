@@ -110,7 +110,7 @@ Tailwind is managed by `symfonycasts/tailwind-bundle`, which ships a standalone 
 
 **CSS entry point:** `assets/styles/app.css`
 
-**Local development:** a dev-only `tailwind` sidecar container (defined in `compose.override.yaml`)
+**Local development:** a dev-only `tailwind` sidecar container (defined in `compose.dev.yaml`)
 runs `tailwind:build --watch` against the shared `tailwind_build` volume, so the compiled CSS
 rebuilds automatically when `mise run up` brings the stack up and on every template or CSS edit - no
 manual build step. (The standalone Tailwind v4 binary has no `--poll` flag.) The sidecar shares

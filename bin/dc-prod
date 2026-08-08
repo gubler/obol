@@ -1,14 +1,15 @@
 #!/usr/bin/env sh
 # ABOUTME: Thin wrapper around `docker compose` for production - pins the overlay chain and the
-# ABOUTME: deploy env file so no invocation can merge the dev override or read the checkout's .env.
+# ABOUTME: deploy env file so no invocation runs a partial stack or reads the checkout's .env.
 
 set -eu
 
-# Compose auto-merges compose.override.yaml when no file set is given, which in production means
-# APP_ENV=dev, the web profiler, Xdebug, a source bind-mount and PostgreSQL published to the host -
-# full debug disclosure on the public internet, from a command that looks completely ordinary.
-# Pinning the chain here removes the opportunity to forget it.
-export COMPOSE_FILE="compose.yaml:compose.prod.yaml:compose.tunnel.yaml"
+# No compose file in this repository carries a name Compose loads on its own, so a chain that is
+# assembled wrongly is short a layer rather than carrying an extra one - the failure is a stack
+# missing its production settings, not one that silently inherited development's. Pinning the chain
+# here is what makes `bin/dc-prod up -d` a complete command: three filenames nobody has to recall in
+# the right order, on a host where the cost of getting it wrong is a broken deploy.
+export COMPOSE_FILE="compose.yaml:compose.prod.yaml:compose.prod.tunnel.yaml"
 
 # Compose falls back to the checkout's own .env when no env file is pinned, and that file carries dev
 # defaults for MAILER_DSN, WEBAUTHN_RP_ID and DATABASE_URL. Those defaults satisfy the ${VAR:?} guards

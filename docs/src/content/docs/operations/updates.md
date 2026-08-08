@@ -33,10 +33,10 @@ bin/dc-prod up -d
 
 :::caution
 Use the wrapper, not a bare `docker compose`. `bin/dc-prod` pins the whole file chain
-(`compose.yaml:compose.prod.yaml:compose.tunnel.yaml`) and the deploy env file. Without that pinning,
-Compose auto-loads the dev `compose.override.yaml` and redeploys the dev stack (`APP_ENV=dev`,
-profiler, Xdebug, published database), and reads the checkout's own `.env`, whose committed defaults
-quietly satisfy the guards meant to catch a missing secret. See
+(`compose.yaml:compose.prod.yaml:compose.prod.tunnel.yaml`) and the deploy env file. Without that
+pinning, Compose renders the base `compose.yaml` alone and redeploys something that is not the
+production stack, and reads the checkout's own `.env`, whose committed defaults quietly satisfy the
+guards meant to catch a missing secret. See
 [Running in Production](../deployment.md#running-in-production).
 :::
 
@@ -143,6 +143,8 @@ Fixtures (`php bin/console doctrine:fixtures:load`) are for development only. Ne
 
 ## Changelog
 
+- 2026-08-08 - The tunnel overlay is named `compose.prod.tunnel.yaml`. A deploy host that exports
+  `COMPOSE_FILE` in its profile needs that chain updated; `bin/dc-prod` needs nothing.
 - 2026-07-30 - Deploy flow and rollback updated for CalVer-versioned images; the release procedure
   itself now lives in Releases and Versioning.
 - 2026-07-30 - Corrected what a recreate discards: production logs go to the host journal rather than

@@ -7,13 +7,13 @@
 #
 # The assertions exist because every one of these is a silent failure otherwise: a passkey bound to
 # `localhost` cannot be rebound, a mailer that resolves to null:// drops every magic link, and the dev
-# override merging into a production `up` would publish the profiler and PostgreSQL to the internet.
+# overlay reaching a production `up` would publish the profiler and PostgreSQL to the internet.
 
 set -u
 
 FIXTURE_ENV="deploy.env.example"
 PROD_CHAIN="compose.yaml:compose.prod.yaml"
-DEPLOY_CHAIN="compose.yaml:compose.prod.yaml:compose.tunnel.yaml"
+DEPLOY_CHAIN="compose.yaml:compose.prod.yaml:compose.prod.tunnel.yaml"
 WORK_DIR="var/prod-compose-check"
 
 failures=0
@@ -237,7 +237,18 @@ assert_count 'the connector image is not a floating tag' 0 \
     'image: cloudflare/cloudflared:latest' "$DEPLOY_RENDER"
 assert_count 'nothing publishes a host port' 0 'published:' "$DEPLOY_RENDER"
 
-echo 'The dev override never merges in'
+echo 'Nothing auto-loads'
+# Compose merges compose.override.yaml whenever no explicit chain is given, which is how a production
+# `up` could inherit APP_ENV=dev, the profiler, Xdebug and a published database port from a command
+# that looks completely ordinary. Every overlay carries an explicit name instead, so the one filename
+# that made that possible must not come back.
+if [ -e compose.override.yaml ]; then
+    fail 'compose.override.yaml exists (Compose auto-loads it; every overlay must be named)'
+else
+    pass 'no compose file carries a name Compose loads on its own'
+fi
+
+echo 'The dev overlay is not in the deploy chain'
 assert_count 'no Tailwind watcher' 0 '  tailwind:' "$DEPLOY_RENDER"
 assert_count 'no Xdebug' 0 'XDEBUG_MODE' "$DEPLOY_RENDER"
 assert_count 'no dev APP_ENV' 0 'APP_ENV: dev' "$DEPLOY_RENDER"
@@ -264,7 +275,7 @@ echo 'The deploy wrapper resolves the whole chain'
 WRAPPER_RENDER="$WORK_DIR/wrapper.yaml"
 if COMPOSE_ENV_FILES="$FIXTURE_ENV" ./bin/dc-prod config >"$WRAPPER_RENDER" 2>/dev/null; then
     assert_count 'bin/dc-prod includes the tunnel overlay' 1 '  cloudflared:' "$WRAPPER_RENDER"
-    assert_count 'bin/dc-prod excludes the dev override' 0 '  tailwind:' "$WRAPPER_RENDER"
+    assert_count 'bin/dc-prod excludes the dev overlay' 0 '  tailwind:' "$WRAPPER_RENDER"
 else
     fail 'bin/dc-prod could not render the deploy chain'
 fi

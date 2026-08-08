@@ -50,9 +50,9 @@ compose file to look right.
 
 ## Docker Compose
 
-There are six compose files. None is used alone: every stack is `compose.yaml` plus the overlays for
-one environment, and the wrapper scripts pin which overlays those are so a chain cannot be assembled
-wrongly by hand.
+There are six compose files, and each name says where in the chain it belongs. None is used alone:
+every stack is `compose.yaml` plus the overlays for one environment, and the wrapper scripts pin
+which overlays those are so a chain cannot be assembled wrongly by hand.
 
 ```mermaid
 flowchart TD
@@ -61,13 +61,13 @@ flowchart TD
     base --> dev["bin/dc<br/><i>development</i>"]
     base --> prod["bin/dc-prod<br/><i>production</i>"]
 
-    dev --> override["+ compose.override.yaml<br/><i>dev image, bind mounts, Xdebug,<br/>worker hot-reload, Tailwind sidecar</i>"]
-    override --> probe{"lolly network<br/>present?"}
-    probe -->|yes| shared["+ compose.shared.yaml<br/><i>joins Lolly, Traefik labels,<br/>SERVER_NAME :80</i>"]
-    probe -->|no| solo["+ compose.solo.yaml<br/><i>publishes 127.0.0.1:8080</i>"]
+    dev --> devoverlay["+ compose.dev.yaml<br/><i>dev image, bind mounts, Xdebug,<br/>worker hot-reload, Tailwind sidecar</i>"]
+    devoverlay --> probe{"lolly network<br/>present?"}
+    probe -->|yes| shared["+ compose.dev.shared.yaml<br/><i>joins Lolly, Traefik labels,<br/>SERVER_NAME :80</i>"]
+    probe -->|no| solo["+ compose.dev.solo.yaml<br/><i>publishes 127.0.0.1:8080</i>"]
 
     prod --> prodoverlay["+ compose.prod.yaml<br/><i>OBOL_IMAGE, required secrets,<br/>public origin, database volume</i>"]
-    prodoverlay --> tunnel["+ compose.tunnel.yaml<br/><i>cloudflared connector</i>"]
+    prodoverlay --> tunnel["+ compose.prod.tunnel.yaml<br/><i>cloudflared connector</i>"]
 
     shared --> devstack(["https://obol.lolly.localhost"])
     solo --> solostack(["http://localhost:8080"])
@@ -78,19 +78,31 @@ flowchart TD
 to set - start Lolly and the next `bin/dc up -d` joins it. `bin/dc-prod` pins its three files and the
 deploy env file outright.
 
-The two chains are disjoint: `compose.override.yaml` never appears in a production chain, and the
-prod and tunnel overlays never appear in a development one. `bin/prod-compose-check` renders the
-production chain and asserts both halves of that, because the dangerous mistake is not forgetting the
-tunnel overlay - that makes the site unreachable, which is loud - but accidentally merging the dev
-override, which would quietly put `APP_ENV=dev`, the profiler, Xdebug and a published database port
-on the internet.
+Compose loads none of these on its own. It auto-merges a file named `compose.override.yaml` whenever
+no chain is given, and this repository has no such file - so every overlay has to be named to be
+applied. That is what makes a production stack unable to inherit development's by omission: there is
+nothing to forget to exclude.
 
-### Production (`compose.yaml` + `compose.prod.yaml` + `compose.tunnel.yaml`)
+:::caution
+Because nothing is auto-loaded, a bare `docker compose up -d` in the checkout renders the base stack
+without the dev overlay - no bind mounts, no `APP_ENV=dev`, no published ports. Start development
+with `bin/dc`, which names the whole chain.
+
+This is the deliberate trade for the guarantee above. Development failing visibly is the cheap half;
+production inheriting the dev posture quietly was the expensive one.
+:::
+
+The two chains are also disjoint: `compose.dev.yaml` never appears in a production chain, and the
+prod and tunnel overlays never appear in a development one. `bin/prod-compose-check` renders the
+production chain and asserts both that separation and the absence of the auto-loaded filename, so
+neither protection can erode without a check failing.
+
+### Production (`compose.yaml` + `compose.prod.yaml` + `compose.prod.tunnel.yaml`)
 
 The production stack is the base `compose.yaml`, the `compose.prod.yaml` overlay
 (deploy image, the required secrets, the public origin, the named database volume)
-and the `compose.tunnel.yaml` overlay (the Cloudflare Tunnel connector). The dev
-`compose.override.yaml` must never be loaded - see
+and the `compose.prod.tunnel.yaml` overlay (the Cloudflare Tunnel connector). The
+dev overlays are never part of it - see
 [Running in Production](#running-in-production), where `bin/dc-prod` pins the whole
 chain so it cannot be assembled wrongly by hand.
 
@@ -106,9 +118,9 @@ Four services:
 - Publishes no host ports. The connector is the only route in.
 - Depends on `database` with healthcheck
 - Reports healthy by probing its own `/health` over HTTP, so "healthy" means the application can serve a request rather than that Caddy is up (see [Healthcheck](#healthcheck))
-- Mounts nothing. Sessions and the application cache pool are in PostgreSQL, so the container holds nothing worth keeping. Caddy's `/data` and `/config` and the uploads mount are development-only, declared in `compose.override.yaml`
+- Mounts nothing. Sessions and the application cache pool are in PostgreSQL, so the container holds nothing worth keeping. Caddy's `/data` and `/config` and the uploads mount are development-only, declared in `compose.dev.yaml`
 
-**`cloudflared`** - the Cloudflare Tunnel connector (`compose.tunnel.yaml`)
+**`cloudflared`** - the Cloudflare Tunnel connector (`compose.prod.tunnel.yaml`)
 
 - Official `cloudflare/cloudflared` image, pinned to a release tag. The connector ships frequently, and a floating tag could swap during an unrelated restart and break tunnel authentication with nothing on our side having changed.
 - Token-managed: the ingress rule (which service to forward to) lives on the tunnel's dashboard page, so the host holds no credentials file to recreate when the stack moves.
@@ -145,7 +157,7 @@ valid backup at all - the files are mid-write. Backups are logical dumps taken t
 so the storage type underneath is irrelevant to them.
 :::
 
-### Development overrides (`compose.override.yaml`)
+### Development overlay (`compose.dev.yaml`)
 
 - Exposes the database port locally (random port)
 - Runs FrankenPHP in worker mode with hot-reload. `FRANKENPHP_WORKER_CONFIG` scopes the worker's file
@@ -186,7 +198,7 @@ users type, what appears in magic-link emails, and what passkeys bind to; `DEFAU
 | `POSTGRES_PASSWORD` | Required (fail-fast) | `!ChangeMe!` | PostgreSQL password. Also feeds `DATABASE_URL`, which the base compose composes from the `POSTGRES_*` vars. |
 | `MAILER_DSN` | Required (fail-fast) | `null://null` | Outbound mail transport. URL-encode reserved characters in the username (`@` becomes `%40`). Verify with `app:mailer:smoke`. |
 | `MAILER_FROM` | Required (fail-fast) | `Obol <noreply@dev88.co>` | Default sender for transactional mail. Must be an address the transport is authorized to send as. |
-| `CLOUDFLARE_TUNNEL_TOKEN` | Required (fail-fast) | not used | Connector credential from the tunnel's dashboard page. Only read by `compose.tunnel.yaml`. |
+| `CLOUDFLARE_TUNNEL_TOKEN` | Required (fail-fast) | not used | Connector credential from the tunnel's dashboard page. Only read by `compose.prod.tunnel.yaml`. |
 | `POSTGRES_USER` | Optional | `app` | PostgreSQL username. |
 | `POSTGRES_DB` | Optional | `app` | PostgreSQL database name. |
 | `SERVER_NAME` | Set to `:80` by the overlay | `obol.lolly.localhost` | Caddy's listen address. Not the public host, and not something the deploy env sets. |
@@ -333,13 +345,11 @@ and for the services that gate on it, not a self-healing mechanism.
 ## Running in Production
 
 :::danger
-A bare `docker compose` command is not safe in production, and it fails in two
-directions at once. With no file selection Compose auto-merges
-`compose.override.yaml`, forcing the dev posture - `APP_ENV=dev`, the web profiler
-and debug toolbar, Xdebug, a source bind-mount, PostgreSQL published to the host -
-which is full debug disclosure on the public internet from a command that looks
-completely ordinary. With no env file pinned it also reads the checkout's `.env`,
-whose development defaults quietly satisfy the required-secret guards.
+A bare `docker compose` command is not safe in production. With no file selection
+it renders the base `compose.yaml` alone - no deploy image, no required-secret
+guards, no tunnel - so the stack it starts is not the production one. With no env
+file pinned it also reads the checkout's `.env`, whose development defaults quietly
+satisfy the guards that are meant to abort a deploy missing its real secrets.
 
 Never type `docker compose` on the deploy host. Use `bin/dc-prod`.
 :::
@@ -347,7 +357,7 @@ Never type `docker compose` on the deploy host. Use `bin/dc-prod`.
 `bin/dc-prod` is a thin wrapper that pins both, then hands off to `docker compose`
 with whatever arguments you gave it:
 
-- `COMPOSE_FILE=compose.yaml:compose.prod.yaml:compose.tunnel.yaml`
+- `COMPOSE_FILE=compose.yaml:compose.prod.yaml:compose.prod.tunnel.yaml`
 - `COMPOSE_ENV_FILES=/etc/obol/deploy.env` (override the variable to point elsewhere)
 
 Set up the deploy env file once, from the template in the repository root:
@@ -373,14 +383,14 @@ in the deploy user's profile so they are already set for any shell:
 
 ```bash
 # ~/.profile on the deploy host
-export COMPOSE_FILE=compose.yaml:compose.prod.yaml:compose.tunnel.yaml
+export COMPOSE_FILE=compose.yaml:compose.prod.yaml:compose.prod.tunnel.yaml
 export COMPOSE_ENV_FILES=/etc/obol/deploy.env
 ```
 
 With those exported, a bare `docker compose up -d` resolves the same file chain and the same env file
-the wrapper would - so the dev override still cannot merge in, and the required-secret guards still
-fire. `bin/dc-prod` sets both itself and respects an existing `COMPOSE_ENV_FILES`, so the two agree
-rather than fight.
+the wrapper would - so it addresses the whole production stack rather than the base alone, and the
+required-secret guards still fire. `bin/dc-prod` sets both itself and respects an existing
+`COMPOSE_ENV_FILES`, so the two agree rather than fight.
 
 What the environment cannot provide is the teardown guard below, so the wrapper stays the documented
 command. If you want the stray invocation to nag as well, a shell function in the same profile does
@@ -558,6 +568,10 @@ exact inverse of the rule routing requests into PHP.
 
 ## Changelog
 
+- 2026-08-08 - The overlay files are named for their place in the chain: `compose.dev.yaml`,
+  `compose.dev.solo.yaml`, `compose.dev.shared.yaml` and `compose.prod.tunnel.yaml`. Nothing is
+  auto-loaded any more, so production cannot inherit the dev posture by omission - and a bare
+  `docker compose` in the checkout no longer starts a development stack.
 - 2026-07-30 - ADRs are named rather than linked to the repository host, so the page does not assume
   where the code is hosted.
 - 2026-07-30 - Production logs go to the host's systemd journal: Monolog streams to the container's

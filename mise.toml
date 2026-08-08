@@ -1,7 +1,8 @@
 [env]
 # `bin/dc` wraps `docker compose`: it applies --env-file .env.local if present and
-# auto-selects compose.solo.yaml (no proxy) or compose.shared.yaml (lolly network
-# reachable) so the same commands work in both modes.
+# auto-selects compose.dev.solo.yaml (no proxy) or compose.dev.shared.yaml (lolly
+# network reachable) so the same commands work in both modes. It also names the dev
+# overlay, which nothing loads implicitly - a bare `docker compose` gets the base only.
 DC = "./bin/dc"
 DC_EXEC = "./bin/dc exec -T php"
 

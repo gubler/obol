@@ -1,6 +1,8 @@
 ---
-# Development environment override — always loaded by default.
-# Port publishing and proxy routing live in compose.solo.yaml / compose.shared.yaml;
+# Development environment overlay - named explicitly by bin/dc, never loaded on its own. Compose
+# auto-merges a file called compose.override.yaml; deliberately not that name, so a production `up`
+# cannot inherit the dev posture by omission. Every chain has to be stated.
+# Port publishing and proxy routing live in compose.dev.solo.yaml / compose.dev.shared.yaml;
 # bin/dc auto-picks the right one based on whether the lolly network is present.
 services:
   php:

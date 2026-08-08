@@ -22,7 +22,7 @@ services:
     # Deliberately no volumes. Everything that has to outlive a container lives in PostgreSQL
     # (reference/adr/0026), so the database's is the only mount production has and a host move is a
     # dump and restore rather than a hand-copied set of volumes. The development stack's own mounts
-    # are in compose.override.yaml: a volume declared here could not be removed by an overlay, since
+    # are in compose.dev.yaml: a volume declared here could not be removed by an overlay, since
     # Compose merges service volumes by mount target rather than replacing the list.
     depends_on:
       database:
@@ -75,4 +75,4 @@ services:
 ###< symfony/mercure-bundle ###
 
 # No top-level volumes: each overlay declares its own - the development mounts in
-# compose.override.yaml, the database's in compose.prod.yaml.
+# compose.dev.yaml, the database's in compose.prod.yaml.

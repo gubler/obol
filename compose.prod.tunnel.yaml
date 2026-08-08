@@ -5,7 +5,7 @@
 # tunnel credential, and folding it into the prod overlay would make the whole production stack
 # unrenderable anywhere a tunnel does not exist - including the local prod-mode verification that
 # happens before a host is provisioned. Production composes all three files; bin/dc-prod pins the
-# chain so nobody assembles it by hand.
+# chain so nobody has to assemble it by hand. The name says where it goes: after compose.prod.yaml.
 services:
   cloudflared:
     # Pin a release tag. The connector ships frequently, and a floating tag can swap during an

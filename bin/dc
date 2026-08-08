@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 # ABOUTME: Thin wrapper around `docker compose` — applies --env-file .env.local and
-# ABOUTME: auto-picks compose.solo.yaml vs compose.shared.yaml by probing the lolly network.
+# ABOUTME: auto-picks compose.dev.solo.yaml vs compose.dev.shared.yaml by probing the lolly network.
 
 set -eu
 
@@ -10,11 +10,14 @@ if [ -f .env.local ]; then
 fi
 
 if docker network inspect lolly >/dev/null 2>&1; then
-    MODE_FILE="compose.shared.yaml"
+    MODE_FILE="compose.dev.shared.yaml"
 else
-    MODE_FILE="compose.solo.yaml"
+    MODE_FILE="compose.dev.solo.yaml"
 fi
 
-export COMPOSE_FILE="compose.yaml:compose.override.yaml:${MODE_FILE}"
+# No compose file carries a name Compose loads on its own, so the dev overlay has to be named here.
+# That is the trade for production being unable to inherit dev configuration by omission: a bare
+# `docker compose` in the checkout gets the base stack only, and this wrapper is how you get dev.
+export COMPOSE_FILE="compose.yaml:compose.dev.yaml:${MODE_FILE}"
 
 exec docker compose ${COMPOSE_ARGS} "$@"

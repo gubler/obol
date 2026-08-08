@@ -360,4 +360,4 @@ Coverage is enforced at **70% minimum** in both CI and `mise run coverage`. PHPU
 - All code must pass PHPStan level 9 with strict rules
 - Uses Rector for automated refactoring
 - Symfony Flex manages bundles and recipes
-- Multi-stage FrankenPHP Dockerfile; `compose.yaml` is the base, `compose.override.yaml` is dev-only, `compose.solo.yaml` / `compose.shared.yaml` handle loopback HTTP vs Lolly routing (`bin/dc` auto-picks), `compose.prod.yaml` is the prod overlay
+- Multi-stage FrankenPHP Dockerfile; six compose files, each named for its place in the chain. `compose.yaml` is the base; `compose.dev.yaml` is dev-only, with `compose.dev.solo.yaml` / `compose.dev.shared.yaml` handling loopback HTTP vs Lolly routing (`bin/dc` auto-picks); `compose.prod.yaml` is the prod overlay and `compose.prod.tunnel.yaml` adds the Cloudflare connector on top of it (`bin/dc-prod` pins the chain). Nothing is auto-loaded - there is no `compose.override.yaml`, so every overlay must be named, and a bare `docker compose` gets the base stack only

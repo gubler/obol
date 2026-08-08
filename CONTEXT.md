@@ -57,6 +57,12 @@ older docs.
   through Subscription). Repository finders are owner-scoped (`findForOwner`), so one user's id never
   resolves another's row - a cross-owner lookup returns null and the controller 404s. Categories,
   payment sources, and obligation snapshots carry their own immutable `owner` the same way. See ADR-0015.
+- **database role** - a PostgreSQL login, nothing to do with the domain **owner** below. There are
+  three, and the distinction that matters is what each may do to the schema: the **runtime role**
+  (`obol_app`) is what the entire application connects as and can only read and write rows; the
+  **owner role** (`obol_owner`) owns the schema and is used by migrations alone; the bootstrap
+  superuser provisions those two and is used for nothing else. _Avoid_ saying "the owner" unqualified
+  where a database role is meant - that word belongs to the User a record belongs to. See ADR-0030.
 - **step-up** - re-proving identity before an action that could take over the account: the admin
   surface, and adding, removing, promoting or re-verifying an email address or passkey. These demand
   **full authentication** (`IS_AUTHENTICATED_FULLY`), which a session restored from the remember-me
@@ -182,6 +188,7 @@ Recorded under `reference/adr/`:
 - ADR-0027 - Production logs go to the host journal (Monolog to stderr, `journald` driver; size bounds are host configuration)
 - ADR-0028 - Session and remember-me horizons (the rolling cookie is the credential that keeps people signed in; the session horizon is not load-bearing)
 - ADR-0029 - Releases are CalVer versions derived from git tags (`YYYY.M.PATCH`, patch counted within the month; the git tag is cut before the image is pushed)
+- ADR-0030 - The application connects as a database role that cannot change the schema (owner role migrates, runtime role has data rights only)
 
 ADR-0006 records the CQRS-via-Messenger decision (keep the command/query buses; data
 access confined to the handler layer). ADR-0007 extends it with the write-path

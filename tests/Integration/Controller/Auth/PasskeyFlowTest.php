@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Controller\Auth;
 
 use App\Factory\UserFactory;
+use App\Tests\Support\DatabaseCleaner;
 use DAMA\DoctrineTestBundle\PHPUnit\SkipDatabaseRollback;
 use Doctrine\ORM\EntityManagerInterface;
 use Facebook\WebDriver\Exception\TimeoutException;
@@ -18,8 +19,8 @@ use Symfony\Component\Panther\PantherTestCase;
 
 /**
  * Panther runs the app in a separate PHP CLI server process, so DAMA's per-test transaction rollback
- * cannot reach it. We opt out of the rollback and truncate by hand; the seeded founder is committed in
- * this process and so is visible to the browser's server (both run APP_ENV=test against app_test).
+ * cannot reach it. We opt out of the rollback and clear the rows by hand; the seeded founder is committed
+ * in this process and so is visible to the browser's server (both run APP_ENV=test against app_test).
  *
  * Chromium exposes the W3C WebAuthn extension via Selenium WebDriver at
  *   POST /session/{sessionId}/webauthn/authenticator
@@ -35,21 +36,18 @@ final class PasskeyFlowTest extends PantherTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        self::truncateTables();
+        self::clearCommittedRows();
     }
 
     protected function tearDown(): void
     {
-        self::truncateTables();
+        self::clearCommittedRows();
         parent::tearDown();
     }
 
-    private static function truncateTables(): void
+    private static function clearCommittedRows(): void
     {
-        self::getContainer()->get(EntityManagerInterface::class)
-            ->getConnection()
-            ->executeStatement('TRUNCATE passkey_credential, user_email, "user" RESTART IDENTITY CASCADE')
-        ;
+        DatabaseCleaner::clear(self::getContainer()->get(EntityManagerInterface::class)->getConnection());
     }
 
     #[WithoutErrorHandler]

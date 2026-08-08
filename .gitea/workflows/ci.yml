@@ -44,7 +44,21 @@ jobs:
         env:
             # Reach the postgres service by name; the test bootstrap derives the
             # app_test database from this via doctrine's dbname_suffix.
-            DATABASE_URL: "postgresql://app:!ChangeMe!@postgres:5432/app?serverVersion=16&charset=utf8"
+            #
+            # Two roles, as in production (reference/adr/0030). The suite runs against the runtime
+            # role, which cannot create, alter or drop anything - so a migration that quietly needs
+            # DDL at runtime fails here rather than on the deploy. The owner role is what drops,
+            # creates and migrates the test database.
+            DATABASE_URL: "postgresql://obol_app:!ChangeMe!@postgres:5432/app?serverVersion=16&charset=utf8"
+            MIGRATION_DATABASE_URL: "postgresql://obol_owner:!ChangeMe!@postgres:5432/app?serverVersion=16&charset=utf8"
+            # Consumed by docker/db/init/10-roles.sh in the provisioning step below. `app` is the
+            # service's bootstrap superuser, which creates the two roles and is used for nothing else.
+            PGHOST: postgres
+            PGPASSWORD: "!ChangeMe!"
+            POSTGRES_USER: app
+            POSTGRES_DB: app
+            OBOL_DB_OWNER_PASSWORD: "!ChangeMe!"
+            OBOL_DB_RUNTIME_PASSWORD: "!ChangeMe!"
             COMPOSER_ALLOW_SUPERUSER: 1
             # Panther browser tests (#85): the container runs as root with a small
             # /dev/shm, so Chromium needs --no-sandbox + --disable-dev-shm-usage.
@@ -82,8 +96,16 @@ jobs:
               # snapshot.debian.org (an immutable archive) rather than a live, GC-able version.
               run: |
                   apt-get install -y --no-install-recommends file ca-certificates \
-                      chromium chromium-driver
+                      chromium chromium-driver postgresql-client
                   install-php-extensions @composer intl mbstring zip pdo_pgsql pcov
+
+            # The same script the postgres image runs from /docker-entrypoint-initdb.d on a fresh
+            # cluster - a service container cannot mount it, so it is invoked over TCP instead. Run
+            # here rather than skipped in CI on purpose: this is what makes the suite below an actual
+            # test of the privilege split rather than a run as an unrestricted superuser.
+            - name: "Provision the database roles"
+              if: always()
+              run: ./docker/db/init/10-roles.sh
 
             - name: "Validate Composer config"
               run: composer validate --no-check-publish --strict

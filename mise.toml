@@ -178,6 +178,26 @@ description = "Worker-mode state audit via Igor (Deep Audit; on-demand, not in c
 depends = ["_ensure-up"]
 run = ["$DC_EXEC sh -c 'php -d memory_limit=-1 bin/console cache:clear --env=dev >/dev/null && php -d memory_limit=-1 vendor/bin/igor-php .'"]
 
+# The postgres image runs the initialization script only against an empty data directory, so a
+# cluster that already exists - a development checkout predating the privilege split, or one restored
+# from a dump - never sees it. This re-runs the very same mounted script, which is idempotent by
+# design. See reference/adr/0030.
+[tasks."db:roles"]
+description = "Provision the owner and runtime database roles on an existing cluster"
+run = ["$DC exec -T database sh /docker-entrypoint-initdb.d/10-roles.sh"]
+
+# Generating a migration is schema work, so the whole command runs as the schema owner - including the
+# application's own connection, which `diff` reaches through the entity manager. Symfony's schema
+# listeners (the ones that contribute sessions, cache_items and messenger_messages to the
+# mapping-derived schema) settle "are these two connections the same database?" by creating a probe
+# table on that connection, so building the schema at all needs DDL rights the application does not
+# have. Hence the task rather than a bare console command: the override is easy to forget and the
+# error it produces names a table nobody has heard of. See reference/adr/0030.
+[tasks."migration:diff"]
+description = "Generate a migration from the entity mapping (runs entirely as the owner role)"
+depends = ["_ensure-up"]
+run = "$DC_EXEC sh -c 'DATABASE_URL=$MIGRATION_DATABASE_URL php bin/console doctrine:migrations:diff'"
+
 [tasks.seed]
 description = "Load fixtures (purges first, then seeds)"
 depends = ["_ensure-up"]
@@ -186,9 +206,12 @@ run = ["$DC_EXEC php bin/console doctrine:fixtures:load --no-interaction"]
 [tasks."seed:clear"]
 description = "Drop schema, re-run migrations (no fixtures)"
 depends = ["_ensure-up"]
+# Dropping and creating a database is the owner role's work, not the application's - the connection
+# the app runs on cannot do either (reference/adr/0030). `migrate` finds that role from its own
+# configuration; the two database-level commands are told.
 run = [
-    "$DC_EXEC php bin/console doctrine:database:drop --force --if-exists",
-    "$DC_EXEC php bin/console doctrine:database:create",
+    "$DC_EXEC php bin/console doctrine:database:drop --force --if-exists --connection=migrations",
+    "$DC_EXEC php bin/console doctrine:database:create --connection=migrations",
     "$DC_EXEC php bin/console doctrine:migrations:migrate --no-interaction --all-or-nothing",
 ]
 

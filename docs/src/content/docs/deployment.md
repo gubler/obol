@@ -195,17 +195,22 @@ users type, what appears in magic-link emails, and what passkeys bind to; `DEFAU
 | `APP_HOST` | Required (fail-fast) | not used | The public host, without scheme (e.g. `obol.example`). Drives `DEFAULT_URI`, `WEBAUTHN_RP_ID` and `WEBAUTHN_ALLOWED_ORIGINS`. Read by Compose when it renders the stack; nothing in the application reads it, so it is not itself forwarded into the container. |
 | `APP_SECRET` | Required (fail-fast) | committed dev value (`.env.dev`) | Signs magic links, remember-me cookies, and email-verification URIs. A known value is a full auth compromise. |
 | `OBOL_IMAGE` | Required (fail-fast) | not used (dev builds locally) | The image to run, pinned to a released tag (e.g. `code.dev88.work/dev88/obol:2026.7.1`). Rolling back is editing this one line and running `bin/dc-prod up -d`. |
-| `POSTGRES_PASSWORD` | Required (fail-fast) | `!ChangeMe!` | PostgreSQL password. Also feeds `DATABASE_URL`, which the base compose composes from the `POSTGRES_*` vars. |
+| `POSTGRES_PASSWORD` | Required (fail-fast) | `!ChangeMe!` | Password for the cluster's bootstrap superuser. Provisions the two roles below and is used by nothing else - not the application, not the migrations. See [Database roles](#database-roles). |
+| `OBOL_DB_OWNER_PASSWORD` | Required (fail-fast) | `!ChangeMe!` | Password for the role that owns the schema and runs migrations. Feeds `MIGRATION_DATABASE_URL`. |
+| `OBOL_DB_RUNTIME_PASSWORD` | Required (fail-fast) | `!ChangeMe!` | Password for the role the application runs on. Feeds `DATABASE_URL`. |
 | `MAILER_DSN` | Required (fail-fast) | `null://null` | Outbound mail transport. URL-encode reserved characters in the username (`@` becomes `%40`). Verify with `app:mailer:smoke`. |
 | `MAILER_FROM` | Required (fail-fast) | `Obol <noreply@dev88.co>` | Default sender for transactional mail. Must be an address the transport is authorized to send as. |
 | `CLOUDFLARE_TUNNEL_TOKEN` | Required (fail-fast) | not used | Connector credential from the tunnel's dashboard page. Only read by `compose.prod.tunnel.yaml`. |
-| `POSTGRES_USER` | Optional | `app` | PostgreSQL username. |
+| `POSTGRES_USER` | Optional | `app` | The bootstrap superuser's name, created by `initdb`. |
 | `POSTGRES_DB` | Optional | `app` | PostgreSQL database name. |
+| `OBOL_DB_OWNER` | Optional | `obol_owner` | Name of the schema-owning role. |
+| `OBOL_DB_RUNTIME` | Optional | `obol_app` | Name of the runtime role. |
 | `SERVER_NAME` | Set to `:80` by the overlay | `obol.lolly.localhost` | Caddy's listen address. Not the public host, and not something the deploy env sets. |
 | `DEFAULT_URI` | Derived: `https://${APP_HOST}` | per compose mode | Base URI for URLs generated off-request (emails, magic links), where there is no request to derive a host from. |
 | `WEBAUTHN_RP_ID` | Derived: `${APP_HOST}` | `localhost` | Passkey relying-party id, *without* scheme or port. Overridable, but should stay unset - see the caution below. |
 | `WEBAUTHN_ALLOWED_ORIGINS` | Derived: `https://${APP_HOST}` | `https://obol.lolly.localhost` | The exact origin(s) browsers send during a passkey ceremony (scheme + host + port). |
-| `DATABASE_URL_OVERRIDE` | Optional | not used | A complete DSN, replacing the one composed from the `POSTGRES_*` parts. Only needed to point at a database outside this stack. |
+| `DATABASE_URL_OVERRIDE` | Optional | not used | A complete DSN for the runtime role, replacing the one composed from the parts. Only needed to point at a database outside this stack. |
+| `MIGRATION_DATABASE_URL_OVERRIDE` | Optional | not used | The same, for the owner role. Supply both or neither: the privilege split has to survive the move. |
 
 The resulting `DATABASE_URL` carries more than the domain data: sessions and the application cache
 pool read it too, the former as its own connection DSN. Pointing it somewhere else moves all three
@@ -489,8 +494,9 @@ ADR-0026: Deploy-durable state lives in PostgreSQL.
 | Compiled assets and built CSS | Baked into the image at build time | No - the point is that the new image's copy wins |
 | Application logs | The host's systemd journal, via the container's output | Yes - see [Container logs](#container-logs) |
 
-Both database tables are created by a migration rather than by the adapters' own auto-create, so the
-runtime database role needs no DDL rights. `framework.cache.prefix_seed` is pinned to `obol`: rows now
+Both database tables are created by a migration rather than by the adapters' own auto-create, which is
+what lets the application run on a role with no DDL rights at all - see
+[Database roles](#database-roles). `framework.cache.prefix_seed` is pinned to `obol`: rows now
 outlive the container that wrote them, and the namespace Symfony derives by default is a function of
 the project directory. Bumping that seed is the one-line way to discard the whole pool, which is what
 you want if a cached payload's shape changes across a release.
@@ -510,6 +516,68 @@ table.
 Uploaded files have no durable home. Uploads are disabled for launch, and the mount backing them is
 development-only, so re-enabling them needs object storage or a database column rather than a
 volume.
+:::
+
+## Database roles
+
+The application connects as a role that **cannot create, alter or drop anything**. A SQL injection or
+a compromised PHP process therefore reaches the rows a request could already touch, and not the
+schema. The reasoning, and the alternatives weighed, are in
+ADR-0030: The application connects as a database role that cannot change the schema.
+
+| Role | What it can do | Who uses it |
+|---|---|---|
+| `${POSTGRES_USER}` | Superuser. Created by `initdb`. | The provisioning script, break-glass, restore. Nothing else. |
+| `obol_owner` | Owns the database and its tables; runs DDL. Not a superuser. | The `migrations` Doctrine connection only. |
+| `obol_app` | `SELECT`, `INSERT`, `UPDATE`, `DELETE`. No DDL, no `TRUNCATE`. | Everything else: Doctrine, the session handler, the cache pool. |
+
+Two connection strings follow from that. `DATABASE_URL` names the runtime role and `MIGRATION_DATABASE_URL`
+the owner, and both `php` and `worker` carry both - so `doctrine:migrations:migrate` run by hand
+picks up the owner role wherever it is invoked, rather than failing with a permission error at the
+moment someone is trying to fix something.
+
+`docker/db/init/10-roles.sh` creates the roles and their grants. The postgres image runs it from
+`/docker-entrypoint-initdb.d` on the first boot of an empty cluster, so a fresh host reproduces the
+whole arrangement with no manual step. It is idempotent - re-running it is how a cluster is converged
+and how a rotated password takes effect.
+
+:::note[Future migrations need no grant step]
+The script sets default privileges, so a table a later migration creates is usable by the runtime role
+the moment it exists. Without them PostgreSQL would grant the runtime role nothing on tables created
+after it, and every migration that added one would break the application at runtime - presenting as an
+application bug rather than a permissions problem.
+
+Anything Doctrine-backed added later (a Messenger transport, a cache adapter) must set
+`auto_setup: false` and get a migration. The runtime role has no DDL rights, so an adapter that tries
+to create its own table fails on the request path.
+:::
+
+### Restoring a dump
+
+Initialization scripts run only against an empty data directory, so a restore never triggers one. A
+restored dump also carries no useful ownership - `pg_restore` assigns everything to whichever role
+ran it - so the provisioning script has to be run afterwards:
+
+```bash
+# 1. Load the dump as the bootstrap superuser.
+bin/dc-prod exec -T database psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" < obol.sql
+
+# 2. Create the roles, take ownership of what was restored, and re-establish the grants.
+bin/dc-prod exec -T database sh /docker-entrypoint-initdb.d/10-roles.sh
+```
+
+Then check that the application can actually read what was restored, rather than assuming it:
+
+```bash
+bin/dc-prod exec php php bin/console dbal:run-sql 'SELECT count(*) FROM subscription'
+bin/dc-prod exec php php bin/console doctrine:migrations:up-to-date
+```
+
+:::caution
+Skipping step 2 does not fail loudly. The application keeps working on the rows it can already read,
+and the break surfaces at the next deploy: the owner role cannot read `doctrine_migration_versions` on
+restored tables, so the migrator reports the entire history as unapplied and tries to replay it. The
+`up-to-date` check above is what catches that while you are still looking.
 :::
 
 ## Container logs
@@ -568,6 +636,10 @@ exact inverse of the rule routing requests into PHP.
 
 ## Changelog
 
+- 2026-08-08 - The application connects as a runtime role with no DDL rights, and migrations as a
+  separate owner role. `POSTGRES_PASSWORD` is now the bootstrap superuser's, not the application's;
+  `OBOL_DB_OWNER_PASSWORD` and `OBOL_DB_RUNTIME_PASSWORD` are new required secrets. Adds
+  [Database roles](#database-roles) and the restore procedure.
 - 2026-08-08 - The overlay files are named for their place in the chain: `compose.dev.yaml`,
   `compose.dev.solo.yaml`, `compose.dev.shared.yaml` and `compose.prod.tunnel.yaml`. Nothing is
   auto-loaded any more, so production cannot inherit the dev posture by omission - and a bare

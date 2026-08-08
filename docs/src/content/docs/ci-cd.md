@@ -25,7 +25,8 @@ Runs on the `default` runner label (Asgard, arm64) with PHP 8.5 and Xdebug (for 
 |------|-------------|
 | Checkout | Clone the repository |
 | Node setup | `actions/setup-node` (Node 24, npm cache) + `npm ci` for the dev-only JS toolchain |
-| PHP setup | Install PHP 8.5 with `intl`, `mbstring`, `zip`, `pdo_pgsql`, `pcov` (the coverage driver) extensions |
+| PHP setup | Install PHP 8.5 with `intl`, `mbstring`, `zip`, `pdo_pgsql`, `pcov` (the coverage driver) extensions, plus `postgresql-client` |
+| Database roles | `docker/db/init/10-roles.sh` - the same provisioning script the postgres image runs on a fresh cluster, invoked over TCP because a service container cannot mount an initdb hook |
 | Composer validate | `composer validate --no-check-publish --strict` |
 | Composer install | Install all dependencies |
 | PHP-CS-Fixer | Check code style (no auto-fix in CI) |
@@ -46,6 +47,8 @@ Runs on the `default` runner label (Asgard, arm64) with PHP 8.5 and Xdebug (for 
 | Vitest | JS unit tests (`npm run test`) |
 | Asset build | `importmap:install`, `tailwind:build`, `asset-map:compile` |
 | PHPUnit | Run tests with coverage; `bin/coverage-min.php` enforces the 70% threshold |
+
+The PHPUnit step runs against the **runtime** database role, which cannot create, alter or drop anything (ADR-0030). That is deliberate: it means a migration that quietly needs DDL on the request path fails here rather than on the deploy, which is what keeps the privilege split from decaying over time. The owner role is what drops, creates and migrates the test database.
 
 The JS toolchain steps are gated on `steps.npm.outcome == 'success'` (the `npm ci` step), independent of the PHP `composer install`. See [Frontend](frontend.md#javascript-toolchain-dev-only) for what they cover.
 
@@ -105,5 +108,7 @@ Running `mise run coverage` locally before pushing ensures CI will pass.
 
 ## Changelog
 
+- 2026-08-08 - Lint & Test provisions the two database roles and runs the suite as the runtime one, so
+  a migration needing runtime DDL fails in CI rather than on the deploy.
 - 2026-07-30 - The build job now derives a CalVer version from the git tags, cuts the release tag, and
   publishes the image under that version as well as the short SHA and `latest`.

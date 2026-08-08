@@ -93,10 +93,16 @@ services:
   ###> doctrine/doctrine-bundle ###
   database:
     environment:
-      # Also gates DATABASE_URL, which the base compose composes from POSTGRES_PASSWORD - so an unset
-      # password aborts the deploy before anything starts, and a set one flows through to the
-      # application's connection string unchanged.
+      # The cluster's bootstrap superuser. It provisions the two roles below and is then used by
+      # nothing - not the application, not the migrations - so this password's job is to be the
+      # break-glass credential and the one a restore runs under.
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in production}
+      # The two roles the application actually connects as (reference/adr/0030). Guarded here rather
+      # than where the DSNs are assembled, because Compose evaluates every file in the chain before
+      # starting anything: an unset password aborts the command outright, so the base compose never
+      # gets to fall back to its repo-known development default and quietly ship it to production.
+      OBOL_DB_OWNER_PASSWORD: ${OBOL_DB_OWNER_PASSWORD:?OBOL_DB_OWNER_PASSWORD must be set in production}
+      OBOL_DB_RUNTIME_PASSWORD: ${OBOL_DB_RUNTIME_PASSWORD:?OBOL_DB_RUNTIME_PASSWORD must be set in production}
     volumes:
       # A named volume rather than the base compose's checkout-relative bind mount: the database must
       # not be tied to the deploy checkout's working directory, where re-cloning or moving the

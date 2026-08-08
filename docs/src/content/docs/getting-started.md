@@ -32,6 +32,23 @@ mise run up
 
 Migrations run automatically inside the container on startup. No fixtures are loaded by default — run `mise run seed` if you want sample data.
 
+The database roles the application connects as are created on the first boot of an empty cluster (ADR-0030), so a fresh clone needs nothing here.
+
+:::caution[A checkout that predates the privilege split]
+The postgres image runs its initialization scripts only against an empty data directory, so an existing `docker/db/data` never sees them and the stack fails to boot: the runtime role does not exist yet. Wiping is the cleaner fix, because a retrofitted cluster keeps its existing tables owned by the old role.
+
+```bash
+bin/dc down && rm -rf docker/db/data && bin/dc up -d
+```
+
+To keep local data instead, provision the roles in place and drop the stale test database (the suite rebuilds it):
+
+```bash
+mise run db:roles
+bin/dc exec -T database psql -U app -d app -c 'DROP DATABASE IF EXISTS app_test'
+```
+:::
+
 ### 2. Install the JS toolchain
 
 ```bash

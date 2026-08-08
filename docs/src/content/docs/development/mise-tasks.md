@@ -65,7 +65,19 @@ See [Frontend](../frontend.md#javascript-toolchain-dev-only) for what the JS too
 |------|-------------|-------------------|
 | `mise run tailwind` | Rebuild Tailwind CSS | `php bin/console tailwind:build` |
 | `mise run seed` | Load fixtures | `doctrine:fixtures:load --no-interaction` |
-| `mise run seed:clear` | Drop schema, re-run migrations (no fixtures) | `doctrine:database:drop` + `create` + `migrate` |
+| `mise run seed:clear` | Drop schema, re-run migrations (no fixtures) | `doctrine:database:drop` + `create` + `migrate`, on the owner connection |
+| `mise run db:roles` | Provision the owner and runtime database roles on an existing cluster | `docker/db/init/10-roles.sh` in the `database` container |
+| `mise run migration:diff` | Generate a migration from the entity mapping | `doctrine:migrations:diff`, with `DATABASE_URL` overridden to the owner role |
+
+Use `migration:diff` rather than calling `doctrine:migrations:diff` directly. Building the
+mapping-derived schema needs DDL rights on the application's own connection - Symfony's schema
+listeners create a probe table there to decide whether two connections share a database - and the
+application does not have them. Run bare, it fails naming `schema_subscriber_check_`, which points
+nowhere useful.
+
+`db:roles` is for a cluster the postgres image never initialized - one predating the privilege split,
+or one restored from a dump - since initialization scripts run only against an empty data directory.
+It is idempotent, so re-running it is also how a rotated password takes effect. See ADR-0030.
 
 ## Documentation
 

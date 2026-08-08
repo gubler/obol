@@ -1,10 +1,18 @@
 ---
-# Assembled from the POSTGRES_* parts by default, so the local stack needs no configuration.
-# DATABASE_URL_OVERRIDE supplies a complete DSN instead, for pointing the application at a database
+# Two connection strings, because there are two database roles (reference/adr/0030). The runtime one
+# is what the entire application runs on and it cannot change the schema; the migration one owns it.
+# Both are assembled from the parts by default, so the local stack needs no configuration.
+#
+# The *_OVERRIDE variables supply complete DSNs instead, for pointing the application at a database
 # outside this stack. Named `_OVERRIDE` rather than DATABASE_URL on purpose: the committed `.env`
 # defines DATABASE_URL as a host-side 127.0.0.1 DSN for tooling run outside Docker, and reusing that
 # name here would inject an unreachable address into the container the moment Compose read that file.
-x-database-url: &database_url ${DATABASE_URL_OVERRIDE:-postgresql://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-!ChangeMe!}@database:5432/${POSTGRES_DB:-app}?serverVersion=${POSTGRES_VERSION:-16}&charset=${POSTGRES_CHARSET:-utf8}}
+#
+# Note whose credentials each carries. POSTGRES_USER is the cluster's bootstrap superuser and appears
+# in neither: it provisions the two roles and is then done, so a compromised application container
+# holds no credential that can reach outside this database.
+x-database-url: &database_url ${DATABASE_URL_OVERRIDE:-postgresql://${OBOL_DB_RUNTIME:-obol_app}:${OBOL_DB_RUNTIME_PASSWORD:-!ChangeMe!}@database:5432/${POSTGRES_DB:-app}?serverVersion=${POSTGRES_VERSION:-16}&charset=${POSTGRES_CHARSET:-utf8}}
+x-migration-database-url: &migration_database_url ${MIGRATION_DATABASE_URL_OVERRIDE:-postgresql://${OBOL_DB_OWNER:-obol_owner}:${OBOL_DB_OWNER_PASSWORD:-!ChangeMe!}@database:5432/${POSTGRES_DB:-app}?serverVersion=${POSTGRES_VERSION:-16}&charset=${POSTGRES_CHARSET:-utf8}}
 
 services:
   php:
@@ -13,6 +21,10 @@ services:
     environment:
       SERVER_NAME: ${SERVER_NAME:-obol.lolly.localhost}, php:80
       DATABASE_URL: *database_url
+      # Carried by every container that runs bin/console, not just the migrator: the entrypoint has
+      # each of them verify the schema is current, and a migration run by hand has to find the owner
+      # role wherever it is invoked from.
+      MIGRATION_DATABASE_URL: *migration_database_url
       # The one container that migrates. Every container built from this image runs the same
       # entrypoint, which migrates only when told to and otherwise just verifies the schema is
       # current, so this single line is what makes the ownership exclusive rather than a race the
@@ -47,6 +59,7 @@ services:
     # refuse to start if it is not, so it does not simply trust that php's migration worked.
     environment:
       DATABASE_URL: *database_url
+      MIGRATION_DATABASE_URL: *migration_database_url
     depends_on:
       database:
         condition: service_healthy
@@ -58,9 +71,17 @@ services:
     image: postgres:${POSTGRES_VERSION:-16}-alpine
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-app}
-      # You should definitely change the password in production
+      # The cluster's bootstrap superuser, created by initdb. It provisions the two application roles
+      # and is then used by nothing else - not the application, not the migrations. You should
+      # definitely change the password in production.
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-!ChangeMe!}
       POSTGRES_USER: ${POSTGRES_USER:-app}
+      # Read by the initialization script below. The owner role owns the schema and runs migrations;
+      # the runtime role has data rights only. See reference/adr/0030.
+      OBOL_DB_OWNER: ${OBOL_DB_OWNER:-obol_owner}
+      OBOL_DB_OWNER_PASSWORD: ${OBOL_DB_OWNER_PASSWORD:-!ChangeMe!}
+      OBOL_DB_RUNTIME: ${OBOL_DB_RUNTIME:-obol_app}
+      OBOL_DB_RUNTIME_PASSWORD: ${OBOL_DB_RUNTIME_PASSWORD:-!ChangeMe!}
     healthcheck:
       test: ["CMD", "pg_isready", "-d", "${POSTGRES_DB:-app}", "-U", "${POSTGRES_USER:-app}"]
       timeout: 5s
@@ -68,6 +89,11 @@ services:
       start_period: 60s
     volumes:
       - ./docker/db/data:/var/lib/postgresql/data:rw
+      # Provisions the two application roles. The image runs this only against an empty data
+      # directory, which is exactly once per cluster - so it is also mounted (rather than copied in)
+      # to stay the single artifact `mise run db:roles` re-runs against a cluster that already exists,
+      # such as one restored from a dump.
+      - ./docker/db/init:/docker-entrypoint-initdb.d:ro
   ###< doctrine/doctrine-bundle ###
 
 # Mercure is installed as a Caddy module, prevent the Flex recipe from installing another service

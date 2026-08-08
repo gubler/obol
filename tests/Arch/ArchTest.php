@@ -277,6 +277,12 @@ final class ArchTest extends TestCase
             // the query bus would risk circularity once owner-scoped runners read the current user. It is
             // a data-access seam like a repository, not a consumer bypassing the boundary. See ADR-0014.
             \App\Security\MultiEmailUserProvider::class,
+            // The migrations schema provider reads mapping metadata, never rows: it hands
+            // doctrine:migrations:diff the schema the entities describe, which SchemaTool derives from
+            // the metadata factory without touching the database. The entity manager is the only way
+            // to reach that metadata, so the rule matches on a name rather than on data access here.
+            // See reference/adr/0030.
+            \App\Doctrine\Migrations\EntitySchemaProvider::class,
         ];
 
         foreach (self::allSourceFiles() as $path) {

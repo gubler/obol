@@ -43,5 +43,10 @@ services:
             - '../src/Dto/'
             - '../src/Doctrine/'
 
+    # Needs an explicit definition because src/Doctrine/ is excluded above. Unlike the DBAL types and
+    # DQL functions that exclusion is written for, this one is a real service - the migrations
+    # dependency factory resolves it by id (see doctrine_migrations.yaml).
+    App\Doctrine\Migrations\EntitySchemaProvider: ~
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

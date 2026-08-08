@@ -24,11 +24,17 @@ final readonly class TestDatabase
      * Drop, create, migrate - in that order, each one checked. The suite's isolation rests entirely on
      * this: DAMA rolls back the transaction around each test, but the Panther tests opt out of that
      * rollback and commit, so a database that survives into the next run carries their writes with it.
+     *
+     * All three steps run as the owner role: the application's own connection deliberately cannot
+     * create a database or a table, which is the property the suite exists to keep true (see
+     * reference/adr/0030). `migrate` picks that connection up from doctrine_migrations.yaml; the two
+     * database-level commands take it here. The runtime role's rights on what gets created come from
+     * the default privileges the roles script leaves in template1, which a created database inherits.
      */
     public function rebuild(): void
     {
-        $this->run('doctrine:database:drop', ['--force' => true, '--if-exists' => true]);
-        $this->run('doctrine:database:create', ['--if-not-exists' => true]);
+        $this->run('doctrine:database:drop', ['--force' => true, '--if-exists' => true, '--connection' => 'migrations']);
+        $this->run('doctrine:database:create', ['--if-not-exists' => true, '--connection' => 'migrations']);
         $this->run('doctrine:migrations:migrate', ['--no-interaction' => true]);
     }
 

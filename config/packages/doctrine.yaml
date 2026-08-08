@@ -1,24 +1,41 @@
 doctrine:
     dbal:
-        url: '%env(resolve:DATABASE_URL)%'
-
         # IMPORTANT: You MUST configure your server version,
         # either here or in the DATABASE_URL env var (see .env file)
         #server_version: '16'
-
-        profiling_collect_backtrace: '%kernel.debug%'
 
         types:
             citext: App\Doctrine\Type\CitextType
             calendar_date: App\Doctrine\Type\CalendarDateType
 
-        # Map PostgreSQL SQL types back to our custom Doctrine types during schema introspection so
-        # doctrine:migrations:diff does not propose spurious changes. Mapping `date` to calendar_date
-        # makes every DATE column hydrate as a CalendarDate (ObligationSnapshot.recordedAt and
-        # ExchangeRate.asOf included), which is why the swap has to be atomic. See ADR-0021.
-        mapping_types:
-            citext: citext
-            date: calendar_date
+        default_connection: default
+
+        # Two connections, two database roles (reference/adr/0030). `default` is what the whole
+        # application runs on and it cannot change the schema; `migrations` is the role that owns it.
+        # Declared here rather than swapped into DATABASE_URL around the migration command, so a
+        # human running doctrine:migrations:migrate by hand gets the owner role automatically instead
+        # of a permission error in the middle of an incident.
+        connections:
+            default: &connection
+                url: '%env(resolve:DATABASE_URL)%'
+
+                profiling_collect_backtrace: '%kernel.debug%'
+
+                # Map PostgreSQL SQL types back to our custom Doctrine types during schema introspection so
+                # doctrine:migrations:diff does not propose spurious changes. Mapping `date` to calendar_date
+                # makes every DATE column hydrate as a CalendarDate (ObligationSnapshot.recordedAt and
+                # ExchangeRate.asOf included), which is why the swap has to be atomic. See ADR-0021.
+                mapping_types:
+                    citext: citext
+                    date: calendar_date
+
+            # Merged from `default` so the two can only ever differ by the credential. That is not
+            # tidiness: `diff` reads the schema through this connection and the entity mapping through
+            # the other, so a mapping_types entry on one and not the other would make it propose
+            # changes that do not exist.
+            migrations:
+                <<: *connection
+                url: '%env(resolve:MIGRATION_DATABASE_URL)%'
     orm:
 #        auto_generate_proxy_classes: true
 #        enable_lazy_ghost_objects: true
@@ -54,8 +71,14 @@ doctrine:
 when@test:
     doctrine:
         dbal:
-            # "TEST_TOKEN" is typically set by ParaTest
-            dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+            # "TEST_TOKEN" is typically set by ParaTest. Both connections carry it: the suite's
+            # database is created and migrated through `migrations` and read through `default`, so a
+            # suffix on one of them would point the two at different databases.
+            connections:
+                default:
+                    dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+                migrations:
+                    dbname_suffix: '_test%env(default::TEST_TOKEN)%'
 
 when@prod:
     doctrine:

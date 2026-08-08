@@ -37,7 +37,13 @@ Tests run against PostgreSQL (the same engine as production). The `tests/bootstr
 
 This happens once per test suite run. Individual tests do not re-migrate. DAMA wraps each test in a transaction (see below), so the schema is built once and reused.
 
-Every step is checked and a failure aborts the run (`tests/Support/TestDatabase.php`). The rebuild is the only thing separating one run from the next: the browser tests opt out of DAMA's rollback and commit, so a database that survives into the next run carries their writes with it - including a truncated `user` table, which strips the founder the migrations seed. Left unchecked, that surfaces later as assertion failures in whatever depends on that baseline, in tests that look unrelated to the browser suite and pass in isolation.
+All three steps run as the **owner role**, because the role the application connects as cannot create a database or a table (ADR-0030). The tests themselves then run as that runtime role, which is what makes the suite a real test of the privilege split rather than a run as an unrestricted superuser - a migration that quietly needs DDL at runtime fails here and in CI, not on the deploy. The runtime role's rights on the freshly created database come from default privileges the provisioning script leaves in `template1`, which `CREATE DATABASE` copies, so nothing has to grant anything per run.
+
+Note that the runtime role has no `TRUNCATE`. Tests that need to empty tables use `App\Tests\Support\DatabaseCleaner`, which deletes in foreign-key order.
+
+If the suite aborts because the two connections resolve to the same role, the cluster predates the split - run `mise run db:roles`.
+
+Every step is checked and a failure aborts the run (`tests/Support/TestDatabase.php`). The rebuild is the only thing separating one run from the next: the browser tests opt out of DAMA's rollback and commit, so a database that survives into the next run carries their writes with it - including an emptied `user` table, which strips the founder the migrations seed. Left unchecked, that surfaces later as assertion failures in whatever depends on that baseline, in tests that look unrelated to the browser suite and pass in isolation.
 
 Postgres refuses to drop a database that still has a session attached, so the usual cause is a Panther PHP server orphaned by an interrupted run. Clear it and re-run:
 

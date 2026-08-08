@@ -191,12 +191,34 @@ assert_count 'the database uses a named volume' 1 \
     'source: database_data' "$DEPLOY_RENDER"
 assert_count 'the database is not on a checkout-relative bind mount' 0 \
     'docker/db/data' "$DEPLOY_RENDER"
-# Everything that has to outlive a container is in PostgreSQL, so the database's volume should be
-# the only mount in the whole stack - that is what makes a host move a dump and restore rather than
-# a hand-copied set of volumes. Counting every `source:` rather than naming the mounts we know about
-# means one added later trips this instead of sliding past, and catches bind mounts too.
-assert_count 'the database volume is the only mount in the stack' 1 \
+# Everything that has to outlive a container is in PostgreSQL, so the database's volume should be the
+# only *writable* mount in the whole stack - that is what makes a host move a dump and restore rather
+# than a hand-copied set of volumes. The second is the role provisioning script, which is read-only
+# and holds nothing: it is configuration the image runs once, not state. Counting every `source:`
+# rather than naming the mounts we know about means one added later trips this instead of sliding
+# past, and catches bind mounts too.
+assert_count 'the only mounts are the database volume and the read-only init script' 2 \
     'source: ' "$DEPLOY_RENDER"
+assert_count 'the init script cannot be written to from inside the container' 1 \
+    'read_only: true' "$DEPLOY_RENDER"
+
+echo 'Database roles'
+# The whole application - Doctrine, the session handler, the cache pool - runs on the runtime role,
+# which cannot create, alter or drop anything. Counted on php and worker both: the worker runs the
+# same console commands and would otherwise be the way back in. See reference/adr/0030.
+assert_count 'the application connects as the runtime role, on php and worker' 2 \
+    'DATABASE_URL: postgresql://obol_app:' "$DEPLOY_RENDER"
+assert_count 'the owner DSN reaches php and worker, so a hand-run migration finds it' 2 \
+    'MIGRATION_DATABASE_URL: postgresql://obol_owner:' "$DEPLOY_RENDER"
+# The bootstrap superuser provisions the two roles and is then done. Finding it in a DSN would mean
+# the application had been handed a credential that can reach outside its own database - which is
+# the entire failure this arrangement exists to prevent, and it would look like nothing from outside.
+assert_count 'no connection string names the bootstrap superuser' 0 \
+    '://obol:' "$DEPLOY_RENDER"
+# Without this the roles never exist on a fresh host, and the stack fails to boot rather than booting
+# insecurely - but it fails at the worst moment, so pin that the script is actually mounted.
+assert_count 'the role provisioning script is mounted for a fresh cluster' 1 \
+    'target: /docker-entrypoint-initdb.d' "$DEPLOY_RENDER"
 
 echo 'Container logs'
 # The disk this stack runs on is shared with the PostgreSQL volume, so unbounded container logs are
@@ -266,6 +288,8 @@ echo 'Required secrets abort the command rather than falling back'
 assert_aborts 'a missing APP_HOST aborts' "$DEPLOY_CHAIN" "$(env_without APP_HOST)"
 assert_aborts 'a missing APP_SECRET aborts' "$DEPLOY_CHAIN" "$(env_without APP_SECRET)"
 assert_aborts 'a missing POSTGRES_PASSWORD aborts' "$DEPLOY_CHAIN" "$(env_without POSTGRES_PASSWORD)"
+assert_aborts 'a missing OBOL_DB_OWNER_PASSWORD aborts' "$DEPLOY_CHAIN" "$(env_without OBOL_DB_OWNER_PASSWORD)"
+assert_aborts 'a missing OBOL_DB_RUNTIME_PASSWORD aborts' "$DEPLOY_CHAIN" "$(env_without OBOL_DB_RUNTIME_PASSWORD)"
 assert_aborts 'a missing MAILER_DSN aborts' "$DEPLOY_CHAIN" "$(env_without MAILER_DSN)"
 assert_aborts 'a missing MAILER_FROM aborts' "$DEPLOY_CHAIN" "$(env_without MAILER_FROM)"
 assert_aborts 'a missing tunnel token aborts' "$DEPLOY_CHAIN" "$(env_without CLOUDFLARE_TUNNEL_TOKEN)"

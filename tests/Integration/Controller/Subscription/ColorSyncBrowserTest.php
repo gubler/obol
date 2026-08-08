@@ -10,6 +10,7 @@ namespace App\Tests\Integration\Controller\Subscription;
 use App\Enum\TileColor;
 use App\Factory\CategoryFactory;
 use App\Factory\UserFactory;
+use App\Tests\Support\DatabaseCleaner;
 use DAMA\DoctrineTestBundle\PHPUnit\SkipDatabaseRollback;
 use Doctrine\ORM\EntityManagerInterface;
 use Facebook\WebDriver\WebDriverBy;
@@ -19,7 +20,7 @@ use Symfony\Component\Panther\PantherTestCase;
 
 /**
  * Panther runs the app in a separate PHP CLI server process, so DAMA's per-test transaction
- * rollback cannot reach it. We opt out of the rollback and truncate by hand instead; the seeded
+ * rollback cannot reach it. We opt out of the rollback and clear the rows by hand instead; the seeded
  * categories are committed in this process and so are visible to the browser's server.
  */
 #[SkipDatabaseRollback]
@@ -28,21 +29,18 @@ final class ColorSyncBrowserTest extends PantherTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        self::truncateTables();
+        self::clearCommittedRows();
     }
 
     protected function tearDown(): void
     {
-        self::truncateTables();
+        self::clearCommittedRows();
         parent::tearDown();
     }
 
-    private static function truncateTables(): void
+    private static function clearCommittedRows(): void
     {
-        self::getContainer()->get(EntityManagerInterface::class)
-            ->getConnection()
-            ->executeStatement('TRUNCATE subscription_event, payment, subscription, category, user_email, "user" RESTART IDENTITY CASCADE')
-        ;
+        DatabaseCleaner::clear(self::getContainer()->get(EntityManagerInterface::class)->getConnection());
     }
 
     #[WithoutErrorHandler]

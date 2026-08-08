@@ -4,3 +4,15 @@ doctrine_migrations:
         # as migrations classes should NOT be autoloaded
         'DoctrineMigrations': '%kernel.project_dir%/migrations'
     enable_profiler: false
+
+    # Migrations run as the role that owns the schema, never as the role the application runs on
+    # (reference/adr/0030). Declared here rather than swapped into the environment around the migrate
+    # command, so `doctrine:migrations:migrate` run by hand - during an incident, from any container -
+    # picks the right role up on its own instead of failing with a permission error.
+    connection: migrations
+
+    # Selecting a connection leaves the dependency factory without an entity manager, and `diff`
+    # compares the entity mapping against the database. This hands it the mapping back; see the
+    # provider for why it is first-party.
+    services:
+        Doctrine\Migrations\Provider\SchemaProvider: App\Doctrine\Migrations\EntitySchemaProvider

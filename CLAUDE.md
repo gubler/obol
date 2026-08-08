@@ -84,8 +84,25 @@ Mirrors the PHP sa/cs/test trio for `assets/`; nothing is bundled or shipped (As
 ```bash
 mise run seed                                  # load fixtures
 mise run seed:clear                            # drop + migrate (no fixtures)
+mise run db:roles                              # (re)provision the database roles on an existing cluster
 mise run dce -- php bin/console doctrine:migrations:migrate
 ```
+
+**Two database roles, two connections** (`reference/adr/0030`). The application runs entirely on the
+`default` connection (`DATABASE_URL`), whose role can read and write rows but **cannot create, alter
+or drop anything** - Doctrine, the session handler and the cache pool all share it. Schema changes go
+through the `migrations` connection (`MIGRATION_DATABASE_URL`), which `doctrine_migrations.yaml`
+selects automatically, so no migration command needs a flag. Two consequences worth knowing before
+you write code:
+
+- **Anything Doctrine-backed added later needs `auto_setup: false` and a migration.** A transport or
+  cache adapter that creates its own table fails on the request path, in production.
+- **Database-level commands need `--connection=migrations`** (`doctrine:database:drop`, `create`).
+  `TRUNCATE` is not available to the application at all; delete in foreign-key order instead.
+- **Generate migrations with `mise run migration:diff`**, never a bare `doctrine:migrations:diff`.
+  Symfony's schema listeners create a probe table on the application's connection to build the
+  mapping-derived schema, so the whole command has to run as the owner; the task does that. `migrate`,
+  `up-to-date` and `status` need nothing special.
 
 Fixtures seed a single account, `founder@example.com` (primary, verified).
 

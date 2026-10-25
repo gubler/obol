@@ -81,6 +81,14 @@ The build job runs on the `amd64` runner label (Hex, x86_64) and builds a single
 
 This replaces the earlier QEMU-emulated multi-arch build (the amd64 leg used to run under emulation on the arm64 runner). If an arm64 deploy target appears later, restore the second leg as a matrix build on the `arm64` runner and stitch the two with a manifest-merge job.
 
+### Fresh base images
+
+The build step sets `pull: true`, so every release fetches its base images from the registry rather than reusing the runner's cached copies. The bases float on tags - `dunglas/frankenphp:1-php8.5`, `debian:13-slim`, `node:22-alpine` - that move with each PHP, FrankenPHP and Debian patch release, including security releases. Without the pull, a runner that already holds a tag would build on the old image and ship it, with nothing in the build to say so.
+
+Because the tags float, a security release reaches production at the next release with no change to the repository. Pinning an exact tag such as `1.13.3-php8.5.12` would turn each one into a manual bump with nothing to prompt it. `tests/Arch/ReleaseWorkflowTest.php` fails if the build step stops pulling.
+
+The Lint & Test job's container (`image: dunglas/frankenphp:1-php8.5`) follows the runner's own pull policy, which is configured in the [Homelab repository](https://code.dev88.work/dev88/homelab), not here.
+
 ### Registry Authentication
 
 The build job uses `secrets.REGISTRY_TOKEN` for authenticating with the Gitea Container Registry. This secret must be configured in the repository's Gitea settings.
@@ -108,6 +116,8 @@ Running `mise run coverage` locally before pushing ensures CI will pass.
 
 ## Changelog
 
+- 2026-10-24 - The build job pulls fresh base images on every release, so a PHP or FrankenPHP
+  security release on a floating tag reaches the shipped image.
 - 2026-08-08 - Lint & Test provisions the two database roles and runs the suite as the runtime one, so
   a migration needing runtime DDL fails in CI rather than on the deploy.
 - 2026-07-30 - The build job now derives a CalVer version from the git tags, cuts the release tag, and

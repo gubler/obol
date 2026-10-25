@@ -44,7 +44,15 @@ Full contract and how routing works: `~/Projects/lolly/docs/agents/integrate-an-
 mise run up                            # start the stack
 mise run down                          # stop it
 mise run dce -- php bin/console <cmd>  # arbitrary Symfony command
+bin/dc build --pull                    # rebuild the dev image on freshly pulled bases
 ```
+
+The images build on floating tags (`dunglas/frankenphp:1-php8.5`) that move with each PHP and
+FrankenPHP security release, but a build reuses a cached base unless it pulls. Rebuild with
+`bin/dc build --pull` to pick a release up locally; the release job always pulls, and
+`tests/Arch/ReleaseWorkflowTest.php` holds it. A release can also change the Caddy modules under an
+unchanged repository: `tests/Integration/DevelopmentCaddyfileTest.php` fails, with Caddy's error, when
+the dev overlay's Mercure block stops validating, instead of leaving the dev php container restarting.
 
 ### Testing
 ```bash

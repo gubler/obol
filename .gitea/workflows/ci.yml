@@ -282,6 +282,9 @@ jobs:
                   # an unset target resolves to it today - but that breaks silently the
                   # moment a stage is appended. Naming it keeps the shipped image hardened.
                   target: frankenphp_prod
+                  # The bases float on tags such as 1-php8.5 that move with each security release; a
+                  # runner's cached copy would otherwise ship the old one.
+                  pull: true
                   # amd64 only - built natively on the Hex runner, the sole deploy
                   # target (x86_64). No QEMU, no multi-arch manifest.
                   platforms: linux/amd64

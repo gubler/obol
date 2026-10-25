@@ -37,7 +37,6 @@ parameters:
         return: 100
         param: 100
         property: 100
-        declare: 100
         constant: 100
     ignoreErrors:
         # The WebAuthn bundle unconditionally aliases the deprecated PublicKeyCredentialSourceRepositoryInterface

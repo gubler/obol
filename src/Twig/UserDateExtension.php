@@ -12,26 +12,17 @@ use App\Enum\DateFormat;
 use App\Service\DateFormatter;
 use App\ValueObject\CalendarDate;
 use Symfony\Bundle\SecurityBundle\Security;
-use Twig\Extension\AbstractExtension;
-use Twig\TwigFilter;
+use Twig\Attribute\AsTwigFilter;
 
-final class UserDateExtension extends AbstractExtension
+final readonly class UserDateExtension
 {
     public function __construct(
-        private readonly Security $security,
-        private readonly DateFormatter $dateFormatter,
+        private Security $security,
+        private DateFormatter $dateFormatter,
     ) {
     }
 
-    #[\Override]
-    public function getFilters(): array
-    {
-        return [
-            new TwigFilter('user_date', $this->format(...)),
-            new TwigFilter('user_datetime', $this->formatDateTime(...)),
-        ];
-    }
-
+    #[AsTwigFilter(name: 'user_date')]
     public function format(\DateTimeInterface|CalendarDate $date): string
     {
         // user_date renders both a calendar date (nextRenewal, paidDate, report as-of dates) and a plain
@@ -41,6 +32,7 @@ final class UserDateExtension extends AbstractExtension
             : $this->dateFormatter->format($date, $this->preference());
     }
 
+    #[AsTwigFilter(name: 'user_datetime')]
     public function formatDateTime(\DateTimeInterface $dateTime): string
     {
         return $this->dateFormatter->formatDateTime($dateTime, $this->preference());

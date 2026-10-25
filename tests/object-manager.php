@@ -5,9 +5,9 @@ declare(strict_types=1);
 use App\Kernel;
 use Symfony\Component\Dotenv\Dotenv;
 
-require dirname(path: __DIR__) . '/vendor/autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
 
-new Dotenv()->bootEnv(path: dirname(path: __DIR__) . '/.env');
+new Dotenv()->bootEnv(path: __DIR__ . '/../.env');
 
 $env = $_SERVER['APP_ENV'];
 

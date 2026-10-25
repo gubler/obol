@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Kernel;
 
-require_once dirname(__DIR__).'/vendor/autoload_runtime.php';
+require_once __DIR__.'/../vendor/autoload_runtime.php';
 
 // Pin the process timezone to UTC. Calendar dates carry the owner's zone, applied at read time, but
 // instant storage (createdAt timestamps) and any stray ambient-zone date path must not vary with the

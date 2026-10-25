@@ -9,24 +9,16 @@ namespace App\Twig;
 
 use App\Service\Money\MoneyFormatter;
 use App\ValueObject\Money;
-use Twig\Extension\AbstractExtension;
-use Twig\TwigFilter;
+use Twig\Attribute\AsTwigFilter;
 
-final class MoneyExtension extends AbstractExtension
+final readonly class MoneyExtension
 {
     public function __construct(
-        private readonly MoneyFormatter $moneyFormatter,
+        private MoneyFormatter $moneyFormatter,
     ) {
     }
 
-    #[\Override]
-    public function getFilters(): array
-    {
-        return [
-            new TwigFilter('money', $this->format(...)),
-        ];
-    }
-
+    #[AsTwigFilter(name: 'money')]
     public function format(Money $money): string
     {
         return $this->moneyFormatter->format($money);

@@ -12,24 +12,15 @@ use App\ValueObject\CalendarDate;
 use Knp\Bundle\TimeBundle\DateTimeFormatter;
 use Psr\Clock\ClockInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Twig\Extension\AbstractExtension;
-use Twig\TwigFilter;
+use Twig\Attribute\AsTwigFilter;
 
-final class RenewalLabelExtension extends AbstractExtension
+final readonly class RenewalLabelExtension
 {
     public function __construct(
-        private readonly ClockInterface $clock,
-        private readonly TranslatorInterface $translator,
-        private readonly DateTimeFormatter $dateTimeFormatter,
+        private ClockInterface $clock,
+        private TranslatorInterface $translator,
+        private DateTimeFormatter $dateTimeFormatter,
     ) {
-    }
-
-    #[\Override]
-    public function getFilters(): array
-    {
-        return [
-            new TwigFilter('renewal_label', $this->label(...)),
-        ];
     }
 
     /**
@@ -41,6 +32,7 @@ final class RenewalLabelExtension extends AbstractExtension
      * calendar-day distance (the renewal day itself counts, since it is a valid not-late payment day)
      * rather than the time-of-day-truncated wall-clock gap.
      */
+    #[AsTwigFilter(name: 'renewal_label')]
     public function label(CalendarDate $renewal, User $owner): string
     {
         // Compare as pure calendar dates: the owner's local today (ADR-0016) against the renewal date.

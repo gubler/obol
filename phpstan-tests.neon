@@ -21,7 +21,6 @@ parameters:
         param: 0
         property: 0
         constant: 0
-        declare: 0
     # Test code churns; a guard-ignore going unmatched after an edit should not break the build.
     reportUnmatchedIgnoredErrors: false
     ignoreErrors:

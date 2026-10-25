@@ -58,7 +58,7 @@ final readonly class FindCategoryCompositionRunner
                 $category = $group['category'];
 
                 return new CompositionSlice(
-                    label: null !== $category ? $category->name : $this->translator->trans('subscription.group.uncategorized'),
+                    label: $category->name ?? $this->translator->trans('subscription.group.uncategorized'),
                     converted: $share->converted,
                     breakdown: $share->breakdown,
                     isApproximate: $share->isApproximate,
@@ -66,7 +66,7 @@ final readonly class FindCategoryCompositionRunner
                     uncategorized: null === $category,
                     // Uncategorized takes the reserved neutral Charcoal swatch; its badge icon falls
                     // back to the dashed default (no CategoryIcon).
-                    color: null !== $category ? $category->color : TileColor::Charcoal,
+                    color: $category->color ?? TileColor::Charcoal,
                     icon: $category?->icon,
                 );
             },

@@ -183,10 +183,11 @@
             "repo": "github.com/symfony/recipes",
             "branch": "main",
             "version": "8.1",
-            "ref": "312027aea160796a50bf2d185503afdb5d71f570"
+            "ref": "d3714db4cc12adbfd4c0453cf854be32788ef549"
         },
         "files": [
             ".editorconfig",
+            "AGENTS.md",
             "config/packages/cache.yaml",
             "config/packages/framework.yaml",
             "config/preload.php",
@@ -203,7 +204,7 @@
             "repo": "github.com/symfony/recipes",
             "branch": "main",
             "version": "4.3",
-            "ref": "09051cfde49476e3c12cd3a0e44289ace1c75a4f"
+            "ref": "710cae90ab3e5d3f4a747e9ce6ae33299d7ae83b"
         },
         "files": [
             "config/packages/mailer.yaml"
@@ -231,12 +232,12 @@
         ]
     },
     "symfony/monolog-bundle": {
-        "version": "4.0",
+        "version": "4.1",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
             "version": "3.7",
-            "ref": "1b9efb10c54cb51c713a9391c9300ff8bceda459"
+            "ref": "feb8fd9520b5694c7d0d2ba17fd4b4d33f9dd9cf"
         },
         "files": [
             "config/packages/monolog.yaml"
@@ -248,7 +249,7 @@
             "repo": "github.com/symfony/recipes",
             "branch": "main",
             "version": "1.0",
-            "ref": "eac1868f830a3e332764bb3919ab02311b3340c8"
+            "ref": "814d444c2b82ec0d6dce87ecec32b06c2e89458f"
         }
     },
     "symfony/property-info": {
@@ -355,12 +356,12 @@
         "version": "v3.1.0"
     },
     "symfony/ux-icons": {
-        "version": "3.3",
+        "version": "3.6",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
-            "version": "2.19",
-            "ref": "c965ca0bf8a40e03420d57e08cff0bf6045e4ae7"
+            "version": "3.4",
+            "ref": "16a3114526e46593b494471d1654dfa46831beb5"
         },
         "files": [
             "assets/icons/symfony.svg",
@@ -368,12 +369,12 @@
         ]
     },
     "symfony/ux-turbo": {
-        "version": "2.30",
+        "version": "3.6",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
             "version": "2.20",
-            "ref": "287f7c6eb6e9b65e422d34c00795b360a787380b"
+            "ref": "eaff62fc37864d355804c778309a226ae539831f"
         },
         "files": [
             "config/packages/ux_turbo.yaml"
@@ -434,7 +435,7 @@
             "repo": "github.com/symfony/recipes",
             "branch": "main",
             "version": "0.14",
-            "ref": "b7eaad0756e3f9b38764450655e6fea9614bc32a"
+            "ref": "b8af60cec7149fd0cde0ec9d89ccb32335c4d9bd"
         },
         "files": []
     },

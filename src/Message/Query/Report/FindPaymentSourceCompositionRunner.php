@@ -58,13 +58,13 @@ final readonly class FindPaymentSourceCompositionRunner
                 $source = $group['source'];
 
                 return new CompositionSlice(
-                    label: null !== $source ? $source->name : $this->translator->trans('subscription.group.unassigned'),
+                    label: $source->name ?? $this->translator->trans('subscription.group.unassigned'),
                     converted: $share->converted,
                     breakdown: $share->breakdown,
                     isApproximate: $share->isApproximate,
                     id: $source?->id,
                     // Unassigned takes the reserved neutral Charcoal swatch; payment sources carry no icon.
-                    color: null !== $source ? $source->color : TileColor::Charcoal,
+                    color: $source->color ?? TileColor::Charcoal,
                 );
             },
             array_values($bySource),

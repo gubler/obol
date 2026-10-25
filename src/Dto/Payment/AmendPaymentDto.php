@@ -16,12 +16,12 @@ final class AmendPaymentDto
 {
     #[NotNull]
     #[GreaterThanOrEqual(value: 1)]
-    public ?int $amount = null;
+    public ?int $amount;
 
     // A `Y-m-d` string from the date picker; the controller converts it to a CalendarDate. NotBlank (not
     // NotNull) because an empty date field binds to '' rather than null.
     #[NotBlank]
-    public ?string $paidDate = null;
+    public ?string $paidDate;
 
     public function __construct(Payment $payment)
     {

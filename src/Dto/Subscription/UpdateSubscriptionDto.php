@@ -46,10 +46,10 @@ final class UpdateSubscriptionDto
     public PaymentPeriod $paymentPeriod;
 
     #[GreaterThanOrEqual(value: 1)]
-    public int $paymentPeriodCount = 1;
+    public int $paymentPeriodCount;
 
     #[GreaterThanOrEqual(value: 1)]
-    public int $cost = 0;
+    public int $cost;
 
     /**
      * The currency the cost is denominated in. Editable only while the subscription has no payments
@@ -57,13 +57,13 @@ final class UpdateSubscriptionDto
      */
     public Currency $currency;
 
-    public string $description = '';
+    public string $description;
 
     #[AtLeastOneOf(constraints: [
         new Url(),
         new Blank(),
     ])]
-    public string $link = '';
+    public string $link;
 
     // Constrain the logo to small raster images. Excluding SVG (and any markup type) is the point:
     // an SVG or HTML file sniffs to an active-script type and, served from public/uploads, would run

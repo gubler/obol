@@ -30,9 +30,9 @@ return [
     '@hotwired/stimulus' => ['version' => '3.2.2'],
     '@hotwired/turbo' => ['version' => '8.0.23'],
     '@tailwindplus/elements' => ['version' => '1.0.22'],
-    'chart.js' => ['version' => '4.5.1'],
     '@kurkle/color' => ['version' => '0.3.4'],
     '@simplewebauthn/browser' => ['version' => '13.3.0'],
-    'driver.js' => ['version' => '1.7.0'],
-    'driver.js/dist/driver.css' => ['version' => '1.7.0', 'type' => 'css'],
+    'chart.js' => ['version' => '4.6.1'],
+    'driver.js' => ['version' => '1.10.2'],
+    'driver.js/dist/driver.css' => ['version' => '1.10.2', 'type' => 'css'],
 ];

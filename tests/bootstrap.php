@@ -13,9 +13,9 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Dotenv\Dotenv;
 use Symfony\Component\Panther\PantherTestCase;
 
-require dirname(path: __DIR__) . '/vendor/autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
 
-new Dotenv()->bootEnv(path: dirname(path: __DIR__) . '/.env');
+new Dotenv()->bootEnv(path: __DIR__ . '/../.env');
 
 if ($_SERVER['APP_DEBUG']) {
     umask(mask: 0000);

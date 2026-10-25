@@ -50,6 +50,22 @@ mise run mate:tools
 installed versions automatically. Confirm the lock is publishable-clean with
 `composer validate --strict` (the missing `name`/`description` are expected for an app).
 
+A Rector release can add rules to the sets `rector.php` enables, so `mise run rector:check` may
+fail after an update even though no first-party code changed. Apply the new rules with
+`mise run rector`, then `mise run cs`, and repeat until both are clean: one rule's output can be
+the next rule's input (dropping `extends AbstractExtension` lets `ReadOnlyClassRector` apply).
+
+### Held packages
+
+A package held below its latest release carries a `~` constraint in `composer.json`, which a plain
+`composer update` respects. Lift a hold only together with the change it is waiting for.
+
+- `symplify/phpstan-rules` is held on 14.15. Up to there, the PHPStan extension installer loads
+  only its constructor and mock rules, beside the naming and complexity sets `phpstan.dist.neon`
+  includes. From 14.16 the installer loads most of its other sets too (static, modern, Symfony,
+  Doctrine, PHPUnit), and 14.19.3 registers a rule class it does not ship, so PHPStan cannot
+  start. Moving past 14.15 means deciding which of those sets to adopt.
+
 ## Updating Symfony recipes
 
 List which recipes have updates:
@@ -87,3 +103,19 @@ Do **not** reach for `composer recipes:install <pkg> --force` to unstick a recip
 reinstalls every file the recipe owns, overwriting customizations wholesale (custom Doctrine
 types, the database bind-mount, and so on). If you must use it only to advance a stubborn
 lock ref, revert every file it touched afterwards and keep only the `symfony.lock` change.
+
+Two recipe outputs are always rejected:
+
+- A recipe that ships a Docker service (`symfony/mailer`'s Mailpit, for one) writes it to an
+  untracked `compose.override.yaml`. Compose loads a file by that name on its own, which the
+  overlay chain deliberately avoids, so delete it.
+- The `symfony/framework-bundle` recipe merges a generic Symfony agent brief into `AGENTS.md`.
+  It contradicts the project's own instructions (`symfony serve`, scaffolding defaults), so keep
+  our side of the conflict.
+
+---
+
+## Changelog
+
+- 2026-10-25 - Added the Rector re-run after an update, the held packages, and the two recipe outputs
+  to reject.

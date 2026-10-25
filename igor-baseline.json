@@ -116,6 +116,10 @@
       {
         "message": "Mutation of state 'jsonEncodeOptions' in NormalizerFormatter::removeJsonEncodeOption()",
         "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
+      },
+      {
+        "message": "Mutation of state 'maxTraceLength' in NormalizerFormatter::setMaxTraceLength()",
+        "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
       }
     ],
     "vendor/monolog/monolog/src/Monolog/Handler/AbstractHandler.php": [
@@ -238,6 +242,10 @@
       {
         "message": "Property 'logDepth' of Logger is mutated but not reset in reset().",
         "reason": "Logging handler internals - formatter, stream and retry bookkeeping. Reset by the kernel.reset-tagged logger."
+      },
+      {
+        "message": "Property 'clock' of Logger is mutated but not reset in reset().",
+        "reason": "Clock injected at container build time by setClock(); configuration, not request data."
       }
     ],
     "vendor/php-http/discovery/src/Psr17Factory.php": [
@@ -374,6 +382,22 @@
       {
         "message": "Mutation detected on an injected dependency ($this->numberFormatters). Risk of State Leak in a worker.",
         "reason": "Formatter caches keyed by locale and pattern; derived from input, carries no request data."
+      },
+      {
+        "message": "Usage of local static variable is dangerous in Worker mode.",
+        "reason": "Formatter caches keyed by locale and pattern; derived from input, carries no request data."
+      },
+      {
+        "message": "Usage of local static variable is dangerous in Worker mode.",
+        "reason": "Formatter caches keyed by locale and pattern; derived from input, carries no request data."
+      },
+      {
+        "message": "Mutation of state 'prototypePatterns' in IntlExtension::prototypePattern()",
+        "reason": "Formatter caches keyed by locale and pattern; derived from input, carries no request data."
+      },
+      {
+        "message": "Mutation of state 'listFormatters' in IntlExtension::createListFormatter()",
+        "reason": "Formatter caches keyed by locale and pattern; derived from input, carries no request data."
       }
     ],
     "vendor/twig/twig/src/Environment.php": [
@@ -448,6 +472,10 @@
       {
         "message": "Property 'optionsHash' of Environment is mutated but not reset in reset().",
         "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      },
+      {
+        "message": "Property 'loadedWrappers' of Environment is mutated but not reset in reset().",
+        "reason": "Compiled template wrappers keyed by template class; derived from the template, bounded by the template count."
       }
     ],
     "vendor/twig/twig/src/Extension/ProfilerExtension.php": [
@@ -563,6 +591,26 @@
       },
       {
         "message": "Mutation of state 'brackets' in Lexer::checkBrackets()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      },
+      {
+        "message": "Mutation of state 'documentation' in Lexer::tokenize()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      },
+      {
+        "message": "Mutation of state 'documentation' in Lexer::lexData()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      },
+      {
+        "message": "Mutation of state 'documentation' in Lexer::lexData()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      },
+      {
+        "message": "Mutation of state 'documentation' in Lexer::pushToken()",
+        "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
+      },
+      {
+        "message": "Mutation of state 'documentation' in Lexer::addDocumentation()",
         "reason": "Template compiler and lexer state, rebuilt per parse and derived from the template."
       }
     ],
@@ -694,6 +742,10 @@
       {
         "message": "Mutation of state 'algorithms' in Manager::add()",
         "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
+      },
+      {
+        "message": "Mutation detected on a local reference to a shared service ($manager). Risk of State Leak in a worker.",
+        "reason": "False positive: withKeyRestrictionsEnforced() mutates a manager it has just created locally, never the shared one."
       }
     ],
     "vendor/web-auth/webauthn-lib/src/AttestationStatement/AttestationObjectLoader.php": [
@@ -876,6 +928,36 @@
       {
         "message": "Mutation of state 'eventDispatcher' in PublicKeyCredentialRequestOptionsFactory::setEventDispatcher()",
         "reason": "WebAuthn ceremony state held in the request's own session, not across requests."
+      }
+    ],
+    "vendor/twig/html-extra/HtmlExtension.php": [
+      {
+        "message": "Mutation of state 'mimeTypes' in HtmlExtension::dataUri()",
+        "reason": "Lazily created MimeTypes lookup; stateless across requests and carries no request data."
+      }
+    ],
+    "vendor/twig/twig/src/Extension/AttributeExtension.php": [
+      {
+        "message": "Mutation of state 'filters' in AttributeExtension::initFromAttributes()",
+        "reason": "Filter, function and test lists built once from #[AsTwig*] attributes on a class; derived from code, not the request."
+      },
+      {
+        "message": "Mutation of state 'functions' in AttributeExtension::initFromAttributes()",
+        "reason": "Filter, function and test lists built once from #[AsTwig*] attributes on a class; derived from code, not the request."
+      },
+      {
+        "message": "Mutation of state 'tests' in AttributeExtension::initFromAttributes()",
+        "reason": "Filter, function and test lists built once from #[AsTwig*] attributes on a class; derived from code, not the request."
+      }
+    ],
+    "vendor/web-auth/cose-lib/src/Algorithm/Signature/RSA/RsaKeyPolicy.php": [
+      {
+        "message": "Mutation of state 'keyValidatorIsExplicit' in RsaKeyPolicy::initializeKeyValidator()",
+        "reason": "One-time lazy initialization of the RSA key validator from configuration; carries no request data."
+      },
+      {
+        "message": "Mutation of state 'keyValidator' in RsaKeyPolicy::initializeKeyValidator()",
+        "reason": "One-time lazy initialization of the RSA key validator from configuration; carries no request data."
       }
     ]
   }
